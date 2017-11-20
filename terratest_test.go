@@ -153,7 +153,7 @@ func TestTerraformApplyOnMinimalExampleWithRetryableErrorMessages(t *testing.T) 
 	options := NewTerratestOptions()
 	options.UniqueId = rand.UniqueId
 	options.TestName = "Test - TestTerraformApplyOnMinimalExampleWithRetryableErrorMessages"
-	options.TemplatePath = path.Join(fixtureDir, "minimal-example-with-error")
+	options.TemplatePath = path.Join(fixtureDir, "minimal-example-with-error-2")
 	options.Vars = vars
 	options.RetryableTerraformErrors = make(map[string]string)
 	options.RetryableTerraformErrors["aws_instance.demo: Error launching source instance: InvalidKeyPair.NotFound"] = "This error was deliberately added to the template."
