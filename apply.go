@@ -13,7 +13,9 @@ func Apply(options *TerratestOptions) (string, error) {
 	logger := log.NewLogger(options.TestName)
 	var output string
 
-	terraform.Init(options.TemplatePath, logger)
+	if err := terraform.Init(options.TemplatePath, logger); err != nil {
+		return "", err
+	}
 
 	// TERRAFORM APPLY
 	// Download all the Terraform modules
