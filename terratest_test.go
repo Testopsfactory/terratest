@@ -240,7 +240,7 @@ func TestTerraformApplyAvoidsForbiddenRegion(t *testing.T) {
 	options := NewTerratestOptions()
 	options.UniqueId = rand.UniqueId
 	options.TestName = "Test - TestTerraformApplyAvoidsForbiddenRegion"
-	options.TemplatePath = path.Join(fixtureDir, "minimal-example")
+	options.TemplatePath = path.Join(fixtureDir, "minimal-example-avoids-forbidden-region")
 	options.Vars = vars
 
 	_, err = ApplyAndDestroy(options)
