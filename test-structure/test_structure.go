@@ -62,9 +62,33 @@ func CleanupTerratestOptions(t *testing.T, testFolder string, logger *log.Logger
 	CleanupTestData(t, formatTerratestOptionsPath(testFolder), logger)
 }
 
+// Serialize and save RandomResourceCollection into the given folder. This allows you to create RandomResourceCollection
+// during setup and to reuse that RandomResourceCollection later during validation and teardown.
+func SaveRandomResourceCollection(t *testing.T, testFolder string, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) {
+	SaveTestData(t, formatRandomResourceCollection(testFolder), resourceCollection, logger)
+}
+
+// Load and unserialize RandomResourceCollection from the given folder. This allows you to reuse a RandomResourceCollection
+// that was created during an earlier setup steps in later validation and teardown steps.
+func LoadRandomResourceCollection(t *testing.T, testFolder string, logger *log.Logger) *terratest.RandomResourceCollection {
+	var resourceCollection terratest.RandomResourceCollection
+	LoadTestData(t, formatRandomResourceCollection(testFolder), &resourceCollection, logger)
+	return &resourceCollection
+}
+
+// Clean up the files used to store RandomResourceCollection between test stages
+func CleanupRandomResourceCollection(t *testing.T, testFolder string, logger *log.Logger) {
+	CleanupTestData(t, formatRandomResourceCollection(testFolder), logger)
+}
+
 // Format a path to save TerratestOptions in the given folder
 func formatTerratestOptionsPath(testFolder string) string {
 	return filepath.Join(testFolder, "TerratestOptions.json")
+}
+
+// Format a path to save RandomResourceCollection in the given folder
+func formatRandomResourceCollection(testFolder string) string {
+	return filepath.Join(testFolder, "RandomResourceCollection.json")
 }
 
 // Serialize and save a value used at test time to the given path. This allows you to create some sort of test data

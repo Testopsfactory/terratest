@@ -235,13 +235,14 @@ func TestExample(t *testing.T) {
   testPath := "../examples/foo"
   logger := terralog.NewLogger("TestExample")
 
-  amiId := buildAmi(t)                                                 // setup
-  terratestOptions := createOptions(t, amiId, testPath)                // setup
-  deployInfrastructureWithTerraform(t, terratestOptions)               // setup
+  amiId := buildAmi(t)                                                               // setup
+  resourceCollection := createResourceCollection(t)                                  // setup
+  terratestOptions := createOptions(t, amiId, testPath, resourceCollection)          // setup
+  deployInfrastructureWithTerraform(t, terratestOptions)                             // setup
 
-  defer undeployInfrastructureWithTerraform(t, terratestOptions)       // teardown
+  defer undeployInfrastructureWithTerraform(t, resourceCollection,terratestOptions)  // teardown
 
-  testInfrastructureWorks(t, terratestOptions)                         // validation
+  testInfrastructureWorks(t, terratestOptions)                                       // validation
 }
 ```
 
@@ -259,20 +260,28 @@ func TestExample(t *testing.T) {
   logger := terralog.NewLogger("TestExample")
 
   test_structure.Setup(logger, func() {
-    amiId := buildAmi(t)                                                 // setup
-    terratestOptions := createOptions(t, amiId, testPath)                // setup
-    deployInfrastructureWithTerraform(t, terratestOptions)               // setup
-    test_structure.SaveTerratestOptions(t, testPath, terratestOptions)   // save TerratestOptions for later steps
+    amiId := buildAmi(t)                                                               // setup
+    resourceCollection := createResourceCollection(t)                                  // setup
+    terratestOptions := createOptions(t, amiId, testPath, resourceCollection)          // setup
+    deployInfrastructureWithTerraform(t, terratestOptions)                             // setup
+
+    test_structure.SaveTerratestOptions(t, testPath, terratestOptions)                 // save TerratestOptions for later steps
+    test_structure.SaveRandomResourceCollection(t, testPath, resourceCollection)       // save RandomResourceCollection for later steps
   })
 
-  test_structure.Teardown(logger, func() {
-    terratestOptions := test_structure.LoadTerratestOptions(t, testPath) // load TerratestOptions from earlier setup
-    defer undeployInfrastructureWithTerraform(t, terratestOptions)       // teardown
+  defer test_structure.Teardown(logger, func() {
+    terratestOptions := test_structure.LoadTerratestOptions(t, testPath)               // load TerratestOptions from earlier setup
+    resourceCollection := test_structure.LoadRandomResourceCollection(t, testPath)     // load RandomResourceCollection from earlier setup
+
+    undeployInfrastructureWithTerraform(t, resourceCollection, terratestOptions)       // teardown
+
+    test_structure.CleanupTerratestOptions(t, testPath)                                // clean up the stored TerratestOptions
+    test_structure.CleanupRandomResourceCollection(t, testPath)                        // clean up the stored RandomResourceCollection
   })
 
   test_structure.Validation(logger, func() {
-    terratestOptions := test_structure.LoadTerratestOptions(t, testPath) // load TerratestOptions from earlier setup
-    testInfrastructureWorks(t, terratestOptions)                         // validation
+    terratestOptions := test_structure.LoadTerratestOptions(t, testPath)               // load TerratestOptions from earlier setup
+    testInfrastructureWorks(t, terratestOptions)                                       // validation
   })
 }
 ```
@@ -281,9 +290,9 @@ The main change is that we've wrapped each stage of the test in either `test_str
 or `test_structure.Validation`. The reason we do that is we can have tell Terratest to skip each of these stages using
 environment variables! For example, if you set `SKIP_TEARDOWN=true`, then the test code will skip the teardown process
 and leave your code running in AWS. This allows you to run the test next time with `SKIP_SETUP=true` and 
-`SKIP_TEARDOWN=true` to go straight to the validation steps without having to wait for setup and teardown again!
+`SKIP_TEARDOWN=true` to go straight to the validation steps without having to wait for setup and teardown again! 
 
-So the full workflow will be:
+The full workflow will be:
 
 1. Do the initial setup (just once): `SKIP_VALIDATION=true SKIP_TEARDOWN=true go test -run TestExample`
 1. Do your validation (as many times as you want): `SKIP_SETUP=true SKIP_TEARDOWN=true go test -run TestExample`
@@ -292,6 +301,10 @@ So the full workflow will be:
 This way, you only pay the cost of setup and teardown once and you can do as many iterations on validation in
 between as you want. And since the code continues to run in your AWS account, you can manually run `terraform` to 
 redeploy small parts of it whenever you want, rather than having to redeploy the entire thing every time. 
+
+Note that since any stage can be skipped, test data that needs to be available across multiple stages (e.g., 
+`TerratestOptions` and `RandomResourceCollection`) are saved to disk in the setup stage and loaded from disk in 
+subsequent stages.
 
 ### Integration tests
 

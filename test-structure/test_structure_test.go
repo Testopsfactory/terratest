@@ -64,3 +64,33 @@ func TestSaveAndLoadTerratestOptions(t *testing.T) {
 	CleanupTerratestOptions(t, tmpFolder, logger)
 	assert.False(t, files.FileExists(formatTerratestOptionsPath(tmpFolder)))
 }
+
+func TestSaveAndLoadRandomResourceCollection(t *testing.T) {
+	t.Parallel()
+
+	logger := terralog.NewLogger("TestSaveAndLoadRandomResourceCollection")
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-random-resource-collection")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	expectedData := &terratest.RandomResourceCollection{
+		AwsRegion: "us-east-1",
+		UniqueId: "foo",
+		AccountId: "1234567890",
+		KeyPair: &terratest.Ec2Keypair{
+			Name: "foo",
+			PublicKey: "fake-public-key",
+			PrivateKey: "fake-private-key",
+		},
+		AmiId: "ami-abcd1234",
+	}
+	SaveRandomResourceCollection(t, tmpFolder, expectedData, logger)
+
+	actualData := LoadRandomResourceCollection(t, tmpFolder, logger)
+	assert.Equal(t, expectedData, actualData)
+
+	CleanupRandomResourceCollection(t, tmpFolder, logger)
+	assert.False(t, files.FileExists(formatRandomResourceCollection(tmpFolder)))
+}
