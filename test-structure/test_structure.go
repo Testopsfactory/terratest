@@ -8,6 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest"
 	"path/filepath"
 	"log"
+	"github.com/gruntwork-io/terratest/files"
 )
 
 const SkipSetupEnvVar = "SKIP_SETUP"
@@ -44,16 +45,21 @@ func runFunctionIfEnvVarNotSet(logger *log.Logger, envVarName string, functionNa
 
 // Serialize and save TerratestOptions into the given folder. This allows you to create TerratestOptions during setup
 // and to reuse that TerratestOptions later during validation and teardown.
-func SaveTerratestOptions(t *testing.T, testFolder string, terratestOptions *terratest.TerratestOptions) {
-	SaveTestData(t, formatTerratestOptionsPath(testFolder), terratestOptions)
+func SaveTerratestOptions(t *testing.T, testFolder string, terratestOptions *terratest.TerratestOptions, logger *log.Logger) {
+	SaveTestData(t, formatTerratestOptionsPath(testFolder), terratestOptions, logger)
 }
 
 // Load and unserialize TerratestOptions from the given folder. This allows you to reuse a TerratestOptions that was
 // created during an earlier setup steps in later validation and teardown steps.
-func LoadTerratestOptions(t *testing.T, testFolder string) *terratest.TerratestOptions {
-	var terratestOptions *terratest.TerratestOptions
-	LoadTestData(t, formatTerratestOptionsPath(testFolder), terratestOptions)
-	return terratestOptions
+func LoadTerratestOptions(t *testing.T, testFolder string, logger *log.Logger) *terratest.TerratestOptions {
+	var terratestOptions terratest.TerratestOptions
+	LoadTestData(t, formatTerratestOptionsPath(testFolder), &terratestOptions, logger)
+	return &terratestOptions
+}
+
+// Clean up the files used to store TerratestOptions between test stages
+func CleanupTerratestOptions(t *testing.T, testFolder string, logger *log.Logger) {
+	CleanupTestData(t, formatTerratestOptionsPath(testFolder), logger)
 }
 
 // Format a path to save TerratestOptions in the given folder
@@ -63,11 +69,15 @@ func formatTerratestOptionsPath(testFolder string) string {
 
 // Serialize and save a value used at test time to the given path. This allows you to create some sort of test data
 // (e.g., TerratestOptions) during setup and to reuse this data later during validation and teardown.
-func SaveTestData(t *testing.T, path string, value interface{}) {
+func SaveTestData(t *testing.T, path string, value interface{}, logger *log.Logger) {
+	logger.Printf("Storing test data in %s so it can be reused later", path)
+
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		t.Fatalf("Failed to convert value %s to JSON: %v", path, err)
 	}
+
+	t.Logf("Marshalled JSON: %s", string(bytes))
 
 	if err := ioutil.WriteFile(path, bytes, 0644); err != nil {
 		t.Fatalf("Failed to save value %s: %v", path, err)
@@ -77,7 +87,9 @@ func SaveTestData(t *testing.T, path string, value interface{}) {
 // Load and unserialize a value stored at the given path. The value should be a pointer to a struct into which the
 // value will be deserialized. This allows you to reuse some sort of test data (e.g., TerratestOptions) from earlier
 // setup steps in later validation and teardown steps.
-func LoadTestData(t *testing.T, path string, value interface{}) {
+func LoadTestData(t *testing.T, path string, value interface{}, logger *log.Logger) {
+	logger.Printf("Loading test data from %s", path)
+
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Failed to load value from %s: %v", path, err)
@@ -85,5 +97,17 @@ func LoadTestData(t *testing.T, path string, value interface{}) {
 
 	if err := json.Unmarshal(bytes, value); err != nil {
 		t.Fatalf("Failed to parse JSON for value %s: %v", path, err)
+	}
+}
+
+// Clean up the test data at the given path
+func CleanupTestData(t *testing.T, path string, logger *log.Logger) {
+	if files.FileExists(path) {
+		logger.Printf("Cleaning up test data from %s", path)
+		if err := os.Remove(path); err != nil {
+			t.Fatalf("Failed to clean up file at %s: %v", path, err)
+		}
+	} else {
+		logger.Printf("%s does not exist. Nothing to cleanup.", path)
 	}
 }
