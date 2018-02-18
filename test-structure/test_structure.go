@@ -10,6 +10,7 @@
 //
 // func TestExample(t *testing.T) {
 //   testPath := "../examples/foo"
+//   logger := terralog.NewLogger("TestExample")
 //
 //   amiId := buildAmi(t)                                                 // setup
 //   terratestOptions := createOptions(t, amiId, testPath)                // setup
@@ -28,23 +29,24 @@
 //
 // func TestExample(t *testing.T) {
 //   testPath := "../examples/foo"
+//   logger := terralog.NewLogger("TestExample")
 //
-//   if test_structure.DoSetup() {
+//   test_structure.Setup(logger, func() {
 //     amiId := buildAmi(t)                                                 // setup
 //     terratestOptions := createOptions(t, amiId, testPath)                // setup
 //     deployInfrastructureWithTerraform(t, terratestOptions)               // setup
 //     test_structure.SaveTerratestOptions(t, testPath, terratestOptions)   // save TerratestOptions for later steps
-//   }
+//   })
 //
-//   if test_structure.DoTeardown() {
+//   test_structure.Teardown(logger, func() {
 //     terratestOptions := test_structure.LoadTerratestOptions(t, testPath) // load TerratestOptions from earlier setup
 //     defer undeployInfrastructureWithTerraform(t, terratestOptions)       // teardown
-//   }
+//   })
 //
-//   if test_structure.DoValidation() {
+//   test_structure.Validation(logger, func() {
 //     terratestOptions := test_structure.LoadTerratestOptions(t, testPath) // load TerratestOptions from earlier setup
 //     testInfrastructureWorks(t, terratestOptions)                         // validation
-//   }
+//   })
 // }
 //
 // Now, in the dev environment, the workflow you can use is:
@@ -66,25 +68,39 @@ import (
 	"io/ioutil"
 	"github.com/gruntwork-io/terratest"
 	"path/filepath"
+	"log"
 )
 
 const SkipSetupEnvVar = "SKIP_SETUP"
 const SkipTeardownEnvVar = "SKIP_TEARDOWN"
 const SkipValidationEnvVar = "SKIP_VALIDATION"
 
-// Returns true if the setup process should be done for this test
-func DoSetup() bool {
-	return os.Getenv(SkipSetupEnvVar) == ""
+// Run the given function to perform setup steps for this test unless the SKIP_SETUP env var is set, in which case
+// setup will be skipped.
+func Setup(logger *log.Logger, setup func()) {
+	runFunctionIfEnvVarNotSet(logger, SkipSetupEnvVar, "setup", setup)
 }
 
-// Returns true if the validation process should be done for this test
-func DoValidation() bool {
-	return os.Getenv(SkipValidationEnvVar) == ""
+// Run the given function to perform validation steps for this test unless the SKIP_VALIDATION env var is set, in which
+// case validation will be skipped.
+func Validation(logger *log.Logger, validation func()) {
+	runFunctionIfEnvVarNotSet(logger, SkipValidationEnvVar, "validation", validation)
 }
 
-// Returns true if the teardown process should be done for this test
-func DoTeardown() bool {
-	return os.Getenv(SkipTeardownEnvVar) == ""
+// Run the given function to perform teardown steps for this test unless the SKIP_TEARDOWN var is set, in which case
+// teardown will be skipped.
+func Teardown(logger *log.Logger, teardown func()) {
+	runFunctionIfEnvVarNotSet(logger, SkipTeardownEnvVar, "teardown", teardown)
+}
+
+// If the given environment variable is not set, run the given function
+func runFunctionIfEnvVarNotSet(logger *log.Logger, envVarName string, functionName string, function func()) {
+	if os.Getenv(envVarName) == "" {
+		logger.Printf("The %s environment variable is not set, so running %s.", envVarName, functionName)
+		function()
+	} else {
+		logger.Printf("The %s environment variable is set, so skipping %s.", envVarName, functionName)
+	}
 }
 
 // Serialize and save TerratestOptions into the given folder. This allows you to create TerratestOptions during setup
