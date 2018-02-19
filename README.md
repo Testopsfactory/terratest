@@ -115,56 +115,210 @@ go test -timeout 30m -parallel 32
 
 ## Best Practices
 
+Testing infrastructure as code (IaC) is hard. With general purpose programming languages (e.g., Java, Python, Ruby), 
+you have a "localhost" environment where you can run and test the code before you commit. You can also isolate parts
+of your code from external dependencies to create fast, reliable unit tests. With IaC, neither of these advantages is
+available, as there isn't a "localhost" equivalent for most IaC code (e.g., I can't use Terraform to deploy an AWS
+VPC on my own laptop) and there's no way to isolate your code from the outside world (i.e., the whole point of 
+Terraform is to make calls to AWS, so if you remove those, there's nothing left).
+
+That means that most of the tests are going to be integration tests that deploy into a real AWS account. This makes
+the tests effective at catching real-world bugs, but it also makes them much slower and more brittle. In this section,
+we'll outline some best practices to minimize the downsides of this sort of testing.  
+
 ### Unit tests
 
-We use unit tests for rapid feedback while coding, so they should satisfy the following constraints:
+It's nearly impossible to create a truly isolated "unit" with IaC, so when we say "unit tests," what we mean is tests
+that are designed to be used in the dev environment for rapid iteration. You want to be able to make a change, run the
+tests, get feedback *in seconds* (ar at most, 1-2 minutes) on whether things are working, make another change, run the 
+tests again, and so on. 
 
-1. Each test should run quickly (preferably less than 1 minute).
-2. Each test should focus on verifying the functionality of a single module.
-3. Each test must be *completely* isolated from all other tests so we can run many such tests (even many copies of the
-   same unit test) in parallel in the same AWS account. That means that any resource the unit test creates, such as an
-   EC2 instance or IAM role, must have a globally unique name.
+In other words, it's best to think of the unit tests as a dev tool, rather than a "proof of correctness." The 
+integration tests (discussed below) will hopefully catch any bugs that slip by the unit tests, so make trade-offs that
+let the unit tests run faster while still catching *enough* bugs that we don't need to run the integration tests too 
+often.
 
-For each module `XXX`, you should:
+Some unit test best practices:
 
-1. Have a suite of unit tests defined in a common location in your repo with subfolders for each Terraform Module.
-2. The test functions within the test suite should have the following structure:
+#### Script modules
 
-   ```go
-   func TestUnitYYY(t *testing.T) {
-       // Optional since you may prefer a tool like GNU Parallel to sequence output in a more sane way.
-       t.Parallel()
-   }
-   ```
-   Where `YYY` explains what the test does, such as `TestUnitAlarmNotifications`. Note that the first line of the test
-   calls `t.Parallel()` to tell Go to execute multiple unit tests in parallel.
-3. Have a minimal terraform template that consumes your Terraform Module that may or may not reflect real-world usage.  The goal is to test your one module in isolation.  For tests between modules, we use integration tests.
+It should be possible to test just about any "script module" (i.e., any module written in Bash, Python, or Go) locally 
+using Docker. Whereas starting and stopping an EC2 Instance can take 2-4 minutes, Docker containers start up and shut 
+down in less than a second. Similarly, creating AMIs with Packer requires 2-4 minutes of overhead of starting and 
+stopping an EC2 instance, as well as another 1-2 minutes to take a snapshot of it, whereas building Docker images has 
+virtually no overhead, and can typically use caching to run extremely quickly.  
+
+Here are some techniques we use with Docker:
+
+* If your script module is used in a Packer template, add a [Docker 
+  builder](https://www.packer.io/docs/builders/docker.html) to the template so you can create a Docker image from the 
+  same code. You'll want to use the [docker-tag post processor](https://www.packer.io/docs/post-processors/docker-tag.html) 
+  to give the image a tag you can use to run it. Example:
+  
+    ```json
+    {
+      "builders": [{
+        "name": "ubuntu-ami",
+        "type": "amazon-ebs"
+        // ... (other params omitted) ...     
+      },{
+        "name": "ubuntu-docker",
+        "type": "docker",
+        "image": "ubuntu:16.04",
+        "commit": "true"
+      }],
+      "provisioners": [
+        // ...
+      ],
+      "post-processors": [{
+        "type": "docker-tag",
+        "repository": "gruntwork/example",
+        "tag": "latest",
+        "only": ["ubuntu-docker"]
+      }]
+    }
+    ```  
+
+* There are Docker images for all the Linux distros we typically support:
+  [ubuntu](https://hub.docker.com/_/ubuntu/), [amazonlinux](https://hub.docker.com/_/amazonlinux/), 
+  [centos](https://hub.docker.com/_/centos/). Note that the base AMIs Amazon provides for the Linux distros don't 
+  always have the exact same software installed as the Docker images, so you may need to add an extra `script` 
+  provisioner to "normalize" them (use the [-only flag](https://www.packer.io/docs/commands/build.html#only-foo-bar-baz)
+  to target just the Docker builders). For Packer template example above, with the Ubuntu Docker image, you will 
+  probably want to add:
+  
+    ```json
+    {
+      // ... (builders omitted) ...
+      "provisioners": [{
+        "type": "shell",
+        "inline": [
+          "DEBIAN_FRONTEND=noninteractive apt-get update",
+          "apt-get install -y sudo curl wget ca-certificates rsyslog"
+        ],
+        "only": ["ubuntu-docker"]
+      }]
+    }
+    ```   
+
+* Create a `docker-compose.yml` for running your Docker image at test time. This file can configure any ports and
+  environment variables your code needs. 
+  
+* Use mocks to replace external dependencies where possible. One way to do this is to create some "mock scripts" and to 
+  bind-mount them in `docker-compose.yml`. For example, if your script module calls `mount-ebs-volume` to attach and 
+  mount an EBS volume, you could create a mock version of `mount-ebs-volume` that simply creates a folder using 
+  `mkdir -p`, and put your mock script earlier in the `PATH`. You could similarly mock out the `aws` CLI, the EC2 
+  metadata endpoint, and many other external dependencies so that your script module can be tested completely on
+  `localhost`!
+
+* When writing the test code in Go, use the naming convention `TestUnitXXX` (e.g., 
+  `func TestUnitJenkinsModule(t *testing.T)`) for test functions that execute these sorts of "unit tests." This way, 
+  we can execute all unit tests by running `go test -run TestUnit`. 
+
+
+#### Terraform modules
+
+There's no way to deploy Terraform code on localhost, so all the tests for Terraform modules will have roughly the same 
+structure:
+ 
+1. Setup: build any AMIs and Docker images you need (e.g., using `packer build`) and deploy your code into a real AWS 
+   account (e.g., using `terraform apply`).
+1. Validation: test the code running in AWS actually works the way you expect it to (e.g., make HTTP requests, SSH to
+   servers, etc).
+1. Teardown: undeploy the code from AWS so we don't get charged for it (e.g., using `terraform destroy` in a `defer` 
+   statement).
+
+Here's a typical test case of this sort:
+
+```go
+func TestExample(t *testing.T) {
+  testPath := "../examples/foo"
+  logger := terralog.NewLogger("TestExample")
+
+  amiId := buildAmi(t)                                                               // setup
+  resourceCollection := createResourceCollection(t)                                  // setup
+  terratestOptions := createOptions(t, amiId, testPath, resourceCollection)          // setup
+  deployInfrastructureWithTerraform(t, terratestOptions)                             // setup
+
+  defer undeployInfrastructureWithTerraform(t, resourceCollection,terratestOptions)  // teardown
+
+  testInfrastructureWorks(t, terratestOptions)                                       // validation
+}
+```
+
+These steps—especially the setup and teardown—can take a long time (5 - 30 minutes). Having to run the whole setup and
+teardown process every time you change a single line of code slows down local iteration to the point of being nearly 
+unusable. There's no solution that will magically make this all 100x faster, but if we structure the test code 
+correctly, we can isolate each of the test stages and minimize the number of times we have to run each one.
+
+To make this possible, you can use the methods in Terratest's `test_structure` package to structure your test case as 
+follows:
+
+```go
+func TestExample(t *testing.T) {
+  testPath := "../examples/foo"
+  logger := terralog.NewLogger("TestExample")
+
+  test_structure.RunTestStage("setup", logger, func() {
+    amiId := buildAmi(t)                                                               // setup
+    resourceCollection := createResourceCollection(t)                                  // setup
+    terratestOptions := createOptions(t, amiId, testPath, resourceCollection)          // setup
+    deployInfrastructureWithTerraform(t, terratestOptions)                             // setup
+
+    test_structure.SaveTerratestOptions(t, testPath, terratestOptions)                 // save TerratestOptions for later steps
+    test_structure.SaveRandomResourceCollection(t, testPath, resourceCollection)       // save RandomResourceCollection for later steps
+  })
+
+  defer test_structure.RunTestStage("teardown", logger, func() {
+    terratestOptions := test_structure.LoadTerratestOptions(t, testPath)               // load TerratestOptions from earlier setup
+    resourceCollection := test_structure.LoadRandomResourceCollection(t, testPath)     // load RandomResourceCollection from earlier setup
+
+    undeployInfrastructureWithTerraform(t, resourceCollection, terratestOptions)       // teardown
+
+    test_structure.CleanupTerratestOptions(t, testPath)                                // clean up the stored TerratestOptions
+    test_structure.CleanupRandomResourceCollection(t, testPath)                        // clean up the stored RandomResourceCollection
+  })
+
+  test_structure.RunTestStage("validation", logger, func() {
+    terratestOptions := test_structure.LoadTerratestOptions(t, testPath)               // load TerratestOptions from earlier setup
+    testInfrastructureWorks(t, terratestOptions)                                       // validation
+  })
+}
+```
+
+The main change is that we've wrapped each stage of the test in a call to `test_structure.RunTestStage`. This allows us
+to skip any of the test stages using an environment variable of the format `SKIP_<stage>!` For example, if you set 
+`SKIP_teardown=true`, then the test code will skip the teardown process and leave your code running in AWS. This allows 
+you to run the test next time with `SKIP_setup=true` and `SKIP_teardown=true` to go straight to the validation steps 
+without having to wait for setup and teardown again! 
+
+With this approach, the typical workflow will be:
+
+1. Do the initial setup (just once): `SKIP_validation=true SKIP_teardown=true go test -run TestExample`
+1. Do your validation (as many times as you want): `SKIP_setup=true SKIP_teardown=true go test -run TestExample`
+1. Do the teardown (just once): `SKIP_setup=true SKIP_validation=true go test -run TestExample`
+
+This way, you only pay the cost of setup and teardown once and you can do as many iterations on validation in
+between as you want. And since the code continues to run in your AWS account, you can manually run `terraform` to 
+redeploy small parts of it whenever you want, rather than having to redeploy the entire thing every time. 
+
+Note that since any stage can be skipped, test data that needs to be available across multiple stages (e.g., 
+`TerratestOptions` and `RandomResourceCollection`) are saved to disk in the setup stage and loaded from disk in 
+subsequent stages.
 
 ### Integration tests
 
-We recommmend one large integration test suite that does an end-to-end test of all your Terraform Modules.  It ensures that all modules work together correctly and tries to verify them in a more real-world setting than unit testing. As a result, the integration test takes quite a bit longer to run (~20+ minutes) 
-and is mostly used as a sanity check before we put out a new release of terraform-modules.
+Every module should have a set of examples in the `examples` folder, and each of these examples should have an 
+integration test that (a) deploys the example into a real AWS account, (b) validates it works as expected, and (c) 
+undeploys the example so AWS doesn't keep charging us for it. It turns out that these are the exact same steps we use 
+for "unit testing" our Terraform modules!
 
-### CI
-
-Setup a build system like [Circle CI](circleci.com) to run tests after every commit. We recommend the following protocol:
-
-- On the `master` branch, every commit runs ALL unit tests and integration tests. 
-- On all other branches, no tests are run by default.
-- When a PR is submitted, all unit tests are run.
-
+In other words, all integration tests should be written using the structure shown in the 
+[#Terraform modules](#terraform-modules) section. In the dev environment, you can use environment variables to execute
+only certain stages from these tests so you can get them working more quickly. In the CI environment, none of the 
+`SKIP_XXX` environment variables will be set, so all steps will execute from start to finish. 
 
 
-## ToDo
-1. Add `circle.yml` to run tests automatically on each commit to `master`.
-2. Add the following automated tests:
-   1. SSH via bastion jump host to an EC2 instance.
-   2. SSH directly to EC2 instance (should fail).
-   3. Check exposed ports of servers in the ASG example.
-   4. Take server down in the ASG example to check the ASG brings it back up.
-3. Add a script that can scrub an AWS account and clean up anything left behind by accident after all the tests have
-   completed. This can be done by tagging all resources created with a `terraform-module-test` tag and running a script
-   that finds all resources with that tag and deletes them.
 
 ## License
 
