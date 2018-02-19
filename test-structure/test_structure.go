@@ -45,7 +45,7 @@ func CleanupTerratestOptions(t *testing.T, testFolder string, logger *log.Logger
 
 // Format a path to save TerratestOptions in the given folder
 func formatTerratestOptionsPath(testFolder string) string {
-	return filepath.Join(testFolder, "TerratestOptions.json")
+	return FormatTestDataPath(testFolder, "TerratestOptions.json")
 }
 
 // Serialize and save RandomResourceCollection into the given folder. This allows you to create RandomResourceCollection
@@ -69,7 +69,7 @@ func CleanupRandomResourceCollection(t *testing.T, testFolder string, logger *lo
 
 // Format a path to save RandomResourceCollection in the given folder
 func formatRandomResourceCollectionPath(testFolder string) string {
-	return filepath.Join(testFolder, "RandomResourceCollection.json")
+	return FormatTestDataPath(testFolder, "RandomResourceCollection.json")
 }
 
 // Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
@@ -93,7 +93,12 @@ func CleanupAmiId(t *testing.T, testFolder string, logger *log.Logger) {
 
 // Format a path to save an AMI ID in the given folder
 func formatAmiIdPath(testFolder string) string {
-	return filepath.Join(testFolder, "AMI.json")
+	return FormatTestDataPath(testFolder, "AMI.json")
+}
+
+// Format a path to save test data
+func FormatTestDataPath(testFolder string, filename string) string {
+	return filepath.Join(testFolder, ".test-data", filename)
 }
 
 // Serialize and save a value used at test time to the given path. This allows you to create some sort of test data
@@ -107,6 +112,11 @@ func SaveTestData(t *testing.T, path string, value interface{}, logger *log.Logg
 	}
 
 	t.Logf("Marshalled JSON: %s", string(bytes))
+
+	parentDir := filepath.Dir(path)
+	if err := os.MkdirAll(parentDir, 0777); err != nil {
+		t.Fatalf("Failed to create folder %s: %v", parentDir, err)
+	}
 
 	if err := ioutil.WriteFile(path, bytes, 0644); err != nil {
 		t.Fatalf("Failed to save value %s: %v", path, err)
