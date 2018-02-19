@@ -9,37 +9,18 @@ import (
 	"path/filepath"
 	"log"
 	"github.com/gruntwork-io/terratest/files"
+	"fmt"
 )
 
-const SkipSetupEnvVar = "SKIP_SETUP"
-const SkipTeardownEnvVar = "SKIP_TEARDOWN"
-const SkipValidationEnvVar = "SKIP_VALIDATION"
-
-// Run the given function to perform setup steps for this test unless the SKIP_SETUP env var is set, in which case
-// setup will be skipped.
-func Setup(logger *log.Logger, setup func()) {
-	runFunctionIfEnvVarNotSet(logger, SkipSetupEnvVar, "setup", setup)
-}
-
-// Run the given function to perform validation steps for this test unless the SKIP_VALIDATION env var is set, in which
-// case validation will be skipped.
-func Validation(logger *log.Logger, validation func()) {
-	runFunctionIfEnvVarNotSet(logger, SkipValidationEnvVar, "validation", validation)
-}
-
-// Run the given function to perform teardown steps for this test unless the SKIP_TEARDOWN var is set, in which case
-// teardown will be skipped.
-func Teardown(logger *log.Logger, teardown func()) {
-	runFunctionIfEnvVarNotSet(logger, SkipTeardownEnvVar, "teardown", teardown)
-}
-
-// If the given environment variable is not set, run the given function
-func runFunctionIfEnvVarNotSet(logger *log.Logger, envVarName string, functionName string, function func()) {
+// Execute the given test stage (e.g., setup, teardown, validation) if an environment variable of the name
+// `SKIP_<stageName>` (e.g., SKIP_teardown) is not set.
+func RunTestStage(stageName string, logger *log.Logger, stage func()) {
+	envVarName := fmt.Sprintf("SKIP_%s", stageName)
 	if os.Getenv(envVarName) == "" {
-		logger.Printf("The %s environment variable is not set, so running %s.", envVarName, functionName)
-		function()
+		logger.Printf("The '%s' environment variable is not set, so executing stage '%s'.", envVarName, stageName)
+		stage()
 	} else {
-		logger.Printf("The %s environment variable is set, so skipping %s.", envVarName, functionName)
+		logger.Printf("The '%s' environment variable is set, so skipping stage '%s'.", envVarName, stageName)
 	}
 }
 
@@ -50,7 +31,7 @@ func SaveTerratestOptions(t *testing.T, testFolder string, terratestOptions *ter
 }
 
 // Load and unserialize TerratestOptions from the given folder. This allows you to reuse a TerratestOptions that was
-// created during an earlier setup steps in later validation and teardown steps.
+// created during an earlier setup step in later validation and teardown steps.
 func LoadTerratestOptions(t *testing.T, testFolder string, logger *log.Logger) *terratest.TerratestOptions {
 	var terratestOptions terratest.TerratestOptions
 	LoadTestData(t, formatTerratestOptionsPath(testFolder), &terratestOptions, logger)
@@ -62,33 +43,57 @@ func CleanupTerratestOptions(t *testing.T, testFolder string, logger *log.Logger
 	CleanupTestData(t, formatTerratestOptionsPath(testFolder), logger)
 }
 
-// Serialize and save RandomResourceCollection into the given folder. This allows you to create RandomResourceCollection
-// during setup and to reuse that RandomResourceCollection later during validation and teardown.
-func SaveRandomResourceCollection(t *testing.T, testFolder string, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) {
-	SaveTestData(t, formatRandomResourceCollection(testFolder), resourceCollection, logger)
-}
-
-// Load and unserialize RandomResourceCollection from the given folder. This allows you to reuse a RandomResourceCollection
-// that was created during an earlier setup steps in later validation and teardown steps.
-func LoadRandomResourceCollection(t *testing.T, testFolder string, logger *log.Logger) *terratest.RandomResourceCollection {
-	var resourceCollection terratest.RandomResourceCollection
-	LoadTestData(t, formatRandomResourceCollection(testFolder), &resourceCollection, logger)
-	return &resourceCollection
-}
-
-// Clean up the files used to store RandomResourceCollection between test stages
-func CleanupRandomResourceCollection(t *testing.T, testFolder string, logger *log.Logger) {
-	CleanupTestData(t, formatRandomResourceCollection(testFolder), logger)
-}
-
 // Format a path to save TerratestOptions in the given folder
 func formatTerratestOptionsPath(testFolder string) string {
 	return filepath.Join(testFolder, "TerratestOptions.json")
 }
 
+// Serialize and save RandomResourceCollection into the given folder. This allows you to create RandomResourceCollection
+// during setup and to reuse that RandomResourceCollection later during validation and teardown.
+func SaveRandomResourceCollection(t *testing.T, testFolder string, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) {
+	SaveTestData(t, formatRandomResourceCollectionPath(testFolder), resourceCollection, logger)
+}
+
+// Load and unserialize RandomResourceCollection from the given folder. This allows you to reuse a RandomResourceCollection
+// that was created during an earlier setup step in later validation and teardown steps.
+func LoadRandomResourceCollection(t *testing.T, testFolder string, logger *log.Logger) *terratest.RandomResourceCollection {
+	var resourceCollection terratest.RandomResourceCollection
+	LoadTestData(t, formatRandomResourceCollectionPath(testFolder), &resourceCollection, logger)
+	return &resourceCollection
+}
+
+// Clean up the files used to store RandomResourceCollection between test stages
+func CleanupRandomResourceCollection(t *testing.T, testFolder string, logger *log.Logger) {
+	CleanupTestData(t, formatRandomResourceCollectionPath(testFolder), logger)
+}
+
 // Format a path to save RandomResourceCollection in the given folder
-func formatRandomResourceCollection(testFolder string) string {
+func formatRandomResourceCollectionPath(testFolder string) string {
 	return filepath.Join(testFolder, "RandomResourceCollection.json")
+}
+
+// Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
+// AMI later during validation and teardown.
+func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger) {
+	SaveTestData(t, formatAmiIdPath(testFolder), amiId, logger)
+}
+
+// Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
+// earlier setup step in later validation and teardown steps.
+func LoadAmiId(t *testing.T, testFolder string, logger *log.Logger) string {
+	var amiId string
+	LoadTestData(t, formatAmiIdPath(testFolder), &amiId, logger)
+	return amiId
+}
+
+// Clean up the files used to store an AMI ID between test stages
+func CleanupAmiId(t *testing.T, testFolder string, logger *log.Logger) {
+	CleanupTestData(t, formatAmiIdPath(testFolder), logger)
+}
+
+// Format a path to save an AMI ID in the given folder
+func formatAmiIdPath(testFolder string) string {
+	return filepath.Join(testFolder, "AMI.json")
 }
 
 // Serialize and save a value used at test time to the given path. This allows you to create some sort of test data

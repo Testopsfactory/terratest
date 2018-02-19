@@ -92,5 +92,25 @@ func TestSaveAndLoadRandomResourceCollection(t *testing.T) {
 	assert.Equal(t, expectedData, actualData)
 
 	CleanupRandomResourceCollection(t, tmpFolder, logger)
-	assert.False(t, files.FileExists(formatRandomResourceCollection(tmpFolder)))
+	assert.False(t, files.FileExists(formatRandomResourceCollectionPath(tmpFolder)))
+}
+
+func TestSaveAndLoadAmiId(t *testing.T) {
+	t.Parallel()
+
+	logger := terralog.NewLogger("TestSaveAndLoadAmiId")
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	expectedData := "ami-abcd1234"
+	SaveAmiId(t, tmpFolder, expectedData, logger)
+
+	actualData := LoadAmiId(t, tmpFolder, logger)
+	assert.Equal(t, expectedData, actualData)
+
+	CleanupAmiId(t, tmpFolder, logger)
+	assert.False(t, files.FileExists(formatAmiIdPath(tmpFolder)))
 }

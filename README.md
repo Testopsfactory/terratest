@@ -259,7 +259,7 @@ func TestExample(t *testing.T) {
   testPath := "../examples/foo"
   logger := terralog.NewLogger("TestExample")
 
-  test_structure.Setup(logger, func() {
+  test_structure.RunTestStage("setup", logger, func() {
     amiId := buildAmi(t)                                                               // setup
     resourceCollection := createResourceCollection(t)                                  // setup
     terratestOptions := createOptions(t, amiId, testPath, resourceCollection)          // setup
@@ -269,7 +269,7 @@ func TestExample(t *testing.T) {
     test_structure.SaveRandomResourceCollection(t, testPath, resourceCollection)       // save RandomResourceCollection for later steps
   })
 
-  defer test_structure.Teardown(logger, func() {
+  defer test_structure.RunTestStage("teardown", logger, func() {
     terratestOptions := test_structure.LoadTerratestOptions(t, testPath)               // load TerratestOptions from earlier setup
     resourceCollection := test_structure.LoadRandomResourceCollection(t, testPath)     // load RandomResourceCollection from earlier setup
 
@@ -279,24 +279,24 @@ func TestExample(t *testing.T) {
     test_structure.CleanupRandomResourceCollection(t, testPath)                        // clean up the stored RandomResourceCollection
   })
 
-  test_structure.Validation(logger, func() {
+  test_structure.RunTestStage("validation", logger, func() {
     terratestOptions := test_structure.LoadTerratestOptions(t, testPath)               // load TerratestOptions from earlier setup
     testInfrastructureWorks(t, terratestOptions)                                       // validation
   })
 }
 ```
 
-The main change is that we've wrapped each stage of the test in either `test_structure.Setup`, `test_structure.Teardown`
-or `test_structure.Validation`. The reason we do that is we can have tell Terratest to skip each of these stages using
-environment variables! For example, if you set `SKIP_TEARDOWN=true`, then the test code will skip the teardown process
-and leave your code running in AWS. This allows you to run the test next time with `SKIP_SETUP=true` and 
-`SKIP_TEARDOWN=true` to go straight to the validation steps without having to wait for setup and teardown again! 
+The main change is that we've wrapped each stage of the test in a call to `test_structure.RunTestStage`. This allows us
+to skip any of the test stages using an environment variable of the format `SKIP_<stage>!` For example, if you set 
+`SKIP_teardown=true`, then the test code will skip the teardown process and leave your code running in AWS. This allows 
+you to run the test next time with `SKIP_setup=true` and `SKIP_teardown=true` to go straight to the validation steps 
+without having to wait for setup and teardown again! 
 
-The full workflow will be:
+With this approach, the typical workflow will be:
 
-1. Do the initial setup (just once): `SKIP_VALIDATION=true SKIP_TEARDOWN=true go test -run TestExample`
-1. Do your validation (as many times as you want): `SKIP_SETUP=true SKIP_TEARDOWN=true go test -run TestExample`
-1. Do the teardown (just once): `SKIP_SETUP=true SKIP_VALIDATION=true go test -run TestExample`
+1. Do the initial setup (just once): `SKIP_validation=true SKIP_teardown=true go test -run TestExample`
+1. Do your validation (as many times as you want): `SKIP_setup=true SKIP_teardown=true go test -run TestExample`
+1. Do the teardown (just once): `SKIP_setup=true SKIP_validation=true go test -run TestExample`
 
 This way, you only pay the cost of setup and teardown once and you can do as many iterations on validation in
 between as you want. And since the code continues to run in your AWS account, you can manually run `terraform` to 
