@@ -18,7 +18,7 @@ const SKIP_STAGE_ENV_VAR_PREFIX = "SKIP_"
 // Execute the given test stage (e.g., setup, teardown, validation) if an environment variable of the name
 // `SKIP_<stageName>` (e.g., SKIP_teardown) is not set.
 func RunTestStage(stageName string, logger *log.Logger, stage func()) {
-	envVarName := fmt.Sprintf("%s_%s", SKIP_STAGE_ENV_VAR_PREFIX, stageName)
+	envVarName := fmt.Sprintf("%s%s", SKIP_STAGE_ENV_VAR_PREFIX, stageName)
 	if os.Getenv(envVarName) == "" {
 		logger.Printf("The '%s' environment variable is not set, so executing stage '%s'.", envVarName, stageName)
 		stage()
