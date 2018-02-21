@@ -164,14 +164,18 @@ func createSshClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig 
 		User: hostOptions.Username,
 		Auth: hostOptions.AuthMethods,
 		// Do not do a host key check, as Terratest is only used for testing, not prod
-		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil
-		},
+		HostKeyCallback: NoOpHostKeyCallback,
 		// By default, Go does not impose a timeout, so a SSH connection attempt can hang for a LONG time.
 		Timeout: 10 * time.Second,
 	}
 	clientConfig.SetDefaults()
 	return clientConfig
+}
+
+// An ssh.HostKeyCallback that does nothing. Only use this when you're sure you don't want to check the host key at all
+// (e.g., only for testing and non-production use cases).
+func NoOpHostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) error {
+	return nil
 }
 
 func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
