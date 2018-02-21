@@ -9,8 +9,6 @@ import (
 	"log"
 	"github.com/gruntwork-io/terratest/util"
 	"time"
-	"golang.org/x/crypto/ssh"
-	"github.com/stretchr/testify/assert"
 )
 
 const TERRAFORM_OUTPUT_PUBLIC_IP = "example_public_ip"
@@ -146,23 +144,4 @@ func testSshToPrivateHost(terratestOptions *terratest.TerratestOptions, resource
 	})
 
 	return err
-}
-
-func TestDialWithTimeoutNoResponse(t *testing.T) {
-	t.Parallel()
-
-	start := time.Now()
-
-	addr := "127.0.0.1:111" // Nothing should be listening at this address
-	timeout := 10 * time.Second
-	config := &ssh.ClientConfig{Timeout: timeout, HostKeyCallback: NoOpHostKeyCallback}
-
-	client, err := DialWithTimeout("tcp", addr, config)
-	assert.Nil(t, client)
-	assert.Equal(t, SshConnectionTimeoutExceeded{Addr: addr, Timeout: timeout}, err, "Unexpected error: %v", err)
-
-	end := time.Now()
-	timeElapsed := end.Sub(start)
-
-	assert.True(t, timeElapsed.Seconds() - timeout.Seconds() > 0)
 }

@@ -157,39 +157,7 @@ func setupSshSession(sshSession *SshSession) error {
 
 func createSshClient(options *SshConnectionOptions) (*ssh.Client, error) {
 	sshClientConfig := createSshClientConfig(options)
-	return DialWithTimeout("tcp", options.ConnectionString(), sshClientConfig)
-}
-
-type DialResponse struct {
-	Client *ssh.Client
-	Err    error
-}
-
-// In theory, the ssh.Dial method should take into account the Timeout value in ssh.ClientConfig. In practice, it does
-// not, and SSH connections can hang for up to 5 minutes or longer! Here, we implement a custom dial method with a
-// timeout to prevent our tests from running for much longer than intended. This method will use the Timeout defined
-// in the given config. If that Timeout is set to 0, this will just call the ssh.Dial method directly with no additional
-// timeout logic.
-//
-// This is loosely based on: https://github.com/kubernetes/kubernetes/pull/23843
-func DialWithTimeout(network string, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
-	if config.Timeout == 0 {
-		return ssh.Dial(network, addr, config)
-	}
-
-	responseChannel := make(chan DialResponse, 1)
-
-	go func() {
-		client, err := ssh.Dial(network, addr, config)
-		responseChannel <- DialResponse{Client: client, Err: err}
-	}()
-
-	select {
-	case response := <- responseChannel:
-		return response.Client, response.Err
-	case <- time.After(config.Timeout):
-		return nil, SshConnectionTimeoutExceeded{Addr: addr, Timeout: config.Timeout}
-	}
+	return ssh.Dial("tcp", options.ConnectionString(), sshClientConfig)
 }
 
 func createSshClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig {
