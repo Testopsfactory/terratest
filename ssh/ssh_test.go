@@ -11,7 +11,6 @@ import (
 	"time"
 	"golang.org/x/crypto/ssh"
 	"github.com/stretchr/testify/assert"
-	"github.com/gruntwork-io/terratest/test-util"
 )
 
 const TERRAFORM_OUTPUT_PUBLIC_IP = "example_public_ip"
