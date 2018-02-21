@@ -187,11 +187,3 @@ func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 
 	return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
 }
-
-type SshConnectionTimeoutExceeded struct {
-	Addr string
-	Timeout time.Duration
-}
-func (err SshConnectionTimeoutExceeded) Error() string {
-	return fmt.Sprintf("SSH Connection Timeout of %s exceeded while trying to connect to %s", err.Timeout, err.Addr)
-}
