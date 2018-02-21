@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"net"
 	"time"
+	"fmt"
 )
 
 type Host struct {
@@ -156,7 +157,39 @@ func setupSshSession(sshSession *SshSession) error {
 
 func createSshClient(options *SshConnectionOptions) (*ssh.Client, error) {
 	sshClientConfig := createSshClientConfig(options)
-	return ssh.Dial("tcp", options.ConnectionString(), sshClientConfig)
+	return DialWithTimeout("tcp", options.ConnectionString(), sshClientConfig)
+}
+
+type DialResponse struct {
+	Client *ssh.Client
+	Err    error
+}
+
+// In theory, the ssh.Dial method should take into account the Timeout value in ssh.ClientConfig. In practice, it does
+// not, and SSH connections can hang for up to 5 minutes or longer! Here, we implement a custom dial method with a
+// timeout to prevent our tests from running for much longer than intended. This method will use the Timeout defined
+// in the given config. If that Timeout is set to 0, this will just call the ssh.Dial method directly with no additional
+// timeout logic.
+//
+// This is loosely based on: https://github.com/kubernetes/kubernetes/pull/23843
+func DialWithTimeout(network string, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
+	if config.Timeout == 0 {
+		return ssh.Dial(network, addr, config)
+	}
+
+	responseChannel := make(chan DialResponse, 1)
+
+	go func() {
+		client, err := ssh.Dial(network, addr, config)
+		responseChannel <- DialResponse{Client: client, Err: err}
+	}()
+
+	select {
+	case response := <- responseChannel:
+		return response.Client, response.Err
+	case <- time.After(config.Timeout):
+		return nil, SshConnectionTimeoutExceeded{Addr: addr, Timeout: config.Timeout}
+	}
 }
 
 func createSshClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig {
@@ -164,14 +197,18 @@ func createSshClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig 
 		User: hostOptions.Username,
 		Auth: hostOptions.AuthMethods,
 		// Do not do a host key check, as Terratest is only used for testing, not prod
-		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil
-		},
+		HostKeyCallback: NoOpHostKeyCallback,
 		// By default, Go does not impose a timeout, so a SSH connection attempt can hang for a LONG time.
 		Timeout: 10 * time.Second,
 	}
 	clientConfig.SetDefaults()
 	return clientConfig
+}
+
+// An ssh.HostKeyCallback that does nothing. Only use this when you're sure you don't want to check the host key at all
+// (e.g., only for testing and non-production use cases).
+func NoOpHostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) error {
+	return nil
 }
 
 func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
@@ -181,4 +218,12 @@ func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 	}
 
 	return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
+}
+
+type SshConnectionTimeoutExceeded struct {
+	Addr string
+	Timeout time.Duration
+}
+func (err SshConnectionTimeoutExceeded) Error() string {
+	return fmt.Sprintf("SSH Connection Timeout of %s exceeded while trying to connect to %s", err.Timeout, err.Addr)
 }
