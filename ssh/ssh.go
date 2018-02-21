@@ -6,7 +6,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"net"
 	"time"
-	"fmt"
 )
 
 type Host struct {
