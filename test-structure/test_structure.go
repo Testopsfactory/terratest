@@ -10,18 +10,33 @@ import (
 	"log"
 	"github.com/gruntwork-io/terratest/files"
 	"fmt"
+	"strings"
 )
+
+const SKIP_STAGE_ENV_VAR_PREFIX = "SKIP_"
 
 // Execute the given test stage (e.g., setup, teardown, validation) if an environment variable of the name
 // `SKIP_<stageName>` (e.g., SKIP_teardown) is not set.
 func RunTestStage(stageName string, logger *log.Logger, stage func()) {
-	envVarName := fmt.Sprintf("SKIP_%s", stageName)
+	envVarName := fmt.Sprintf("%s_%s", SKIP_STAGE_ENV_VAR_PREFIX, stageName)
 	if os.Getenv(envVarName) == "" {
 		logger.Printf("The '%s' environment variable is not set, so executing stage '%s'.", envVarName, stageName)
 		stage()
 	} else {
 		logger.Printf("The '%s' environment variable is set, so skipping stage '%s'.", envVarName, stageName)
 	}
+}
+
+// Returns true if an environment variable is set instructing Terratest to skip a test stage. This can be an easy way
+// to tell if the tests are running in a local dev environment vs a CI server.
+func SkipStageEnvVarSet() bool {
+	for _, environmentVariable := range os.Environ() {
+		if strings.HasPrefix(environmentVariable, SKIP_STAGE_ENV_VAR_PREFIX) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Serialize and save TerratestOptions into the given folder. This allows you to create TerratestOptions during setup
