@@ -287,7 +287,7 @@ func TestExample(t *testing.T) {
 ```
 
 The main change is that we've wrapped each stage of the test in a call to `test_structure.RunTestStage`. This allows us
-to skip any of the test stages using an environment variable of the format `SKIP_<stage>!` For example, if you set 
+to skip any of the test stages using an environment variable of the format `SKIP_<stage>`! For example, if you set 
 `SKIP_teardown=true`, then the test code will skip the teardown process and leave your code running in AWS. This allows 
 you to run the test next time with `SKIP_setup=true` and `SKIP_teardown=true` to go straight to the validation steps 
 without having to wait for setup and teardown again! 
