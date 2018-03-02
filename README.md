@@ -164,7 +164,7 @@ Here are some techniques we use with Docker:
       },{
         "name": "ubuntu-docker",
         "type": "docker",
-        "image": "ubuntu:16.04",
+        "image": "gruntwork/ubuntu:16.04",
         "commit": "true"
       }],
       "provisioners": [
