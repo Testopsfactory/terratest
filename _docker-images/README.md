@@ -12,7 +12,7 @@ time is spent downloading libraris like `curl` and `sudo` which we assume are pr
 Ubuntu, Amazon Linux, CentOS, or any other Linux distro we're supporting.
 
 We solve this problem by creating canonical Gruntwork Terratest Docker Images which have most of the desired libraries
-pre-installed. We upload these images to a public Docker Hub repo such as https://hub.docker.com/r/gruntwork/ubuntu/ so
+pre-installed. We upload these images to a public Docker Hub repo such as https://hub.docker.com/r/gruntwork/ubuntu-test/ so
 that Packer templates that build Docker images can reference them directly as in the following example.
 
 ### Sample Packer Builder
@@ -26,7 +26,7 @@ that Packer templates that build Docker images can reference them directly as in
   },{
     "name": "ubuntu-docker",
     "type": "docker",
-    "image": "gruntwork/ubuntu:16.04",
+    "image": "gruntwork/ubuntu-test:16.04",
     "commit": "true"
   }],
   "provisioners": [
