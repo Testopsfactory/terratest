@@ -9,6 +9,6 @@ but it doesn't exist by default in Docker `ubuntu:16.04`.
 This Docker image should publicly accessible via Docker Hub at https://hub.docker.com/r/gruntwork/ubuntu-test/. To build and
 upload it:
 
-1. `docker build -t gruntwork/ubuntu:16.04 .`
-1. `docker push gruntwork/ubuntu:16.04`
+1. `docker build -t gruntwork/ubuntu-test:16.04 .`
+1. `docker push gruntwork/ubuntu-test:16.04`
 
