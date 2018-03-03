@@ -10,6 +10,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --no-instal
     rsyslog \
     software-properties-common \
     sudo \
+    vim \
     wget && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --upgrade setuptools && \
