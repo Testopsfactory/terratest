@@ -165,3 +165,26 @@ func CleanupTestData(t *testing.T, path string, logger *log.Logger) {
 		logger.Printf("%s does not exist. Nothing to cleanup.", path)
 	}
 }
+
+// Copy the given root folder to a randomly-named temp folder and return the path to the given examples folder within
+// the new temp root folder. This is useful when running multiple tests in parallel against the same set of Terraform
+// files to ensure the tests don't overwrite each other's .terraform working directory and terraform.tfstate files. To
+// ensure relative paths work, we copy over the entire root folder to a temp folder, and then return the path within
+// that temp folder to the given example dir, which is where the actual test will be running.
+//
+// Note that if any of the SKIP_<stage> environment variables is set, we assume this is a test in the local dev where
+// there are no other concurrent tests running and we want to be able to cache test data between test stages, so in
+// that case, we do NOT copy anything to a temp folder, an dreturn the path to the original examples folder instead.
+func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, examplesFolder string, testName string, logger *log.Logger) string {
+	if SkipStageEnvVarSet() {
+		logger.Printf("A SKIP_XXX environment variable is set. Using original examples folder rather than a temp folder so we can cache data between stages for faster local testing.")
+		return filepath.Join(rootFolder, examplesFolder)
+	}
+
+	tmpRootFolder, err := files.CopyTerraformFolderToTemp(rootFolder, testName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return filepath.Join(tmpRootFolder, examplesFolder)
+}
