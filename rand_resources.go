@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gruntwork-io/terratest/aws"
 	"github.com/gruntwork-io/terratest/util"
-	"os"
 )
 
 // A RandomResourceCollection is a typed holder for resources we need as we do a Terraform run.
