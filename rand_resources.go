@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-const regionOverrideEnvVarName = "TERRATEST_REGION"
-
 // A RandomResourceCollection is a typed holder for resources we need as we do a Terraform run.
 // Some of these resources are dynamically generated (e.g. KeyPair) and others are randomly selected (e.g. AwsRegion).
 type RandomResourceCollection struct {
@@ -42,12 +40,7 @@ func NewRandomResourceCollectionOptions() *RandomResourceCollectionOpts {
 func CreateRandomResourceCollection(ro *RandomResourceCollectionOpts) (*RandomResourceCollection, error) {
 	r := &RandomResourceCollection{}
 
-	regionFromEnvVar := os.Getenv(regionOverrideEnvVarName)
-	if regionFromEnvVar == "" {
-		r.AwsRegion = aws.GetRandomRegion(ro.ApprovedRegions, ro.ForbiddenRegions)
-	} else {
-		r.AwsRegion = regionFromEnvVar
-	}
+	r.AwsRegion = aws.GetRandomRegion(ro.ApprovedRegions, ro.ForbiddenRegions)
 
 	r.UniqueId = util.UniqueId()
 
