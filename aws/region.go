@@ -7,7 +7,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"os"
 )
+
+const regionOverrideEnvVarName = "TERRATEST_REGION"
 
 func GetGloballyForbiddenRegions() []string {
 	return []string{
@@ -18,7 +21,13 @@ func GetGloballyForbiddenRegions() []string {
 
 // Get a randomly chosen AWS region that's not in the forbiddenRegions list
 func GetRandomRegion(approvedRegions, forbiddenRegions []string) string {
-	log := log.NewLogger("GetRandomRegion")
+	logger := log.NewLogger("GetRandomRegion")
+
+	regionFromEnvVar := os.Getenv(regionOverrideEnvVarName)
+	if regionFromEnvVar != "" {
+		logger.Printf("Using AWS region %s from environment variable %s", regionFromEnvVar, regionOverrideEnvVarName)
+		return regionFromEnvVar
+	}
 
 	allRegions := []string{
 		"ap-south-1",
@@ -73,7 +82,7 @@ func GetRandomRegion(approvedRegions, forbiddenRegions []string) string {
 	}
 
 	if ! selectedRegionIsValid {
-		log.Println("WARNING: Attempted to select an AWS region 1,000 times and still couldn't find a valid region.")
+		logger.Println("WARNING: Attempted to select an AWS region 1,000 times and still couldn't find a valid region.")
 		return "<GetRandomRegions-could-not-select-a-region>"
 	} else {
 		return allRegions[randomIndex]
