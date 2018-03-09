@@ -5,6 +5,7 @@ FROM ubuntu:16.04
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --no-install-recommends -y \
     ca-certificates \
     curl \
+    dnsutils \
     jq \
     python-pip \
     rsyslog \
@@ -12,9 +13,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --no-instal
     sudo \
     vim \
     wget && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip install --upgrade setuptools && \
-    pip install --upgrade pip
+    rm -rf /var/lib/apt/lists/*
 
 # Install the AWS CLI per https://docs.aws.amazon.com/cli/latest/userguide/installing.html
-RUN pip install awscli --upgrade
+RUN pip install --upgrade setuptools && \
+    pip install --upgrade pip && \
+    pip install awscli --upgrade
