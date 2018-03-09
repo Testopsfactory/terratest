@@ -7,4 +7,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install --no-instal
     pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install --upgrade flask && \
+    pip install --upgrade pyOpenSSL && \
     pip install --upgrade moto
