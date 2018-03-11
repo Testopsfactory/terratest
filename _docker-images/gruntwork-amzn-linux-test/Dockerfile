@@ -12,3 +12,8 @@ RUN yum update -y && \
         vim \
         wget && \
         yum clean all
+
+# Installing pip with yum doesn't actually put it in the PATH, so we use easy_install instead.
+RUN curl https://bootstrap.pypa.io/ez_setup.py | sudo /usr/bin/python && \
+    easy_install pip && \
+    pip install --upgrade pip
