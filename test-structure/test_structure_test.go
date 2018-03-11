@@ -20,6 +20,9 @@ func TestSaveAndLoadTestData(t *testing.T) {
 
 	logger := terralog.NewLogger("TestSaveAndLoadTestData")
 
+	isTestDataPresent := IsTestDataPresent(t, "/file/that/does/not/exist", logger)
+	assert.False(t, isTestDataPresent, "Expected no test data would be present because no test data file exists.")
+
 	tmpFile, err := ioutil.TempFile("", "save-and-load-test-data")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
@@ -30,7 +33,14 @@ func TestSaveAndLoadTestData(t *testing.T) {
 		Bar: true,
 		Baz: map[string]interface{}{"abc": "def", "ghi": 1.0, "klm": false},
 	}
+
+	isTestDataPresent = IsTestDataPresent(t, tmpFile.Name(), logger)
+	assert.False(t, isTestDataPresent, "Expected no test data would be present because file exists but no data has been written yet.")
+
 	SaveTestData(t, tmpFile.Name(), expectedData, logger)
+
+	isTestDataPresent = IsTestDataPresent(t, tmpFile.Name(), logger)
+	assert.True(t, isTestDataPresent, "Expected test data would be present because file exists and data has been written to file.")
 
 	actualData := testData{}
 	LoadTestData(t, tmpFile.Name(), &actualData, logger)
@@ -38,6 +48,49 @@ func TestSaveAndLoadTestData(t *testing.T) {
 
 	CleanupTestData(t, tmpFile.Name(), logger)
 	assert.False(t, files.FileExists(tmpFile.Name()))
+}
+
+func TestIsEmptyJson(t *testing.T) {
+	t.Parallel()
+
+	var jsonValue []byte
+	var isEmpty bool
+
+	jsonValue = []byte("null")
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.True(t, isEmpty, `The JSON literal "null" should be treated as an empty value.`)
+
+	jsonValue = []byte("false")
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.True(t, isEmpty, `The JSON literal "false" should be treated as an empty value.`)
+
+	jsonValue = []byte("true")
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.False(t, isEmpty, `The JSON literal "true" should be treated as a non-empty value.`)
+
+	jsonValue = []byte("0")
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.True(t, isEmpty, `The JSON literal "0" should be treated as an empty value.`)
+
+	jsonValue = []byte("1")
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.False(t, isEmpty, `The JSON literal "1" should be treated as a non-empty value.`)
+
+	jsonValue = []byte("{}")
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.True(t, isEmpty, `The JSON value "{}" should be treated as an empty value.`)
+
+	jsonValue = []byte(`{ "key": "val" }`)
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.False(t, isEmpty, `The JSON value { "key": "val" } should be treated as a non-empty value.`)
+
+	jsonValue = []byte(`[]`)
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.True(t, isEmpty, `The JSON value "[]" should be treated as an empty value.`)
+
+	jsonValue = []byte(`[{ "key": "val" }]`)
+	isEmpty = isEmptyJson(t, jsonValue)
+	assert.False(t, isEmpty, `The JSON value [{ "key": "val" }] should be treated as a non-empty value.`)
 }
 
 func TestSaveAndLoadTerratestOptions(t *testing.T) {

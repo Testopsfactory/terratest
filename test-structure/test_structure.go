@@ -154,6 +154,72 @@ func LoadTestData(t *testing.T, path string, value interface{}, logger *log.Logg
 	}
 }
 
+// Return true if a file exists at $path and the test data there is non-empty.
+func IsTestDataPresent(t *testing.T, path string, logger *log.Logger) bool {
+	logger.Printf("Testing whether test data exists at %s", path)
+
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil && strings.Contains(err.Error(), "no such file or directory") {
+		logger.Printf("No test data was found at %s", path)
+		return false
+	} else if err != nil {
+		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
+	}
+
+	if isEmptyJson(t, bytes) {
+		logger.Printf("No test data was found at %s", path)
+		return false
+	}
+
+	logger.Printf("Non-empty test data found at %s", path)
+	return true
+}
+
+// Return true if the given bytes are empty, or in a valid JSON format that can reasonably be considered empty.
+// The types used are based on the type possibilities listed at https://golang.org/src/encoding/json/decode.go?s=4062:4110#L51
+func isEmptyJson(t *testing.T, bytes []byte) bool {
+	var value interface{}
+
+	if len(bytes) == 0 {
+		return true
+	}
+
+	if err := json.Unmarshal(bytes, &value); err != nil {
+		t.Fatalf("Failed to parse JSON while testing whether it is empty: %v", err)
+	}
+
+	if value == nil {
+		return true
+	}
+
+	valueBool, ok := value.(bool)
+	if ok && ! valueBool {
+		return true
+	}
+
+	valueFloat64, ok := value.(float64)
+	if ok && valueFloat64 == 0 {
+		return true
+	}
+
+	valueString, ok := value.(string)
+	if ok && valueString == "" {
+		return true
+	}
+
+	valueSlice, ok := value.([]interface{})
+	if ok && len(valueSlice) == 0 {
+		return true
+	}
+
+	valueMap, ok := value.(map[string]interface{})
+	if ok && len(valueMap) == 0 {
+		return true
+	}
+
+	return false
+}
+
 // Clean up the test data at the given path
 func CleanupTestData(t *testing.T, path string, logger *log.Logger) {
 	if files.FileExists(path) {
