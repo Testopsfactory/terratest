@@ -13,7 +13,13 @@ RUN yum update -y && \
         wget && \
         yum clean all
 
-# Installing pip with yum doesn't actually put it in the PATH, so we use easy_install instead.
+# Installing pip with yum doesn't actually put it in the PATH, so we use easy_install instead. Pip will now be placed
+# in /usr/local/bin, but amazonlinux's sudo uses a sanitzed PATH that does not include /usr/local/bin, so we symlink pip.
 RUN curl https://bootstrap.pypa.io/ez_setup.py | sudo /usr/bin/python && \
     easy_install pip && \
-    pip install --upgrade pip
+    pip install --upgrade pip && \
+    ln -s /usr/local/bin/pip /usr/bin/pip
+
+# Install the AWSCLI (which apparently does not come pre-bundled with Amazon Linux!)
+RUN pip install --upgrade setuptools && \
+    pip install awscli --upgrade
