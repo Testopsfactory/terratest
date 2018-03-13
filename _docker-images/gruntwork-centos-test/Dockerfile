@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos/systemd:latest
 
 # Reduce Docker image size per https://blog.replicated.com/refactoring-a-dockerfile-for-image-size/
 # - The last line upgrades pip to the latest version.
@@ -23,3 +23,14 @@ RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux6
 RUN pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install awscli --upgrade
+
+# We run systemd as our container process. Systemd can spawn other forks as necessary to help us simulate a real-world
+# CentOS systemd environment.
+CMD ["/usr/sbin/init"]
+
+# NOTE! This Docker container should be run with the following runtime options to ensure that systemd works correctly:
+# Although this bind-mounted volume would appear at first glance not to work on MacOS or Windows, because those OSs are
+# running a VM to execute Docker and only a limited set of paths are mounted directly from the host, Docker is able to
+# use the Linux VM's privileges to execute systemd correctly.
+#
+# docker run -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro gruntwork/centos-test
