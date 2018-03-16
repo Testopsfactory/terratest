@@ -9,6 +9,6 @@ but it doesn't exist by default in Docker `amazonlinux:latest`.
 This Docker image should publicly accessible via Docker Hub at https://hub.docker.com/r/gruntwork/amazonlinux-test/. To build and
 upload it:
 
-1. `docker build -t gruntwork/amazonlinux-test:latest .`
-1. `docker push gruntwork/amazonlinux-test:latest`
+1. `docker build -t gruntwork/amazon-linux-test:2017.12 .`
+1. `docker push gruntwork/amazon-linux-test:2017.12`
 
