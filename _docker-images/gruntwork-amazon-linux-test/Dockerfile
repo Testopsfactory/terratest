@@ -1,14 +1,16 @@
 # TODO: Is it worth referencing a specific tag instead of latest?
-FROM amazonlinux:latest
+FROM amazonlinux:2017.12
 
 # Reduce Docker image size per https://blog.replicated.com/refactoring-a-dockerfile-for-image-size/
 # - The last line upgrades pip to the latest version.
 RUN yum update -y && \
     yum upgrade -y && \
     yum install -y \
+        hostname \
         jq \
         rsyslog \
         sudo \
+        tar \
         vim \
         wget && \
         yum clean all
@@ -17,9 +19,7 @@ RUN yum update -y && \
 # in /usr/local/bin, but amazonlinux's sudo uses a sanitzed PATH that does not include /usr/local/bin, so we symlink pip.
 RUN curl https://bootstrap.pypa.io/ez_setup.py | sudo /usr/bin/python && \
     easy_install pip && \
-    pip install --upgrade pip && \
-    ln -s /usr/local/bin/pip /usr/bin/pip
+    pip install --upgrade pip
 
 # Install the AWSCLI (which apparently does not come pre-bundled with Amazon Linux!)
-RUN pip install --upgrade setuptools && \
-    pip install awscli --upgrade
+RUN pip install awscli --upgrade
