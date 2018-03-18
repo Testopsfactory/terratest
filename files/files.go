@@ -19,9 +19,21 @@ func FileExists(path string) bool {
 // the path to the temp folder with the copied contents. Hidden files and folders, Terraform state files, and
 // terraform.tfvars files are not copied to this temp folder, as you typically don't want them interfering with your
 // tests.
-func CopyTerraformFolderToTemp(folder string, tempFolderPrefix string) (string, error) {
+func CopyTerraformFolderToTemp(folderPath string, tempFolderPrefix string) (string, error) {
 	tmpDir, err := ioutil.TempDir("", tempFolderPrefix)
 	if err != nil {
+		return "", err
+	}
+
+	// Inside of the temp folder, we create a subfolder that preserves the name of the folder we're copying from.
+	absFolderPath, err := filepath.Abs(folderPath)
+	if err != nil {
+		return "", err
+	}
+	folderName := filepath.Base(absFolderPath)
+	destFolder := filepath.Join(tmpDir, folderName)
+
+	if err := os.MkdirAll(destFolder, 0777); err != nil {
 		return "", err
 	}
 
@@ -29,11 +41,11 @@ func CopyTerraformFolderToTemp(folder string, tempFolderPrefix string) (string, 
 		return !PathContainsHiddenFileOrFolder(path) && !PathContainsTerraformStateOrVars(path)
 	}
 
-	if err := CopyFolderContentsWithFilter(folder, tmpDir, filter); err != nil {
+	if err := CopyFolderContentsWithFilter(folderPath, destFolder, filter); err != nil {
 		return "", err
 	}
 
-	return tmpDir, nil
+	return destFolder, nil
 }
 
 // Copy all the files and folders within the given source folder to the destination folder.
