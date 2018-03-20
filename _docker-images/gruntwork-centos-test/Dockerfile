@@ -1,12 +1,13 @@
 FROM centos/systemd:latest
 
 # Reduce Docker image size per https://blog.replicated.com/refactoring-a-dockerfile-for-image-size/
-# - The last line upgrades pip to the latest version.
+# - perl-Digest-SHA: installs shasum
 RUN yum update -y && \
     yum upgrade -y && \
     yum install -y epel-release && \
     yum install -y \
         bind-utils \
+        perl-Digest-SHA \
         python-pip \
         rsyslog \
         sudo \
@@ -19,7 +20,7 @@ RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux6
     chmod +x ./jq && \
     cp jq /usr/bin
 
-# Install the AWS CLI per https://docs.aws.amazon.com/cli/latest/userguide/installing.html
+# Install the AWS CLI per https://docs.aws.amazon.com/cli/latest/userguide/installing.html.
 RUN pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install awscli --upgrade

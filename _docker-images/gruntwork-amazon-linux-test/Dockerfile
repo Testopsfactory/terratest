@@ -2,12 +2,13 @@
 FROM amazonlinux:2017.12
 
 # Reduce Docker image size per https://blog.replicated.com/refactoring-a-dockerfile-for-image-size/
-# - The last line upgrades pip to the latest version.
+# - perl-Digest-SHA: installs shasum
 RUN yum update -y && \
     yum upgrade -y && \
     yum install -y \
         hostname \
         jq \
+        perl-Digest-SHA \
         rsyslog \
         sudo \
         tar \
@@ -17,6 +18,7 @@ RUN yum update -y && \
 
 # Installing pip with yum doesn't actually put it in the PATH, so we use easy_install instead. Pip will now be placed
 # in /usr/local/bin, but amazonlinux's sudo uses a sanitzed PATH that does not include /usr/local/bin, so we symlink pip.
+# The last line upgrades pip to the latest version.
 RUN curl https://bootstrap.pypa.io/ez_setup.py | sudo /usr/bin/python && \
     easy_install pip && \
     pip install --upgrade pip
