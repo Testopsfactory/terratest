@@ -13,7 +13,7 @@ RUN yum update -y && \
         sudo \
         vim \
         wget && \
-        yum clean all
+        yum clean all && rm -rf /var/cache/yum
 
 # Install jq. Oddly, there's no RPM for jq, so we install the binary directly. https://serverfault.com/a/768061/199943
 RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && \
@@ -24,6 +24,11 @@ RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux6
 RUN pip install --upgrade pip && \
     pip install --upgrade setuptools && \
     pip install awscli --upgrade
+
+# Install the latest version of Docker, Consumer Edition
+RUN yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && \
+    yum -y install docker-ce && \
+    yum clean all
 
 # We run systemd as our container process. Systemd can spawn other forks as necessary to help us simulate a real-world
 # CentOS systemd environment.
