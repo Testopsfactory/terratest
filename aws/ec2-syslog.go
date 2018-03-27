@@ -7,6 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/util"
 	"fmt"
 	"time"
+	"encoding/base64"
 )
 
 // Get the syslog for the Instance with the given ID in the given region. This should be available ~1 minute after an
@@ -27,7 +28,7 @@ func GetSyslogForInstance(instanceId string, awsRegion string, logger *log.Logge
 		InstanceId: aws.String(instanceId),
 	}
 
-	return util.DoWithRetry(description, maxRetries, timeBetweenRetries, logger, func() (string, error) {
+	syslogB64, err := util.DoWithRetry(description, maxRetries, timeBetweenRetries, logger, func() (string, error) {
 		out, err := ec2Client.GetConsoleOutput(&input)
 		if err != nil {
 			return "", err
@@ -40,6 +41,17 @@ func GetSyslogForInstance(instanceId string, awsRegion string, logger *log.Logge
 
 		return syslog, nil
 	})
+
+	if err != nil {
+		return "", err
+	}
+
+	syslogBytes, err := base64.StdEncoding.DecodeString(syslogB64)
+	if err != nil {
+		return "", err
+	}
+
+	return string(syslogBytes), nil
 }
 
 // Get the syslog for each of the Instances in the given ASG in the given region. These logs should be available ~1
