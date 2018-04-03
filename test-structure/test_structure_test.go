@@ -165,5 +165,59 @@ func TestSaveAndLoadAmiId(t *testing.T) {
 	assert.Equal(t, expectedData, actualData)
 
 	CleanupAmiId(t, tmpFolder, logger)
-	assert.False(t, files.FileExists(formatAmiIdPath(tmpFolder)))
+	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, "AMI")))
+}
+
+func TestSaveAndLoadNamedTestData(t *testing.T) {
+	t.Parallel()
+
+	logger := terralog.NewLogger("TestSaveAndLoadAmiId")
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	name1 := "test-ami"
+	expectedData1 := "ami-abcd1234"
+
+	name2 := "test-ami2"
+	expectedData2 := "ami-xyz98765"
+
+	SaveString(t, tmpFolder, name1, expectedData1, logger)
+	SaveString(t, tmpFolder, name2, expectedData2, logger)
+
+	actualData1 := LoadString(t, tmpFolder, name1, logger)
+	actualData2 := LoadString(t, tmpFolder, name2, logger)
+
+	assert.Equal(t, expectedData1, actualData1)
+	assert.Equal(t, expectedData2, actualData2)
+
+	CleanupNamedTestData(t, tmpFolder, name1, logger)
+	CleanupNamedTestData(t, tmpFolder, name2, logger)
+
+	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name1)))
+	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name2)))
+}
+
+func TestSaveDuplicateTestData(t *testing.T) {
+	t.Parallel()
+
+	logger := terralog.NewLogger("TestSaveAndLoadAmiId")
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	name := "hello-world"
+	val1 := "hello world"
+	val2 := "buenos dias, mundo"
+
+	SaveString(t, tmpFolder, name, val1, logger)
+	SaveString(t, tmpFolder, name, val2, logger)
+
+	actualVal := LoadString(t, tmpFolder, name, logger)
+
+	assert.Equal(t, val2, actualVal, "Actual test data should use overwritten values")
 }

@@ -87,28 +87,52 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "RandomResourceCollection.json")
 }
 
+// Serialize and save a uniquely named string value into the given folder. This allows you to create one or more string
+// values during one stage -- each with a unique name -- and to reuse those values during later stages.
+func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
+	path := formatNamedTestDataPath(testFolder, name)
+
+	if IsTestDataPresent(t, path, logger) {
+		logger.Printf("[WARNING] Test data already exists for named string \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
+	}
+
+	SaveTestData(t, path, val, logger)
+}
+
 // Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
 // AMI later during validation and teardown.
 func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger) {
-	SaveTestData(t, formatAmiIdPath(testFolder), amiId, logger)
+	SaveString(t, testFolder, "AMI", amiId, logger)
+}
+
+// Load and unserialize a uniquely named string value from the given folder. This allows you to reuse one or more string
+// values that were created during an earlier setup step in later steps.
+func LoadString(t *testing.T, testFolder string, name string, logger *log.Logger) string {
+	var val string
+	LoadTestData(t, formatNamedTestDataPath(testFolder, name), &val, logger)
+	return val
 }
 
 // Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
 // earlier setup step in later validation and teardown steps.
 func LoadAmiId(t *testing.T, testFolder string, logger *log.Logger) string {
-	var amiId string
-	LoadTestData(t, formatAmiIdPath(testFolder), &amiId, logger)
-	return amiId
+	return LoadString(t, testFolder, "AMI", logger)
+}
+
+// Clean up the files used to store a uniquely named test data value between test stages
+func CleanupNamedTestData(t *testing.T, testFolder string, name string, logger *log.Logger) {
+	CleanupTestData(t, formatNamedTestDataPath(testFolder, name), logger)
 }
 
 // Clean up the files used to store an AMI ID between test stages
 func CleanupAmiId(t *testing.T, testFolder string, logger *log.Logger) {
-	CleanupTestData(t, formatAmiIdPath(testFolder), logger)
+	CleanupNamedTestData(t, testFolder, "AMI", logger)
 }
 
-// Format a path to save an AMI ID in the given folder
-func formatAmiIdPath(testFolder string) string {
-	return FormatTestDataPath(testFolder, "AMI.json")
+// Format a path to save an arbitrary named value in the given folder
+func formatNamedTestDataPath(testFolder string, name string) string {
+	filename := fmt.Sprintf("%s.json", name)
+	return FormatTestDataPath(testFolder, filename)
 }
 
 // Format a path to save test data
@@ -156,22 +180,17 @@ func LoadTestData(t *testing.T, path string, value interface{}, logger *log.Logg
 
 // Return true if a file exists at $path and the test data there is non-empty.
 func IsTestDataPresent(t *testing.T, path string, logger *log.Logger) bool {
-	logger.Printf("Testing whether test data exists at %s", path)
-
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil && strings.Contains(err.Error(), "no such file or directory") {
-		logger.Printf("No test data was found at %s", path)
 		return false
 	} else if err != nil {
 		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
 	}
 
 	if isEmptyJson(t, bytes) {
-		logger.Printf("No test data was found at %s", path)
 		return false
 	}
 
-	logger.Printf("Non-empty test data found at %s", path)
 	return true
 }
 
