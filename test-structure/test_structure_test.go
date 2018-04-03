@@ -165,5 +165,37 @@ func TestSaveAndLoadAmiId(t *testing.T) {
 	assert.Equal(t, expectedData, actualData)
 
 	CleanupAmiId(t, tmpFolder, logger)
-	assert.False(t, files.FileExists(formatAmiIdPath(tmpFolder)))
+	assert.False(t, files.FileExists(formatAmiIdPath(tmpFolder, "AMI")))
+}
+
+func TestSaveAndLoadAmiIdByName(t *testing.T) {
+	t.Parallel()
+
+	logger := terralog.NewLogger("TestSaveAndLoadAmiId")
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	amiName1 := "test-ami"
+	expectedData1 := "ami-abcd1234"
+
+	amiName2 := "test-ami2"
+	expectedData2 := "ami-xyz98765"
+
+	SaveAmiIdByName(t, tmpFolder, amiName1, expectedData1, logger)
+	SaveAmiIdByName(t, tmpFolder, amiName2, expectedData2, logger)
+
+	actualData1 := LoadAmiIdByName(t, tmpFolder, amiName1, logger)
+	actualData2 := LoadAmiIdByName(t, tmpFolder, amiName2, logger)
+
+	assert.Equal(t, expectedData1, actualData1)
+	assert.Equal(t, expectedData2, actualData2)
+
+	CleanupAmiIdByName(t, tmpFolder, amiName1, logger)
+	CleanupAmiIdByName(t, tmpFolder, amiName2, logger)
+
+	assert.False(t, files.FileExists(formatAmiIdPath(tmpFolder, amiName1)))
+	assert.False(t, files.FileExists(formatAmiIdPath(tmpFolder, amiName2)))
 }

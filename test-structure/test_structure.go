@@ -87,28 +87,46 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "RandomResourceCollection.json")
 }
 
+// Serialize and save a uniquely named AMI ID into the given folder. This allows you to build one or more AMIs during
+// setup -- each with a unique name -- and to reuse those AMIs later during validation and teardown.
+func SaveAmiIdByName(t *testing.T, testFolder string, amiName string, amiId string, logger *log.Logger) {
+	SaveTestData(t, formatAmiIdPath(testFolder, amiName), amiId, logger)
+}
+
 // Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
 // AMI later during validation and teardown.
 func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger) {
-	SaveTestData(t, formatAmiIdPath(testFolder), amiId, logger)
+	SaveAmiIdByName(t, testFolder, "AMI", amiId, logger)
+}
+
+// Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
+// earlier setup step in later validation and teardown steps.
+func LoadAmiIdByName(t *testing.T, testFolder string, amiName string, logger *log.Logger) string {
+	var amiId string
+	LoadTestData(t, formatAmiIdPath(testFolder, amiName), &amiId, logger)
+	return amiId
 }
 
 // Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
 // earlier setup step in later validation and teardown steps.
 func LoadAmiId(t *testing.T, testFolder string, logger *log.Logger) string {
-	var amiId string
-	LoadTestData(t, formatAmiIdPath(testFolder), &amiId, logger)
-	return amiId
+	return LoadAmiIdByName(t, testFolder, "AMI", logger)
+}
+
+// Clean up the files used to store an AMI ID between test stages
+func CleanupAmiIdByName(t *testing.T, testFolder string, amiName string, logger *log.Logger) {
+	CleanupTestData(t, formatAmiIdPath(testFolder, amiName), logger)
 }
 
 // Clean up the files used to store an AMI ID between test stages
 func CleanupAmiId(t *testing.T, testFolder string, logger *log.Logger) {
-	CleanupTestData(t, formatAmiIdPath(testFolder), logger)
+	CleanupAmiIdByName(t, testFolder, "AMI", logger)
 }
 
 // Format a path to save an AMI ID in the given folder
-func formatAmiIdPath(testFolder string) string {
-	return FormatTestDataPath(testFolder, "AMI.json")
+func formatAmiIdPath(testFolder string, amiName string) string {
+	filename := fmt.Sprintf("%s.json", amiName)
+	return FormatTestDataPath(testFolder, filename)
 }
 
 // Format a path to save test data
