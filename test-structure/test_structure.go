@@ -99,8 +99,8 @@ func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger
 	SaveAmiIdByName(t, testFolder, "AMI", amiId, logger)
 }
 
-// Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
-// earlier setup step in later validation and teardown steps.
+// Load and unserialize a uniquely named AMI ID from the given folder. This allows you to reuse one or more AMIs that
+// were created during an earlier setup step in later validation and teardown steps.
 func LoadAmiIdByName(t *testing.T, testFolder string, amiName string, logger *log.Logger) string {
 	var amiId string
 	LoadTestData(t, formatAmiIdPath(testFolder, amiName), &amiId, logger)
@@ -113,7 +113,7 @@ func LoadAmiId(t *testing.T, testFolder string, logger *log.Logger) string {
 	return LoadAmiIdByName(t, testFolder, "AMI", logger)
 }
 
-// Clean up the files used to store an AMI ID between test stages
+// Clean up the files used to store a uniquely named AMI ID between test stages
 func CleanupAmiIdByName(t *testing.T, testFolder string, amiName string, logger *log.Logger) {
 	CleanupTestData(t, formatAmiIdPath(testFolder, amiName), logger)
 }
