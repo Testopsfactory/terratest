@@ -8,16 +8,23 @@ import (
 )
 
 type PackerOptions struct {
-	Template string		    // The path to the Packer template
+	Template string		    	// The path to the Packer template
 	Vars     map[string]string  // The custom vars to pass when running the build command
 	Only     string             // If specified, only run the build of this name
+	Env      map[string]string  // Custom environment variables to set when running Packer
 }
 
 // Build the given Packer template and return the generated AMI ID
 func BuildAmi(options PackerOptions, logger *log.Logger) (string, error) {
 	logger.Printf("Running Packer to generate AMI for template %s", options.Template)
 
-	output, err := shell.RunCommandAndGetOutput(shell.Command {Command: "packer", Args: formatPackerArgs(options)}, logger)
+	cmd := shell.Command {
+		Command: "packer",
+		Args: formatPackerArgs(options),
+		Env: options.Env,
+	}
+
+	output, err := shell.RunCommandAndGetOutput(cmd, logger)
 	if err != nil {
 		return "", err
 	}
