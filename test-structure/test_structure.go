@@ -89,43 +89,43 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 
 // Serialize and save a uniquely named AMI ID into the given folder. This allows you to build one or more AMIs during
 // setup -- each with a unique name -- and to reuse those AMIs later during validation and teardown.
-func SaveAmiIdByName(t *testing.T, testFolder string, amiName string, amiId string, logger *log.Logger) {
-	SaveTestData(t, formatAmiIdPath(testFolder, amiName), amiId, logger)
+func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
+	SaveTestData(t, formatNamedTestDataPath(testFolder, name), val, logger)
 }
 
 // Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
 // AMI later during validation and teardown.
 func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger) {
-	SaveAmiIdByName(t, testFolder, "AMI", amiId, logger)
+	SaveString(t, testFolder, "AMI", amiId, logger)
 }
 
 // Load and unserialize a uniquely named AMI ID from the given folder. This allows you to reuse one or more AMIs that
 // were created during an earlier setup step in later validation and teardown steps.
-func LoadAmiIdByName(t *testing.T, testFolder string, amiName string, logger *log.Logger) string {
-	var amiId string
-	LoadTestData(t, formatAmiIdPath(testFolder, amiName), &amiId, logger)
-	return amiId
+func LoadString(t *testing.T, testFolder string, name string, logger *log.Logger) string {
+	var val string
+	LoadTestData(t, formatNamedTestDataPath(testFolder, name), &val, logger)
+	return val
 }
 
 // Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
 // earlier setup step in later validation and teardown steps.
 func LoadAmiId(t *testing.T, testFolder string, logger *log.Logger) string {
-	return LoadAmiIdByName(t, testFolder, "AMI", logger)
+	return LoadString(t, testFolder, "AMI", logger)
 }
 
-// Clean up the files used to store a uniquely named AMI ID between test stages
-func CleanupAmiIdByName(t *testing.T, testFolder string, amiName string, logger *log.Logger) {
-	CleanupTestData(t, formatAmiIdPath(testFolder, amiName), logger)
+// Clean up the files used to store a uniquely named test data value between test stages
+func CleanupNamedTestData(t *testing.T, testFolder string, name string, logger *log.Logger) {
+	CleanupTestData(t, formatNamedTestDataPath(testFolder, name), logger)
 }
 
 // Clean up the files used to store an AMI ID between test stages
 func CleanupAmiId(t *testing.T, testFolder string, logger *log.Logger) {
-	CleanupAmiIdByName(t, testFolder, "AMI", logger)
+	CleanupNamedTestData(t, testFolder, "AMI", logger)
 }
 
-// Format a path to save an AMI ID in the given folder
-func formatAmiIdPath(testFolder string, amiName string) string {
-	filename := fmt.Sprintf("%s.json", amiName)
+// Format a path to save an arbitrary named value in the given folder
+func formatNamedTestDataPath(testFolder string, name string) string {
+	filename := fmt.Sprintf("%s.json", name)
 	return FormatTestDataPath(testFolder, filename)
 }
 
