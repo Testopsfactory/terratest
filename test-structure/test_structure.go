@@ -90,7 +90,13 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 // Serialize and save a uniquely named string value into the given folder. This allows you to create one or more string
 // values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
-	SaveTestData(t, formatNamedTestDataPath(testFolder, name), val, logger)
+	path := formatNamedTestDataPath(testFolder, name)
+
+	if IsTestDataPresent(t, path, logger) {
+		logger.Printf("[WARNING] Test data already exists for named string \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
+	}
+
+	SaveTestData(t, path, val, logger)
 }
 
 // Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
@@ -174,22 +180,17 @@ func LoadTestData(t *testing.T, path string, value interface{}, logger *log.Logg
 
 // Return true if a file exists at $path and the test data there is non-empty.
 func IsTestDataPresent(t *testing.T, path string, logger *log.Logger) bool {
-	logger.Printf("Testing whether test data exists at %s", path)
-
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil && strings.Contains(err.Error(), "no such file or directory") {
-		logger.Printf("No test data was found at %s", path)
 		return false
 	} else if err != nil {
 		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
 	}
 
 	if isEmptyJson(t, bytes) {
-		logger.Printf("No test data was found at %s", path)
 		return false
 	}
 
-	logger.Printf("Non-empty test data found at %s", path)
 	return true
 }
 

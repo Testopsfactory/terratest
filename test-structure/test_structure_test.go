@@ -199,3 +199,25 @@ func TestSaveAndLoadNamedTestData(t *testing.T) {
 	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name1)))
 	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name2)))
 }
+
+func TestSaveDuplicateTestData(t *testing.T) {
+	t.Parallel()
+
+	logger := terralog.NewLogger("TestSaveAndLoadAmiId")
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	name := "hello-world"
+	val1 := "hello world"
+	val2 := "buenos dias, mundo"
+
+	SaveString(t, tmpFolder, name, val1, logger)
+	SaveString(t, tmpFolder, name, val2, logger)
+
+	actualVal := LoadString(t, tmpFolder, name, logger)
+
+	assert.Equal(t, val2, actualVal, "Actual test data should use overwritten values")
+}
