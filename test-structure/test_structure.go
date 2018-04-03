@@ -87,8 +87,8 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "RandomResourceCollection.json")
 }
 
-// Serialize and save a uniquely named AMI ID into the given folder. This allows you to build one or more AMIs during
-// setup -- each with a unique name -- and to reuse those AMIs later during validation and teardown.
+// Serialize and save a uniquely named string value into the given folder. This allows you to create one or more string
+// values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
 	SaveTestData(t, formatNamedTestDataPath(testFolder, name), val, logger)
 }
@@ -99,8 +99,8 @@ func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger
 	SaveString(t, testFolder, "AMI", amiId, logger)
 }
 
-// Load and unserialize a uniquely named AMI ID from the given folder. This allows you to reuse one or more AMIs that
-// were created during an earlier setup step in later validation and teardown steps.
+// Load and unserialize a uniquely named string value from the given folder. This allows you to reuse one or more string
+// values that were created during an earlier setup step in later steps.
 func LoadString(t *testing.T, testFolder string, name string, logger *log.Logger) string {
 	var val string
 	LoadTestData(t, formatNamedTestDataPath(testFolder, name), &val, logger)
