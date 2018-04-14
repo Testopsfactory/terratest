@@ -87,7 +87,7 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "RandomResourceCollection.json")
 }
 
-// Serialize and save a uniquely named string value into the given folder. This allows you to create one or more string
+// Save a uniquely named string value into the given folder. This allows you to create one or more string
 // values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
 	path := formatNamedTestDataPath(testFolder, name)
@@ -99,13 +99,33 @@ func SaveString(t *testing.T, testFolder string, name string, val string, logger
 	SaveTestData(t, path, val, logger)
 }
 
+// Save a uniquely named int value into the given folder. This allows you to create one or more int
+// values during one stage -- each with a unique name -- and to reuse those values during later stages.
+func SaveInt(t *testing.T, testFolder string, name string, val int, logger *log.Logger) {
+	path := formatNamedTestDataPath(testFolder, name)
+
+	if IsTestDataPresent(t, path, logger) {
+		logger.Printf("[WARNING] Test data already exists for named int \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
+	}
+
+	SaveTestData(t, path, val, logger)
+}
+
 // Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
 // AMI later during validation and teardown.
 func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger) {
 	SaveString(t, testFolder, "AMI", amiId, logger)
 }
 
-// Load and unserialize a uniquely named string value from the given folder. This allows you to reuse one or more string
+// Load a uniquely named int value from the given folder. This allows you to reuse one or more int
+// values that were created during an earlier setup step in later steps.
+func LoadInt(t *testing.T, testFolder string, name string, logger *log.Logger) int {
+	var val int
+	LoadTestData(t, formatNamedTestDataPath(testFolder, name), &val, logger)
+	return val
+}
+
+// Load a uniquely named string value from the given folder. This allows you to reuse one or more string
 // values that were created during an earlier setup step in later steps.
 func LoadString(t *testing.T, testFolder string, name string, logger *log.Logger) string {
 	var val string
