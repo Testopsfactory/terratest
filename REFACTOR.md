@@ -49,7 +49,7 @@ Change to the same folder structure we use for just about all other Gruntwork re
 
 - `modules`: The Terratest source code. Move all the `.go` files and packages into this folder so it's easier to browse
   the repo. That does mean all Terratest imports will have to be updated to
-  `github.com/gruntwork-io/terratest/lib/xxx`. Unit tests for the Go source code will be in this folder too (e.g., the
+  `github.com/gruntwork-io/terratest/modules/xxx`. Unit tests for the Go source code will be in this folder too (e.g., the
   unit test for `foo.go` will be in `foo_test.go`).
 
 - `test`: This will contain the automated tests for the examples in the `examples` folder. These will act both as an
@@ -97,7 +97,7 @@ come up with the test API I want to have for doing the testing, and then go and 
 We have a lot of stuff in the root package and I propose moving all of it out into appropriate sub-packages:
 
 - `apply.go`, `apply_and_destroy.go`, `destroy.go`, `output.go`, `output_test.go`, and `url_checker.go` will all be
-  moved into `lib/terraform`, as they are all specific to testing Terraform code.
+  moved into `modules/terraform`, as they are all specific to testing Terraform code.
 
 - I propose deleting `rand_resources.go` and `rand_resource_test.go` and extracting its logic into other places. The
   `RandomResourceCollection` ended up being a, well, random collection of resources, most of which don't apply to most
@@ -107,11 +107,11 @@ We have a lot of stuff in the root package and I propose moving all of it out in
     - `UniqueId`: We already have a separate method for generating a unique ID and we can pass it around as a `string`.
 
     - `AwsRegion`: This is only needed for AWS tests. We want to expand Terratest to support other clouds, so it needs
-      to be separated anyway. Code that needs an AWS region should call a method in the `lib/aws` package to pick a
+      to be separated anyway. Code that needs an AWS region should call a method in the `modules/aws` package to pick a
       random AWS region (passing in a list of forbidden regions, if necessary) and can pass that around as a `string`.
 
     - `KeyPair`: This is only needed for a small percentage of our AWS tests that deploy EC2 Instances and SSH to them.
-      Those tests should call a standalone method in the `lib/aws` package to generate this `KeyPair` when they need it,
+      Those tests should call a standalone method in the `modules/aws` package to generate this `KeyPair` when they need it,
       instead of us assuming every single test needs it.
 
     - `AmiId`: We used to look up vanilla Ubuntu or Amazon Linux AMI IDs and put them in this field, but now that
@@ -121,14 +121,14 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 
     - `AccountId`: Our Terraform examples used to require an account ID to be passed in. We now avoid this to make the
       examples easier to use, and fetch it automatically using Terraform's `aws_caller_identity` data source if it's
-      absolutely necessary. Code that needs an account ID should call a method in the `lib/aws` package to fetch it,
+      absolutely necessary. Code that needs an account ID should call a method in the `modules/aws` package to fetch it,
       but we shouldn't assume every single test needs it.
 
     - `SnsTopicArn`: A very, very small percentage of our tests needed an SNS topic passed in. Those tests should call
-      a method in the `lib/aws` package to create this topic instead of us assuming every single test needs it.
+      a method in the `modules/aws` package to create this topic instead of us assuming every single test needs it.
 
 - I propose renaming `terratest_options.go` to `terraform_options.go`—and similarly, renaming the struct within it from
-  `TerratestOptions` to `TerraformOptions`—and moving it into `lib/terraform`, since this is solely used for testing
+  `TerratestOptions` to `TerraformOptions`—and moving it into `modules/terraform`, since this is solely used for testing
   Terraform code. We should also rename `TemplatePath` to `TerraformDir`, as `.tf` files are technically called
   "configurations" and not "templates".
 
@@ -186,14 +186,14 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 
 ### `test-util` package
 
-- `dummy_server.go`: Move into the `http` package.
+- `dummy_server.go`: Move into the `modules/http` package.
 - Remove `test-util` since that would leave it empty!
 
 
 ### `util` package
 
-- `keygen.go`: Move into `ssh` package.
-- `network.go`: Move into `aws` package.
+- `keygen.go`: Move into `modules/ssh` package.
+- `network.go`: Move into `modules/aws` package.
 - `sleep.go`: Remove. Didn't even know we had this and doubt it gets much use!
 
 
