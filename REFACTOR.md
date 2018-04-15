@@ -208,3 +208,10 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 
 - There are a bunch of patterns we often end up using throughout our tests that would be good to copy into Terratest.
   Anyone remember what those are off the top of our head?
+
+- One pattern I'm not sure on with automated tests is if our methods should return an `error` or take in a `testing.T`
+  and fail the test automatically upon hitting an error. Returning an `error` offers the most flexibility, as in some
+  cases, you want the error, and may not want to fail the test immediately. However, having to check for errors over
+  and over again is very tedious, and in many cases, test code would be a lot cleaner if Terratest methods called
+  `t.Fatal` any time they hit an error. Perhaps we need to support both options and come up with an idiom to indicate
+  this? E.g., `terratest.Apply(options) error` and `terratest.ApplyT(t, options)`?
