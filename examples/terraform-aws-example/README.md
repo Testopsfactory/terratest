@@ -9,7 +9,7 @@ Check out [test/terraform_aws_example_test.go](/test/terraform_aws_example_test.
 automated tests for this module.
 
 Note that the EC2 Instance in this module doesn't actually do anything; it just runs a Vanilla Ubuntu 16.04 AMI for
-demonstration purposes. For slightly more complicated, real-world examples of a Terraform modules, see
+demonstration purposes. For slightly more complicated, real-world examples of Terraform modules, see
 [terraform-http-example](/examples/terraform-http-example) and [terraform-ssh-example](/examples/terraform-ssh-example).
 
 **WARNING**: This module and the automated tests for it deploy real resources into your AWS account which can cost you
