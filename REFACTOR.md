@@ -71,6 +71,8 @@ Update the root `README.md` with documentation that shows how to use Terratest:
   infrastructure.
 - Discussion of test strategies: using Docker for local testing, test stages, retries, mocks, small modules, test
   pyramid, cleanup, `cloud-nuke`.
+- Point to `examples` folder for real-world code you may want to test and `test` folder for examples of how to use
+  Terratest to test that code.
 - Overview of Terratest packages. Explain what each top-level package in Terratest does. We can't do a method-by-method
   breakdown, as that would go out of date immediately, so instead, link to the appropriate `examples` subfolder that
   shows real-world usage of that package.
