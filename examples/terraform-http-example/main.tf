@@ -1,6 +1,15 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY AN EC2 INSTANCE THAT RUNS A SIMPLE "HELLO, WORLD" WEB SERVER
+# See test/terraform_http_example.go for how to write automated tests for this code.
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "aws" {
   region = "${var.aws_region}"
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY THE EC2 INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_instance" "example" {
   ami                    = "${data.aws_ami.ubuntu.id}"
@@ -13,6 +22,10 @@ resource "aws_instance" "example" {
   }
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A SECURITY GROUP TO CONTROL WHAT REQUESTS CAN GO IN AND OUT OF THE EC2 INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_security_group" "example" {
   name = "${var.instance_name}"
 
@@ -24,6 +37,10 @@ resource "aws_security_group" "example" {
   }
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE THE USER DATA SCRIPT THAT WILL RUN DURING BOOT ON THE EC2 INSTANCE
+# ---------------------------------------------------------------------------------------------------------------------
+
 data "template_file" "user_data" {
   template = "${file("${path.module}/user-data/user-data.sh")}"
 
@@ -32,6 +49,10 @@ data "template_file" "user_data" {
     instance_port = "${var.instance_port}"
   }
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# LOOK UP THE LATEST UBUNTU AMI
+# ---------------------------------------------------------------------------------------------------------------------
 
 data "aws_ami" "ubuntu" {
   most_recent = true

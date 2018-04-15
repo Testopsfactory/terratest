@@ -4,7 +4,6 @@ package test
 import (
 	"testing"
 	"github.com/gruntwork-io/terratest/terraform"
-	"github.com/stretchr/testify/assert"
 	"fmt"
 	"github.com/gruntwork-io/terratest/util"
 	"github.com/gruntwork-io/terratest/aws"
