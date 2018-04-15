@@ -1,6 +1,5 @@
 package test
 
-
 import (
 	"testing"
 	"github.com/gruntwork-io/terratest/terraform"
@@ -17,7 +16,7 @@ func TerraformHttpExampleTest(t *testing.T) {
 
 	// Give this EC2 Instance and other resources in the Terraform code a name with a unique ID so it doesn't clash
 	// with anything else in the AWS account.
-	instanceName := fmt.Sprintf("terratest-aws-example-%s", util.UniqueId())
+	instanceName := fmt.Sprintf("terratest-http-example-%s", util.UniqueId())
 
 	// Specify the text the EC2 Instance will return when we make HTTP requests to it.
 	instanceText := fmt.Sprintf("Hello, %s!", util.UniqueId())
