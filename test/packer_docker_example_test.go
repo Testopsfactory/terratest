@@ -50,30 +50,3 @@ func PackerDockerExampleLocalTest(t *testing.T)  {
 	// Verify that we get back a 200 OK with the expected text
 	http_helper.HttpGetWithRetry(t, url, 200, expectedServerText, maxRetries, timeBetweenRetries)
 }
-
-// An example of how to test the Packer template in examples/packer-docker-example in AWS using Terratest
-func PackerDockerExampleAwsTest(t *testing.T)  {
-	t.Parallel()
-
-	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.PickRandomRegion(t)
-
-	packerOptions := packer.Options {
-		// The path to where the Packer template is located
-		Template: "../examples/packer-docker-example/build.json",
-
-		// Only build the AMI
-		Only: "ubuntu-ami",
-
-		// Variables to pass to our Packer build using -var options
-		Vars: map[string]string {
-			"aws_region": awsRegion,
-		},
-	}
-
-	// Make sure the Packer build completes successfully
-	amiId := packer.BuildAmi(t, packerOptions)
-
-	// Clean up the AMI after we're done
-	defer packer.DeleteAmi(t, packerOptions, amiId)
-}

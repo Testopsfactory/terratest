@@ -53,12 +53,4 @@ The Docker-based tests in this folder are in some sense "unit tests" for the Pac
 
 ## Running automated tests in AWS against this Packer template
 
-1. Sign up for [AWS](https://aws.amazon.com/).
-1. Configure your AWS credentials using one of the [supported methods for AWS CLI
-   tools](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html), such as setting the
-   `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
-1. Install [Packer](https://www.packer.io/) and make sure it's on your `PATH`.
-1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
-1. `cd test`
-1. `dep ensure`
-1. `go test -v -run PackerDockerExampleAwsTest`
+See [terraform-packer-example](/examples/terraform-packer-example).
