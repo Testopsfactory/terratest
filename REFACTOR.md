@@ -7,7 +7,7 @@ use to test all aspects of our [Infrastructure as Code Library](https://gruntwor
 
 We developed patterns to test Terraform configurations, Packer templates, Docker images, SSH access, AWS APIs, shell
 commands, and much more. We built this library because we couldn't find any existing tools out there that could do
-the type of real-world testing we needed. It turns out many other companies want to do this type of testing to, so
+the type of real-world testing we needed. It turns out many other companies want to do this type of testing too, so
 now it's time to open source Terratest.
 
 This library grew organically, so it needs lots of refactoring, cleanup, and documentation to be useful to people
