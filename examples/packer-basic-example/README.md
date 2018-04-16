@@ -10,7 +10,7 @@ automated tests for this simple template.
 Note that this template doesn't do anything useful; it's just here to demonstrate the simplest usage pattern for
 Terratest. For slightly more complicated, real-world examples of Packer templates and the corresponding tests, see
 [packer-docker-example](/examples/packer-docker-example) and
-[terraform-packer-example](/examples/terraform-packer-example) .
+[terraform-packer-example](/examples/terraform-packer-example).
 
 
 

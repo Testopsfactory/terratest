@@ -1,10 +1,11 @@
 {
   "variables": {
-    "aws_region": "us-east-1"
+    "aws_region": "us-east-1",
+    "ami_name_base": "terratest-packer-docker-example"
   },
   "builders": [{
-    "ami_name": "terratest-packer-example-{{isotime | clean_ami_name}}",
-    "ami_description": "A sample Sinatra app on top of Ubuntu",
+    "ami_name": "{{user `ami_name_base`}}-{{isotime | clean_ami_name}}",
+    "ami_description": "An example of how to create a custom AMI with a simple web app on top of Ubuntu",
     "instance_type": "t2.micro",
     "region": "{{user `aws_region`}}",
     "type": "amazon-ebs",
@@ -21,6 +22,11 @@
     },
     "ssh_username": "ubuntu",
     "encrypt_boot": false
+  },{
+    "name": "ubuntu-docker",
+    "type": "docker",
+    "image": "gruntwork/ubuntu-test:16.04",
+    "commit": true
   }],
   "provisioners": [{
     "type": "file",
@@ -29,6 +35,12 @@
   },{
     "type": "shell",
     "pause_before": "30s",
-    "script": "{{template_dir}}/configure-backend.sh"
+    "script": "{{template_dir}}/configure-sinatra-app.sh"
+  }],
+  "post-processors": [{
+    "type": "docker-tag",
+    "repository": "gruntwork/packer-docker-example",
+    "tag": "latest",
+    "only": ["ubuntu-docker"]
   }]
 }
