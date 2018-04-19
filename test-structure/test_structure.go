@@ -87,15 +87,17 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "RandomResourceCollection.json")
 }
 
-// Serialize and save a uniquely named string value into the given folder. This allows you to create one or more string
+// Save a uniquely named string value into the given folder. This allows you to create one or more string
 // values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
 	path := formatNamedTestDataPath(testFolder, name)
+	SaveTestData(t, path, val, logger)
+}
 
-	if IsTestDataPresent(t, path, logger) {
-		logger.Printf("[WARNING] Test data already exists for named string \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
-	}
-
+// Save a uniquely named int value into the given folder. This allows you to create one or more int
+// values during one stage -- each with a unique name -- and to reuse those values during later stages.
+func SaveInt(t *testing.T, testFolder string, name string, val int, logger *log.Logger) {
+	path := formatNamedTestDataPath(testFolder, name)
 	SaveTestData(t, path, val, logger)
 }
 
@@ -105,7 +107,15 @@ func SaveAmiId(t *testing.T, testFolder string, amiId string, logger *log.Logger
 	SaveString(t, testFolder, "AMI", amiId, logger)
 }
 
-// Load and unserialize a uniquely named string value from the given folder. This allows you to reuse one or more string
+// Load a uniquely named int value from the given folder. This allows you to reuse one or more int
+// values that were created during an earlier setup step in later steps.
+func LoadInt(t *testing.T, testFolder string, name string, logger *log.Logger) int {
+	var val int
+	LoadTestData(t, formatNamedTestDataPath(testFolder, name), &val, logger)
+	return val
+}
+
+// Load a uniquely named string value from the given folder. This allows you to reuse one or more string
 // values that were created during an earlier setup step in later steps.
 func LoadString(t *testing.T, testFolder string, name string, logger *log.Logger) string {
 	var val string
@@ -144,6 +154,10 @@ func FormatTestDataPath(testFolder string, filename string) string {
 // (e.g., TerratestOptions) during setup and to reuse this data later during validation and teardown.
 func SaveTestData(t *testing.T, path string, value interface{}, logger *log.Logger) {
 	logger.Printf("Storing test data in %s so it can be reused later", path)
+
+	if IsTestDataPresent(t, path, logger) {
+		logger.Printf("[WARNING] The named test data at path %s is non-empty. Save operation will overwrite existing value with \"%v\".\n.", path, value)
+	}
 
 	bytes, err := json.Marshal(value)
 	if err != nil {
