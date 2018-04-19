@@ -91,11 +91,6 @@ func formatRandomResourceCollectionPath(testFolder string) string {
 // values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveString(t *testing.T, testFolder string, name string, val string, logger *log.Logger) {
 	path := formatNamedTestDataPath(testFolder, name)
-
-	if IsTestDataPresent(t, path, logger) {
-		logger.Printf("[WARNING] Test data already exists for named string \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
-	}
-
 	SaveTestData(t, path, val, logger)
 }
 
@@ -103,11 +98,6 @@ func SaveString(t *testing.T, testFolder string, name string, val string, logger
 // values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveInt(t *testing.T, testFolder string, name string, val int, logger *log.Logger) {
 	path := formatNamedTestDataPath(testFolder, name)
-
-	if IsTestDataPresent(t, path, logger) {
-		logger.Printf("[WARNING] Test data already exists for named int \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
-	}
-
 	SaveTestData(t, path, val, logger)
 }
 
@@ -164,6 +154,10 @@ func FormatTestDataPath(testFolder string, filename string) string {
 // (e.g., TerratestOptions) during setup and to reuse this data later during validation and teardown.
 func SaveTestData(t *testing.T, path string, value interface{}, logger *log.Logger) {
 	logger.Printf("Storing test data in %s so it can be reused later", path)
+
+	if IsTestDataPresent(t, path, logger) {
+		logger.Printf("[WARNING] The named test data at path %s is non-empty. Save operation will overwrite existing value with \"%v\".\n.", path, value)
+	}
 
 	bytes, err := json.Marshal(value)
 	if err != nil {
