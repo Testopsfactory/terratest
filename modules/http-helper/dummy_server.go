@@ -1,4 +1,4 @@
-package test_util
+package http_helper
 
 import (
 	"net"
@@ -6,17 +6,32 @@ import (
 	"fmt"
 	"strconv"
 	"sync/atomic"
+	"testing"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // Run a dummy HTTP server on a unique port that will return the given text. Returns the Listener for the server, the
 // port it's listening on, or an error if something went wrong while trying to start the listener. Make sure to call
 // the Close() method on the Listener when you're done!
-func RunDummyServer(text string) (net.Listener, int, error) {
+func RunDummyServer(t *testing.T, text string) (net.Listener, int) {
+	listener, port, err := RunDummyServerE(t, text)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return listener, port
+}
+
+// Run a dummy HTTP server on a unique port that will return the given text. Returns the Listener for the server, the
+// port it's listening on, or an error if something went wrong while trying to start the listener. Make sure to call
+// the Close() method on the Listener when you're done!
+func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 	port := getNextPort()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, text)
 	})
+
+	logger.Logf(t, "Starting dummy HTTP server in port %d that will return the text '%s'", port, text)
 
 	listener, err := net.Listen("tcp", ":" + strconv.Itoa(port))
 
