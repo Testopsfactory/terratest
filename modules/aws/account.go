@@ -1,15 +1,29 @@
 package aws
+
 import (
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"strings"
 	"errors"
+	"testing"
 )
 
 // Get the Account ID for the currently logged in IAM User.
-func GetAccountId() (string, error) {
-	svc := iam.New(session.New())
-	user, err := svc.GetUser(&iam.GetUserInput{})
+func GetAccountId(t *testing.T) string {
+	id, err := GetAccountIdE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return id
+}
+
+// Get the Account ID for the currently logged in IAM User.
+func GetAccountIdE(t *testing.T) (string, error) {
+	iamClient, err := NewIamClient()
+	if err != nil {
+		return "", err
+	}
+
+	user, err := iamClient.GetUser(&iam.GetUserInput{})
 	if err != nil {
 		return "", err
 	}

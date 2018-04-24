@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/iam"
 )
 
 // Get an AWS Session, checking that the user has credentials properly configured in their environment
@@ -18,6 +19,15 @@ func GetAuthenticatedSession(region string) (*session.Session, error) {
 	}
 
 	return sess, nil
+}
+
+// Create a new IAM client
+func NewIamClient() (*iam.IAM, error) {
+	sess, err := GetAuthenticatedSession(defaultRegion)
+	if err != nil {
+		return nil, err
+	}
+	return iam.New(sess), nil
 }
 
 type CredentialsError struct {
