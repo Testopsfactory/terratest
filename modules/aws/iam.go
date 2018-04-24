@@ -1,39 +1,63 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws"
-	"fmt"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"testing"
 )
 
-// Get an AWS Session, checking that the user has credentials properly configured in their environment
-func GetAuthenticatedSession(region string) (*session.Session, error) {
-	sess, err := session.NewSession(aws.NewConfig().WithRegion(region))
+// Get the username fo the current IAM user
+func GetIamCurrentUserName(t *testing.T) string {
+	out, err := GetIamCurrentUserNameE(t)
 	if err != nil {
-		return nil, err
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Get the username fo the current IAM user
+func GetIamCurrentUserNameE(t *testing.T) (string, error) {
+	iamClient, err := NewIamClient(defaultRegion)
+	if err != nil {
+		return "", err
 	}
 
-	if _, err = sess.Config.Credentials.Get(); err != nil {
-		return nil, CredentialsError{UnderlyingErr: err}
+	resp, err := iamClient.GetUser(&iam.GetUserInput{})
+	if err != nil {
+		return "", err
 	}
 
-	return sess, nil
+	return *resp.User.UserName, nil
+}
+
+// Get the ARN for the current IAM user
+func GetIamCurrentUserArn(t *testing.T) string {
+	out, err := GetIamCurrentUserArnE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Get the ARN for the current IAM user
+func GetIamCurrentUserArnE(t *testing.T) (string, error) {
+	iamClient, err := NewIamClient(defaultRegion)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := iamClient.GetUser(&iam.GetUserInput{})
+	if err != nil {
+		return "", err
+	}
+
+	return *resp.User.Arn, nil
 }
 
 // Create a new IAM client
-func NewIamClient() (*iam.IAM, error) {
-	sess, err := GetAuthenticatedSession(defaultRegion)
+func NewIamClient(region string) (*iam.IAM, error) {
+	sess, err := GetAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}
 	return iam.New(sess), nil
-}
-
-type CredentialsError struct {
-	UnderlyingErr error
-}
-
-func (err CredentialsError) Error() string {
-	return fmt.Sprintf("Error finding AWS credentials. Did you set the AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or configure an AWS profile? Underlying error: %v", err.UnderlyingErr)
 }
