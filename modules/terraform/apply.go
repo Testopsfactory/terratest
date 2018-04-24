@@ -4,8 +4,8 @@ import (
 	"testing"
 	"github.com/gruntwork-io/terratest/shell"
 	"strings"
-	"github.com/gruntwork-io/terratest/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // Run terraform init and apply with the given options and return stdout/stderr from the apply command. Note that this

@@ -1,5 +1,5 @@
 // Integration tests that test cross-package functionality in AWS.
-package terratest
+package test
 
 import (
 	"fmt"
@@ -11,6 +11,8 @@ import (
 	"github.com/gruntwork-io/terratest/util"
 	"github.com/stretchr/testify/assert"
 )
+
+// TODO: refactor/remove these tests as appropriate
 
 // This is the directory where our test fixtures are.
 const fixtureDir = "./test-fixtures"

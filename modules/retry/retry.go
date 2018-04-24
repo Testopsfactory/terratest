@@ -1,11 +1,11 @@
 package retry
 
 import (
-	"github.com/gruntwork-io/terratest/logger"
 	"time"
 	"fmt"
 	"github.com/gruntwork-io/terratest/parallel"
 	"testing"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if

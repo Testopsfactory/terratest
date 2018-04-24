@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"testing"
-	"github.com/gruntwork-io/terratest/logger"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 type SshConnectionOptions struct {
