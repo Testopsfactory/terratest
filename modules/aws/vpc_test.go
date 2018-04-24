@@ -1,8 +1,6 @@
-package util
+package aws
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestGetFirstTwoOctets(t *testing.T) {
 	t.Parallel()
@@ -21,3 +19,4 @@ func TestGetFirstTwoOctets(t *testing.T) {
 //		fmt.Println(GetRandomPrivateCidrBlock(18))
 //	}
 //}
+

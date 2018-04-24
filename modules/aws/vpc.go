@@ -1,8 +1,9 @@
-package util
+package aws
 
 import (
-	"strings"
 	"fmt"
+	"strings"
+	"github.com/gruntwork-io/terratest/modules/random"
 )
 
 // Get a random CIDR block from the range of acceptable private IP addresses per RFC 1918
@@ -16,32 +17,32 @@ func GetRandomPrivateCidrBlock(routingPrefix int) string {
 
 	switch routingPrefix {
 	case 32:
-		o1 = RandomInt([]int{10, 172, 192})
+		o1 = random.RandomInt([]int{10, 172, 192})
 
 		switch o1 {
 		case 10:
-			o2 = Random(0, 255)
-			o3 = Random(0, 255)
-			o4 = Random(0, 255)
+			o2 = random.Random(0, 255)
+			o3 = random.Random(0, 255)
+			o4 = random.Random(0, 255)
 		case 172:
-			o2 = Random(16, 31)
-			o3 = Random(0, 255)
-			o4 = Random(0, 255)
+			o2 = random.Random(16, 31)
+			o3 = random.Random(0, 255)
+			o4 = random.Random(0, 255)
 		case 192:
 			o2 = 168
-			o3 = Random(0, 255)
-			o4 = Random(0, 255)
+			o3 = random.Random(0, 255)
+			o4 = random.Random(0, 255)
 		}
 
 	case 31, 30, 29, 28, 27, 26, 25:
 		fallthrough
 	case 24:
-		o1 = RandomInt([]int{10, 172, 192})
+		o1 = random.RandomInt([]int{10, 172, 192})
 
 		switch o1 {
 		case 10:
-			o2 = Random(0, 255)
-			o3 = Random(0, 255)
+			o2 = random.Random(0, 255)
+			o3 = random.Random(0, 255)
 			o4 = 0
 		case 172:
 			o2 = 16
@@ -55,7 +56,7 @@ func GetRandomPrivateCidrBlock(routingPrefix int) string {
 	case 23, 22, 21, 20, 19:
 		fallthrough
 	case 18:
-		o1 = RandomInt([]int{10, 172, 192})
+		o1 = random.RandomInt([]int{10, 172, 192})
 
 		switch o1 {
 		case 10:
