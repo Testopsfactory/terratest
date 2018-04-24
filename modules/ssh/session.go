@@ -6,16 +6,18 @@ import (
 	"io"
 	"net"
 	"reflect"
-	"log"
+	"github.com/gruntwork-io/terratest/modules/collections"
+	"testing"
+	"github.com/gruntwork-io/terratest/logger"
 )
 
 type SshConnectionOptions struct {
-	Username   		string
-	Address    		string
-	Port       		int
-	AuthMethods   		[]ssh.AuthMethod
-	Command			string
-	JumpHost		*SshConnectionOptions
+	Username    string
+	Address     string
+	Port        int
+	AuthMethods []ssh.AuthMethod
+	Command     string
+	JumpHost    *SshConnectionOptions
 }
 
 func (options *SshConnectionOptions) ConnectionString() string {
@@ -26,64 +28,54 @@ func (options *SshConnectionOptions) ConnectionString() string {
 // single defer in a top-level method that calls the Cleanup method to go through and ensure all of these resources are
 // released and cleaned up.
 type SshSession struct {
-	Options		*SshConnectionOptions
-	Client 		*ssh.Client
-	Session 	*ssh.Session
-	JumpHost	*JumpHostSession
+	Options  *SshConnectionOptions
+	Client   *ssh.Client
+	Session  *ssh.Session
+	JumpHost *JumpHostSession
 }
 
-func (sshSession *SshSession) Cleanup(logger *log.Logger) {
+func (sshSession *SshSession) Cleanup(t *testing.T) {
 	if sshSession == nil {
 		return
 	}
 
-
 	// Closing the session may result in an EOF error if it's already closed (e.g. due to hitting CTRL + D), so
 	// don't report those errors, as there is nothing actually wrong in that case.
-	Close(sshSession.Session, logger, io.EOF.Error())
-	Close(sshSession.Client, logger)
-	sshSession.JumpHost.Cleanup(logger)
+	Close(t, sshSession.Session, io.EOF.Error())
+	Close(t, sshSession.Client)
+	sshSession.JumpHost.Cleanup(t)
 }
 
 type JumpHostSession struct {
-	JumpHostClient 		*ssh.Client
-	HostVirtualConnection 	net.Conn
-	HostConnection		ssh.Conn
+	JumpHostClient        *ssh.Client
+	HostVirtualConnection net.Conn
+	HostConnection        ssh.Conn
 }
 
-func (jumpHost *JumpHostSession) Cleanup(logger *log.Logger) {
+func (jumpHost *JumpHostSession) Cleanup(t *testing.T) {
 	if jumpHost == nil {
 		return
 	}
 
 	// Closing a connection may result in an EOF error if it's already closed (e.g. due to hitting CTRL + D), so
 	// don't report those errors, as there is nothing actually wrong in that case.
-	Close(jumpHost.HostConnection, logger, io.EOF.Error())
-	Close(jumpHost.HostVirtualConnection, logger, io.EOF.Error())
-	Close(jumpHost.JumpHostClient, logger)
+	Close(t, jumpHost.HostConnection, io.EOF.Error())
+	Close(t, jumpHost.HostVirtualConnection, io.EOF.Error())
+	Close(t, jumpHost.JumpHostClient)
 }
 
 type Closeable interface {
 	Close() error
 }
 
-func Close(closeable Closeable, logger *log.Logger, ignoreErrors ...string) {
+func Close(t *testing.T, closeable Closeable, ignoreErrors ...string) {
 	if interfaceIsNil(closeable) {
 		return
 	}
 
-	if err := closeable.Close(); err != nil && !contains(ignoreErrors, err.Error()) {
-		logger.Printf("Error closing %s: %s", closeable, err.Error())
+	if err := closeable.Close(); err != nil && !collections.ListContains(err.Error(), ignoreErrors) {
+		logger.Logf(t, "Error closing %s: %s", closeable, err.Error())
 	}
-}
-
-func contains(haystack []string, needle string) bool {
-	for _, hay := range haystack {
-		if hay == needle {
-			return true
-		}
-	}
-	return false
 }
 
 // Go is a shitty language. Checking an interface directly against nil does not work, and if you don't know the exact

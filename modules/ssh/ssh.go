@@ -1,11 +1,10 @@
 package ssh
 
 import (
-	"github.com/gruntwork-io/terratest"
-	"log"
 	"golang.org/x/crypto/ssh"
 	"net"
 	"time"
+	"testing"
 )
 
 // Represents an EC2 KeyPair created in AWS
@@ -21,14 +20,31 @@ type Host struct {
 	SshKeyPair *Ec2Keypair
 }
 
-// Check that you can connect via SSH to the given host
-func CheckSshConnection(host Host, logger *log.Logger) error {
-	_, err := CheckSshCommand(host, "'exit'", logger)
+// Check that you can connect via SSH to the given host and fail the test if the connection fails.
+func CheckSshConnection(t *testing.T, host Host) {
+	err := CheckSshConnectionE(t, host)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Check that you can connect via SSH to the given host and return an error if the connection fails
+func CheckSshConnectionE(t*testing.T, host Host) error {
+	_, err := CheckSshCommandE(t, host, "'exit'")
 	return err
 }
 
 // Check that you can connect via SSH to the given host and run the given command. Returns the stdout/stderr.
-func CheckSshCommand(host Host, command string, logger *log.Logger) (string, error) {
+func CheckSshCommand(t *testing.T, host Host, command string) string {
+	out, err := CheckSshCommandE(t, host, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Check that you can connect via SSH to the given host and run the given command. Returns the stdout/stderr.
+func CheckSshCommandE(t *testing.T, host Host, command string) (string, error) {
 	authMethods, err := createAuthMethodsForHost(host)
 	if err != nil {
 		return "", err
@@ -47,15 +63,26 @@ func CheckSshCommand(host Host, command string, logger *log.Logger) (string, err
 		JumpHost: &JumpHostSession{},
 	}
 
-	defer sshSession.Cleanup(logger)
+	defer sshSession.Cleanup(t)
 
 	return runSshCommand(sshSession)
 }
 
-// CheckPrivateSshConnection attempts to connect to privateHost (which is not addressable from the Internet) via a separate
-// publicHost (which is addressable from the Internet) and then executes "command" on privateHost and returns its output.
-// It is useful for checking that it's possible to SSH from a Bastion Host to a private instance.
-func CheckPrivateSshConnection(publicHost Host, privateHost Host, command string, logger *log.Logger) (string, error) {
+// CheckPrivateSshConnection attempts to connect to privateHost (which is not addressable from the Internet) via a
+// separate publicHost (which is addressable from the Internet) and then executes "command" on privateHost and returns
+// its output. It is useful for checking that it's possible to SSH from a Bastion Host to a private instance.
+func CheckPrivateSshConnection(t *testing.T, publicHost Host, privateHost Host, command string) string {
+	out, err := CheckPrivateSshConnectionE(t, publicHost, privateHost, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// CheckPrivateSshConnection attempts to connect to privateHost (which is not addressable from the Internet) via a
+// separate publicHost (which is addressable from the Internet) and then executes "command" on privateHost and returns
+// its output. It is useful for checking that it's possible to SSH from a Bastion Host to a private instance.
+func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host, command string) (string, error) {
 	jumpHostAuthMethods, err := createAuthMethodsForHost(publicHost)
 	if err != nil {
 		return "", err
@@ -87,7 +114,7 @@ func CheckPrivateSshConnection(publicHost Host, privateHost Host, command string
 		JumpHost: &JumpHostSession{},
 	}
 
-	defer sshSession.Cleanup(logger)
+	defer sshSession.Cleanup(t)
 
 	return runSshCommand(sshSession)
 }

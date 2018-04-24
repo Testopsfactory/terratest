@@ -1,29 +1,25 @@
-package util
+package ssh
 
 import (
 	"crypto/rsa"
 	"crypto/rand"
-	"crypto/x509"
 	"encoding/pem"
+	"crypto/x509"
+	"testing"
 	"golang.org/x/crypto/ssh"
-	"os"
-
-	"github.com/gruntwork-io/terratest/log"
 )
 
-type keyPair struct {
+// A public and private key pair that can be used for SSH access
+type KeyPair struct {
 	PublicKey	string
 	PrivateKey	string
 }
 
 // Generate an RSA Keypair and return the public and private keys
-func GenerateRSAKeyPair(keySize int) (*keyPair, error) {
-	log := log.NewLogger("GenerateRSAKeyPair")
-
+func GenerateRSAKeyPair(t *testing.T, keySize int) (*KeyPair, error) {
 	rsaKeyPair, err := rsa.GenerateKey(rand.Reader, keySize)
 	if err != nil {
-		log.Printf("Failed to generate key: %s\n", err)
-		os.Exit(1)
+		return nil, err
 	}
 
 	// Extract the private key
@@ -37,13 +33,13 @@ func GenerateRSAKeyPair(keySize int) (*keyPair, error) {
 	// Extract the public key
 	sshPubKey, err := ssh.NewPublicKey(rsaKeyPair.Public())
 	if err != nil {
-		log.Printf("Unable to generate new OpenSSH public key: %s\n", err.Error())
-		os.Exit(1)
+		return nil, err
 	}
 
 	sshPubKeyBytes := ssh.MarshalAuthorizedKey(sshPubKey)
 	sshPubKeyStr := string(sshPubKeyBytes)
 
 	// Return
-	return &keyPair{ PublicKey: sshPubKeyStr, PrivateKey: keyPem }, nil
+	return &KeyPair{ PublicKey: sshPubKeyStr, PrivateKey: keyPem }, nil
 }
+
