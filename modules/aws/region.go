@@ -22,7 +22,18 @@ const defaultRegion = "us-east-1"
 // Get a randomly chosen AWS region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the AWS APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
-func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string) (string, error) {
+func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string) string {
+	region, err := GetRandomRegionE(t, approvedRegions, forbiddenRegions)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return region
+}
+
+// Get a randomly chosen AWS region. If approvedRegions is not empty, this will be a region from the approvedRegions
+// list; otherwise, this method will fetch the latest list of regions from the AWS APIs and pick one of those. If
+// forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
+func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions []string) (string, error) {
 	regionFromEnvVar := os.Getenv(regionOverrideEnvVarName)
 	if regionFromEnvVar != "" {
 		logger.Logf(t, "Using AWS region %s from environment variable %s", regionFromEnvVar, regionOverrideEnvVarName)
@@ -32,7 +43,7 @@ func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []
 	regionsToPickFrom := approvedRegions
 
 	if len(regionsToPickFrom) == 0 {
-		allRegions, err := GetAllAwsRegions(t)
+		allRegions, err := GetAllAwsRegionsE(t)
 		if err != nil {
 			return "", err
 		}
@@ -44,7 +55,16 @@ func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []
 }
 
 // Get the list of AWS regions available in this account
-func GetAllAwsRegions(t *testing.T) ([]string, error) {
+func GetAllAwsRegions(t *testing.T) []string {
+	out, err := GetAllAwsRegionsE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Get the list of AWS regions available in this account
+func GetAllAwsRegionsE(t *testing.T) ([]string, error) {
 	logger.Log(t, "Looking up all AWS regions available in this account")
 
 	ec2Client, err := NewEc2Client(defaultRegion)
@@ -67,7 +87,17 @@ func GetAllAwsRegions(t *testing.T) ([]string, error) {
 
 // Get the Availability Zones for a given AWS region. Note that for certain regions (e.g. us-east-1), different AWS
 // accounts have access to different availability zones.
-func GetAvailabilityZones(t *testing.T, region string) ([]string, error) {
+func GetAvailabilityZones(t *testing.T, region string) []string {
+	out, err := GetAvailabilityZonesE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Get the Availability Zones for a given AWS region. Note that for certain regions (e.g. us-east-1), different AWS
+// accounts have access to different availability zones.
+func GetAvailabilityZonesE(t *testing.T, region string) ([]string, error) {
 	logger.Logf(t, "Looking up all availability zones available in this account for region %s", region)
 
 	ec2Client, err := NewEc2Client(region)
