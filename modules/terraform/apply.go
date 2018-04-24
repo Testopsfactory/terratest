@@ -4,8 +4,8 @@ import (
 	"testing"
 	"github.com/gruntwork-io/terratest/shell"
 	"strings"
-	"github.com/gruntwork-io/terratest/util"
 	"github.com/gruntwork-io/terratest/logger"
+	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
 // Run terraform init and apply with the given options and return stdout/stderr from the apply command. Note that this
@@ -47,7 +47,7 @@ func Apply(t *testing.T, options *Options) string {
 // Run terraform apply with the given options and return stdout/stderr. Note that this method does NOT call destroy and
 // assumes the caller is responsible for cleaning up any resources created by running apply.
 func ApplyE(t *testing.T, options *Options) (string, error) {
-	return util.DoWithRetryE(t, "Running terraform apply", options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+	return retry.DoWithRetryE(t, "Running terraform apply", options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		cmd := shell.Command {
 			Command:    "terraform",
 			Args:       FormatArgs(options.Vars, "apply", "-input=false", "-lock=false", "-auto-approve"),
@@ -66,6 +66,6 @@ func ApplyE(t *testing.T, options *Options) (string, error) {
 			}
 		}
 
-		return "", util.FatalError(err)
+		return "", retry.FatalError(err)
 	})
 }

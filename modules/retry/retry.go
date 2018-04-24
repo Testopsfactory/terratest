@@ -1,16 +1,26 @@
-package util
+package retry
 
 import (
-	"fmt"
-	"time"
-	"github.com/gruntwork-io/terratest/parallel"
 	"github.com/gruntwork-io/terratest/logger"
+	"time"
+	"fmt"
+	"github.com/gruntwork-io/terratest/parallel"
 	"testing"
 )
 
 // Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
+// it completes on time or fail the test otherwise.
+func DoWithTimeout(t *testing.T, actionDescription string, timeout time.Duration, action func() (string, error)) string {
+	out, err := DoWithTimeoutE(t, actionDescription, timeout, action)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
 // it completes on time or an error otherwise.
-func DoWithTimeout(actionDescription string, timeout time.Duration, action func() (string, error)) (string, error) {
+func DoWithTimeoutE(t *testing.T, actionDescription string, timeout time.Duration, action func() (string, error)) (string, error) {
 	resultChannel := make(chan parallel.TestResult, 1)
 
 	go func() {

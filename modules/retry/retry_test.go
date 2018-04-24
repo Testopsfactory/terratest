@@ -1,9 +1,8 @@
-package util
+package retry
 
 import (
-	"testing"
 	"time"
-	terralog "github.com/gruntwork-io/terratest/log"
+	"testing"
 	"fmt"
 )
 
@@ -112,3 +111,4 @@ func TestDoWithTimeout(t *testing.T) {
 		}
 	}
 }
+
