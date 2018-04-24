@@ -98,8 +98,8 @@ come up with the test API I want to have for doing the testing, and then go and 
 
 We have a lot of stuff in the root package and I propose moving all of it out into appropriate sub-packages:
 
-- `apply.go`, `apply_and_destroy.go`, `destroy.go`, `output.go`, `output_test.go`, and `url_checker.go` will all be
-  moved into `modules/terraform`, as they are all specific to testing Terraform code.
+- `apply.go`, `apply_and_destroy.go`, `destroy.go`, `output.go`, and `output_test.go` will all be moved into
+  `modules/terraform`, as they are all specific to testing Terraform code.
 
 - I propose deleting `rand_resources.go` and `rand_resource_test.go` and extracting its logic into other places. The
   `RandomResourceCollection` ended up being a, well, random collection of resources, most of which don't apply to most
@@ -134,6 +134,10 @@ We have a lot of stuff in the root package and I propose moving all of it out in
   Terraform code. We should also rename `TemplatePath` to `TerraformDir`, as `.tf` files are technically called
   "configurations" and not "templates".
 
+- `url_checker.go` will be deleted. It's too hard-coded for one specific type of check. The reuse value is limited and
+  it's not obvious the code exists, so it's best for the test cases to reimplement this themselves, with their specific
+  needs, even if it's a tiny bit less DRY.
+
 
 ### _docker-images package
 
@@ -164,6 +168,10 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 ### `log` package
 
 - Rename to `logger`. That way, we don't have to alias it as `terralog` all over our test code.
+- Change what the package does. Instead of creating a custom `*log.Logger` and passing it around, we are going to have
+  a `Log` and `Logf` method you can call from anywhere. To use those methods, you have to pass them a `*testing.T`,
+  which they will use to read out the test name. We already pass `*testing.T` to almost all of our test methods, so
+  this reduces the number of arguments by one.
 
 
 ### `parallel` package
@@ -194,9 +202,48 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 
 ### `util` package
 
+- `collections.go`: Move into its own `modules/collections` package.
 - `keygen.go`: Move into `modules/ssh` package.
 - `network.go`: Move into `modules/aws` package.
 - `sleep.go`: Remove. Didn't even know we had this and doubt it gets much use!
+- `random.go`: Move into its own `modules/random` package.
+- `retry.go`: Move into its own `modules/retry` package.
+
+
+
+
+## Error handling
+
+I am updating most of the methods to support handling errors in one of two ways:
+
+1. Each method `foo` will take in a `*testing.T` and upon hitting an error, call `t.Fatal`.
+1. Each method `fooE` will explicitly return any errors it hits and NOT call `t.Fatal`.
+
+Example:
+
+```go
+func GetCurrentBranchName(t *testing.T) string {
+	out, err := GetCurrentBranchNameE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+func GetCurrentBranchNameE(t *testing.T) (string, error) {
+	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+	bytes, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(bytes)), nil
+}
+```
+
+In most places in our code, we will use `GetCurrentBranchName`, which will call `t.Fatal` if it hits any errors. This
+is typically the behavior we want anyway, and not having to deal with a returned error will keep our code smaller and
+easier to read. However, in those cases where we may want to get the original error back and not fail the test
+immediately, we can use `GetCurrentBranchNameE`.
 
 
 
@@ -209,9 +256,6 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 - There are a bunch of patterns we often end up using throughout our tests that would be good to copy into Terratest.
   Anyone remember what those are off the top of our head?
 
-- One pattern I'm not sure on with automated tests is if our methods should return an `error` or take in a `testing.T`
-  and fail the test automatically upon hitting an error. Returning an `error` offers the most flexibility, as in some
-  cases, you want the error, and may not want to fail the test immediately. However, having to check for errors over
-  and over again is very tedious, and in many cases, test code would be a lot cleaner if Terratest methods called
-  `t.Fatal` any time they hit an error. Perhaps we need to support both options and come up with an idiom to indicate
-  this? E.g., `terratest.Apply(options) error` and `terratest.ApplyT(t, options)`?
+- Having two copies of each method (`foo` and `fooE`) is a bit tedious, but the `foo` variety is essentially the same
+  boilerplate everywhere, so it only increases the maintenance burden on Terratest library maintainers a little, but
+  it improves code readability for all Terratest users enormously.
