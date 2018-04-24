@@ -3,11 +3,11 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"os"
-	"github.com/gruntwork-io/terratest/util"
 	"github.com/aws/aws-sdk-go/aws"
 	"testing"
 	"github.com/gruntwork-io/terratest/logger"
 	"github.com/gruntwork-io/terratest/modules/collections"
+	"github.com/gruntwork-io/terratest/modules/random"
 )
 
 // You can set this environment variable to force Terratest to use a specific region rather than a random one. This is
@@ -40,7 +40,7 @@ func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []
 	}
 
 	regionsToPickFrom = collections.Subtract(regionsToPickFrom, forbiddenRegions)
-	return util.RandomString(regionsToPickFrom), nil
+	return random.RandomString(regionsToPickFrom), nil
 }
 
 // Get the list of AWS regions available in this account

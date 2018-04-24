@@ -1,15 +1,14 @@
-package util
+package random
 
 import (
-	"math/rand"
 	"time"
 	"bytes"
+	"math/rand"
 )
 
 // Generate a random int between min and max, inclusive
 func Random(min int, max int) int {
-	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max - min) + min
+	return newRand().Intn(max - min) + min
 }
 
 // Pick a random element in the slice of ints
@@ -34,11 +33,14 @@ func UniqueId() string {
 
 	var out bytes.Buffer
 
-	generator := rand.New(rand.NewSource(time.Now().UnixNano()))
+	generator := newRand()
 	for i := 0; i < UNIQUE_ID_LENGTH; i++ {
 		out.WriteByte(BASE_62_CHARS[generator.Intn(len(BASE_62_CHARS))])
 	}
 
 	return out.String()
+}
 
+func newRand() *rand.Rand {
+	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }
