@@ -1,30 +1,40 @@
 package packer
 
 import (
-	"log"
 	"github.com/gruntwork-io/terratest/shell"
 	"regexp"
 	"errors"
+	"testing"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-type PackerOptions struct {
-	Template string		    	// The path to the Packer template
-	Vars     map[string]string  // The custom vars to pass when running the build command
-	Only     string             // If specified, only run the build of this name
-	Env      map[string]string  // Custom environment variables to set when running Packer
+type Options struct {
+	Template string            // The path to the Packer template
+	Vars     map[string]string // The custom vars to pass when running the build command
+	Only     string            // If specified, only run the build of this name
+	Env      map[string]string // Custom environment variables to set when running Packer
 }
 
 // Build the given Packer template and return the generated AMI ID
-func BuildAmi(options PackerOptions, logger *log.Logger) (string, error) {
-	logger.Printf("Running Packer to generate AMI for template %s", options.Template)
+func BuildAmi(t *testing.T, options Options) string {
+	amiId, err := BuildAmiE(t, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return amiId
+}
 
-	cmd := shell.Command {
+// Build the given Packer template and return the generated AMI ID
+func BuildAmiE(t *testing.T, options Options) (string, error) {
+	logger.Logf(t, "Running Packer to generate AMI for template %s", options.Template)
+
+	cmd := shell.Command{
 		Command: "packer",
-		Args: formatPackerArgs(options),
-		Env: options.Env,
+		Args:    formatPackerArgs(options),
+		Env:     options.Env,
 	}
 
-	output, err := shell.RunCommandAndGetOutput(cmd, logger)
+	output, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err != nil {
 		return "", err
 	}
@@ -53,17 +63,16 @@ func extractAmiId(packerLogOutput string) (string, error) {
 // Convert the inputs to a format palatable to packer. The build command should have the format:
 //
 // packer build [OPTIONS] template
-func formatPackerArgs(options PackerOptions) []string {
+func formatPackerArgs(options Options) []string {
 	args := []string{"build", "-machine-readable"}
 
 	for key, value := range options.Vars {
-		args = append(args, "-var", key + "=" + value)
+		args = append(args, "-var", key+"="+value)
 	}
 
 	if options.Only != "" {
-		args = append(args, "-only=" + options.Only)
+		args = append(args, "-only="+options.Only)
 	}
 
 	return append(args, options.Template)
 }
-

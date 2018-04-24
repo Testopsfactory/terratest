@@ -129,10 +129,9 @@ We have a lot of stuff in the root package and I propose moving all of it out in
     - `SnsTopicArn`: A very, very small percentage of our tests needed an SNS topic passed in. Those tests should call
       a method in the `modules/aws` package to create this topic instead of us assuming every single test needs it.
 
-- I propose renaming `terratest_options.go` to `terraform_options.go`—and similarly, renaming the struct within it from
-  `TerratestOptions` to `TerraformOptions`—and moving it into `modules/terraform`, since this is solely used for testing
-  Terraform code. We should also rename `TemplatePath` to `TerraformDir`, as `.tf` files are technically called
-  "configurations" and not "templates".
+- I propose moving `terratest_options.go` to `modules/terraform/options.go` and renaming the struct within it from
+  `TerratestOptions` to `Options`, since this is solely used for testing Terraform code. We should also rename
+  `TemplatePath` to `TerraformDir`, as `.tf` files are technically called "configurations" and not "templates".
 
 - `url_checker.go` will be deleted. It's too hard-coded for one specific type of check. The reuse value is limited and
   it's not obvious the code exists, so it's best for the test cases to reimplement this themselves, with their specific
@@ -179,6 +178,11 @@ We have a lot of stuff in the root package and I propose moving all of it out in
 - I propose removing this package entirely. Now that go has [subtests](https://blog.golang.org/subtests) that you can
   easily run with `t.Run()` and parallelize with `t.Parallel()`, I think that's a cleaner way of handling parallelism
   than this custom package.
+
+
+### `packer` package
+
+- Rename `PackerOptions` to `Options` (the package name is already `packer`).
 
 
 ### `resources` package
