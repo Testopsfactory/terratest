@@ -19,7 +19,7 @@ func GetCmkArn(t *testing.T, region string, cmkId string) string {
 // Get the ARN of a KMS Customer Master Key (CMK) in the given region with the given ID. The ID can be an alias, such
 // as "alias/my-cmk".
 func GetCmkArnE(t *testing.T, region string, cmkId string) (string, error) {
-	kmsClient, err := CreateKmsClient(region)
+	kmsClient, err := NewKmsClient(region)
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +36,7 @@ func GetCmkArnE(t *testing.T, region string, cmkId string) (string, error) {
 }
 
 // Create a KMS client
-func CreateKmsClient(region string) (*kms.KMS, error) {
+func NewKmsClient(region string) (*kms.KMS, error) {
 	sess, err := GetAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
