@@ -1,7 +1,7 @@
 package packer
 
 import (
-	"github.com/gruntwork-io/terratest/shell"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"regexp"
 	"errors"
 	"testing"

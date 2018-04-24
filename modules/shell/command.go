@@ -5,13 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os/exec"
 	"os"
 	"strings"
 	"syscall"
 	"testing"
-	"github.com/gruntwork-io/terratest/logger"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // A simpler struct for defining commands than Go's built-in Cmd
@@ -70,7 +69,7 @@ func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 		return "", err
 	}
 
-	output, err := readStdoutAndStderr(stdout, stderr, logger)
+	output, err := readStdoutAndStderr(t, stdout, stderr)
 	if err != nil {
 		return output, err
 	}
@@ -83,7 +82,7 @@ func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 }
 
 // This function captures stdout and stderr while still printing it to the stdout and stderr of this Go program
-func readStdoutAndStderr(stdout io.ReadCloser, stderr io.ReadCloser, logger *log.Logger) (string, error) {
+func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadCloser) (string, error) {
 	allOutput := []string{}
 
 	stdoutScanner := bufio.NewScanner(stdout)
@@ -92,11 +91,11 @@ func readStdoutAndStderr(stdout io.ReadCloser, stderr io.ReadCloser, logger *log
 	for {
 		if stdoutScanner.Scan() {
 			text := stdoutScanner.Text()
-			logger.Println(text)
+			logger.Log(t, text)
 			allOutput = append(allOutput, text)
 		} else if stderrScanner.Scan() {
 			text := stderrScanner.Text()
-			logger.Println(text)
+			logger.Log(t, text)
 			allOutput = append(allOutput, text)
 		} else {
 			break

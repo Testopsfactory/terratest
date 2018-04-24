@@ -1,7 +1,7 @@
 package terraform
 
 import (
-	"github.com/gruntwork-io/terratest/shell"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"testing"
 )
 

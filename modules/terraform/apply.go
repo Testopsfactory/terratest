@@ -2,7 +2,7 @@ package terraform
 
 import (
 	"testing"
-	"github.com/gruntwork-io/terratest/shell"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"strings"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/logger"

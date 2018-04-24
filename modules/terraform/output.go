@@ -3,7 +3,7 @@ package terraform
 import (
 	"fmt"
 	"testing"
-	"github.com/gruntwork-io/terratest/shell"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"strings"
 )
 
