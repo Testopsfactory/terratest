@@ -1,8 +1,8 @@
 package terraform
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 	"fmt"
 )
 

@@ -10,30 +10,46 @@ import (
 	"os"
 	"strings"
 	"syscall"
+	"testing"
+	"github.com/gruntwork-io/terratest/logger"
 )
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// NOTE: Copy & pasted from Jim's original terraform-modules/test/shell_helper.go
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // A simpler struct for defining commands than Go's built-in Cmd
 type Command struct {
-	Command string		// The command to run
-	Args []string		// The args to pass to the command
-	WorkingDir string	// The working directory
-	Env map[string]string	// Additional environment variables to set
+	Command    string            // The command to run
+	Args       []string          // The args to pass to the command
+	WorkingDir string            // The working directory
+	Env        map[string]string // Additional environment variables to set
 }
 
 // Run a shell command and redirect its stdout and stderr to the stdout of the atomic script itself
-func RunCommand(command Command, logger *log.Logger) error {
-	_, err := RunCommandAndGetOutput(command, logger)
+func RunCommand(t *testing.T, command Command) {
+	err := RunCommandE(t, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Run a shell command and redirect its stdout and stderr to the stdout of the atomic script itself
+func RunCommandE(t *testing.T, command Command) error {
+	_, err := RunCommandAndGetOutputE(t, command)
 	return err
 }
 
 // Run a shell command and return its stdout and stderr as a string. The stdout and stderr of that command will also
-// be printed to the stdout and stderr of this Go program.
-func RunCommandAndGetOutput(command Command, logger *log.Logger) (string, error) {
-	logger.Printf("Running command %s with args %s", command.Command, command.Args)
+// be printed to the stdout and stderr of this Go program to make debugging easier.
+func RunCommandAndGetOutput(t *testing.T, command Command) string {
+	out, err := RunCommandAndGetOutputE(t, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Run a shell command and return its stdout and stderr as a string. The stdout and stderr of that command will also
+// be printed to the stdout and stderr of this Go program to make debugging easier.
+func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
+	logger.Logf(t, "Running command %s with args %s", command.Command, command.Args)
 
 	cmd := exec.Command(command.Command, command.Args...)
 	cmd.Dir = command.WorkingDir

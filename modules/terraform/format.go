@@ -1,10 +1,17 @@
 package terraform
 
 import (
-	"reflect"
 	"fmt"
 	"strings"
+	"reflect"
 )
+
+// Convert the inputs to a format palatable to terraform. This includes converting the given vars to the format the
+// Terraform CLI expects (-var key=value).
+func FormatArgs(customVars map[string]interface{}, args ...string) []string {
+	varsAsArgs := FormatTerraformVarsAsArgs(customVars)
+	return append(args, varsAsArgs...)
+}
 
 // Format the given variables as command-line args for Terraform (e.g. of the format -var key=value).
 func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
@@ -109,11 +116,12 @@ func mapToHclString(m map[string]interface{}) string {
 // using Sprintf. See ToHclString for details.
 func primitiveToHclString(value interface{}) string {
 	switch v := value.(type) {
-		// Note: due to a Terraform bug, we can't use proper HCL syntax for ints and booleans and instead have
-		// to treat EVERYTHING as a string. For more info, see: https://github.com/hashicorp/terraform/issues/7962
-		//case int: return strconv.Itoa(v)
-		//case bool: return strconv.FormatBool(v)
+	// Note: due to a Terraform bug, we can't use proper HCL syntax for ints and booleans and instead have
+	// to treat EVERYTHING as a string. For more info, see: https://github.com/hashicorp/terraform/issues/7962
+	//case int: return strconv.Itoa(v)
+	//case bool: return strconv.FormatBool(v)
 
-		default: return fmt.Sprintf("\"%v\"", v)
+	default: return fmt.Sprintf("\"%v\"", v)
 	}
 }
+

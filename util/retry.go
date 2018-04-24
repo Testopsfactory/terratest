@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 	"github.com/gruntwork-io/terratest/parallel"
-	"log"
+	"github.com/gruntwork-io/terratest/logger"
+	"testing"
 )
 
 // Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
@@ -25,16 +26,34 @@ func DoWithTimeout(actionDescription string, timeout time.Duration, action func(
 	}
 }
 
-// Run the specified action. If it returns a value, return that value. If it returns an error, sleep for
-// sleepBetweenRetries and try again, up to a maximum of maxRetries retries.
-func DoWithRetry(actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, logger *log.Logger, action func() (string, error)) (string, error) {
+// Run the specified action. If it returns a value, return that value. If it returns a FatalError, return that error
+// immediately. If it returns any other type of error, sleep for sleepBetweenRetries and try again, up to a maximum of
+// maxRetries retries. If maxRetries is exceeded, fail the test.
+func DoWithRetry(t *testing.T, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) string {
+	out, err := DoWithRetryE(t, actionDescription, maxRetries, sleepBetweenRetries, action)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// Run the specified action. If it returns a value, return that value. If it returns a FatalError, return that error
+// immediately. If it returns any other type of error, sleep for sleepBetweenRetries and try again, up to a maximum of
+// maxRetries retries. If maxRetries is exceeded, return a MaxRetriesExceeded error.
+func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) (string, error) {
 	for i := 0; i < maxRetries; i++ {
+		logger.Log(t, actionDescription)
+
 		output, err := action()
 		if err == nil {
 			return output, nil
 		}
 
-		logger.Printf("%s returned an error: %s. Sleeping for %s and will try again.", actionDescription, err.Error(), sleepBetweenRetries)
+		if _, isFatalErr := err.(FatalError); isFatalErr {
+			return "", err
+		}
+
+		logger.Logf(t, "%s returned an error: %s. Sleeping for %s and will try again.", actionDescription, err.Error(), sleepBetweenRetries)
 		time.Sleep(sleepBetweenRetries)
 	}
 
@@ -60,3 +79,6 @@ type MaxRetriesExceeded struct {
 func (err MaxRetriesExceeded) Error() string {
 	return fmt.Sprintf("'%s' unsuccessful after %d retries", err.Description, err.MaxRetries)
 }
+
+// Marker interface for errors that should not be retried
+type FatalError error

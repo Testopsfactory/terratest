@@ -1,4 +1,4 @@
-package terratest
+package http_helper
 
 import (
 	"testing"

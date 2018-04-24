@@ -8,10 +8,17 @@ import (
 	"time"
 )
 
+// Represents an EC2 KeyPair created in AWS
+type Ec2Keypair struct {
+	Name       string // The name assigned in AWS to the EC2 KeyPair
+	PublicKey  string // The public key
+	PrivateKey string // The private key in .pem format
+}
+
 type Host struct {
 	Hostname string
 	SshUserName string
-	SshKeyPair *terratest.Ec2Keypair
+	SshKeyPair *Ec2Keypair
 }
 
 // Check that you can connect via SSH to the given host
