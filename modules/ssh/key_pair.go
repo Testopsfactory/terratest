@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"testing"
 	"golang.org/x/crypto/ssh"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // A public and private key pair that can be used for SSH access
@@ -16,7 +17,18 @@ type KeyPair struct {
 }
 
 // Generate an RSA Keypair and return the public and private keys
-func GenerateRSAKeyPair(t *testing.T, keySize int) (*KeyPair, error) {
+func GenerateRSAKeyPair(t *testing.T, keySize int) *KeyPair {
+	keyPair, err := GenerateRSAKeyPairE(t, keySize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return keyPair
+}
+
+// Generate an RSA Keypair and return the public and private keys
+func GenerateRSAKeyPairE(t *testing.T, keySize int) (*KeyPair, error) {
+	logger.Logf(t, "Generating new public/private key of size %d", keySize)
+
 	rsaKeyPair, err := rsa.GenerateKey(rand.Reader, keySize)
 	if err != nil {
 		return nil, err
