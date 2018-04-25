@@ -4,6 +4,7 @@
     "ami_name_base": "terratest-packer-docker-example"
   },
   "builders": [{
+    "name": "ubuntu-ami",
     "ami_name": "{{user `ami_name_base`}}-{{isotime | clean_ami_name}}",
     "ami_description": "An example of how to create a custom AMI with a simple web app on top of Ubuntu",
     "instance_type": "t2.micro",
@@ -29,13 +30,19 @@
     "commit": true
   }],
   "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "echo 'Sleeping for a few seconds to give Ubuntu time to boot up'",
+      "sleep 30"
+    ],
+    "only": ["ubuntu-ami"]
+  },{
     "type": "file",
-    "source": "{{template_dir}}/app.rb",
-    "destination": "/tmp/app.rb"
+    "source": "{{template_dir}}",
+    "destination": "/tmp/packer-docker-example"
   },{
     "type": "shell",
-    "pause_before": "30s",
-    "script": "{{template_dir}}/configure-sinatra-app.sh"
+    "inline": ["/tmp/packer-docker-example/configure-sinatra-app.sh"]
   }],
   "post-processors": [{
     "type": "docker-tag",

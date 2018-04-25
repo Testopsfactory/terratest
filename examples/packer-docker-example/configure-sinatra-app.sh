@@ -3,7 +3,7 @@
 
 set -e
 
-readonly APP_RB_SRC="/tmp/app.rb"
+readonly APP_RB_SRC="/tmp/packer-docker-example/app.rb"
 readonly APP_RB_DST="/home/ubuntu/app.rb"
 
 echo "Installing Ruby"
@@ -14,4 +14,5 @@ echo "Installing Sinatra"
 sudo gem install sinatra json --no-rdoc --no-ri
 
 echo "Moving $APP_RB_SRC to $APP_RB_DST"
+mkdir -p "$(dirname "$APP_RB_DST")"
 mv "$APP_RB_SRC" "$APP_RB_DST"

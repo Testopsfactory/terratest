@@ -2,14 +2,14 @@ package test
 
 import (
 	"testing"
-	"github.com/gruntwork-io/terratest/packer"
-	"github.com/gruntwork-io/terratest/aws"
-	"github.com/gruntwork-io/terratest/test-structure"
 	"fmt"
-	"github.com/gruntwork-io/terratest/util"
-	"github.com/gruntwork-io/terratest/terraform"
 	"time"
-	"github.com/gruntwork-io/terratest/http"
+	"github.com/gruntwork-io/terratest/modules/http-helper"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
+	"github.com/gruntwork-io/terratest/modules/packer"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 // This is a complicated, end-to-end integration test. It builds the AMI from examples/packer-docker-example,
@@ -17,22 +17,11 @@ import (
 // response to requests. The test is broken into "stages" so you can skip stages by setting environment variables (e.g.,
 // skip stage "build_ami" by setting the environment variable "SKIP_build_ami=true"), which speeds up iteration when
 // running this test over and over again locally.
-func TerraformPackerExampleTest(t *testing.T)  {
+func TestTerraformPackerExample(t *testing.T)  {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.PickRandomRegion(t)
-
-	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
-	// tests running in parallel
-	uniqueId := util.UniqueId()
-
-	// Give this EC2 Instance and other resources in the Terraform code a name with a unique ID so it doesn't clash
-	// with anything else in the AWS account.
-	instanceName := fmt.Sprintf("terratest-http-example-%s", uniqueId)
-
-	// Specify the text the EC2 Instance will return when we make HTTP requests to it.
-	instanceText := fmt.Sprintf("Hello, %s!", uniqueId)
+	awsRegion := aws.GetRandomRegion(t, nil, nil)
 
 	// The folder where we have our Terraform code
 	workingDir := "../examples/terraform-packer-example"
@@ -44,12 +33,12 @@ func TerraformPackerExampleTest(t *testing.T)  {
 
 	// At the end of the test, delete the AMI
 	defer test_structure.RunTestStage(t, "cleanup_ami", func() {
-		deleteAmi(t, workingDir)
+		deleteAmi(t, awsRegion, workingDir)
 	})
 
 	// Deploy the web app using Terraform
 	test_structure.RunTestStage(t, "deploy_terraform", func() {
-		deployUsingTerraform(t, awsRegion, workingDir, instanceName, instanceText)
+		deployUsingTerraform(t, awsRegion, workingDir)
 	})
 
 	// At the end of the test, undeploy the web app using Terraform
@@ -59,13 +48,13 @@ func TerraformPackerExampleTest(t *testing.T)  {
 
 	// Validate that the web app deployed and is responding to HTTP requests
 	test_structure.RunTestStage(t, "validate", func() {
-		validate(t, workingDir, instanceText)
+		validate(t, workingDir)
 	})
 }
 
 // Build the AMI in packer-docker-example
 func buildAmi(t *testing.T, awsRegion string, workingDir string) {
-	packerOptions := packer.Options {
+	packerOptions := &packer.Options {
 		// The path to where the Packer template is located
 		Template: "../examples/packer-docker-example/build.json",
 
@@ -87,25 +76,35 @@ func buildAmi(t *testing.T, awsRegion string, workingDir string) {
 }
 
 // Delete the AMI
-func deleteAmi(t *testing.T, workingDir string) {
+func deleteAmi(t *testing.T, awsRegion string, workingDir string) {
 	// Load the AMI ID and Packer Options saved by the earlier build_ami stage
 	amiId := test_structure.LoadAmiId(t, workingDir)
-	packerOptions := test_structure.LoadPackerOptions(t, workingDir)
 
-	packer.DeleteAmi(t, packerOptions, amiId)
+	aws.DeleteAmi(t, awsRegion, amiId)
 }
 
 // Deploy the terraform-packer-example using Terraform
-func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string, instanceName string, instanceText string) {
+func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string) {
+	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
+	// tests running in parallel
+	uniqueId := random.UniqueId()
+
+	// Give this EC2 Instance and other resources in the Terraform code a name with a unique ID so it doesn't clash
+	// with anything else in the AWS account.
+	instanceName := fmt.Sprintf("terratest-http-example-%s", uniqueId)
+
+	// Specify the text the EC2 Instance will return when we make HTTP requests to it.
+	instanceText := fmt.Sprintf("Hello, %s!", uniqueId)
+
 	// Load the AMI ID saved by the earlier build_ami stage
 	amiId := test_structure.LoadAmiId(t, workingDir)
 
-	terraformOptions := terraform.Options {
+	terraformOptions := &terraform.Options {
 		// The path to where our Terraform code is located
 		TerraformDir: workingDir,
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]string {
+		Vars: map[string]interface{} {
 			"aws_region":    awsRegion,
 			"instance_name": instanceName,
 			"instance_text": instanceText,
@@ -114,9 +113,9 @@ func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string, ins
 	}
 
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
-	// Save the Terraform Options struct so future test stages can use it
+	// Save the Terraform Options struct, instance name, and instance text so future test stages can use it
 	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
 }
 
@@ -129,12 +128,15 @@ func undeployUsingTerraform(t *testing.T, workingDir string) {
 }
 
 // Validate the web server has been deployed and is working
-func validate(t *testing.T, workingDir string, instanceText string) {
+func validate(t *testing.T, workingDir string) {
 	// Load the Terraform Options saved by the earlier deploy_terraform stage
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 
 	// Run `terraform output` to get the value of an output variable
 	instanceUrl := terraform.Output(t, terraformOptions, "instance_url")
+
+	// Figure out what text the instance should return for each request
+	instanceText := terraformOptions.Vars["instance_text"].(string)
 
 	// It can take a minute or so for the Instance to boot up, so retry a few times
 	maxRetries := 15

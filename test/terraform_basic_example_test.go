@@ -2,28 +2,28 @@ package test
 
 import (
 	"testing"
-	"github.com/gruntwork-io/terratest/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 // An example of how to test the simple Terraform module in examples/terraform-basic-example using Terratest.
-func TerraformBasicExampleTest(t *testing.T) {
+func TestTerraformBasicExample(t *testing.T) {
 	t.Parallel()
 
 	expectedText := "foo"
 
-	terraformOptions := terraform.Options {
+	terraformOptions := &terraform.Options {
 		// The path to where our Terraform code is located
 		TerraformDir: "../examples/terraform-basic-example",
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]string {
+		Vars: map[string]interface{} {
 			"example": expectedText,
 		},
 	}
 
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)

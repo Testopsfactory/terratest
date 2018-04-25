@@ -8,7 +8,7 @@ services:
     image: gruntwork/packer-docker-example
 
     # Run the sample web app on port 8080
-    command: ["ruby" "/home/ubuntu/app.rb" "${SERVER_PORT}" "${SERVER_TEXT}"]
+    command: ["ruby", "/home/ubuntu/app.rb", "${SERVER_PORT}", "${SERVER_TEXT}"]
 
     # Bind-mount the Ruby app so we can have "hot reload" during testing
     volumes:
