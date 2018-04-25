@@ -59,7 +59,7 @@ func DoWithRetry(t *testing.T, actionDescription string, maxRetries int, sleepBe
 // immediately. If it returns any other type of error, sleep for sleepBetweenRetries and try again, up to a maximum of
 // maxRetries retries. If maxRetries is exceeded, return a MaxRetriesExceeded error.
 func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) (string, error) {
-	for i := 0; i < maxRetries; i++ {
+	for i := 0; i <= maxRetries; i++ {
 		logger.Log(t, actionDescription)
 
 		output, err := action()
