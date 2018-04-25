@@ -12,7 +12,7 @@ import (
 // method does NOT call destroy and assumes the caller is responsible for cleaning up any resources created by running
 // apply.
 func InitAndApply(t *testing.T, options *Options) string {
-	out, err := ApplyE(t, options)
+	out, err := InitAndApplyE(t, options)
 	if err != nil {
 		t.Fatal(err)
 	}
