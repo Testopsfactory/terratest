@@ -9,7 +9,7 @@ import (
 	"os/exec"
 )
 
-const copyFolderContentsFixtureRoot = "../test-fixtures/copy-folder-contents"
+const copyFolderContentsFixtureRoot = "../../test/fixtures/copy-folder-contents"
 
 func TestFileExists(t *testing.T) {
 	t.Parallel()

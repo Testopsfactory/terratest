@@ -93,7 +93,7 @@ func TerminateInstanceE(t *testing.T, region string, instanceId string) error {
 
 // Create an EC2 client
 func NewEc2Client(region string) (*ec2.EC2, error) {
-	sess, err := GetAuthenticatedSession(region)
+	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}

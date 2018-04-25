@@ -19,7 +19,7 @@ func TestSsh(t *testing.T) {
 	t.Parallel()
 
 	randomResourceCollection := createBaseRandomResourceCollection(t)
-	terratestOptions := createTerratestOptions("TestSsh", "../test-fixtures/ssh-test", randomResourceCollection, t)
+	terratestOptions := createTerratestOptions("TestSsh", "../../test/fixtures/ssh-test", randomResourceCollection, t)
 	defer terratest.Destroy(terratestOptions, randomResourceCollection)
 
 	logger := terralog.NewLogger(terratestOptions.TestName)

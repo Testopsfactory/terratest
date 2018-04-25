@@ -27,7 +27,7 @@ func GetAcmCertificateArn(awsRegion string, certDomainName string) (string, erro
 
 // Create a new ACM client
 func NewAcmClient(awsRegion string) (*acm.ACM, error) {
-	sess, err := GetAuthenticatedSession(awsRegion)
+	sess, err := NewAuthenticatedSession(awsRegion)
 	if err != nil {
 		return nil, err
 	}

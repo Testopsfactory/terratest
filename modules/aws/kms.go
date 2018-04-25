@@ -37,7 +37,7 @@ func GetCmkArnE(t *testing.T, region string, cmkId string) (string, error) {
 
 // Create a KMS client
 func NewKmsClient(region string) (*kms.KMS, error) {
-	sess, err := GetAuthenticatedSession(region)
+	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}

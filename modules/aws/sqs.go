@@ -177,7 +177,7 @@ func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeou
 
 // Create a new SQS client
 func NewSqsClient(region string) (*sqs.SQS, error) {
-	sess, err := GetAuthenticatedSession(region)
+	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}

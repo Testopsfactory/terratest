@@ -41,7 +41,7 @@ func GetCloudWatchLogEntriesE(t *testing.T, awsRegion string, logStreamName stri
 
 // Create a new CloudWatch Logs client
 func NewCloudWatchLogsClient(region string) (*cloudwatchlogs.CloudWatchLogs, error) {
-	sess, err := GetAuthenticatedSession(region)
+	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}

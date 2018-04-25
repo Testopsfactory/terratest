@@ -162,7 +162,7 @@ func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 
 // Create an S3 client
 func NewS3Client(region string) (*s3.S3, error) {
-	sess, err := GetAuthenticatedSession(region)
+	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}

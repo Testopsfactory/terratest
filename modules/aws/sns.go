@@ -64,7 +64,7 @@ func DeleteSNSTopicE(t *testing.T, region string, snsTopicArn string) error {
 
 // Create a new SNS client
 func NewSnsClient(region string) (*sns.SNS, error) {
-	sess, err := GetAuthenticatedSession(region)
+	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
 	}
