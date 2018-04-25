@@ -38,7 +38,7 @@
     "only": ["ubuntu-ami"]
   },{
     "type": "file",
-    "source": "{{template_dir}}/",
+    "source": "{{template_dir}}",
     "destination": "/tmp/packer-docker-example"
   },{
     "type": "shell",
