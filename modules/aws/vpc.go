@@ -4,7 +4,112 @@ import (
 	"fmt"
 	"strings"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/aws"
+	"strconv"
+	"errors"
+	"testing"
 )
+
+type Vpc struct {
+	Id      string   // The ID of the VPC
+	Name    string   // The name of the VPC
+	Subnets []Subnet // A list of subnets in the VPC
+}
+
+type Subnet struct {
+	Id               string // The ID of the Subnet
+	AvailabilityZone string // The Availability Zone the subnet is in
+}
+
+var vpcIdFilterName = "vpc-id"
+var isDefaultFilterName = "isDefault"
+var isDefaultFilterValue = "true"
+
+// Fetch information about the default VPC in the given region
+func GetDefaultVpc(t *testing.T, region string) *Vpc {
+	vpc, err := GetDefaultVpcE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return vpc
+}
+
+// Fetch information about the default VPC in the given region
+func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
+	client, err := NewEc2Client(region)
+	if err != nil {
+		return nil, err
+	}
+
+	defaultVpcFilter := ec2.Filter{Name: &isDefaultFilterName, Values: []*string{&isDefaultFilterValue}}
+	vpcs, err := client.DescribeVpcs(&ec2.DescribeVpcsInput{Filters: []*ec2.Filter{&defaultVpcFilter}})
+	if err != nil {
+		return nil, err
+	}
+
+	numVpcs := len(vpcs.Vpcs)
+	if numVpcs != 1 {
+		return nil, errors.New(fmt.Sprintf("Expected to find one default VPC in region %s but found %d", region, strconv.Itoa(numVpcs)))
+	}
+
+	defaultVpc := vpcs.Vpcs[0]
+
+	subnets, err := GetSubnetsForVpcE(t, aws.StringValue(defaultVpc.VpcId), region)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Vpc{Id: aws.StringValue(defaultVpc.VpcId), Name: FindVpcName(defaultVpc), Subnets: subnets}, nil
+}
+
+// Extract the VPC name from its tags (if any). Fall back to "Default" if it's the default VPC or empty string
+// otherwise.
+func FindVpcName(vpc *ec2.Vpc) string {
+	for _, tag := range vpc.Tags {
+		if *tag.Key == "Name" {
+			return *tag.Value
+		}
+	}
+
+	if *vpc.IsDefault {
+		return "Default"
+	}
+
+	return ""
+}
+
+// Get the subnets in the specified VPC
+func GetSubnetsForVpc(t *testing.T, vpcId string, region string) []Subnet {
+	subnets, err := GetSubnetsForVpcE(t, vpcId, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return subnets
+}
+
+// Get the subnets in the specified VPC
+func GetSubnetsForVpcE(t *testing.T, vpcId string, region string) ([]Subnet, error) {
+	client, err := NewEc2Client(region)
+	if err != nil {
+		return nil, err
+	}
+
+	vpcIdFilter := ec2.Filter{Name: &vpcIdFilterName, Values: []*string{&vpcId}}
+	subnetOutput, err := client.DescribeSubnets(&ec2.DescribeSubnetsInput{Filters: []*ec2.Filter{&vpcIdFilter}})
+	if err != nil {
+		return nil, err
+	}
+
+	subnets := []Subnet{}
+
+	for _, ec2Subnet := range subnetOutput.Subnets {
+		subnet := Subnet{Id: aws.StringValue(ec2Subnet.SubnetId), AvailabilityZone: aws.StringValue(ec2Subnet.AvailabilityZone)}
+		subnets = append(subnets, subnet)
+	}
+
+	return subnets, nil
+}
 
 // Get a random CIDR block from the range of acceptable private IP addresses per RFC 1918
 // (https://tools.ietf.org/html/rfc1918#section-3)
