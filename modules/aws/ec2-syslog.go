@@ -23,8 +23,8 @@ func GetSyslogForInstance(t *testing.T, instanceId string, awsRegion string) str
 
 // Get the syslog for the Instance with the given ID in the given region. This should be available ~1 minute after an
 // Instance boots and is very useful for debugging boot-time issues, such as an error in User Data.
-func GetSyslogForInstanceE(t *testing.T, instanceId string, awsRegion string) (string, error) {
-	description := fmt.Sprintf("Fetching syslog for Instance %s in %s", instanceId, awsRegion)
+func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (string, error) {
+	description := fmt.Sprintf("Fetching syslog for Instance %s in %s", instanceId, region)
 	maxRetries := 60
 	timeBetweenRetries := 5 * time.Second
 
@@ -47,7 +47,7 @@ func GetSyslogForInstanceE(t *testing.T, instanceId string, awsRegion string) (s
 
 		syslog := aws.StringValue(out.Output)
 		if syslog == "" {
-			return "", fmt.Errorf("Syslog is not yet available for instance %s in %s", instanceId, awsRegion)
+			return "", fmt.Errorf("Syslog is not yet available for instance %s in %s", instanceId, region)
 		}
 
 		return syslog, nil
