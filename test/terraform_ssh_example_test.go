@@ -15,6 +15,20 @@ import (
 func TerraformSshExampleTest(t *testing.T) {
 	t.Parallel()
 
+	// Deploy the example
+	terraformOptions, keyPair := deploy(t)
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
+
+	// Make sure we can SSH to the public Instance directly from the public Internet
+	testSshToPublicHost(t, terraformOptions, keyPair)
+
+	// Make sure we can SSH to the private Instance by using the public Instance as a jump host
+	testSshToPrivateHost(t, terraformOptions, keyPair)
+}
+
+func deploy(t *testing.T) (*terraform.Options, *aws.Ec2Keypair) {
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
 	// tests running in parallel
 	uniqueId := random.UniqueId()
@@ -45,16 +59,17 @@ func TerraformSshExampleTest(t *testing.T) {
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
 	terraform.Apply(t, terraformOptions)
 
-	// At the end of the test, run `terraform destroy` to clean up any resources that were created
-	defer terraform.Destroy(t, terraformOptions)
+	return terraformOptions, keyPair
+}
 
+func testSshToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
 	// Run `terraform output` to get the value of an output variable
-	instanceIp := terraform.Output(t, terraformOptions, "instance_ip")
+	publicInstanceIp := terraform.Output(t, terraformOptions, "public_instance_ip")
 
 	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
 	// as we know the Instance is running an Ubuntu AMI that has such a user
-	host := ssh.Host{
-		Hostname:    instanceIp,
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIp,
 		SshKeyPair:  keyPair.KeyPair,
 		SshUserName: "ubuntu",
 	}
@@ -62,7 +77,7 @@ func TerraformSshExampleTest(t *testing.T) {
 	// It can take a minute or so for the Instance to boot up, so retry a few times
 	maxRetries := 15
 	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH to %s", instanceIp)
+	description := fmt.Sprintf("SSH to public host %s", publicInstanceIp)
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
@@ -70,7 +85,47 @@ func TerraformSshExampleTest(t *testing.T) {
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		actualText := ssh.CheckSshCommand(t, host, command)
+		actualText := ssh.CheckSshCommand(t, publicHost, command)
+
+		if actualText != command {
+			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)
+		}
+
+		return "", nil
+	})
+}
+
+func testSshToPrivateHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+	// Run `terraform output` to get the value of an output variable
+	publicInstanceIp := terraform.Output(t, terraformOptions, "public_instance_ip")
+	privateInstanceIp := terraform.Output(t, terraformOptions, "private_instance_ip")
+
+	// We're going to try to SSH to the private instance using the public instance as a jump host. For both instances,
+	// we are using the Key Pair we created earlier, and the user "ubuntu", as we know the Instances are running an
+	// Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIp,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: "ubuntu",
+	}
+	privateHost := ssh.Host{
+		Hostname:    privateInstanceIp,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: "ubuntu",
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 15
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH to private host %s via public host %s", publicInstanceIp, privateInstanceIp)
+
+	// Run a simple echo command on the server
+	expectedText := "Hello, World"
+	command := fmt.Sprintf("echo '%s'", expectedText)
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		actualText := ssh.CheckPrivateSshConnection(t, publicHost, privateHost, command)
 
 		if actualText != command {
 			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)

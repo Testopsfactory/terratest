@@ -1,9 +1,9 @@
 # Terraform SSH Example
 
 This folder contains a simple Terraform module that deploys resources in [AWS](https://aws.amazon.com/) to demonstrate
-how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an [EC2
-Instance](https://aws.amazon.com/ec2/) in the AWS region specified in the `aws_region` variable. The EC2 Instance
-allows SSH requests on the port specified by the `ssh_port` variable.
+how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys two [EC2
+Instances](https://aws.amazon.com/ec2/), one with a public IP, one with a private IP, in the AWS region specified in
+the `aws_region` variable. The EC2 Instances allow SSH requests on the port specified by the `ssh_port` variable.
 
 Check out [test/terraform_ssh_example_test.go](/test/terraform_ssh_example_test.go) to see how you can write
 automated tests for this module.

@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY AN EC2 INSTANCE THAT ALLOWS CONNECTIONS VIA SSH
+# DEPLOY TWO EC2 INSTANCES THAT ALLOWS CONNECTIONS VIA SSH
 # See test/terraform_ssh_example.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -8,26 +8,54 @@ provider "aws" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY THE EC2 INSTANCE
+# DEPLOY THE EC2 INSTANCE WITH A PUBLIC IP
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "aws_instance" "example" {
+resource "aws_instance" "example_public" {
   ami                    = "${data.aws_ami.ubuntu.id}"
   instance_type          = "t2.micro"
   vpc_security_group_ids = ["${aws_security_group.example.id}"]
   key_name               = "${var.key_pair_name}"
 
+  # This EC2 Instance has a public IP and will be accessible directly from the public Internet
+  associate_public_ip_address = true
+
   tags {
-    Name = "${var.instance_name}"
+    Name = "${var.instance_name}-public"
   }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# CREATE A SECURITY GROUP TO CONTROL WHAT REQUESTS CAN GO IN AND OUT OF THE EC2 INSTANCE
+# DEPLOY THE EC2 INSTANCE WITH A PRIVATE IP
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_instance" "example_private" {
+  ami                    = "${data.aws_ami.ubuntu.id}"
+  instance_type          = "t2.micro"
+  vpc_security_group_ids = ["${aws_security_group.example.id}"]
+  key_name               = "${var.key_pair_name}"
+
+  # This EC2 Instance has a private IP and will be accessible only from within the VPC
+  associate_public_ip_address = false
+
+  tags {
+    Name = "${var.instance_name}-private"
+  }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE A SECURITY GROUP TO CONTROL WHAT REQUESTS CAN GO IN AND OUT OF THE EC2 INSTANCES
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_security_group" "example" {
   name = "${var.instance_name}"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     from_port = "${var.ssh_port}"

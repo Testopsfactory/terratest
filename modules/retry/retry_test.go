@@ -39,10 +39,8 @@ func TestDoWithRetry(t *testing.T) {
 		{"Return value after 5 retries, but only do 4 retries", 4, MaxRetriesExceeded{Description: "Return value after 5 retries, but only do 4 retries", MaxRetries: 4}, createActionThatReturnsExpectedAfterFiveRetries()},
 	}
 
-	logger := terralog.NewLogger("TestDoWithRetry")
-
 	for _, testCase := range testCases {
-		actualOutput, err := DoWithRetry(testCase.description, testCase.maxRetries, 1 * time.Millisecond, logger, testCase.action)
+		actualOutput, err := DoWithRetryE(t, testCase.description, testCase.maxRetries, 1 * time.Millisecond, testCase.action)
 		if testCase.expectedError != nil {
 			if err != testCase.expectedError {
 				t.Fatalf("Expected error '%v' for test case '%s' but got '%v'", testCase.description, testCase.expectedError, err)
@@ -96,7 +94,7 @@ func TestDoWithTimeout(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		actualOutput, err := DoWithTimeout(testCase.description, testCase.timeout, testCase.action)
+		actualOutput, err := DoWithTimeoutE(t, testCase.description, testCase.timeout, testCase.action)
 		if testCase.expectedError != nil {
 			if err != testCase.expectedError {
 				t.Fatalf("Expected error '%v' for test case '%s' but got '%v'", testCase.description, testCase.expectedError, err)
