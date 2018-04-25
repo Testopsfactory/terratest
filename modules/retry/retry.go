@@ -68,6 +68,7 @@ func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepB
 		}
 
 		if _, isFatalErr := err.(FatalError); isFatalErr {
+			logger.Logf(t, "Returning due to fatal error: %v", err)
 			return "", err
 		}
 
@@ -99,4 +100,10 @@ func (err MaxRetriesExceeded) Error() string {
 }
 
 // Marker interface for errors that should not be retried
-type FatalError error
+type FatalError struct {
+	Underlying error
+}
+
+func (err FatalError) Error() string {
+	return fmt.Sprintf("FatalError{Underlying: %v}", err.Underlying)
+}

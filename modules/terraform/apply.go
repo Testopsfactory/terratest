@@ -66,6 +66,6 @@ func ApplyE(t *testing.T, options *Options) (string, error) {
 			}
 		}
 
-		return "", retry.FatalError(err)
+		return "", retry.FatalError{Underlying: err}
 	})
 }
