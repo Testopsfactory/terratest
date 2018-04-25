@@ -79,6 +79,40 @@ func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepB
 	return "", MaxRetriesExceeded{Description: actionDescription, MaxRetries: maxRetries}
 }
 
+type Done struct {
+	stop chan bool
+}
+
+func (done Done) Done() {
+	done.stop <- true
+}
+
+// Run the specified action in the background (in a goroutine) repeatedly, waiting the specified amount of time between
+// repetitions. To stop this action, call the Done() function on the returned value.
+func DoInBackgroundUntilStopped(t *testing.T, actionDescription string, sleepBetweenRepeats time.Duration, action func()) Done {
+	stop := make(chan bool)
+
+	go func() {
+		for {
+			logger.Logf(t, "Executing action '%s'", actionDescription)
+
+			action()
+
+			logger.Logf(t, "Sleeping for %s before repeating action '%s'", sleepBetweenRepeats, actionDescription)
+
+			select {
+			case <- time.After(sleepBetweenRepeats):
+				// Nothing to do, just allow the loop to continue
+			case <- stop:
+				logger.Logf(t, "Received stop signal for action '%s'.", actionDescription)
+				return
+			}
+		}
+	}()
+
+	return Done{stop: stop}
+}
+
 // Custom error types
 
 type TimeoutExceeded struct {
