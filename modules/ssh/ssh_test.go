@@ -77,7 +77,7 @@ func createTerratestOptions(testName string, templatePath string, randomResource
 	return terratestOptions
 }
 
-func testSshToPublicHost(terratestOptions *terratest.TerratestOptions, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) error {
+func testSshToPublicHost(terratestOptions *terratest.TerratestOptions, resourceCollection *terratest.RandomResourceCollection) error {
 	ip, err := terratest.Output(terratestOptions, TERRAFORM_OUTPUT_PUBLIC_IP)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func testSshToPublicHost(terratestOptions *terratest.TerratestOptions, resourceC
 	return err
 }
 
-func testSshToPrivateHost(terratestOptions *terratest.TerratestOptions, resourceCollection *terratest.RandomResourceCollection, logger *log.Logger) error {
+func testSshToPrivateHost(terratestOptions *terratest.TerratestOptions, resourceCollection *terratest.RandomResourceCollection) error {
 	publicIp, err := terratest.Output(terratestOptions, TERRAFORM_OUTPUT_PUBLIC_IP)
 	if err != nil {
 		return err
