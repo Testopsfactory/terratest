@@ -3,7 +3,7 @@
 
 set -e
 
-readonly APP_RB_SRC="/tmp/app.rb"
+readonly APP_RB_SRC="/tmp/packer-docker-example/app.rb"
 readonly APP_RB_DST="/home/ubuntu/app.rb"
 
 echo "Installing Ruby"

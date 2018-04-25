@@ -30,13 +30,19 @@
     "commit": true
   }],
   "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "echo 'Sleeping for a few seconds to give Ubuntu time to boot up'",
+      "sleep 30"
+    ],
+    "only": ["ubuntu-ami"]
+  },{
     "type": "file",
-    "source": "{{template_dir}}/app.rb",
-    "destination": "/tmp/app.rb"
+    "source": "{{template_dir}}/",
+    "destination": "/tmp/packer-docker-example"
   },{
     "type": "shell",
-    "pause_before": "30s",
-    "script": "{{template_dir}}/configure-sinatra-app.sh"
+    "inline": ["/tmp/packer-docker-example/configure-sinatra-app.sh"]
   }],
   "post-processors": [{
     "type": "docker-tag",
