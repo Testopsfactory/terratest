@@ -9,26 +9,47 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
+	"strings"
 )
 
-// An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest.
+// An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest. The test also
+// shows an example of how to break a test down into "stages" so you can skip stages by setting environment variables
+// (e.g., skip stage "teardown" by setting the environment variable "SKIP_teardown=true"), which speeds up iteration
+// when running this test over and over again locally.
 func TestTerraformSshExample(t *testing.T) {
 	t.Parallel()
 
+	exampleFolder := "../examples/terraform-ssh-example"
+
 	// Deploy the example
-	terraformOptions, keyPair := deploy(t)
+	test_structure.RunTestStage(t, "setup", func() {
+		terraformOptions, keyPair := deploy(t, exampleFolder)
+
+		// Save the options and key pair so later test stages can use them
+		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
+		test_structure.SaveEc2KeyPair(t, exampleFolder, keyPair)
+	})
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
-	defer terraform.Destroy(t, terraformOptions)
+	defer test_structure.RunTestStage(t, "teardown", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+		terraform.Destroy(t, terraformOptions)
+	})
 
-	// Make sure we can SSH to the public Instance directly from the public Internet
-	testSshToPublicHost(t, terraformOptions, keyPair)
+	// Make sure we can SSH to the public Instance directly from the public Internet and the private Instance by using
+	// the public Instance as a jump host
+	test_structure.RunTestStage(t, "validate", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+		keyPair := test_structure.LoadEc2KeyPair(t, exampleFolder)
 
-	// Make sure we can SSH to the private Instance by using the public Instance as a jump host
-	testSshToPrivateHost(t, terraformOptions, keyPair)
+		testSshToPublicHost(t, terraformOptions, keyPair)
+		testSshToPrivateHost(t, terraformOptions, keyPair)
+	})
+
 }
 
-func deploy(t *testing.T) (*terraform.Options, *aws.Ec2Keypair) {
+func deploy(t *testing.T, exampleFolder string) (*terraform.Options, *aws.Ec2Keypair) {
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
 	// tests running in parallel
 	uniqueId := random.UniqueId()
@@ -46,7 +67,7 @@ func deploy(t *testing.T) (*terraform.Options, *aws.Ec2Keypair) {
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../examples/terraform-ssh-example",
+		TerraformDir: exampleFolder,
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
@@ -81,13 +102,17 @@ func testSshToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyP
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
-	command := fmt.Sprintf("echo '%s'", expectedText)
+	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		actualText := ssh.CheckSshCommand(t, publicHost, command)
+		actualText, err := ssh.CheckSshCommandE(t, publicHost, command)
 
-		if actualText != command {
+		if err != nil {
+			return "", err
+		}
+
+		if strings.TrimSpace(actualText) != expectedText {
 			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)
 		}
 
@@ -121,13 +146,17 @@ func testSshToPrivateHost(t *testing.T, terraformOptions *terraform.Options, key
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
-	command := fmt.Sprintf("echo '%s'", expectedText)
+	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		actualText := ssh.CheckPrivateSshConnection(t, publicHost, privateHost, command)
+		actualText, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, command)
 
-		if actualText != command {
+		if err != nil {
+			return "", err
+		}
+
+		if strings.TrimSpace(actualText) != expectedText {
 			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)
 		}
 
