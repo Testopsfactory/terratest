@@ -7,7 +7,7 @@ import (
 )
 
 // An example of how to test the Packer template in examples/packer-basic-example using Terratest.
-func PackerBasicExampleTest(t *testing.T)  {
+func TestPackerBasicExample(t *testing.T)  {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.

@@ -12,7 +12,7 @@ import (
 )
 
 // An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest.
-func TerraformSshExampleTest(t *testing.T) {
+func TestTerraformSshExample(t *testing.T) {
 	t.Parallel()
 
 	// Deploy the example

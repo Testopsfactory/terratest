@@ -7,7 +7,7 @@ import (
 )
 
 // An example of how to test the simple Terraform module in examples/terraform-basic-example using Terratest.
-func TerraformBasicExampleTest(t *testing.T) {
+func TestTerraformBasicExample(t *testing.T) {
 	t.Parallel()
 
 	expectedText := "foo"

@@ -13,7 +13,7 @@ import (
 
 // An example of how to test the Packer template in examples/packer-docker-example completely locally using Terratest
 // and Docker.
-func PackerDockerExampleLocalTest(t *testing.T)  {
+func TestPackerDockerExampleLocal(t *testing.T)  {
 	t.Parallel()
 
 	packerOptions := &packer.Options {

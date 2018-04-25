@@ -10,7 +10,7 @@ import (
 )
 
 // An example of how to test the Terraform module in examples/terraform-aws-example using Terratest.
-func TerraformAwsExampleTest(t *testing.T) {
+func TestTerraformAwsExample(t *testing.T) {
 	t.Parallel()
 
 	// Give this EC2 Instance a unique ID for a name tag so we can distinguish it from any other EC2 Instance running

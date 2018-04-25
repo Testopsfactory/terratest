@@ -11,7 +11,7 @@ import (
 )
 
 // An example of how to test the Terraform module in examples/terraform-http-example using Terratest.
-func TerraformHttpExampleTest(t *testing.T) {
+func TestTerraformHttpExample(t *testing.T) {
 	t.Parallel()
 
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or

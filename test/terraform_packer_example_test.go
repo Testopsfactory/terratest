@@ -17,7 +17,7 @@ import (
 // response to requests. The test is broken into "stages" so you can skip stages by setting environment variables (e.g.,
 // skip stage "build_ami" by setting the environment variable "SKIP_build_ami=true"), which speeds up iteration when
 // running this test over and over again locally.
-func TerraformPackerExampleTest(t *testing.T)  {
+func TestTerraformPackerExample(t *testing.T)  {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
