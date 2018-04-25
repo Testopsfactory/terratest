@@ -37,4 +37,4 @@ Terratest. For slightly more complicated, real-world examples of Packer template
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -run PackerBasicExampleTest`
+1. `go test -v -run TestPackerBasicExample`

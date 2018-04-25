@@ -30,4 +30,4 @@ Terratest. For a slightly more complicated, real-world example of a Terraform mo
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -run TerraformBasicExampleTest`
+1. `go test -v -run TestTerraformBasicExample`
