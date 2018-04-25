@@ -3,10 +3,15 @@ package retry
 import (
 	"time"
 	"fmt"
-	"github.com/gruntwork-io/terratest/parallel"
 	"testing"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"golang.org/x/net/context"
 )
+
+type Either struct {
+	Result string
+	Error  error
+}
 
 // Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
 // it completes on time or fail the test otherwise.
@@ -21,17 +26,20 @@ func DoWithTimeout(t *testing.T, actionDescription string, timeout time.Duration
 // Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
 // it completes on time or an error otherwise.
 func DoWithTimeoutE(t *testing.T, actionDescription string, timeout time.Duration, action func() (string, error)) (string, error) {
-	resultChannel := make(chan parallel.TestResult, 1)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	resultChannel := make(chan Either, 1)
 
 	go func() {
 		out, err := action()
-		resultChannel <- parallel.TestResult{Description: actionDescription, Value: out, Err: err}
+		resultChannel <- Either{Result: out, Error: err}
 	}()
 
 	select {
-	case result := <-resultChannel:
-		return result.Value, result.Err
-	case <-time.After(timeout):
+	case either := <- resultChannel:
+		return either.Result, either.Error
+	case <- ctx.Done():
 		return "", TimeoutExceeded{Description: actionDescription, Timeout: timeout}
 	}
 }
