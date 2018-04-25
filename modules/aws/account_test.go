@@ -1,6 +1,14 @@
 package aws
 
-import "testing"
+import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetAccountId(t *testing.T) {
+	accountId := GetAccountId(t)
+	assert.Regexp(t, "^[0-9]{12}$", accountId)
+}
 
 func TestExtractAccountIdFromValidArn(t *testing.T) {
 	t.Parallel()
