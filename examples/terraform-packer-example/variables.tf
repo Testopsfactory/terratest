@@ -36,6 +36,6 @@ variable "instance_port" {
 }
 
 variable "instance_text" {
-  description = "The test the EC2 Instance should return when it gets an HTTP request."
+  description = "The text the EC2 Instance should return when it gets an HTTP request."
   default     = "Hello, World!"
 }
