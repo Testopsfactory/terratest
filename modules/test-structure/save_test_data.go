@@ -91,18 +91,7 @@ func formatEc2KeyPairPath(testFolder string) string {
 // values during one stage -- each with a unique name -- and to reuse those values during later stages.
 func SaveString(t *testing.T, testFolder string, name string, val string) {
 	path := formatNamedTestDataPath(testFolder, name)
-
-	if IsTestDataPresent(t, path) {
-		logger.Logf(t, "[WARNING] Test data already exists for named string \"%s\" at path %s. The upcoming save operation will overwrite existing data.\n.", name, path)
-	}
-
 	SaveTestData(t, path, val)
-}
-
-// Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
-// AMI later during validation and teardown.
-func SaveAmiId(t *testing.T, testFolder string, amiId string) {
-	SaveString(t, testFolder, "AMI", amiId)
 }
 
 // Load and unserialize a uniquely named string value from the given folder. This allows you to reuse one or more string
@@ -113,20 +102,41 @@ func LoadString(t *testing.T, testFolder string, name string) string {
 	return val
 }
 
+// Save a uniquely named int value into the given folder. This allows you to create one or more int
+// values during one stage -- each with a unique name -- and to reuse those values during later stages.
+func SaveInt(t *testing.T, testFolder string, name string, val int) {
+	path := formatNamedTestDataPath(testFolder, name)
+	SaveTestData(t, path, val)
+}
+
+// Load a uniquely named int value from the given folder. This allows you to reuse one or more int
+// values that were created during an earlier setup step in later steps.
+func LoadInt(t *testing.T, testFolder string, name string) int {
+	var val int
+	LoadTestData(t, formatNamedTestDataPath(testFolder, name), &val)
+	return val
+}
+
+// Serialize and save an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
+// AMI later during validation and teardown.
+func SaveAmiId(t *testing.T, testFolder string, amiId string) {
+	SaveString(t, testFolder, "AMI", amiId)
+}
+
 // Load and unserialize an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
 // earlier setup step in later validation and teardown steps.
 func LoadAmiId(t *testing.T, testFolder string) string {
 	return LoadString(t, testFolder, "AMI")
 }
 
-// Clean up the files used to store a uniquely named test data value between test stages
-func CleanupNamedTestData(t *testing.T, testFolder string, name string) {
-	CleanupTestData(t, formatNamedTestDataPath(testFolder, name))
-}
-
 // Clean up the files used to store an AMI ID between test stages
 func CleanupAmiId(t *testing.T, testFolder string) {
 	CleanupNamedTestData(t, testFolder, "AMI")
+}
+
+// Clean up the files used to store a uniquely named test data value between test stages
+func CleanupNamedTestData(t *testing.T, testFolder string, name string) {
+	CleanupTestData(t, formatNamedTestDataPath(testFolder, name))
 }
 
 // Format a path to save an arbitrary named value in the given folder
@@ -144,6 +154,10 @@ func FormatTestDataPath(testFolder string, filename string) string {
 // (e.g., TerraformOptions) during setup and to reuse this data later during validation and teardown.
 func SaveTestData(t *testing.T, path string, value interface{}) {
 	logger.Logf(t, "Storing test data in %s so it can be reused later", path)
+
+	if IsTestDataPresent(t, path) {
+		logger.Logf(t, "[WARNING] The named test data at path %s is non-empty. Save operation will overwrite existing value with \"%v\".\n.", path, value)
+	}
 
 	bytes, err := json.Marshal(value)
 	if err != nil {

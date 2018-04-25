@@ -130,10 +130,10 @@ func TestSaveAndLoadAmiId(t *testing.T) {
 	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, "AMI")))
 }
 
-func TestSaveAndLoadNamedTestData(t *testing.T) {
+func TestSaveAndLoadNamedStrings(t *testing.T) {
 	t.Parallel()
 
-	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-named-strings")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
@@ -163,7 +163,7 @@ func TestSaveAndLoadNamedTestData(t *testing.T) {
 func TestSaveDuplicateTestData(t *testing.T) {
 	t.Parallel()
 
-	tmpFolder, err := ioutil.TempDir("", "save-and-load-ami-id")
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-duplicate-test-data")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
@@ -178,4 +178,34 @@ func TestSaveDuplicateTestData(t *testing.T) {
 	actualVal := LoadString(t, tmpFolder, name)
 
 	assert.Equal(t, val2, actualVal, "Actual test data should use overwritten values")
+}
+
+func TestSaveAndLoadNamedInts(t *testing.T) {
+	t.Parallel()
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-named-ints")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	name1 := "test-int1"
+	expectedData1 := 23842834
+
+	name2 := "test-int2"
+	expectedData2 := 52
+
+	SaveInt(t, tmpFolder, name1, expectedData1)
+	SaveInt(t, tmpFolder, name2, expectedData2)
+
+	actualData1 := LoadInt(t, tmpFolder, name1)
+	actualData2 := LoadInt(t, tmpFolder, name2)
+
+	assert.Equal(t, expectedData1, actualData1)
+	assert.Equal(t, expectedData2, actualData2)
+
+	CleanupNamedTestData(t, tmpFolder, name1)
+	CleanupNamedTestData(t, tmpFolder, name2)
+
+	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name1)))
+	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name2)))
 }
