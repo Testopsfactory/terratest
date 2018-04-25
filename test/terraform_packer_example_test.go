@@ -10,6 +10,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/gruntwork-io/terratest/modules/packer"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // This is a complicated, end-to-end integration test. It builds the AMI from examples/packer-docker-example,
@@ -39,6 +40,12 @@ func TestTerraformPackerExample(t *testing.T)  {
 	// Deploy the web app using Terraform
 	test_structure.RunTestStage(t, "deploy_terraform", func() {
 		deployUsingTerraform(t, awsRegion, workingDir)
+	})
+
+	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
+	// debugging issues without having to manually SSH to the server.
+	defer test_structure.RunTestStage(t, "logs", func() {
+		fetchSyslog(t, awsRegion, workingDir)
 	})
 
 	// At the end of the test, undeploy the web app using Terraform
@@ -125,6 +132,18 @@ func undeployUsingTerraform(t *testing.T, workingDir string) {
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 
 	terraform.Destroy(t, terraformOptions)
+}
+
+// Fetch the most recent syslogs for the instance. This is a handy way to see what happened on the Instance as part of
+// your test log output, without having to re-run the test and manually SSH to the Instance.
+func fetchSyslog(t *testing.T, awsRegion string, workingDir string) {
+	// Load the Terraform Options saved by the earlier deploy_terraform stage
+	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+
+	instanceId := terraform.OutputRequired(t, terraformOptions, "instance_id")
+	logs := aws.GetSyslogForInstance(t, instanceId, awsRegion)
+
+	logger.Logf(t, "Most recent syslog for Instance %s:\n\n%s\n", instanceId, logs)
 }
 
 // Validate the web server has been deployed and is working
