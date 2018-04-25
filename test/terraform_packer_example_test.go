@@ -42,15 +42,15 @@ func TestTerraformPackerExample(t *testing.T)  {
 		deployUsingTerraform(t, awsRegion, workingDir)
 	})
 
+	// At the end of the test, undeploy the web app using Terraform
+	defer test_structure.RunTestStage(t, "cleanup_terraform", func() {
+		undeployUsingTerraform(t, workingDir)
+	})
+
 	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
 	// debugging issues without having to manually SSH to the server.
 	defer test_structure.RunTestStage(t, "logs", func() {
 		fetchSyslog(t, awsRegion, workingDir)
-	})
-
-	// At the end of the test, undeploy the web app using Terraform
-	defer test_structure.RunTestStage(t, "cleanup_terraform", func() {
-		undeployUsingTerraform(t, workingDir)
 	})
 
 	// Validate that the web app deployed and is responding to HTTP requests
