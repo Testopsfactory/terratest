@@ -12,7 +12,7 @@ type Options struct {
 
 // Run docker-compose with the given arguments and options and return stdout/stderr
 func RunDockerCompose(t *testing.T, options *Options, args ... string) string {
-	out, err := RunDockerComposeE(t, options, args)
+	out, err := RunDockerComposeE(t, options, args...)
 	if err != nil {
 		t.Fatal(err)
 	}
