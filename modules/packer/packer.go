@@ -16,7 +16,7 @@ type Options struct {
 }
 
 // Build the given Packer template and return the generated AMI ID
-func BuildAmi(t *testing.T, options Options) string {
+func BuildAmi(t *testing.T, options *Options) string {
 	amiId, err := BuildAmiE(t, options)
 	if err != nil {
 		t.Fatal(err)
@@ -25,7 +25,7 @@ func BuildAmi(t *testing.T, options Options) string {
 }
 
 // Build the given Packer template and return the generated AMI ID
-func BuildAmiE(t *testing.T, options Options) (string, error) {
+func BuildAmiE(t *testing.T, options *Options) (string, error) {
 	logger.Logf(t, "Running Packer to generate AMI for template %s", options.Template)
 
 	cmd := shell.Command{
@@ -63,7 +63,7 @@ func extractAmiId(packerLogOutput string) (string, error) {
 // Convert the inputs to a format palatable to packer. The build command should have the format:
 //
 // packer build [OPTIONS] template
-func formatPackerArgs(options Options) []string {
+func formatPackerArgs(options *Options) []string {
 	args := []string{"build", "-machine-readable"}
 
 	for key, value := range options.Vars {

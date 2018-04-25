@@ -2,14 +2,14 @@ package test
 
 import (
 	"testing"
-	"github.com/gruntwork-io/terratest/packer"
-	"github.com/gruntwork-io/terratest/aws"
-	"github.com/gruntwork-io/terratest/test-structure"
 	"fmt"
-	"github.com/gruntwork-io/terratest/util"
-	"github.com/gruntwork-io/terratest/terraform"
 	"time"
-	"github.com/gruntwork-io/terratest/http"
+	"github.com/gruntwork-io/terratest/modules/http-helper"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
+	"github.com/gruntwork-io/terratest/modules/packer"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 // This is a complicated, end-to-end integration test. It builds the AMI from examples/packer-docker-example,
@@ -21,11 +21,11 @@ func TerraformPackerExampleTest(t *testing.T)  {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.PickRandomRegion(t)
+	awsRegion := aws.GetRandomRegion(t, nil, nil)
 
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
 	// tests running in parallel
-	uniqueId := util.UniqueId()
+	uniqueId := random.UniqueId()
 
 	// Give this EC2 Instance and other resources in the Terraform code a name with a unique ID so it doesn't clash
 	// with anything else in the AWS account.
@@ -44,7 +44,7 @@ func TerraformPackerExampleTest(t *testing.T)  {
 
 	// At the end of the test, delete the AMI
 	defer test_structure.RunTestStage(t, "cleanup_ami", func() {
-		deleteAmi(t, workingDir)
+		deleteAmi(t, awsRegion, workingDir)
 	})
 
 	// Deploy the web app using Terraform
@@ -65,7 +65,7 @@ func TerraformPackerExampleTest(t *testing.T)  {
 
 // Build the AMI in packer-docker-example
 func buildAmi(t *testing.T, awsRegion string, workingDir string) {
-	packerOptions := packer.Options {
+	packerOptions := &packer.Options {
 		// The path to where the Packer template is located
 		Template: "../examples/packer-docker-example/build.json",
 
@@ -87,12 +87,11 @@ func buildAmi(t *testing.T, awsRegion string, workingDir string) {
 }
 
 // Delete the AMI
-func deleteAmi(t *testing.T, workingDir string) {
+func deleteAmi(t *testing.T, awsRegion string, workingDir string) {
 	// Load the AMI ID and Packer Options saved by the earlier build_ami stage
 	amiId := test_structure.LoadAmiId(t, workingDir)
-	packerOptions := test_structure.LoadPackerOptions(t, workingDir)
 
-	packer.DeleteAmi(t, packerOptions, amiId)
+	aws.DeleteAmi(t, awsRegion, amiId)
 }
 
 // Deploy the terraform-packer-example using Terraform
@@ -100,12 +99,12 @@ func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string, ins
 	// Load the AMI ID saved by the earlier build_ami stage
 	amiId := test_structure.LoadAmiId(t, workingDir)
 
-	terraformOptions := terraform.Options {
+	terraformOptions := &terraform.Options {
 		// The path to where our Terraform code is located
 		TerraformDir: workingDir,
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]string {
+		Vars: map[string]interface{} {
 			"aws_region":    awsRegion,
 			"instance_name": instanceName,
 			"instance_text": instanceText,

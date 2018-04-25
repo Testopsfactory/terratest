@@ -7,17 +7,10 @@ import (
 	"testing"
 )
 
-// Represents an EC2 KeyPair created in AWS
-type Ec2Keypair struct {
-	Name       string // The name assigned in AWS to the EC2 KeyPair
-	PublicKey  string // The public key
-	PrivateKey string // The private key in .pem format
-}
-
 type Host struct {
-	Hostname string
+	Hostname    string
 	SshUserName string
-	SshKeyPair *Ec2Keypair
+	SshKeyPair  *KeyPair
 }
 
 // Check that you can connect via SSH to the given host and fail the test if the connection fails.
@@ -29,7 +22,7 @@ func CheckSshConnection(t *testing.T, host Host) {
 }
 
 // Check that you can connect via SSH to the given host and return an error if the connection fails
-func CheckSshConnectionE(t*testing.T, host Host) error {
+func CheckSshConnectionE(t *testing.T, host Host) error {
 	_, err := CheckSshCommandE(t, host, "'exit'")
 	return err
 }
@@ -51,15 +44,15 @@ func CheckSshCommandE(t *testing.T, host Host, command string) (string, error) {
 	}
 
 	hostOptions := SshConnectionOptions{
-		Username: host.SshUserName,
-		Address: host.Hostname,
-		Port: 22,
-		Command: command,
+		Username:    host.SshUserName,
+		Address:     host.Hostname,
+		Port:        22,
+		Command:     command,
 		AuthMethods: authMethods,
 	}
 
 	sshSession := &SshSession{
-		Options: &hostOptions,
+		Options:  &hostOptions,
 		JumpHost: &JumpHostSession{},
 	}
 
@@ -89,9 +82,9 @@ func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host,
 	}
 
 	jumpHostOptions := SshConnectionOptions{
-		Username: publicHost.SshUserName,
-		Address: publicHost.Hostname,
-		Port: 22,
+		Username:    publicHost.SshUserName,
+		Address:     publicHost.Hostname,
+		Port:        22,
 		AuthMethods: jumpHostAuthMethods,
 	}
 
@@ -101,16 +94,16 @@ func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host,
 	}
 
 	hostOptions := SshConnectionOptions{
-		Username: privateHost.SshUserName,
-		Address: privateHost.Hostname,
-		Port: 22,
-		Command: command,
+		Username:    privateHost.SshUserName,
+		Address:     privateHost.Hostname,
+		Port:        22,
+		Command:     command,
 		AuthMethods: hostAuthMethods,
-		JumpHost: &jumpHostOptions,
+		JumpHost:    &jumpHostOptions,
 	}
 
 	sshSession := &SshSession{
-		Options: &hostOptions,
+		Options:  &hostOptions,
 		JumpHost: &JumpHostSession{},
 	}
 

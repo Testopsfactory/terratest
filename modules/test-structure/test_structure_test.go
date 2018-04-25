@@ -90,7 +90,7 @@ func TestIsEmptyJson(t *testing.T) {
 	assert.False(t, isEmpty, `The JSON value [{ "key": "val" }] should be treated as a non-empty value.`)
 }
 
-func TestSaveAndLoadTerratestOptions(t *testing.T) {
+func TestSaveAndLoadTerraformOptions(t *testing.T) {
 	t.Parallel()
 
 	tmpFolder, err := ioutil.TempDir("", "save-and-load-terratest-options")
@@ -103,13 +103,13 @@ func TestSaveAndLoadTerratestOptions(t *testing.T) {
 		TerraformDir: "/abc/def/ghi",
 		Vars: map[string]interface{}{},
 	}
-	SaveTerratestOptions(t, tmpFolder, expectedData)
+	SaveTerraformOptions(t, tmpFolder, expectedData)
 
-	actualData := LoadTerratestOptions(t, tmpFolder)
+	actualData := LoadTerraformOptions(t, tmpFolder)
 	assert.Equal(t, expectedData, actualData)
 
-	CleanupTerratestOptions(t, tmpFolder)
-	assert.False(t, files.FileExists(formatTerratestOptionsPath(tmpFolder)))
+	CleanupTerraformOptions(t, tmpFolder)
+	assert.False(t, files.FileExists(formatTerraformOptionsPath(tmpFolder)))
 }
 
 func TestSaveAndLoadAmiId(t *testing.T) {

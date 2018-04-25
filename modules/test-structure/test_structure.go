@@ -11,6 +11,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/packer"
 )
 
 const SKIP_STAGE_ENV_VAR_PREFIX = "SKIP_"
@@ -39,28 +40,52 @@ func SkipStageEnvVarSet() bool {
 	return false
 }
 
-// Serialize and save TerratestOptions into the given folder. This allows you to create TerratestOptions during setup
-// and to reuse that TerratestOptions later during validation and teardown.
-func SaveTerratestOptions(t *testing.T, testFolder string, terratestOptions *terraform.Options) {
-	SaveTestData(t, formatTerratestOptionsPath(testFolder), terratestOptions)
+// Serialize and save TerraformOptions into the given folder. This allows you to create TerraformOptions during setup
+// and to reuse that TerraformOptions later during validation and teardown.
+func SaveTerraformOptions(t *testing.T, testFolder string, terraformOptions *terraform.Options) {
+	SaveTestData(t, formatTerraformOptionsPath(testFolder), terraformOptions)
 }
 
-// Load and unserialize TerratestOptions from the given folder. This allows you to reuse a TerratestOptions that was
+// Load and unserialize TerraformOptions from the given folder. This allows you to reuse a TerraformOptions that was
 // created during an earlier setup step in later validation and teardown steps.
-func LoadTerratestOptions(t *testing.T, testFolder string) *terraform.Options {
-	var terratestOptions terraform.Options
-	LoadTestData(t, formatTerratestOptionsPath(testFolder), &terratestOptions)
-	return &terratestOptions
+func LoadTerraformOptions(t *testing.T, testFolder string) *terraform.Options {
+	var terraformOptions terraform.Options
+	LoadTestData(t, formatTerraformOptionsPath(testFolder), &terraformOptions)
+	return &terraformOptions
 }
 
-// Clean up the files used to store TerratestOptions between test stages
-func CleanupTerratestOptions(t *testing.T, testFolder string) {
-	CleanupTestData(t, formatTerratestOptionsPath(testFolder))
+// Clean up the files used to store TerraformOptions between test stages
+func CleanupTerraformOptions(t *testing.T, testFolder string) {
+	CleanupTestData(t, formatTerraformOptionsPath(testFolder))
 }
 
-// Format a path to save TerratestOptions in the given folder
-func formatTerratestOptionsPath(testFolder string) string {
+// Format a path to save TerraformOptions in the given folder
+func formatTerraformOptionsPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "TerraformOptions.json")
+}
+
+// Serialize and save PackerOptions into the given folder. This allows you to create PackerOptions during setup
+// and to reuse that PackerOptions later during validation and teardown.
+func SavePackerOptions(t *testing.T, testFolder string, packerOptions *packer.Options) {
+	SaveTestData(t, formatPackerOptionsPath(testFolder), packerOptions)
+}
+
+// Load and unserialize PackerOptions from the given folder. This allows you to reuse a PackerOptions that was
+// created during an earlier setup step in later validation and teardown steps.
+func LoadPackerOptions(t *testing.T, testFolder string) *packer.Options {
+	var packerOptions packer.Options
+	LoadTestData(t, formatPackerOptionsPath(testFolder), &packerOptions)
+	return &packerOptions
+}
+
+// Clean up the files used to store PackerOptions between test stages
+func CleanupPackerOptions(t *testing.T, testFolder string) {
+	CleanupTestData(t, formatPackerOptionsPath(testFolder))
+}
+
+// Format a path to save PackerOptions in the given folder
+func formatPackerOptionsPath(testFolder string) string {
+	return FormatTestDataPath(testFolder, "PackerOptions.json")
 }
 
 // Serialize and save a uniquely named string value into the given folder. This allows you to create one or more string
@@ -117,7 +142,7 @@ func FormatTestDataPath(testFolder string, filename string) string {
 }
 
 // Serialize and save a value used at test time to the given path. This allows you to create some sort of test data
-// (e.g., TerratestOptions) during setup and to reuse this data later during validation and teardown.
+// (e.g., TerraformOptions) during setup and to reuse this data later during validation and teardown.
 func SaveTestData(t *testing.T, path string, value interface{}) {
 	logger.Logf(t, "Storing test data in %s so it can be reused later", path)
 
@@ -139,7 +164,7 @@ func SaveTestData(t *testing.T, path string, value interface{}) {
 }
 
 // Load and unserialize a value stored at the given path. The value should be a pointer to a struct into which the
-// value will be deserialized. This allows you to reuse some sort of test data (e.g., TerratestOptions) from earlier
+// value will be deserialized. This allows you to reuse some sort of test data (e.g., TerraformOptions) from earlier
 // setup steps in later validation and teardown steps.
 func LoadTestData(t *testing.T, path string, value interface{}) {
 	logger.Logf(t, "Loading test data from %s", path)

@@ -44,6 +44,49 @@ func GetEc2InstanceIdsByTagE(t *testing.T, region string, tagName string, tagVal
 	return instanceIds, err
 }
 
+// Return all the tags for the given EC2 Instance
+func GetTagsForEc2Instance(t *testing.T, region string, instanceId string) map[string]string {
+	tags, err := GetTagsForEc2InstanceE(t, region, instanceId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tags
+}
+
+// Return all the tags for the given EC2 Instance
+func GetTagsForEc2InstanceE(t *testing.T, region string, instanceId string) (map[string]string, error) {
+	client, err := NewEc2Client(region)
+	if err != nil {
+		return nil, err
+	}
+
+	input := ec2.DescribeTagsInput{
+		Filters: []*ec2.Filter{
+			{
+				Name: aws.String("resource-type"),
+				Values: aws.StringSlice([]string{"instance"}),
+			},
+			{
+				Name: aws.String("resource-id"),
+				Values: aws.StringSlice([]string{instanceId}),
+			},
+		},
+	}
+
+	out, err := client.DescribeTags(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	tags := map[string]string{}
+
+	for _, tag := range out.Tags {
+		tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+	}
+
+	return tags, nil
+}
+
 // Delete the given AMI in the given region
 func DeleteAmi(t *testing.T, region string, imageId string) {
 	err := DeleteAmiE(t, region, imageId)
