@@ -50,7 +50,7 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 		regionsToPickFrom = allRegions
 	}
 
-	regionsToPickFrom = collections.Subtract(regionsToPickFrom, forbiddenRegions)
+	regionsToPickFrom = collections.ListSubtract(regionsToPickFrom, forbiddenRegions)
 	return random.RandomString(regionsToPickFrom), nil
 }
 
