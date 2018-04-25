@@ -50,12 +50,12 @@ func TestTerraformPackerExample(t *testing.T)  {
 	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
 	// debugging issues without having to manually SSH to the server.
 	defer test_structure.RunTestStage(t, "logs", func() {
-		fetchSyslog(t, awsRegion, workingDir)
+		fetchSyslogForInstance(t, awsRegion, workingDir)
 	})
 
 	// Validate that the web app deployed and is responding to HTTP requests
 	test_structure.RunTestStage(t, "validate", func() {
-		validate(t, workingDir)
+		validateInstanceRunningWebServer(t, workingDir)
 	})
 }
 
@@ -136,7 +136,7 @@ func undeployUsingTerraform(t *testing.T, workingDir string) {
 
 // Fetch the most recent syslogs for the instance. This is a handy way to see what happened on the Instance as part of
 // your test log output, without having to re-run the test and manually SSH to the Instance.
-func fetchSyslog(t *testing.T, awsRegion string, workingDir string) {
+func fetchSyslogForInstance(t *testing.T, awsRegion string, workingDir string) {
 	// Load the Terraform Options saved by the earlier deploy_terraform stage
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 
@@ -147,7 +147,7 @@ func fetchSyslog(t *testing.T, awsRegion string, workingDir string) {
 }
 
 // Validate the web server has been deployed and is working
-func validate(t *testing.T, workingDir string) {
+func validateInstanceRunningWebServer(t *testing.T, workingDir string) {
 	// Load the Terraform Options saved by the earlier deploy_terraform stage
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 
