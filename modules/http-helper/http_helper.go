@@ -22,7 +22,7 @@ func HttpGet(t *testing.T, url string) (int, string) {
 
 // Perform an HTTP GET on the given URL and return the HTTP status code, body, and any error.
 func HttpGetE(t *testing.T, url string) (int, string, error) {
-	logger.Logf(t, "Making an HTTP GET call to URL", url)
+	logger.Logf(t, "Making an HTTP GET call to URL %s", url)
 
 	client := http.Client{
 		// By default, Go does not impose a timeout, so an HTTP connection attempt can hang for a LONG time.
