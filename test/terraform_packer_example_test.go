@@ -113,7 +113,7 @@ func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string, ins
 	}
 
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.Apply(t, terraformOptions)
+	terraform.InitAndApply(t, terraformOptions)
 
 	// Save the Terraform Options struct so future test stages can use it
 	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
