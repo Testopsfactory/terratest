@@ -44,6 +44,46 @@ func HttpGetE(t *testing.T, url string) (int, string, error) {
 	return resp.StatusCode, strings.TrimSpace(string(body)), nil
 }
 
+// Perform an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// doesn't match, fail the test.
+func HttpGetWithValidation(t *testing.T, url string, expectedStatusCode int, expectedBody string) {
+	err := HttpGetWithValidationE(t, url, expectedStatusCode, expectedBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Perform an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// doesn't match, return an error.
+func HttpGetWithValidationE(t *testing.T, url string, expectedStatusCode int, expectedBody string) error {
+	return HttpGetWithCustomValidationE(t, url, func(statusCode int, body string) bool {
+		return statusCode == expectedStatusCode && body == expectedBody
+	})
+}
+
+// Perform an HTTP GET on the given URL and validate the returned status code and body using the given function.
+func HttpGetWithCustomValidation(t *testing.T, url string, validateResponse func(int, string) bool) {
+	err := HttpGetWithCustomValidationE(t, url, validateResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Perform an HTTP GET on the given URL and validate the returned status code and body using the given function.
+func HttpGetWithCustomValidationE(t *testing.T, url string, validateResponse func(int, string) bool) error {
+	statusCode, body, err := HttpGetE(t, url)
+
+	if err != nil {
+		return err
+	}
+
+	if !validateResponse(statusCode, body) {
+		return ValidationFunctionFailed{Url: url, Status: statusCode, Body: body}
+	}
+
+	return nil
+}
+
 // Repeatedly perform an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetry(t *testing.T, url string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
@@ -57,16 +97,7 @@ func HttpGetWithRetry(t *testing.T, url string, expectedStatus int, expectedBody
 // retries has been exceeded.
 func HttpGetWithRetryE(t *testing.T, url string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
-		status, body, err := HttpGetE(t, url)
-
-		if err != nil {
-			return "", err
-		} else if status != expectedStatus || body != expectedBody {
-			return "", UnexpectedHttpResponse{Url: url, ExpectedStatus: expectedStatus, ActualStatus: status, ExpectedBody: expectedBody, ActualBody: body}
-		} else {
-			logger.Logf(t, "Got expected status code %d from URL %s and expected body:\n%s\n", expectedStatus, url, body)
-			return body, nil
-		}
+		return "", HttpGetWithValidationE(t, url, expectedStatus, expectedBody)
 	})
 
 	return err
@@ -85,31 +116,10 @@ func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, retries int,
 // has been exceeded.
 func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
-		status, body, err := HttpGetE(t, url)
-
-		if err != nil {
-			return "", err
-		} else if !validateResponse(status, body) {
-			return "", ValidationFunctionFailed{Url: url, Status: status, Body: body}
-		} else {
-			logger.Logf(t, "Validation function passed for URL %s, with status code %d and body: %s\n", url, status, body)
-			return body, nil
-		}
+		return "", HttpGetWithCustomValidationE(t, url, validateResponse)
 	})
 
 	return err
-}
-
-type UnexpectedHttpResponse struct {
-	Url            string
-	ExpectedStatus int
-	ActualStatus   int
-	ExpectedBody   string
-	ActualBody     string
-}
-
-func (err UnexpectedHttpResponse) Error() string {
-	return fmt.Sprintf("Unexpected HTTP response from URL %s.\nExpected status: %d\nActual status: %d\n\nExpected body:\n%s\n\nActual body\n%s\n", err.Url, err.ExpectedStatus, err.ActualStatus, err.ExpectedBody, err.ActualBody)
 }
 
 type ValidationFunctionFailed struct {
