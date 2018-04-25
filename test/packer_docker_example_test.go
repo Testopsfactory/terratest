@@ -32,7 +32,7 @@ func TestPackerDockerExampleLocal(t *testing.T)  {
 
 	dockerOptions := &docker.Options{
 		// Directory where docker-compose.yml lives
-		WorkingDir: "../examples-packer-docker-example",
+		WorkingDir: "../examples/packer-docker-example",
 
 		// Configure the port the web app will listen on and the text it will return using environment variables
 		EnvVars: map[string]string{
