@@ -14,7 +14,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-external-dep
-            - v1-dep-{{ checksum "test/Gopkg.lock" }}
+            - v1-dep-{{ checksum "Gopkg.lock" }}
       # Use the Gruntwork Installer to install the gruntwork-module-circleci-helpers
       - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
       - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.7.1"
@@ -25,7 +25,7 @@ jobs:
             - $HOME/terraform
             - $HOME/packer
       - save_cache:
-          key: v1-dep-{{ checksum "test/Gopkg.lock" }}
+          key: v1-dep-{{ checksum "Gopkg.lock" }}
           paths:
             - $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/test/vendor
 
