@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func TestCreateAndImportEC2KeyPair(t *testing.T) {
+func TestCreateImportAndDeleteEC2KeyPair(t *testing.T) {
 	t.Parallel()
 
 	region := GetRandomRegion(t, nil, nil)
