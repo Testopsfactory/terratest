@@ -23,19 +23,19 @@ in Terraform, Go, Python, and Bash, and is used in production by hundreds of com
 
 The basic usage pattern for writing automated tests with Terratest is to:
 
-1. Write tests using Go's built-in [package testing](https://golang.org/pkg/testing/). Therefore, you create a file
-   ending in `_test.go`, write your test, and run it with the `go test` command.
+1. Write tests using Go's built-in [package testing](https://golang.org/pkg/testing/): you create a file ending in
+   `_test.go` and run tests with the `go test` command.
 1. Use Terratest to execute your *real* IaC tools (e.g., Terraform, Packer, etc.) to deploy *real* infrastructure
    (e.g., servers) in a *real* environment (e.g., AWS).
 1. Validate that the infrastructure works correctly in that environment by making HTTP requests, API calls, SSH
    connections, etc.
-1. Undeploy everything at the end of the test. See [cleanup](#cleanup) for more info.
+1. Undeploy everything at the end of the test.
 
-Here's a very simple example of how to test some Terraform code:
+Here's a simple example of how to test some Terraform code:
 
 ```go
 terraformOptions := &terraform.Options {
-  // The path to where our Terraform code is located
+  // The path to where your Terraform code is located
   TerraformDir: "../examples/terraform-basic-example",
 }
 
@@ -45,7 +45,7 @@ terraform.InitAndApply(t, terraformOptions)
 // At the end of the test, run `terraform destroy` to clean up any resources that were created
 defer terraform.Destroy(t, terraformOptions)
 
-// Validate our code works as expected
+// Validate your code works as expected
 validateServerIsWorking(t, terraformOptions)
 ```
 
