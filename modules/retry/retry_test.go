@@ -41,6 +41,8 @@ func TestDoWithRetry(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testCase := testCase // capture range variable for each test case
+
 		t.Run(testCase.description, func(t *testing.T) {
 			t.Parallel()
 
@@ -93,6 +95,8 @@ func TestDoWithTimeout(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testCase := testCase // capture range variable for each test case
+
 		t.Run(testCase.description, func(t *testing.T) {
 			t.Parallel()
 
