@@ -106,9 +106,6 @@ func TestSaveAndLoadTerraformOptions(t *testing.T) {
 
 	actualData := LoadTerraformOptions(t, tmpFolder)
 	assert.Equal(t, expectedData, actualData)
-
-	CleanupTerraformOptions(t, tmpFolder)
-	assert.False(t, files.FileExists(formatTerraformOptionsPath(tmpFolder)))
 }
 
 func TestSaveAndLoadAmiId(t *testing.T) {
@@ -124,9 +121,6 @@ func TestSaveAndLoadAmiId(t *testing.T) {
 
 	actualData := LoadAmiId(t, tmpFolder)
 	assert.Equal(t, expectedData, actualData)
-
-	CleanupAmiId(t, tmpFolder)
-	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, "AMI")))
 }
 
 func TestSaveAndLoadNamedStrings(t *testing.T) {
@@ -151,12 +145,6 @@ func TestSaveAndLoadNamedStrings(t *testing.T) {
 
 	assert.Equal(t, expectedData1, actualData1)
 	assert.Equal(t, expectedData2, actualData2)
-
-	CleanupNamedTestData(t, tmpFolder, name1)
-	CleanupNamedTestData(t, tmpFolder, name2)
-
-	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name1)))
-	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name2)))
 }
 
 func TestSaveDuplicateTestData(t *testing.T) {
@@ -201,10 +189,4 @@ func TestSaveAndLoadNamedInts(t *testing.T) {
 
 	assert.Equal(t, expectedData1, actualData1)
 	assert.Equal(t, expectedData2, actualData2)
-
-	CleanupNamedTestData(t, tmpFolder, name1)
-	CleanupNamedTestData(t, tmpFolder, name2)
-
-	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name1)))
-	assert.False(t, files.FileExists(formatNamedTestDataPath(tmpFolder, name2)))
 }

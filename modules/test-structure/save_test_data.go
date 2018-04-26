@@ -29,11 +29,6 @@ func LoadTerraformOptions(t *testing.T, testFolder string) *terraform.Options {
 	return &terraformOptions
 }
 
-// Clean up the files used to store TerraformOptions between test stages
-func CleanupTerraformOptions(t *testing.T, testFolder string) {
-	CleanupTestData(t, formatTerraformOptionsPath(testFolder))
-}
-
 // Format a path to save TerraformOptions in the given folder
 func formatTerraformOptionsPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "TerraformOptions.json")
@@ -53,11 +48,6 @@ func LoadPackerOptions(t *testing.T, testFolder string) *packer.Options {
 	return &packerOptions
 }
 
-// Clean up the files used to store PackerOptions between test stages
-func CleanupPackerOptions(t *testing.T, testFolder string) {
-	CleanupTestData(t, formatPackerOptionsPath(testFolder))
-}
-
 // Format a path to save PackerOptions in the given folder
 func formatPackerOptionsPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "PackerOptions.json")
@@ -75,11 +65,6 @@ func LoadEc2KeyPair(t *testing.T, testFolder string) *aws.Ec2Keypair {
 	var keyPair aws.Ec2Keypair
 	LoadTestData(t, formatEc2KeyPairPath(testFolder), &keyPair)
 	return &keyPair
-}
-
-// Clean up the files used to store an Ec2KeyPair between test stages
-func CleanupEc2KeyPair(t *testing.T, testFolder string) {
-	CleanupTestData(t, formatEc2KeyPairPath(testFolder))
 }
 
 // Format a path to save an Ec2KeyPair in the given folder
@@ -127,16 +112,6 @@ func SaveAmiId(t *testing.T, testFolder string, amiId string) {
 // earlier setup step in later validation and teardown steps.
 func LoadAmiId(t *testing.T, testFolder string) string {
 	return LoadString(t, testFolder, "AMI")
-}
-
-// Clean up the files used to store an AMI ID between test stages
-func CleanupAmiId(t *testing.T, testFolder string) {
-	CleanupNamedTestData(t, testFolder, "AMI")
-}
-
-// Clean up the files used to store a uniquely named test data value between test stages
-func CleanupNamedTestData(t *testing.T, testFolder string, name string) {
-	CleanupTestData(t, formatNamedTestDataPath(testFolder, name))
 }
 
 // Format a path to save an arbitrary named value in the given folder
