@@ -12,26 +12,42 @@ variety of helper functions and patterns for common infrastructure testing tasks
 * Running shell commands
 * And much more
 
-
-
-
-## Motivation
-
-Infrastructure as code (IaC) tools such as Terraform, Packer, and Docker offer a number of advantages: you can automate
-your entire provisioning and deployment process, you can store the state of your infrastructure in code rather than a
-sysadmin's head, you can use version control to debug issues and track the history of how your infrastructure has
-changed, and so on. But there's a catch: maintaining a large codebase of infrastructure code is hard. Most of the
-IaC tools are immature, modern architectures are complicated, and seemingly minor changes to infrastructure code
-sometimes cause severe bugs, such as wiping out a server, database, or even an entire data center.
-
-Here's the hard truth: most teams are *terrified* of making changes to their infrastructure code.
-
-The goal of Terratest is to make it easier to write automated tests for your infrastructure code. These tests can run
-after every commit and verify that the code still works as expected, thereby giving you the confidence to make changes.
-
-Terratest was developed at [Gruntwork](https://gruntwork.io/) to help our small team maintain the [Infrastructure as
-Code Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 150,000 lines of code written
+Terratest was developed at [Gruntwork](https://gruntwork.io/) to help maintain the [Infrastructure as Code
+Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 150,000 lines of code written
 in Terraform, Go, Python, and Bash, and is used in production by hundreds of companies.
+
+
+
+
+## Introduction
+
+The basic usage pattern for writing automated tests with Terratest is to:
+
+1. Write tests using Go's built-in [package testing](https://golang.org/pkg/testing/). Therefore, you create a file
+   ending in `_test.go`, write your test, and run it with the `go test` command.
+1. Use Terratest to execute your *real* IaC tools (e.g., Terraform, Packer, etc.) to deploy *real* infrastructure
+   (e.g., servers) in a *real* environment (e.g., AWS).
+1. Validate that the infrastructure works correctly in that environment by making HTTP requests, API calls, SSH
+   connections, etc.
+1. Undeploy everything at the end of the test. See [cleanup](#cleanup) for more info.
+
+Here's a very simple example of how to test some Terraform code:
+
+```go
+terraformOptions := &terraform.Options {
+  // The path to where our Terraform code is located
+  TerraformDir: "../examples/terraform-basic-example",
+}
+
+// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+terraform.InitAndApply(t, terraformOptions)
+
+// At the end of the test, run `terraform destroy` to clean up any resources that were created
+defer terraform.Destroy(t, terraformOptions)
+
+// Validate our code works as expected
+validateServerIsWorking(t, terraformOptions)
+```
 
 
 
@@ -51,39 +67,6 @@ Alternatively, you can use `go get`:
 
 ```bash
 go get github.com/gruntwork-io/terratest
-```
-
-
-
-
-## Overview
-
-The basic usage pattern for writing automated tests with Terratest is to:
-
-1. Write tests using Go's built-in [package testing](https://golang.org/pkg/testing/). Therefore, you create a file
-   ending in `_test.go`, write your test, and run it with the `go test` command.
-1. Use Terratest to execute your *real* IaC tools (e.g., Terraform, Packer, etc.) to deploy *real* infrastructure
-   (e.g., servers) in a *real* environment (e.g., AWS).
-1. Validate that the infrastructure works correctly in that environment by making HTTP requests, API calls, SSH
-   connections, etc.
-1. Undeploy everything at the end of the test. See [cleanup](#cleanup) for more info.
-
-Here's a very simple example:
-
-```go
-terraformOptions := &terraform.Options {
-  // The path to where our Terraform code is located
-  TerraformDir: "../examples/terraform-basic-example",
-}
-
-// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-terraform.InitAndApply(t, terraformOptions)
-
-// At the end of the test, run `terraform destroy` to clean up any resources that were created
-defer terraform.Destroy(t, terraformOptions)
-
-// Validate our code works as expected
-validateServerIsWorking(t, terraformOptions)
 ```
 
 
@@ -127,20 +110,20 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 
 | Package          | Description                                                                                         |
 | -----------------|-----------------------------------------------------------------------------------------------------|
-| `aws`            | Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID. |
-| `collections`    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other. |
-| `docker`         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands. |
-| `files`          | Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of its contents. |
-| `git`            | Functions for working with Git. Examples: get the name of the current Git branch. |
-| `http-helper`    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally. |
-| `logger`         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier. See https://github.com/golang/go/issues/24929 for more info. |
-| `packer`         | Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that was created. |
-| `random`         | Functions for generating random data. Examples: generate a unique ID that can be used to namespace resources so multiple tests running in parallel don't clash. |
-| `retry`          | Functions for retrying actions. Examples: retry a function up to a maximum number of retries, retry a function until a stop function is called, wait up to a certain timeout for a function to complete. These are especially useful when working with distributed systems and eventual consistency. |
-| `shell`          | Functions to run shell commands. Examples: run a shell command and return its `stdout` and `stderr`. |
-| `ssh`            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`. |
-| `terraform`      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`. |
-| `test_structure` | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable. |
+| **aws**            | Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID. |
+| **collections**    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other. |
+| **docker**         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands. |
+| **files**          | Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of its contents. |
+| **git**            | Functions for working with Git. Examples: get the name of the current Git branch. |
+| **http-helper**    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally. |
+| **logger**         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier. |
+| **packer**         | Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that was created. |
+| **random**         | Functions for generating random data. Examples: generate a unique ID that can be used to namespace resources so multiple tests running in parallel don't clash. |
+| **retry**          | Functions for retrying actions. Examples: retry a function up to a maximum number of retries, retry a function until a stop function is called, wait up to a certain timeout for a function to complete. These are especially useful when working with distributed systems and eventual consistency. |
+| **shell**          | Functions to run shell commands. Examples: run a shell command and return its `stdout` and `stderr`. |
+| **ssh**            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`. |
+| **terraform**      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`. |
+| **test_structure** | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable. |
 
 
 
@@ -246,9 +229,10 @@ go test -timeout 30m
 
 Note that many CI systems will also kill your tests if they don't see any log output for a certain period of time
 (e.g., 10 minutes in CircleCI). If you use Go's `t.Log` and `t.Logf` for logging in your tests, you'll find that these
-functions buffer all log output until the very end of the test. If you have a long-running test, this might mean you
-get no log output for more than 10 minutes, and the CI system will shut down your tests. Moreover, if your test has a
-bug that causes it to hang, you won't see any log output at all to help you debug it.
+functions buffer all log output until the very end of the test (see https://github.com/golang/go/issues/24929 for more
+info). If you have a long-running test, this might mean you get no log output for more than 10 minutes, and the CI
+system will shut down your tests. Moreover, if your test has a bug that causes it to hang, you won't see any log output
+at all to help you debug it.
 
 Therefore, we recommend instead using Terratest's `logger.Log` and `logger.Logf` functions, which log to `stdout`
 immediately:
