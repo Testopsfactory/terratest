@@ -65,7 +65,7 @@ func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 
 	// Give the ASG and other resources in the Terraform code a name with a unique ID so it doesn't clash
 	// with anything else in the AWS account.
-	name := fmt.Sprintf("terratest-redeploy-example-%s", uniqueId)
+	name := fmt.Sprintf("redeploy-test-%s", uniqueId)
 
 	// Specify the text the ASG will return when we make HTTP requests to it.
 	text := fmt.Sprintf("Hello, %s!", uniqueId)
