@@ -37,11 +37,6 @@ func TestTerraformPackerExample(t *testing.T)  {
 		deleteAmi(t, awsRegion, workingDir)
 	})
 
-	// Deploy the web app using Terraform
-	test_structure.RunTestStage(t, "deploy_terraform", func() {
-		deployUsingTerraform(t, awsRegion, workingDir)
-	})
-
 	// At the end of the test, undeploy the web app using Terraform
 	defer test_structure.RunTestStage(t, "cleanup_terraform", func() {
 		undeployUsingTerraform(t, workingDir)
@@ -51,6 +46,11 @@ func TestTerraformPackerExample(t *testing.T)  {
 	// debugging issues without having to manually SSH to the server.
 	defer test_structure.RunTestStage(t, "logs", func() {
 		fetchSyslogForInstance(t, awsRegion, workingDir)
+	})
+
+	// Deploy the web app using Terraform
+	test_structure.RunTestStage(t, "deploy_terraform", func() {
+		deployUsingTerraform(t, awsRegion, workingDir)
 	})
 
 	// Validate that the web app deployed and is responding to HTTP requests
