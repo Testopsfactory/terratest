@@ -361,10 +361,13 @@ Terratest itself includes a number of automated tests.
 if you don't clean up after yourself. Please be considerate of the resources you create and take extra care to clean
 everything up when you're done!
 
+**Note #2**: In order to run tests that access your AWS account, you will need to configure your [AWS CLI
+credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html). For example, you could
+set the credentials as the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 
 **Note #3**: Never hit `CTRL + C` or cancel a build once tests are running or the cleanup tasks won't run!
 
-Prerequisite: some of the tests expect Terraform, Packer, and Docker to be installed and in your `PATH`.
+**Prerequisite**: Most the tests expect Terraform, Packer, and/or Docker to already be installed and in your `PATH`.
 
 To run all the tests:
 
