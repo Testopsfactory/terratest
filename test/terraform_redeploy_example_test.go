@@ -30,11 +30,6 @@ func TestTerraformRedeployExample(t *testing.T) {
 	// The folder where we have our Terraform code
 	workingDir := "../examples/terraform-redeploy-example"
 
-	// Deploy the web app
-	test_structure.RunTestStage(t, "deploy_initial", func() {
-		initialDeploy(t, awsRegion, workingDir)
-	})
-
 	// At the end of the test, clean up all the resources we created
 	defer test_structure.RunTestStage(t, "teardown", func() {
 		undeployUsingTerraform(t, workingDir)
@@ -42,8 +37,13 @@ func TestTerraformRedeployExample(t *testing.T) {
 
 	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
 	// debugging issues without having to manually SSH to the server.
-	 defer test_structure.RunTestStage(t, "logs", func() {
+	defer test_structure.RunTestStage(t, "logs", func() {
 		fetchSyslogForAsg(t, awsRegion, workingDir)
+	})
+
+	// Deploy the web app
+	test_structure.RunTestStage(t, "deploy_initial", func() {
+		initialDeploy(t, awsRegion, workingDir)
 	})
 
 	// Validate that the ASG deployed and is responding to HTTP requests

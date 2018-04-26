@@ -41,11 +41,11 @@ func TestPackerDockerExampleLocal(t *testing.T)  {
 		},
 	}
 
-	// Run Docker Compose to fire up the web app. We run it in the background (-d) so it doesn't block this test.
-	docker.RunDockerCompose(t, dockerOptions, "up", "-d")
-
 	// Make sure to shut down the Docker container at the end of the test
 	defer docker.RunDockerCompose(t, dockerOptions, "down")
+
+	// Run Docker Compose to fire up the web app. We run it in the background (-d) so it doesn't block this test.
+	docker.RunDockerCompose(t, dockerOptions, "up", "-d")
 
 	// It can take a few seconds for the Docker container boot up, so retry a few times
 	maxRetries := 5

@@ -22,15 +22,6 @@ func TestTerraformSshExample(t *testing.T) {
 
 	exampleFolder := "../examples/terraform-ssh-example"
 
-	// Deploy the example
-	test_structure.RunTestStage(t, "setup", func() {
-		terraformOptions, keyPair := deploy(t, exampleFolder)
-
-		// Save the options and key pair so later test stages can use them
-		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
-		test_structure.SaveEc2KeyPair(t, exampleFolder, keyPair)
-	})
-
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer test_structure.RunTestStage(t, "teardown", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
@@ -38,6 +29,15 @@ func TestTerraformSshExample(t *testing.T) {
 
 		keyPair := test_structure.LoadEc2KeyPair(t, exampleFolder)
 		aws.DeleteEC2KeyPair(t, keyPair)
+	})
+
+	// Deploy the example
+	test_structure.RunTestStage(t, "setup", func() {
+		terraformOptions, keyPair := deploy(t, exampleFolder)
+
+		// Save the options and key pair so later test stages can use them
+		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
+		test_structure.SaveEc2KeyPair(t, exampleFolder, keyPair)
 	})
 
 	// Make sure we can SSH to the public Instance directly from the public Internet and the private Instance by using
