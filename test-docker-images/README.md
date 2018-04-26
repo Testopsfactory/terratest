@@ -8,7 +8,7 @@ faster than AMIs and launch 100x faster, reducing our cycle time while developin
 But Packer's Docker image builds can still be slower than desired because, unlike a native `docker build` command against
 a `Dockerfile`, Packer does not use any [image caching](https://docs.docker.com/v17.09/engine/userguide/eng-image/dockerfile_best-practices/).
 As a result, each `packer build` creates the Docker image from scratch. Unfortunately, much of the Docker image build
-time is spent downloading libraris like `curl` and `sudo` which we assume are present on the AWS AMI associated with
+time is spent downloading libraries like `curl` and `sudo` which we assume are present on the AWS AMI associated with
 Ubuntu, Amazon Linux, CentOS, or any other Linux distro we're supporting.
 
 We solve this problem by creating canonical Gruntwork Terratest Docker Images which have most of the desired libraries
