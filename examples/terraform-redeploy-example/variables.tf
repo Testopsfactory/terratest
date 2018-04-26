@@ -18,21 +18,26 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "aws_region" {
-  description = "The AWS region to deploy into"
+  description = "The AWS region to deploy into (e.g. us-east-1)."
   default     = "us-east-1"
 }
 
-variable "instance_name" {
-  description = "The Name tag to set for the EC2 Instance."
-  default     = "terratest-example"
+variable "name" {
+  description = "The names for the ASG and other resources in this module"
+  default     = "asg-alb-example"
 }
 
 variable "instance_port" {
-  description = "The port the EC2 Instance should listen on for HTTP requests."
+  description = "The port each EC2 Instance should listen on for HTTP requests."
   default     = 8080
 }
 
 variable "instance_text" {
-  description = "The text the EC2 Instance should return when it gets an HTTP request."
+  description = "The text each EC2 Instance should return when it gets an HTTP request."
   default     = "Hello, World!"
+}
+
+variable "alb_port" {
+  description = "The port the ALB should listen on for HTTP requests"
+  default     = 80
 }

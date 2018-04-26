@@ -6,6 +6,7 @@ import (
 	"errors"
 	"testing"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"fmt"
 )
 
 type Options struct {
@@ -67,11 +68,11 @@ func formatPackerArgs(options *Options) []string {
 	args := []string{"build", "-machine-readable"}
 
 	for key, value := range options.Vars {
-		args = append(args, "-var", key+"="+value)
+		args = append(args, "-var", fmt.Sprintf("%s=%s", key, value))
 	}
 
 	if options.Only != "" {
-		args = append(args, "-only="+options.Only)
+		args = append(args, fmt.Sprintf("-only=%s", options.Only))
 	}
 
 	return append(args, options.Template)

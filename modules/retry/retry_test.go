@@ -4,6 +4,7 @@ import (
 	"time"
 	"testing"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDoWithRetry(t *testing.T) {
@@ -40,19 +41,17 @@ func TestDoWithRetry(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
+		testCase := testCase // capture range variable for each test case
+
 		t.Run(testCase.description, func(t *testing.T) {
+			t.Parallel()
+
 			actualOutput, err := DoWithRetryE(t, testCase.description, testCase.maxRetries, 1 * time.Millisecond, testCase.action)
 			if testCase.expectedError != nil {
-				if err != testCase.expectedError {
-					t.Fatalf("Expected error '%v' for test case '%s' but got '%v'", testCase.description, testCase.expectedError, err)
-				}
+				assert.Equal(t, testCase.expectedError, err)
 			} else {
-				if err != nil {
-					t.Fatalf("Did not expect an error for test case '%s' but got: %s", testCase.description, err.Error())
-				}
-				if actualOutput != expectedOutput {
-					t.Fatalf("Expected output '%s' but got '%s'", expectedOutput, actualOutput)
-				}
+				assert.NoError(t, err)
+				assert.Equal(t, expectedOutput, actualOutput)
 			}
 		})
 	}
@@ -96,19 +95,37 @@ func TestDoWithTimeout(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		actualOutput, err := DoWithTimeoutE(t, testCase.description, testCase.timeout, testCase.action)
-		if testCase.expectedError != nil {
-			if err != testCase.expectedError {
-				t.Fatalf("Expected error '%v' for test case '%s' but got '%v'", testCase.description, testCase.expectedError, err)
+		testCase := testCase // capture range variable for each test case
+
+		t.Run(testCase.description, func(t *testing.T) {
+			t.Parallel()
+
+			actualOutput, err := DoWithTimeoutE(t, testCase.description, testCase.timeout, testCase.action)
+			if testCase.expectedError != nil {
+				assert.Equal(t, testCase.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, expectedOutput, actualOutput)
 			}
-		} else {
-			if err != nil {
-				t.Fatalf("Did not expect an error for test case '%s' but got: %s", testCase.description, err.Error())
-			}
-			if actualOutput != expectedOutput {
-				t.Fatalf("Expected output '%s' but got '%s'", expectedOutput, actualOutput)
-			}
-		}
+		})
 	}
 }
 
+func TestDoInBackgroundUntilStopped(t *testing.T) {
+	t.Parallel()
+
+	sleepBetweenRetries := 5 * time.Second
+	counter := 0
+
+	stop := DoInBackgroundUntilStopped(t, t.Name(), sleepBetweenRetries, func() {
+			counter++
+	})
+
+	time.Sleep(sleepBetweenRetries * 3)
+	stop.Done()
+
+	assert.Equal(t, 3, counter)
+
+	time.Sleep(sleepBetweenRetries * 3)
+	assert.Equal(t, 3, counter)
+}

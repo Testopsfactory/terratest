@@ -1,11 +1,11 @@
 package collections
 
 // Remove all the items in list2 from list1
-func Subtract(list1 []string, list2 []string) []string {
+func ListSubtract(list1 []string, list2 []string) []string {
 	out := []string{}
 
 	for _, item := range list1 {
-		if !ListContains(item, list2) {
+		if !ListContains(list2, item) {
 			out = append(out, item)
 		}
 	}
@@ -14,7 +14,7 @@ func Subtract(list1 []string, list2 []string) []string {
 }
 
 // Return true if the given list of strings (haystack) contains the given string (needle)
-func ListContains(needle string, haystack []string) bool {
+func ListContains(haystack []string, needle string) bool {
 	for _, str := range haystack {
 		if needle == str {
 			return true

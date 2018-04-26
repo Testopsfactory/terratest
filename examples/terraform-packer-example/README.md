@@ -53,4 +53,4 @@ it should be free, but you are completely responsible for all AWS charges.
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -run TerraformPackerExampleTest`
+1. `go test -v -run TestTerraformPackerExample`

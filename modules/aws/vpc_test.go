@@ -1,6 +1,20 @@
 package aws
 
-import "testing"
+import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetDefaultVpc(t *testing.T) {
+	t.Parallel()
+
+	region := GetRandomRegion(t, nil, nil)
+	vpc := GetDefaultVpc(t, region)
+
+	assert.Equal(t, "Default", vpc.Name)
+	assert.True(t, len(vpc.Subnets) > 0)
+	assert.Regexp(t, "^vpc-[[:alnum:]]+$", vpc.Id)
+}
 
 func TestGetFirstTwoOctets(t *testing.T) {
 	t.Parallel()
@@ -10,13 +24,3 @@ func TestGetFirstTwoOctets(t *testing.T) {
 		t.Errorf("Received: %s, Expected: 10.100", firstTwo)
 	}
 }
-
-// Deferred to save time
-//func TestGetRandomPrivateCidrBlock(t *testing.T) {
-//	t.Parallel()
-//
-//	for i := 0; i < 10; i++ {
-//		fmt.Println(GetRandomPrivateCidrBlock(18))
-//	}
-//}
-

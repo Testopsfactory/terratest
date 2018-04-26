@@ -73,7 +73,7 @@ func Close(t *testing.T, closeable Closeable, ignoreErrors ...string) {
 		return
 	}
 
-	if err := closeable.Close(); err != nil && !collections.ListContains(err.Error(), ignoreErrors) {
+	if err := closeable.Close(); err != nil && !collections.ListContains(ignoreErrors, err.Error()) {
 		logger.Logf(t, "Error closing %s: %s", closeable, err.Error())
 	}
 }

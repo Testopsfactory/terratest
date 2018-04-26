@@ -99,7 +99,6 @@ func TestSaveAndLoadTerraformOptions(t *testing.T) {
 	}
 
 	expectedData := &terraform.Options{
-		UniqueId: "foo",
 		TerraformDir: "/abc/def/ghi",
 		Vars: map[string]interface{}{},
 	}

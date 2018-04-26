@@ -126,7 +126,7 @@ func SendMessageToQueueE(t *testing.T, awsRegion string, queueUrl string, messag
 		return err
 	}
 
-	logger.Logf(t, "Message id %s sent to queue %s", res.MessageId, queueUrl)
+	logger.Logf(t, "Message id %s sent to queue %s", aws.StringValue(res.MessageId), queueUrl)
 
 	return nil
 }
@@ -155,11 +155,11 @@ func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeou
 	for i := 0; i < cycles; i++ {
 		logger.Logf(t, "Waiting for message on %s (%ss)", queueUrl, strconv.Itoa(i*cycleLength))
 		result, err := sqsClient.ReceiveMessage(&sqs.ReceiveMessageInput{
-			QueueUrl: aws.String(queueUrl),
-			AttributeNames: aws.StringSlice([]string{"SentTimestamp"}),
-			MaxNumberOfMessages: aws.Int64(1),
+			QueueUrl:              aws.String(queueUrl),
+			AttributeNames:        aws.StringSlice([]string{"SentTimestamp"}),
+			MaxNumberOfMessages:   aws.Int64(1),
 			MessageAttributeNames: aws.StringSlice([]string{"All"}),
-			WaitTimeSeconds: aws.Int64(int64(cycleLength)),
+			WaitTimeSeconds:       aws.Int64(int64(cycleLength)),
 		})
 
 		if err != nil {
@@ -172,7 +172,7 @@ func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeou
 		}
 	}
 
-	return QueueMessageResponse{Error: fmt.Errorf("Failed to receive messages on %s within %s seconds", queueUrl, strconv.Itoa(timeout))}
+	return QueueMessageResponse{Error: ReceiveMessageTimeout{QueueUrl: queueUrl, TimeoutSec: timeout}}
 }
 
 // Create a new SQS client
@@ -183,4 +183,13 @@ func NewSqsClient(region string) (*sqs.SQS, error) {
 	}
 
 	return sqs.New(sess), nil
+}
+
+type ReceiveMessageTimeout struct {
+	QueueUrl   string
+	TimeoutSec int
+}
+
+func (err ReceiveMessageTimeout) Error() string {
+	return fmt.Sprintf("Failed to receive messages on %s within %s seconds", err.QueueUrl, strconv.Itoa(err.TimeoutSec))
 }
