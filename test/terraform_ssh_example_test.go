@@ -35,6 +35,9 @@ func TestTerraformSshExample(t *testing.T) {
 	defer test_structure.RunTestStage(t, "teardown", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
 		terraform.Destroy(t, terraformOptions)
+
+		keyPair := test_structure.LoadEc2KeyPair(t, exampleFolder)
+		aws.DeleteEC2KeyPair(t, keyPair)
 	})
 
 	// Make sure we can SSH to the public Instance directly from the public Internet and the private Instance by using
