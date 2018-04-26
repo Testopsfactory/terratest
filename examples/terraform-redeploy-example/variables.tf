@@ -22,7 +22,7 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "name" {
+variable "instance_name" {
   description = "The names for the ASG and other resources in this module"
   default     = "asg-alb-example"
 }
