@@ -11,7 +11,7 @@ func TestGetDefaultVpc(t *testing.T) {
 	region := GetRandomRegion(t, nil, nil)
 	vpc := GetDefaultVpc(t, region)
 
-	assert.Equal(t, "Default", vpc.Name)
+	assert.NotEmpty(t, vpc.Name)
 	assert.True(t, len(vpc.Subnets) > 0)
 	assert.Regexp(t, "^vpc-[[:alnum:]]+$", vpc.Id)
 }
