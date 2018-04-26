@@ -68,6 +68,24 @@ The basic usage pattern for writing automated tests with Terratest is to:
    connections, etc.
 1. Undeploy everything at the end of the test. See [cleanup](#cleanup) for more info.
 
+Here's a very simple example:
+
+```go
+terraformOptions := &terraform.Options {
+  // The path to where our Terraform code is located
+  TerraformDir: "../examples/terraform-basic-example",
+}
+
+// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+terraform.InitAndApply(t, terraformOptions)
+
+// At the end of the test, run `terraform destroy` to clean up any resources that were created
+defer terraform.Destroy(t, terraformOptions)
+
+// Validate our code works as expected
+validateServerIsWorking(t, terraformOptions)
+```
+
 
 
 
@@ -75,7 +93,7 @@ The basic usage pattern for writing automated tests with Terratest is to:
 
 The best way to learn how to use Terratest is through examples.
 
-Start by checking out the [examples folder](/examples) for different types of infrastructure code you may want to test,
+First, check out the [examples folder](/examples) for different types of infrastructure code you may want to test,
 such as:
 
 1. [Basic Terraform Example](/examples/terraform-basic-example): A simple "Hello, World" Terraform configuration.
@@ -86,7 +104,7 @@ such as:
 1. [Terraform Packer Example](/examples/terraform-packer-example): A more complicated example that shows how to use
    Packer to build an AMI with a web server installed and deploy that AMI in AWS using Terraform.
 
-Now, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
+Next, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
 
 1. [terraform_basic_example_test.go](/test/terraform_basic_example_test.go): Use Terratest to run `terraform apply` on
    the Basic Terraform Example and verify you get the expected outputs.
@@ -107,46 +125,22 @@ Now, head over to the [test folder](/test) to see how you can use Terraform to t
 Now that you've had a chance to browse the examples and their tests, here's an overview of the packages you'll find in
 Terratest's [modules folder](/modules) and how they can help you test different types infrastructure:
 
-1. `aws`: Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get
-   the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID.
-
-1. `collections`: Go doesn't have much of a collections library built-in, so this package has a few helper methods for
-   working with lists and maps. Examples: subtract two lists from each other.
-
-1. `docker`: Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose`
-   commands.
-
-1. `files`: Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of
-   its contents.
-
-1. `git`: Functions for working with Git. Examples: get the name of the current Git branch.
-
-1. `http-helper`: Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code
-   and body contain the expected values, run a simple HTTP server locally.
-
-1. `logger`: A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than
-   buffering them until the very end of the test. This makes debugging and iterating easier. See
-   https://github.com/golang/go/issues/24929 for more info.
-
-1. `packer`: Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that
-   was created.
-
-1. `random`: Functions for generating random data. Examples: generate a unique ID that can be used to namespace
-   resources so multiple tests running in parallel don't clash.
-
-1. `retry`: Functions for retrying actions. Examples: retry a function up to a maximum number of retries, retry a
-   function until a stop function is called, wait up to a certain timeout for a function to complete. These are
-   especially useful when working with distributed systems and eventual consistency.
-
-1. `shell`: Functions to run shell commands. Examples: run a shell command and return its `stdout` and `stderr`.
-
-1. `ssh`: Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`.
-
-1. `terraform`: Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`,
-   `terraform destroy`.
-
-1. `test_structure`: Functions for structuring your tests to speed up local iteration. Examples: break up your tests
-   into stages so that any stage can be skipped by setting an environment variable.
+| Package          | Description                                                                                         |
+| -----------------|-----------------------------------------------------------------------------------------------------|
+| `aws`            | Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID. |
+| `collections`    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other. |
+| `docker`         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands. |
+| `files`          | Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of its contents. |
+| `git`            | Functions for working with Git. Examples: get the name of the current Git branch. |
+| `http-helper`    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally. |
+| `logger`         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier. See https://github.com/golang/go/issues/24929 for more info. |
+| `packer`         | Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that was created. |
+| `random`         | Functions for generating random data. Examples: generate a unique ID that can be used to namespace resources so multiple tests running in parallel don't clash. |
+| `retry`          | Functions for retrying actions. Examples: retry a function up to a maximum number of retries, retry a function until a stop function is called, wait up to a certain timeout for a function to complete. These are especially useful when working with distributed systems and eventual consistency. |
+| `shell`          | Functions to run shell commands. Examples: run a shell command and return its `stdout` and `stderr`. |
+| `ssh`            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`. |
+| `terraform`      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`. |
+| `test_structure` | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable. |
 
 
 
@@ -200,6 +194,20 @@ to configure auto scaling group names, security group names, IAM role names, and
 You can use Terratest's `random.UniqueId()` function to generate identifiers that are short enough to use in resource
 names (just 6 characters) but random enough to make it unlikely that you'll have a conflict.
 
+```go
+uniqueId := random.UniqueId()
+instanceName := fmt.Sprintf("terratest-http-example-%s", uniqueId)
+
+terraformOptions := &terraform.Options {
+  TerraformDir: "../examples/terraform-http-example",
+  Vars: map[string]interface{} {
+    "instance_name": instanceName,
+  },
+}
+
+terraform.Apply(t, terraformOptions)
+```
+
 
 ### Cleanup
 
@@ -220,9 +228,11 @@ defer terraform.Destroy(t, options)
 checkServerWorks(t, options)
 ```
 
+Of course, despite your best efforts, occasionally cleanup will fail, perhaps due to the CI server going down, or a bug
+in your code, or a temporary network outage. To handle those cases, we run a tool called
+[cloud-nuke](https://github.com/gruntwork-io/cloud-nuke) in our test AWS account on a nightly basis to clean up any
+leftover resources.
 
-
-cloud-nuke
 
 ### Timeouts and logging
 
@@ -381,15 +391,15 @@ go test -timeout 30m -p 1 ./...
 To run the tests in a specific folder:
 
 ```bash
-cd <FOLDER_PATH>
+cd "<FOLDER_PATH>"
 go test -timeout 30m
 ```
 
 To run a specific test in a specific folder:
 
 ```bash
-cd <FOLDER_PATH>
-go test -timeout30m -run <TEST_NAME>
+cd "<FOLDER_PATH>"
+go test -timeout30m -run "<TEST_NAME>"
 ```
 
 
