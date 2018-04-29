@@ -20,7 +20,7 @@ func CreateSnsTopic(t *testing.T, region string, snsTopicName string) string {
 func CreateSnsTopicE(t *testing.T, region string, snsTopicName string) (string, error) {
 	logger.Logf(t, "Creating SNS topic %s in %s", snsTopicName, region)
 
-	snsClient, err := NewSnsClient(region)
+	snsClient, err := NewSnsClientE(t, region)
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func DeleteSNSTopic(t *testing.T, region string, snsTopicArn string) {
 func DeleteSNSTopicE(t *testing.T, region string, snsTopicArn string) error {
 	logger.Logf(t, "Deleting SNS topic %s in %s", snsTopicArn, region)
 
-	snsClient, err := NewSnsClient(region)
+	snsClient, err := NewSnsClientE(t, region)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,16 @@ func DeleteSNSTopicE(t *testing.T, region string, snsTopicArn string) error {
 }
 
 // Create a new SNS client
-func NewSnsClient(region string) (*sns.SNS, error) {
+func NewSnsClient(t *testing.T, region string) *sns.SNS {
+	client, err := NewSnsClientE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return client
+}
+
+// Create a new SNS client
+func NewSnsClientE(t *testing.T, region string) (*sns.SNS, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

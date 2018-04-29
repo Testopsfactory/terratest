@@ -38,10 +38,7 @@ func TestSqsQueueMethods(t *testing.T) {
 }
 
 func queueExists(t *testing.T, region string, url string) bool {
-	sqsClient, err := NewSqsClient(region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	sqsClient := NewSqsClient(t, region)
 
 	input := sqs.GetQueueAttributesInput{QueueUrl: aws.String(url)}
 

@@ -30,7 +30,7 @@ func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (stri
 
 	logger.Log(t, description)
 
-	client, err := NewEc2Client(region)
+	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return "", err
 	}

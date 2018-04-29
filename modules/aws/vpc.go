@@ -37,7 +37,7 @@ func GetDefaultVpc(t *testing.T, region string) *Vpc {
 
 // Fetch information about the default VPC in the given region
 func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
-	client, err := NewEc2Client(region)
+	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func GetSubnetsForVpc(t *testing.T, vpcId string, region string) []Subnet {
 
 // Get the subnets in the specified VPC
 func GetSubnetsForVpcE(t *testing.T, vpcId string, region string) ([]Subnet, error) {
-	client, err := NewEc2Client(region)
+	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}

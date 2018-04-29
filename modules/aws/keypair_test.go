@@ -28,10 +28,7 @@ func TestCreateImportAndDeleteEC2KeyPair(t *testing.T) {
 }
 
 func keyPairExists(t *testing.T, keyPair *Ec2Keypair) bool {
-	client, err := NewEc2Client(keyPair.Region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := NewEc2Client(t, keyPair.Region)
 
 	input := ec2.DescribeKeyPairsInput{
 		KeyNames: aws.StringSlice([]string{keyPair.Name}),
