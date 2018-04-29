@@ -19,7 +19,7 @@ func GetIamCurrentUserName(t *testing.T) string {
 
 // Get the username fo the current IAM user
 func GetIamCurrentUserNameE(t *testing.T) (string, error) {
-	iamClient, err := NewIamClient(defaultRegion)
+	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
 		return "", err
 	}
@@ -43,7 +43,7 @@ func GetIamCurrentUserArn(t *testing.T) string {
 
 // Get the ARN for the current IAM user
 func GetIamCurrentUserArnE(t *testing.T) (string, error) {
-	iamClient, err := NewIamClient(defaultRegion)
+	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
 		return "", err
 	}
@@ -133,7 +133,16 @@ func EnableMfaDeviceE(t *testing.T, iamClient *iam.IAM, mfaDevice *iam.VirtualMF
 }
 
 // Create a new IAM client
-func NewIamClient(region string) (*iam.IAM, error) {
+func NewIamClient(t *testing.T, region string) *iam.IAM {
+	client, err := NewIamClientE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return client
+}
+
+// Create a new IAM client
+func NewIamClientE(t *testing.T, region string) (*iam.IAM, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

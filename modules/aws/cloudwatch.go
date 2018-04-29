@@ -17,7 +17,7 @@ func GetCloudWatchLogEntries(t *testing.T, awsRegion string, logStreamName strin
 
 // Return the CloudWatch log messages in the given region for the given log stream and log group
 func GetCloudWatchLogEntriesE(t *testing.T, awsRegion string, logStreamName string, logGroupName string) ([]string, error) {
-	client, err := NewCloudWatchLogsClient(awsRegion)
+	client, err := NewCloudWatchLogsClientE(t, awsRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,16 @@ func GetCloudWatchLogEntriesE(t *testing.T, awsRegion string, logStreamName stri
 }
 
 // Create a new CloudWatch Logs client
-func NewCloudWatchLogsClient(region string) (*cloudwatchlogs.CloudWatchLogs, error) {
+func NewCloudWatchLogsClient(t *testing.T, region string) *cloudwatchlogs.CloudWatchLogs {
+	client, err := NewCloudWatchLogsClientE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return client
+}
+
+// Create a new CloudWatch Logs client
+func NewCloudWatchLogsClientE(t *testing.T, region string) (*cloudwatchlogs.CloudWatchLogs, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

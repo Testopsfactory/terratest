@@ -24,10 +24,7 @@ func TestCreateAndDeleteSnsTopic(t *testing.T) {
 }
 
 func snsTopicExists(t *testing.T, region string, arn string) bool {
-	snsClient, err := NewSnsClient(region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	snsClient := NewSnsClient(t, region)
 
 	input := sns.GetTopicAttributesInput{TopicArn: aws.String(arn)}
 

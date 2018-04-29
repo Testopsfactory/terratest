@@ -28,7 +28,7 @@ func GetMostRecentAmiId(t *testing.T, region string, ownerId string, filters map
 // filter should correspond to the name and values of a filter supported by DescribeImagesInput:
 // https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#DescribeImagesInput
 func GetMostRecentAmiIdE(t *testing.T, region string, ownerId string, filters map[string][]string) (string, error) {
-	ec2Client, err := NewEc2Client(region)
+	ec2Client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return "", err
 	}

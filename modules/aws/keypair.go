@@ -46,7 +46,7 @@ func ImportEC2KeyPair(t *testing.T, region string, name string, keyPair *ssh.Key
 func ImportEC2KeyPairE(t *testing.T, region string, name string, keyPair *ssh.KeyPair) (*Ec2Keypair, error) {
 	logger.Logf(t, "Creating new Key Pair in EC2 region %s named %s", region, name)
 
-	client, err := NewEc2Client(region)
+	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func DeleteEC2KeyPair(t *testing.T, keyPair *Ec2Keypair) {
 func DeleteEC2KeyPairE(t *testing.T, keyPair *Ec2Keypair) error {
 	logger.Logf(t, "Deleting Key Pair in EC2 region %s named %s", keyPair.Region, keyPair.Name)
 
-	client, err := NewEc2Client(keyPair.Region)
+	client, err := NewEc2ClientE(t, keyPair.Region)
 	if err != nil {
 		return err
 	}

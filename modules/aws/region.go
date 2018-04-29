@@ -67,7 +67,7 @@ func GetAllAwsRegions(t *testing.T) []string {
 func GetAllAwsRegionsE(t *testing.T) ([]string, error) {
 	logger.Log(t, "Looking up all AWS regions available in this account")
 
-	ec2Client, err := NewEc2Client(defaultRegion)
+	ec2Client, err := NewEc2ClientE(t, defaultRegion)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func GetAvailabilityZones(t *testing.T, region string) []string {
 func GetAvailabilityZonesE(t *testing.T, region string) ([]string, error) {
 	logger.Logf(t, "Looking up all availability zones available in this account for region %s", region)
 
-	ec2Client, err := NewEc2Client(region)
+	ec2Client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}

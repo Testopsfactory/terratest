@@ -18,7 +18,7 @@ func GetAccountId(t *testing.T) string {
 
 // Get the Account ID for the currently logged in IAM User.
 func GetAccountIdE(t *testing.T) (string, error) {
-	iamClient, err := NewIamClient(defaultRegion)
+	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
 		return "", err
 	}

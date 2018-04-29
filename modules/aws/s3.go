@@ -21,7 +21,7 @@ func FindS3BucketWithTag(t *testing.T, awsRegion string, key string, value strin
 
 // Find the name of the S3 bucket in the given region with the given tag key=value
 func FindS3BucketWithTagE(t *testing.T, awsRegion string, key string, value string) (string, error) {
-	s3Client, err := NewS3Client(awsRegion)
+	s3Client, err := NewS3ClientE(t, awsRegion)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +64,7 @@ func GetS3ObjectContents(t *testing.T, awsRegion string, bucket string, key stri
 
 // Fetch the contents of the object in the given bucket with the given key and return it as a string
 func GetS3ObjectContentsE(t *testing.T, awsRegion string, bucket string, key string) (string, error) {
-	s3Client, err := NewS3Client(awsRegion)
+	s3Client, err := NewS3ClientE(t, awsRegion)
 	if err != nil {
 		return "", err
 	}
@@ -102,7 +102,7 @@ func CreateS3Bucket(t *testing.T, region string, name string) {
 func CreateS3BucketE(t *testing.T, region string, name string) error {
 	logger.Logf(t, "Creating bucket %s in %s", region, name)
 
-	s3Client, err := NewS3Client(region)
+	s3Client, err := NewS3ClientE(t, region)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func DeleteS3Bucket(t *testing.T, region string, name string) {
 func DeleteS3BucketE(t *testing.T, region string, name string) error {
 	logger.Logf(t, "Deleting bucket %s in %s", region, name)
 
-	s3Client, err := NewS3Client(region)
+	s3Client, err := NewS3ClientE(t, region)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func AssertS3BucketExists(t *testing.T, region string, name string) {
 
 // Check if the given S3 bucket exists in the given region and return an error if it does not
 func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
-	s3Client, err := NewS3Client(region)
+	s3Client, err := NewS3ClientE(t, region)
 	if err != nil {
 		return err
 	}
@@ -161,7 +161,16 @@ func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 }
 
 // Create an S3 client
-func NewS3Client(region string) (*s3.S3, error) {
+func NewS3Client(t *testing.T, region string) *s3.S3 {
+	client, err := NewS3ClientE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return client
+}
+
+// Create an S3 client
+func NewS3ClientE(t *testing.T, region string) (*s3.S3, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err
