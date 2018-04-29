@@ -44,14 +44,14 @@ func SkipStageEnvVarSet() bool {
 //
 // Note that if any of the SKIP_<stage> environment variables is set, we assume this is a test in the local dev where
 // there are no other concurrent tests running and we want to be able to cache test data between test stages, so in
-// that case, we do NOT copy anything to a temp folder, an dreturn the path to the original examples folder instead.
-func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, examplesFolder string, testName string) string {
+// that case, we do NOT copy anything to a temp folder, and return the path to the original examples folder instead.
+func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, examplesFolder string) string {
 	if SkipStageEnvVarSet() {
 		logger.Logf(t, "A SKIP_XXX environment variable is set. Using original examples folder rather than a temp folder so we can cache data between stages for faster local testing.")
 		return filepath.Join(rootFolder, examplesFolder)
 	}
 
-	tmpRootFolder, err := files.CopyTerraformFolderToTemp(rootFolder, testName)
+	tmpRootFolder, err := files.CopyTerraformFolderToTemp(rootFolder, t.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
