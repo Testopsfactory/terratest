@@ -19,21 +19,48 @@ func GetPublicIpOfEc2Instance(t *testing.T, instanceId string, awsRegion string)
 
 // Get the public IP address of the given EC2 Instance in the given region
 func GetPublicIpOfEc2InstanceE(t *testing.T, instanceId string, awsRegion string) (string, error) {
-	ec2Client := NewEc2Client(t, awsRegion)
-
-	input := ec2.DescribeInstancesInput{InstanceIds: []*string{aws.String(instanceId)}}
-	output, err := ec2Client.DescribeInstances(&input)
+	ips, err := GetPublicIpsOfEc2InstancesE(t, []string{instanceId}, awsRegion)
 	if err != nil {
 		return "", err
 	}
 
+	ip, containsIp := ips[instanceId]
+
+	if !containsIp {
+		return "", IpForEc2InstanceNotFound{InstanceId: instanceId, AwsRegion: awsRegion}
+	}
+
+	return ip, nil
+}
+
+// Get the public IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
+func GetPublicIpsOfEc2Instances(t *testing.T, instanceIds []string, awsRegion string) map[string]string {
+	ips, err := GetPublicIpsOfEc2InstancesE(t, instanceIds, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ips
+}
+
+// Get the public IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
+func GetPublicIpsOfEc2InstancesE(t *testing.T, instanceIds []string, awsRegion string) (map[string]string, error) {
+	ec2Client := NewEc2Client(t, awsRegion)
+
+	input := ec2.DescribeInstancesInput{InstanceIds: aws.StringSlice(instanceIds)}
+	output, err := ec2Client.DescribeInstances(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	ips := map[string]string{}
+
 	for _, reserveration := range output.Reservations {
 		for _, instance := range reserveration.Instances {
-			return aws.StringValue(instance.PublicIpAddress), nil
+			ips[aws.StringValue(instance.InstanceId)] = aws.StringValue(instance.PublicIpAddress)
 		}
 	}
 
-	return "", IpForEc2InstanceNotFound{InstanceId: instanceId, AwsRegion: awsRegion}
+	return ips, nil
 }
 
 // Return all the IDs of EC2 instances in the given region with the given tag
