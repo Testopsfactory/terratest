@@ -13,7 +13,7 @@ variety of helper functions and patterns for common infrastructure testing tasks
 * And much more
 
 Terratest was developed at [Gruntwork](https://gruntwork.io/) to help maintain the [Infrastructure as Code
-Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 150,000 lines of code written
+Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 250,000 lines of code written
 in Terraform, Go, Python, and Bash, and is used in production by hundreds of companies.
 
 
