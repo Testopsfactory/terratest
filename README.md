@@ -100,6 +100,13 @@ Next, head over to the [test folder](/test) to see how you can use Terraform to 
    build an AMI with a web server installed, deploy that AMI in AWS by running `terraform apply`, make HTTP requests to
    the web server to check that it is working correctly, and run `terraform destroy` to undeploy the web server.
 
+Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure
+modules:
+
+1. [Consul](https://github.com/hashicorp/terraform-aws-consul)
+1. [Vault](https://github.com/hashicorp/terraform-aws-vault)
+1. [Nomad](https://github.com/hashicorp/terraform-aws-nomad)
+
 
 
 
