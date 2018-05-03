@@ -151,7 +151,7 @@ resource "aws_alb" "web_servers" {
   security_groups = ["${aws_security_group.alb.id}"]
   subnets         = ["${data.aws_subnet_ids.default.ids}"]
 
-  # This is here because aws_alb_listener.htp depends on this resource and sets create_before_destroy to true
+  # This is here because aws_alb_listener.http depends on this resource and sets create_before_destroy to true
   lifecycle {
     create_before_destroy = true
   }
