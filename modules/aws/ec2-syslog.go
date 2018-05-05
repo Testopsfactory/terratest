@@ -25,7 +25,7 @@ func GetSyslogForInstance(t *testing.T, instanceId string, awsRegion string) str
 // Instance boots and is very useful for debugging boot-time issues, such as an error in User Data.
 func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (string, error) {
 	description := fmt.Sprintf("Fetching syslog for Instance %s in %s", instanceId, region)
-	maxRetries := 60
+	maxRetries := 120
 	timeBetweenRetries := 5 * time.Second
 
 	logger.Log(t, description)
