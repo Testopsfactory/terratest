@@ -51,7 +51,10 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 	}
 
 	regionsToPickFrom = collections.ListSubtract(regionsToPickFrom, forbiddenRegions)
-	return random.RandomString(regionsToPickFrom), nil
+	region := random.RandomString(regionsToPickFrom)
+
+	logger.Logf(t, "Using region %s", region)
+	return region, nil
 }
 
 // Get the list of AWS regions available in this account
