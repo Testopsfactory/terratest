@@ -74,12 +74,14 @@ func buildAmi(t *testing.T, awsRegion string, workingDir string) {
 		},
 	}
 
+	// Save the Packer Options so future test stages can use them
+	test_structure.SavePackerOptions(t, workingDir, packerOptions)
+
 	// Build the AMI
 	amiId := packer.BuildAmi(t, packerOptions)
 
-	// Save the AMI ID and Packer Options so future test stages can use them
+	// Save the AMI ID so future test stages can use them
 	test_structure.SaveAmiId(t, workingDir, amiId)
-	test_structure.SavePackerOptions(t, workingDir, packerOptions)
 }
 
 // Delete the AMI
@@ -119,11 +121,11 @@ func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string) {
 		},
 	}
 
-	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.InitAndApply(t, terraformOptions)
-
 	// Save the Terraform Options struct, instance name, and instance text so future test stages can use it
 	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.InitAndApply(t, terraformOptions)
 }
 
 // Undeploy the terraform-packer-example using Terraform

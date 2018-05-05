@@ -82,11 +82,11 @@ func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 		},
 	}
 
-	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.InitAndApply(t, terraformOptions)
-
 	// Save the Terraform Options struct so future test stages can use it
 	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.InitAndApply(t, terraformOptions)
 }
 
 // Validate the ASG has been deployed and is working
@@ -120,6 +120,9 @@ func validateAsgRedeploy(t *testing.T, workingDir string) {
 	newText := fmt.Sprintf("%s-redeploy", originalText)
 	terraformOptions.Vars["instance_text"] = newText
 
+	// Save the updated Terraform Options struct
+	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
+
 	// Run `terraform output` to get the value of an output variable
 	url := terraform.Output(t, terraformOptions, "url")
 
@@ -135,9 +138,6 @@ func validateAsgRedeploy(t *testing.T, workingDir string) {
 
 	// Stop checking the ELB
 	elbChecks.Done()
-
-	// Save the updated Terraform Options struct
-	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
 }
 
 // Fetch the most recent syslogs for the instances in the ASG. This is a handy way to see what happened on each

@@ -33,11 +33,14 @@ func TestTerraformSshExample(t *testing.T) {
 
 	// Deploy the example
 	test_structure.RunTestStage(t, "setup", func() {
-		terraformOptions, keyPair := deploy(t, exampleFolder)
+		terraformOptions, keyPair := configureTerraformOptions(t, exampleFolder)
 
 		// Save the options and key pair so later test stages can use them
 		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
 		test_structure.SaveEc2KeyPair(t, exampleFolder, keyPair)
+
+		// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+		terraform.InitAndApply(t, terraformOptions)
 	})
 
 	// Make sure we can SSH to the public Instance directly from the public Internet and the private Instance by using
@@ -52,7 +55,7 @@ func TestTerraformSshExample(t *testing.T) {
 
 }
 
-func deploy(t *testing.T, exampleFolder string) (*terraform.Options, *aws.Ec2Keypair) {
+func configureTerraformOptions(t *testing.T, exampleFolder string) (*terraform.Options, *aws.Ec2Keypair) {
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
 	// tests running in parallel
 	uniqueId := random.UniqueId()
@@ -79,9 +82,6 @@ func deploy(t *testing.T, exampleFolder string) (*terraform.Options, *aws.Ec2Key
 			"key_pair_name": keyPairName,
 		},
 	}
-
-	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.InitAndApply(t, terraformOptions)
 
 	return terraformOptions, keyPair
 }
