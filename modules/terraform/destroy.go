@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"github.com/gruntwork-io/terratest/modules/shell"
 	"testing"
 )
 
@@ -16,10 +15,5 @@ func Destroy(t *testing.T, options *Options) string {
 
 // Run terraform destroy with the given options and return stdout/stderr.
 func DestroyE(t *testing.T, options *Options) (string, error) {
-	cmd := shell.Command{
-		Command:    "terraform",
-		Args:       FormatArgs(options.Vars, "destroy", "-force", "-input=false", "-lock=false"),
-		WorkingDir: options.TerraformDir,
-	}
-	return shell.RunCommandAndGetOutputE(t, cmd)
+	return RunTerraformCommandE(t, options, "destroy", "-force", "-input=false", "-lock=false")
 }
