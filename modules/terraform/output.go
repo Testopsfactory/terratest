@@ -3,7 +3,6 @@ package terraform
 import (
 	"fmt"
 	"testing"
-	"github.com/gruntwork-io/terratest/modules/shell"
 	"strings"
 )
 
@@ -18,13 +17,7 @@ func Output(t *testing.T, options *Options, key string) string {
 
 // Call terraform output for the given variable and return its value
 func OutputE(t *testing.T, options *Options, key string) (string, error) {
-	cmd := shell.Command {
-		Command: "terraform",
-		Args: []string{"output", "-no-color", key},
-		WorkingDir: options.TerraformDir,
-	}
-
-	output, err := shell.RunCommandAndGetOutputE(t, cmd)
+	output, err := RunTerraformCommandE(t, options, "output", "-no-color", key)
 
 	if err != nil {
 		return "", err

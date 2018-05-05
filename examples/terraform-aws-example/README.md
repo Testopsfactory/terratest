@@ -2,8 +2,8 @@
 
 This folder contains a simple Terraform module that deploys resources in [AWS](https://aws.amazon.com/) to demonstrate
 how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an [EC2
-Instance](https://aws.amazon.com/ec2/) in the AWS region specified in the `aws_region` variable, and gives that
-Instance a `Name` tag with the value specified in the `instance_name` variable.
+Instance](https://aws.amazon.com/ec2/) and gives that Instance a `Name` tag with the value specified in the
+`instance_name` variable.
 
 Check out [test/terraform_aws_example_test.go](/test/terraform_aws_example_test.go) to see how you can write
 automated tests for this module.
@@ -26,6 +26,7 @@ it should be free, but you are completely responsible for all AWS charges.
 1. Configure your AWS credentials using one of the [supported methods for AWS CLI
    tools](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html), such as setting the
    `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables.
+1. Set the AWS region you want to use as the environment variable `AWS_DEFAULT_REGION`.
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`.
 1. Run `terraform init`.
 1. Run `terraform apply`.

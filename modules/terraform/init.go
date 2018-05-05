@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"github.com/gruntwork-io/terratest/modules/shell"
 	"testing"
 )
 
@@ -16,11 +15,6 @@ func Init(t *testing.T, options *Options) string {
 
 // Call terraform init and return stdout/stderr
 func InitE(t *testing.T, options *Options) (string, error) {
-	cmd := shell.Command{
-		Command: "terraform",
-		Args: []string{"init"},
-		WorkingDir: options.TerraformDir,
-	}
-	return shell.RunCommandAndGetOutputE(t, cmd)
+	return RunTerraformCommandE(t, options, "init")
 }
 
