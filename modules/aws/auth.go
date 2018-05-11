@@ -1,12 +1,14 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/service/iam"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/pquerna/otp/totp"
 )
@@ -22,6 +24,24 @@ func NewAuthenticatedSession(region string) (*session.Session, error) {
 		return nil, CredentialsError{UnderlyingErr: err}
 	}
 
+	return sess, nil
+}
+
+// CreateAwsSessionFromRole returns a new AWS session after assuming the role
+// whose ARN is provided in roleARN.
+func CreateAwsSessionFromRole(region string, roleARN string) (*session.Session, error) {
+	sess, err := session.NewSession(aws.NewConfig().WithRegion(region))
+	if err != nil {
+		return nil, err
+	}
+	sess, err = AssumeRole(sess, roleARN)
+	return sess, err
+}
+
+// AssumeRole mutates the provided session by obtaining new credentials by
+// assuming the role provided in roleARN.
+func AssumeRole(sess *session.Session, roleARN string) (*session.Session, error) {
+	sess.Config.Credentials = stscreds.NewCredentials(sess, roleARN)
 	return sess, nil
 }
 
@@ -41,7 +61,7 @@ func CreateAwsSessionWithMfa(region string, stsClient *sts.STS, mfaDevice *iam.V
 
 	output, err := stsClient.GetSessionToken(&sts.GetSessionTokenInput{
 		SerialNumber: mfaDevice.SerialNumber,
-		TokenCode: aws.String(tokenCode),
+		TokenCode:    aws.String(tokenCode),
 	})
 	if err != nil {
 		return nil, err
@@ -57,7 +77,7 @@ func CreateAwsSessionWithMfa(region string, stsClient *sts.STS, mfaDevice *iam.V
 
 // Create an AWS Credentials configuration with specific AWS credentials.
 func CreateAwsCredentials(accessKeyId string, secretAccessKey string) *credentials.Credentials {
-	creds := credentials.Value{AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey }
+	creds := credentials.Value{AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey}
 	return credentials.NewStaticCredentialsFromCreds(creds)
 }
 
@@ -65,9 +85,9 @@ func CreateAwsCredentials(accessKeyId string, secretAccessKey string) *credentia
 // authenticating with MFA)
 func CreateAwsCredentialsWithSessionToken(accessKeyId, secretAccessKey, sessionToken string) *credentials.Credentials {
 	creds := credentials.Value{
-		AccessKeyID: accessKeyId,
+		AccessKeyID:     accessKeyId,
 		SecretAccessKey: secretAccessKey,
-		SessionToken: sessionToken,
+		SessionToken:    sessionToken,
 	}
 	return credentials.NewStaticCredentialsFromCreds(creds)
 }
