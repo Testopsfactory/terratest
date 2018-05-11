@@ -8,7 +8,7 @@ across the ASG. Each EC2 Instance in the ASG runs a simple web server that liste
 specified by the `instance_port` variable and returns the text specified by the `instance_text` variable. The ASG is
 configured to support zero-downtime deployments, which is something we verify in the automated test.
 
-Check out [test/terraform_http_example_test.go](/test/terraform_http_example_test.go) to see how you can write
+Check out [test/terraform_redeploy_example_test.go](/test/terraform_redeploy_example_test.go) to see how you can write
 automated tests for this module.
 
 Note that the example in this module is still fairly simplified, as the "web server" we run just servers up a static
