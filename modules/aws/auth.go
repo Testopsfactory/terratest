@@ -27,6 +27,22 @@ func NewAuthenticatedSession(region string) (*session.Session, error) {
 	return sess, nil
 }
 
+// NewAuthenticatedSessionFromRole returns a new AWS Session after assuming the
+// role whose ARN is provided in roleARN. If the credentials are not properly
+// configured in the underlying environment, an error is returned.
+func NewAuthenticatedSessionFromRole(region string, roleARN string) (*session.Session, error) {
+	sess, err := CreateAwsSessionFromRole(region, roleARN)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = sess.Config.Credentials.Get(); err != nil {
+		return nil, CredentialsError{UnderlyingErr: err}
+	}
+
+	return sess, nil
+}
+
 // CreateAwsSessionFromRole returns a new AWS session after assuming the role
 // whose ARN is provided in roleARN.
 func CreateAwsSessionFromRole(region string, roleARN string) (*session.Session, error) {
@@ -34,15 +50,15 @@ func CreateAwsSessionFromRole(region string, roleARN string) (*session.Session, 
 	if err != nil {
 		return nil, err
 	}
-	sess, err = AssumeRole(sess, roleARN)
+	sess = AssumeRole(sess, roleARN)
 	return sess, err
 }
 
 // AssumeRole mutates the provided session by obtaining new credentials by
 // assuming the role provided in roleARN.
-func AssumeRole(sess *session.Session, roleARN string) (*session.Session, error) {
+func AssumeRole(sess *session.Session, roleARN string) *session.Session {
 	sess.Config.Credentials = stscreds.NewCredentials(sess, roleARN)
-	return sess, nil
+	return sess
 }
 
 // Create a new AWS session using explicit credentials. This is useful if you want to create an IAM User dynamically and
