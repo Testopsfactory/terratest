@@ -1,9 +1,10 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/aws/aws-sdk-go/aws"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
 // Return the CloudWatch log messages in the given region for the given log stream and log group

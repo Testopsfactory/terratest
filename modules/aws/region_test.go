@@ -1,9 +1,10 @@
 package aws
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRandomRegion(t *testing.T) {
@@ -53,4 +54,3 @@ func TestGetAvailabilityZones(t *testing.T) {
 		assert.Regexp(t, fmt.Sprintf("^%s[a-z]$", randomRegion), az)
 	}
 }
-

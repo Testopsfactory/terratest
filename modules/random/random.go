@@ -1,14 +1,14 @@
 package random
 
 import (
-	"time"
 	"bytes"
 	"math/rand"
+	"time"
 )
 
 // Generate a random int between min and max, inclusive
 func Random(min int, max int) int {
-	return newRand().Intn(max - min) + min
+	return newRand().Intn(max-min) + min
 }
 
 // Pick a random element in the slice of ints

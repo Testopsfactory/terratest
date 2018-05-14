@@ -1,12 +1,13 @@
 package files
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
-	"path/filepath"
-	"os"
 	"io/ioutil"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const copyFolderContentsFixtureRoot = "../../test/fixtures/copy-folder-contents"

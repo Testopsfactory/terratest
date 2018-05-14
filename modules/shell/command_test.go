@@ -1,9 +1,10 @@
 package shell
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRunCommandAndGetOutput(t *testing.T) {
@@ -12,10 +13,9 @@ func TestRunCommandAndGetOutput(t *testing.T) {
 	text := "Hello, World"
 	cmd := Command{
 		Command: "echo",
-		Args: []string{text},
+		Args:    []string{text},
 	}
 
 	out := RunCommandAndGetOutput(t, cmd)
 	assert.Equal(t, text, strings.TrimSpace(out))
 }
-

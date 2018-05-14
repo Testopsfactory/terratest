@@ -1,12 +1,13 @@
 package packer
 
 import (
-	"github.com/gruntwork-io/terratest/modules/shell"
-	"regexp"
 	"errors"
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"fmt"
+	"regexp"
+	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
 type Options struct {

@@ -1,16 +1,17 @@
 package terraform
 
 import (
-	"github.com/gruntwork-io/terratest/modules/shell"
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/retry"
-	"strings"
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
 // Run terraform with the given arguments and options and return stdout/stderr
-func RunTerraformCommand(t *testing.T, options *Options, args ... string) string {
+func RunTerraformCommand(t *testing.T, options *Options, args ...string) string {
 	out, err := RunTerraformCommandE(t, options, args...)
 	if err != nil {
 		t.Fatal(err)
@@ -19,7 +20,7 @@ func RunTerraformCommand(t *testing.T, options *Options, args ... string) string
 }
 
 // Run terraform with the given arguments and options and return stdout/stderr
-func RunTerraformCommandE(t *testing.T, options *Options, args ... string) (string, error) {
+func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (string, error) {
 	description := fmt.Sprintf("Running terraform %v", args)
 	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		cmd := shell.Command{

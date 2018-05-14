@@ -15,6 +15,7 @@ jobs:
           keys:
             - v1-external-dep
             - v1-dep-{{ checksum "Gopkg.lock" }}
+
       # Use the Gruntwork Installer to install the gruntwork-module-circleci-helpers
       - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
       - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.7.1"
@@ -28,6 +29,11 @@ jobs:
           key: v1-dep-{{ checksum "Gopkg.lock" }}
           paths:
             - $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/test/vendor
+
+      # Run pre-commit hooks and fail the build if any hook finds required changes.
+      - run: pip install pre-commit
+      - run: pre-commit install
+      - run: pre-commit run --all-files
 
       # Run the tests. Note that we set the "-p 1" flag to tell Go to run tests in each package sequentially. Without
       # this, Go buffers all log output until all packages are done, which with slower running tests can cause CircleCI

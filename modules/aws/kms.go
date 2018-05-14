@@ -1,9 +1,10 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/aws/aws-sdk-go/aws"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/kms"
 )
 
 // Get the ARN of a KMS Customer Master Key (CMK) in the given region with the given ID. The ID can be an alias, such

@@ -1,16 +1,17 @@
 package test
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 	"time"
-	"github.com/gruntwork-io/terratest/modules/http-helper"
-	"github.com/gruntwork-io/terratest/modules/random"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/test-structure"
-	"github.com/gruntwork-io/terratest/modules/packer"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/packer"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 // This is a complicated, end-to-end integration test. It builds the AMI from examples/packer-docker-example,
@@ -18,7 +19,7 @@ import (
 // response to requests. The test is broken into "stages" so you can skip stages by setting environment variables (e.g.,
 // skip stage "build_ami" by setting the environment variable "SKIP_build_ami=true"), which speeds up iteration when
 // running this test over and over again locally.
-func TestTerraformPackerExample(t *testing.T)  {
+func TestTerraformPackerExample(t *testing.T) {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
@@ -61,7 +62,7 @@ func TestTerraformPackerExample(t *testing.T)  {
 
 // Build the AMI in packer-docker-example
 func buildAmi(t *testing.T, awsRegion string, workingDir string) {
-	packerOptions := &packer.Options {
+	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
 		Template: "../examples/packer-docker-example/build.json",
 
@@ -69,7 +70,7 @@ func buildAmi(t *testing.T, awsRegion string, workingDir string) {
 		Only: "ubuntu-ami",
 
 		// Variables to pass to our Packer build using -var options
-		Vars: map[string]string {
+		Vars: map[string]string{
 			"aws_region": awsRegion,
 		},
 	}
@@ -108,12 +109,12 @@ func deployUsingTerraform(t *testing.T, awsRegion string, workingDir string) {
 	// Load the AMI ID saved by the earlier build_ami stage
 	amiId := test_structure.LoadAmiId(t, workingDir)
 
-	terraformOptions := &terraform.Options {
+	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: workingDir,
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]interface{} {
+		Vars: map[string]interface{}{
 			"aws_region":    awsRegion,
 			"instance_name": instanceName,
 			"instance_text": instanceText,

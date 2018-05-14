@@ -1,9 +1,10 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/aws/aws-sdk-go/aws"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 

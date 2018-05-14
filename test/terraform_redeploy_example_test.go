@@ -1,16 +1,17 @@
 package test
 
 import (
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/test-structure"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	"testing"
 	"time"
+
+	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/http-helper"
-	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 // An example of how to test the Terraform module in examples/terraform-redeploy-example using Terratest. We deploy the
@@ -70,12 +71,12 @@ func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 	// Specify the text the ASG will return when we make HTTP requests to it.
 	text := fmt.Sprintf("Hello, %s!", uniqueId)
 
-	terraformOptions := &terraform.Options {
+	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: workingDir,
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]interface{} {
+		Vars: map[string]interface{}{
 			"aws_region":    awsRegion,
 			"instance_name": name,
 			"instance_text": text,
@@ -127,7 +128,7 @@ func validateAsgRedeploy(t *testing.T, workingDir string) {
 	url := terraform.Output(t, terraformOptions, "url")
 
 	// Check once per second that the ELB returns a proper response to make sure there is no downtime during deployment
-	elbChecks := retry.DoInBackgroundUntilStopped(t, fmt.Sprintf("Check URL %s", url), 1 * time.Second, func() {
+	elbChecks := retry.DoInBackgroundUntilStopped(t, fmt.Sprintf("Check URL %s", url), 1*time.Second, func() {
 		http_helper.HttpGetWithCustomValidation(t, url, func(statusCode int, body string) bool {
 			return statusCode == 200 && (body == originalText || body == newText)
 		})

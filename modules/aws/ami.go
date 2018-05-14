@@ -1,12 +1,13 @@
 package aws
 
 import (
-	"testing"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/aws"
-	"sort"
-	"time"
 	"fmt"
+	"sort"
+	"testing"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 const CanonicalAccountId = "099720109477"

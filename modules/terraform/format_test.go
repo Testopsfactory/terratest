@@ -1,9 +1,10 @@
 package terraform
 
 import (
-	"github.com/stretchr/testify/assert"
-	"testing"
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFormatTerraformVarsAsArgs(t *testing.T) {

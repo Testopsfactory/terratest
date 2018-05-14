@@ -1,14 +1,15 @@
 package ssh
 
 import (
-	"golang.org/x/crypto/ssh"
 	"fmt"
 	"io"
 	"net"
 	"reflect"
-	"github.com/gruntwork-io/terratest/modules/collections"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"golang.org/x/crypto/ssh"
 )
 
 type SshConnectionOptions struct {

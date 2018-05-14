@@ -1,9 +1,10 @@
 package retry
 
 import (
-	"time"
 	"fmt"
 	"testing"
+	"time"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/net/context"
 )
@@ -37,9 +38,9 @@ func DoWithTimeoutE(t *testing.T, actionDescription string, timeout time.Duratio
 	}()
 
 	select {
-	case either := <- resultChannel:
+	case either := <-resultChannel:
 		return either.Result, either.Error
-	case <- ctx.Done():
+	case <-ctx.Done():
 		return "", TimeoutExceeded{Description: actionDescription, Timeout: timeout}
 	}
 }
@@ -101,9 +102,9 @@ func DoInBackgroundUntilStopped(t *testing.T, actionDescription string, sleepBet
 			logger.Logf(t, "Sleeping for %s before repeating action '%s'", sleepBetweenRepeats, actionDescription)
 
 			select {
-			case <- time.After(sleepBetweenRepeats):
+			case <-time.After(sleepBetweenRepeats):
 				// Nothing to do, just allow the loop to continue
-			case <- stop:
+			case <-stop:
 				logger.Logf(t, "Received stop signal for action '%s'.", actionDescription)
 				return
 			}

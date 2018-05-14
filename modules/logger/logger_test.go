@@ -1,11 +1,12 @@
 package logger
 
 import (
-	"testing"
 	"bytes"
-	"github.com/stretchr/testify/assert"
-	"strings"
 	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDoLog(t *testing.T) {

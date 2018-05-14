@@ -1,10 +1,11 @@
 package http_helper
 
 import (
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"fmt"
 	"net"
+	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -2,8 +2,8 @@ package terraform
 
 import (
 	"fmt"
-	"strings"
 	"reflect"
+	"strings"
 )
 
 // Convert the inputs to a format palatable to terraform. This includes converting the given vars to the format the
@@ -121,7 +121,7 @@ func primitiveToHclString(value interface{}) string {
 	//case int: return strconv.Itoa(v)
 	//case bool: return strconv.FormatBool(v)
 
-	default: return fmt.Sprintf("\"%v\"", v)
+	default:
+		return fmt.Sprintf("\"%v\"", v)
 	}
 }
-

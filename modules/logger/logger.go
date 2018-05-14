@@ -2,12 +2,12 @@ package logger
 
 import (
 	"fmt"
-	"testing"
-	"time"
-	"runtime"
-	"strings"
 	"io"
 	"os"
+	"runtime"
+	"strings"
+	"testing"
+	"time"
 )
 
 // Log the given format and arguments, formatted using fmt.Sprintf, to stdout, along with a timestamp and information
@@ -42,7 +42,7 @@ func Log(t *testing.T, args ...interface{}) {
 // doing the logging.
 func DoLog(t *testing.T, callDepth int, writer io.Writer, args ...interface{}) {
 	date := time.Now()
-	prefix := fmt.Sprintf("%s %s %s:", t.Name(), date.Format(time.RFC3339), CallerPrefix(callDepth + 1))
+	prefix := fmt.Sprintf("%s %s %s:", t.Name(), date.Format(time.RFC3339), CallerPrefix(callDepth+1))
 	allArgs := append([]interface{}{prefix}, args...)
 	fmt.Fprintln(writer, allArgs...)
 }

@@ -1,13 +1,14 @@
 package aws
 
 import (
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/stretchr/testify/assert"
 	"strings"
+	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateAndDeleteSnsTopic(t *testing.T) {

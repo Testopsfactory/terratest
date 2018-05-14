@@ -1,19 +1,20 @@
 package ssh
 
 import (
-	"crypto/rsa"
 	"crypto/rand"
-	"encoding/pem"
+	"crypto/rsa"
 	"crypto/x509"
+	"encoding/pem"
 	"testing"
-	"golang.org/x/crypto/ssh"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"golang.org/x/crypto/ssh"
 )
 
 // A public and private key pair that can be used for SSH access
 type KeyPair struct {
-	PublicKey	string
-	PrivateKey	string
+	PublicKey  string
+	PrivateKey string
 }
 
 // Generate an RSA Keypair and return the public and private keys
@@ -36,8 +37,8 @@ func GenerateRSAKeyPairE(t *testing.T, keySize int) (*KeyPair, error) {
 
 	// Extract the private key
 	keyPemBlock := &pem.Block{
-		Type:	"RSA PRIVATE KEY",
-		Bytes:	x509.MarshalPKCS1PrivateKey(rsaKeyPair),
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(rsaKeyPair),
 	}
 
 	keyPem := string(pem.EncodeToMemory(keyPemBlock))
@@ -52,6 +53,5 @@ func GenerateRSAKeyPairE(t *testing.T, keySize int) (*KeyPair, error) {
 	sshPubKeyStr := string(sshPubKeyBytes)
 
 	// Return
-	return &KeyPair{ PublicKey: sshPubKeyStr, PrivateKey: keyPem }, nil
+	return &KeyPair{PublicKey: sshPubKeyStr, PrivateKey: keyPem}, nil
 }
-

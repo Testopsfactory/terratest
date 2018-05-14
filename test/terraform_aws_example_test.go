@@ -1,12 +1,13 @@
 package test
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/terraform"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 // An example of how to test the Terraform module in examples/terraform-aws-example using Terratest.
@@ -20,12 +21,12 @@ func TestTerraformAwsExample(t *testing.T) {
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
 	awsRegion := aws.GetRandomRegion(t, nil, nil)
 
-	terraformOptions := &terraform.Options {
+	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../examples/terraform-aws-example",
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]interface{} {
+		Vars: map[string]interface{}{
 			"instance_name": expectedName,
 		},
 
@@ -52,4 +53,3 @@ func TestTerraformAwsExample(t *testing.T) {
 	assert.True(t, containsNameTag)
 	assert.Equal(t, expectedName, nameTag)
 }
-

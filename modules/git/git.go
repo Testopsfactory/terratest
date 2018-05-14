@@ -1,9 +1,9 @@
 package git
 
 import (
-	"testing"
 	"os/exec"
 	"strings"
+	"testing"
 )
 
 func GetCurrentBranchName(t *testing.T) string {

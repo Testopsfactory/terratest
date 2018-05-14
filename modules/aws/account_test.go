@@ -2,6 +2,7 @@ package aws
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,4 +35,3 @@ func TestExtractAccountIdFromInvalidArn(t *testing.T) {
 		t.Fatalf("Expected an error when extracting an account id from an invalid ARN, but got nil")
 	}
 }
-

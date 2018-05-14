@@ -1,18 +1,19 @@
 package test_structure
 
 import (
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/packer"
-	"github.com/gruntwork-io/terratest/modules/logger"
-	"fmt"
-	"path/filepath"
 	"encoding/json"
-	"os"
+	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
-	"github.com/gruntwork-io/terratest/modules/files"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/packer"
+	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
 // Serialize and save TerraformOptions into the given folder. This allows you to create TerraformOptions during setup
@@ -201,7 +202,7 @@ func isEmptyJson(t *testing.T, bytes []byte) bool {
 	}
 
 	valueBool, ok := value.(bool)
-	if ok && ! valueBool {
+	if ok && !valueBool {
 		return true
 	}
 

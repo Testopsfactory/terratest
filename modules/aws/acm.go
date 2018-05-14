@@ -1,8 +1,9 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/service/acm"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/service/acm"
 )
 
 // Get the ACM certificate for the given domain name in the given region

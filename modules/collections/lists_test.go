@@ -2,6 +2,7 @@ package collections
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,8 +37,8 @@ func TestSubtract(t *testing.T) {
 
 	testCases := []struct {
 		description string
-		list1        []string
-		list2     []string
+		list1       []string
+		list2       []string
 		expected    []string
 	}{
 		{"empty list, empty list", []string{}, []string{}, []string{}},

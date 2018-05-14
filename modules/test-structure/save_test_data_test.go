@@ -1,11 +1,12 @@
 package test_structure
 
 import (
-	"testing"
 	"io/ioutil"
-	"github.com/stretchr/testify/assert"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 type testData struct {
@@ -100,7 +101,7 @@ func TestSaveAndLoadTerraformOptions(t *testing.T) {
 
 	expectedData := &terraform.Options{
 		TerraformDir: "/abc/def/ghi",
-		Vars: map[string]interface{}{},
+		Vars:         map[string]interface{}{},
 	}
 	SaveTerraformOptions(t, tmpFolder, expectedData)
 

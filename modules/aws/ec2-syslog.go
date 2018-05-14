@@ -1,12 +1,13 @@
 package aws
 
 import (
+	"encoding/base64"
+	"fmt"
+	"testing"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"fmt"
-	"time"
-	"encoding/base64"
-	"testing"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
@@ -35,7 +36,7 @@ func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (stri
 		return "", err
 	}
 
-	input := ec2.GetConsoleOutputInput {
+	input := ec2.GetConsoleOutputInput{
 		InstanceId: aws.String(instanceId),
 	}
 

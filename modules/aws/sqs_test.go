@@ -1,12 +1,13 @@
 package aws
 
 import (
-	"testing"
-	"github.com/gruntwork-io/terratest/modules/random"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/aws/aws-sdk-go/aws"
 	"strings"
+	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 )
 
