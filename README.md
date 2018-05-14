@@ -357,7 +357,7 @@ stages and to be able to disable any one of those stages simply by setting an en
 ### Contributing
 
 Contributions are very welcome! Check out the
-[Contribution Guidelines](https://github.com/gruntwork-io/terraform-aws-couchbase/tree/master/CONTRIBUTING.md) for instructions.
+[Contribution Guidelines](CONTRIBUTING.md) for instructions.
 
 
 ### Running tests
