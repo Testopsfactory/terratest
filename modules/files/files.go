@@ -1,9 +1,9 @@
 package files
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"io/ioutil"
 	"strings"
 )
 

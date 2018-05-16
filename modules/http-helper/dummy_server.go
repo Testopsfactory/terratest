@@ -1,12 +1,13 @@
 package http_helper
 
 import (
+	"fmt"
 	"net"
 	"net/http"
-	"fmt"
 	"strconv"
 	"sync/atomic"
 	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
@@ -33,7 +34,7 @@ func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 
 	logger.Logf(t, "Starting dummy HTTP server in port %d that will return the text '%s'", port, text)
 
-	listener, err := net.Listen("tcp", ":" + strconv.Itoa(port))
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 
 	if err == nil {
 		go http.Serve(listener, nil)

@@ -1,12 +1,13 @@
 package http_helper
 
 import (
-	"time"
-	"net/http"
-	"io/ioutil"
-	"strings"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
 	"testing"
+	"time"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
 )

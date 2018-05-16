@@ -1,9 +1,10 @@
 package retry
 
 import (
-	"time"
-	"testing"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,10 +30,10 @@ func TestDoWithRetry(t *testing.T) {
 	}
 
 	testCases := []struct {
-		description         string
-		maxRetries          int
-		expectedError       error
-		action              func() (string, error)
+		description   string
+		maxRetries    int
+		expectedError error
+		action        func() (string, error)
 	}{
 		{"Return value on first try", 10, nil, actionAlwaysReturnsExpected},
 		{"Return error on all retries", 10, MaxRetriesExceeded{Description: "Return error on all retries", MaxRetries: 10}, actionAlwaysReturnsError},
@@ -46,7 +47,7 @@ func TestDoWithRetry(t *testing.T) {
 		t.Run(testCase.description, func(t *testing.T) {
 			t.Parallel()
 
-			actualOutput, err := DoWithRetryE(t, testCase.description, testCase.maxRetries, 1 * time.Millisecond, testCase.action)
+			actualOutput, err := DoWithRetryE(t, testCase.description, testCase.maxRetries, 1*time.Millisecond, testCase.action)
 			if testCase.expectedError != nil {
 				assert.Equal(t, testCase.expectedError, err)
 			} else {
@@ -64,7 +65,7 @@ func TestDoWithTimeout(t *testing.T) {
 	expectedError := fmt.Errorf("expected error")
 
 	actionReturnsValueImmediately := func() (string, error) { return expectedOutput, nil }
-	actionReturnsErrorImmediately := func() (string, error) { return "", expectedError}
+	actionReturnsErrorImmediately := func() (string, error) { return "", expectedError }
 
 	createActionThatReturnsValueAfterDelay := func(delay time.Duration) func() (string, error) {
 		return func() (string, error) {
@@ -81,10 +82,10 @@ func TestDoWithTimeout(t *testing.T) {
 	}
 
 	testCases := []struct {
-		description         string
-		timeout             time.Duration
-		expectedError       error
-		action              func() (string, error)
+		description   string
+		timeout       time.Duration
+		expectedError error
+		action        func() (string, error)
 	}{
 		{"Returns value immediately", 5 * time.Second, nil, actionReturnsValueImmediately},
 		{"Returns error immediately", 5 * time.Second, expectedError, actionReturnsErrorImmediately},
@@ -118,7 +119,7 @@ func TestDoInBackgroundUntilStopped(t *testing.T) {
 	counter := 0
 
 	stop := DoInBackgroundUntilStopped(t, t.Name(), sleepBetweenRetries, func() {
-			counter++
+		counter++
 	})
 
 	time.Sleep(sleepBetweenRetries * 3)

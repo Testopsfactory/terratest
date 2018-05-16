@@ -2,8 +2,8 @@ package terraform
 
 import (
 	"fmt"
-	"testing"
 	"strings"
+	"testing"
 )
 
 // Call terraform output for the given variable and return its value
@@ -50,6 +50,7 @@ func OutputRequiredE(t *testing.T, options *Options, key string) (string, error)
 }
 
 type EmptyOutput string
+
 func (outputName EmptyOutput) Error() string {
 	return fmt.Sprintf("Required output %s was empty", string(outputName))
 }

@@ -1,13 +1,14 @@
 package aws
 
 import (
-	"github.com/google/uuid"
-	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/aws/aws-sdk-go/aws"
 	"fmt"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/google/uuid"
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
@@ -145,8 +146,8 @@ func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeou
 		return QueueMessageResponse{Error: err}
 	}
 
-	cycles := timeout;
-	cycleLength := 1;
+	cycles := timeout
+	cycleLength := 1
 	if timeout >= 20 {
 		cycleLength = 20
 		cycles = timeout / cycleLength

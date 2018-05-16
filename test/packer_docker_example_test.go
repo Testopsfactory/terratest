@@ -1,22 +1,23 @@
 package test
 
 import (
-	"testing"
 	"fmt"
-	"time"
 	"strconv"
-	"github.com/gruntwork-io/terratest/modules/packer"
-	"github.com/gruntwork-io/terratest/modules/http-helper"
-	"github.com/gruntwork-io/terratest/modules/random"
+	"testing"
+	"time"
+
 	"github.com/gruntwork-io/terratest/modules/docker"
+	"github.com/gruntwork-io/terratest/modules/http-helper"
+	"github.com/gruntwork-io/terratest/modules/packer"
+	"github.com/gruntwork-io/terratest/modules/random"
 )
 
 // An example of how to test the Packer template in examples/packer-docker-example completely locally using Terratest
 // and Docker.
-func TestPackerDockerExampleLocal(t *testing.T)  {
+func TestPackerDockerExampleLocal(t *testing.T) {
 	t.Parallel()
 
-	packerOptions := &packer.Options {
+	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
 		Template: "../examples/packer-docker-example/build.json",
 

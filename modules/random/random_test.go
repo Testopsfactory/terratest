@@ -1,9 +1,10 @@
 package random
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"strconv"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRandom(t *testing.T) {

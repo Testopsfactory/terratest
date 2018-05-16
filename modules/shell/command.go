@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os/exec"
 	"os"
+	"os/exec"
 	"strings"
 	"syscall"
 	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 

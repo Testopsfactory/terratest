@@ -1,10 +1,11 @@
 package ssh
 
 import (
-	"golang.org/x/crypto/ssh"
 	"net"
-	"time"
 	"testing"
+	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type Host struct {

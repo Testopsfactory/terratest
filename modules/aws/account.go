@@ -1,10 +1,11 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/service/iam"
-	"strings"
 	"errors"
+	"strings"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/service/iam"
 )
 
 // Get the Account ID for the currently logged in IAM User.

@@ -1,8 +1,9 @@
 package docker
 
 import (
-	"github.com/gruntwork-io/terratest/modules/shell"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
 type Options struct {
@@ -11,7 +12,7 @@ type Options struct {
 }
 
 // Run docker-compose with the given arguments and options and return stdout/stderr
-func RunDockerCompose(t *testing.T, options *Options, args ... string) string {
+func RunDockerCompose(t *testing.T, options *Options, args ...string) string {
 	out, err := RunDockerComposeE(t, options, args...)
 	if err != nil {
 		t.Fatal(err)
@@ -20,7 +21,7 @@ func RunDockerCompose(t *testing.T, options *Options, args ... string) string {
 }
 
 // Run docker-compose with the given arguments and options and return stdout/stderr
-func RunDockerComposeE(t *testing.T, options *Options, args ... string) (string, error) {
+func RunDockerComposeE(t *testing.T, options *Options, args ...string) (string, error) {
 	cmd := shell.Command{
 		Command: "docker-compose",
 		// We append --project-name to ensure containers from multiple different tests using Docker Compose don't end

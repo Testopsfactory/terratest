@@ -1,8 +1,8 @@
 package packer
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestExtractAmiIdFromOneLine(t *testing.T) {

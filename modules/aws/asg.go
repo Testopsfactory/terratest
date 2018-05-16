@@ -1,9 +1,10 @@
 package aws
 
 import (
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
 // Get the IDs of EC2 Instances in the given ASG
@@ -56,4 +57,3 @@ func NewAsgClientE(t *testing.T, region string) (*autoscaling.AutoScaling, error
 
 	return autoscaling.New(sess), nil
 }
-

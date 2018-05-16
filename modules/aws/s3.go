@@ -3,10 +3,11 @@ package aws
 import (
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"bytes"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
@@ -71,7 +72,7 @@ func GetS3ObjectContentsE(t *testing.T, awsRegion string, bucket string, key str
 
 	res, err := s3Client.GetObject(&s3.GetObjectInput{
 		Bucket: &bucket,
-		Key: &key,
+		Key:    &key,
 	})
 
 	if err != nil {

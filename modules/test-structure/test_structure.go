@@ -1,13 +1,14 @@
 package test_structure
 
 import (
-	"os"
-	"testing"
-	"path/filepath"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
-	"github.com/gruntwork-io/terratest/modules/logger"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 const SKIP_STAGE_ENV_VAR_PREFIX = "SKIP_"

@@ -17,4 +17,3 @@ func Init(t *testing.T, options *Options) string {
 func InitE(t *testing.T, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, "init")
 }
-

@@ -2,6 +2,7 @@ package ssh
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,5 +14,3 @@ func TestGenerateRSAKeyPair(t *testing.T) {
 	assert.Contains(t, keyPair.PublicKey, "ssh-rsa")
 	assert.Contains(t, keyPair.PrivateKey, "-----BEGIN RSA PRIVATE KEY-----")
 }
-
-
