@@ -382,7 +382,7 @@ running), we'll actually make HTTP requests to the server and check that we get 
 data in a database and make sure we can read it back out; or we'll try to deploy a new version of a Docker container
 and make sure the orchestration tool can roll out the new container with no downtime.
 
-Moreover, we use Terratest not only with individual servers, but to to test entire systems. For example, the automated
+Moreover, we use Terratest not only with individual servers, but to test entire systems. For example, the automated
 tests for the [Vault module](https://github.com/hashicorp/terraform-aws-vault/tree/master/modules) do the following:
 
 1. Use Packer to build an AMI.
