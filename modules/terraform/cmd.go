@@ -36,12 +36,12 @@ func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (strin
 		}
 
 		for errorText, errorMessage := range options.RetryableTerraformErrors {
-			if strings.Contains(err.Error(), errorText) {
+			if strings.Contains(out, errorText) {
 				logger.Logf(t, "terraform failed with the error '%s' but this error was expected and warrants a retry. Further details: %s\n", errorText, errorMessage)
-				return "", err
+				return out, err
 			}
 		}
 
-		return "", retry.FatalError{Underlying: err}
+		return out, retry.FatalError{Underlying: err}
 	})
 }

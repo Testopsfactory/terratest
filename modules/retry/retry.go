@@ -60,24 +60,27 @@ func DoWithRetry(t *testing.T, actionDescription string, maxRetries int, sleepBe
 // immediately. If it returns any other type of error, sleep for sleepBetweenRetries and try again, up to a maximum of
 // maxRetries retries. If maxRetries is exceeded, return a MaxRetriesExceeded error.
 func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) (string, error) {
+	var output string
+	var err error
+
 	for i := 0; i <= maxRetries; i++ {
 		logger.Log(t, actionDescription)
 
-		output, err := action()
+		output, err = action()
 		if err == nil {
 			return output, nil
 		}
 
 		if _, isFatalErr := err.(FatalError); isFatalErr {
 			logger.Logf(t, "Returning due to fatal error: %v", err)
-			return "", err
+			return output, err
 		}
 
 		logger.Logf(t, "%s returned an error: %s. Sleeping for %s and will try again.", actionDescription, err.Error(), sleepBetweenRetries)
 		time.Sleep(sleepBetweenRetries)
 	}
 
-	return "", MaxRetriesExceeded{Description: actionDescription, MaxRetries: maxRetries}
+	return output, MaxRetriesExceeded{Description: actionDescription, MaxRetries: maxRetries}
 }
 
 type Done struct {
