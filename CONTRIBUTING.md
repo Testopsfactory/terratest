@@ -41,6 +41,17 @@ not delete or rename anything in a public API.
 If a backwards incompatible change cannot be avoided, please make sure to call that out when you submit a pull request,
 explaining why the change is absolutely necessary.
 
+Note that we use pre-commit hooks with this project. To ensure they run:
+
+1. Install [pre-commit](https://pre-commit.com/).
+1. Run `pre-commit install`.
+
+One of the pre-commit hooks we run is [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports). To prevent the
+hook from failing, make sure to :
+
+1. Install [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports)
+1. Run `goimports -w .`.
+
 ## Create a pull request
 
 [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) with your changes. Please make sure

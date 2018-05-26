@@ -15,7 +15,7 @@ func TestDoWithRetry(t *testing.T) {
 	expectedError := fmt.Errorf("expected error")
 
 	actionAlwaysReturnsExpected := func() (string, error) { return expectedOutput, nil }
-	actionAlwaysReturnsError := func() (string, error) { return "", expectedError }
+	actionAlwaysReturnsError := func() (string, error) { return expectedOutput, expectedError }
 
 	createActionThatReturnsExpectedAfterFiveRetries := func() func() (string, error) {
 		count := 0
@@ -24,7 +24,7 @@ func TestDoWithRetry(t *testing.T) {
 			if count > 5 {
 				return expectedOutput, nil
 			} else {
-				return "", expectedError
+				return expectedOutput, expectedError
 			}
 		}
 	}
@@ -48,6 +48,7 @@ func TestDoWithRetry(t *testing.T) {
 			t.Parallel()
 
 			actualOutput, err := DoWithRetryE(t, testCase.description, testCase.maxRetries, 1*time.Millisecond, testCase.action)
+			assert.Equal(t, expectedOutput, actualOutput)
 			if testCase.expectedError != nil {
 				assert.Equal(t, testCase.expectedError, err)
 			} else {
