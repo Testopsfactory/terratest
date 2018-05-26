@@ -2,8 +2,9 @@ package terraform
 
 import (
 	"testing"
-	"github.com/stretchr/testify/assert"
+
 	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestApplyNoError(t *testing.T) {
@@ -51,7 +52,7 @@ func TestApplyWithErrorWithRetry(t *testing.T) {
 
 	options := &Options{
 		TerraformDir: testFolder,
-		MaxRetries: 1,
+		MaxRetries:   1,
 		RetryableTerraformErrors: map[string]string{
 			"This is the first run, exiting with an error": "Intentional failure in test fixture",
 		},
