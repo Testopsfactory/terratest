@@ -12,20 +12,20 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
-// Get the syslog for the Instance with the given ID in the given region. This should be available ~1 minute after an
+// GetSyslogForInstance gets the syslog for the Instance with the given ID in the given region. This should be available ~1 minute after an
 // Instance boots and is very useful for debugging boot-time issues, such as an error in User Data.
-func GetSyslogForInstance(t *testing.T, instanceId string, awsRegion string) string {
-	out, err := GetSyslogForInstanceE(t, instanceId, awsRegion)
+func GetSyslogForInstance(t *testing.T, instanceID string, awsRegion string) string {
+	out, err := GetSyslogForInstanceE(t, instanceID, awsRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return out
 }
 
-// Get the syslog for the Instance with the given ID in the given region. This should be available ~1 minute after an
+// GetSyslogForInstanceE gets the syslog for the Instance with the given ID in the given region. This should be available ~1 minute after an
 // Instance boots and is very useful for debugging boot-time issues, such as an error in User Data.
-func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (string, error) {
-	description := fmt.Sprintf("Fetching syslog for Instance %s in %s", instanceId, region)
+func GetSyslogForInstanceE(t *testing.T, instanceID string, region string) (string, error) {
+	description := fmt.Sprintf("Fetching syslog for Instance %s in %s", instanceID, region)
 	maxRetries := 120
 	timeBetweenRetries := 5 * time.Second
 
@@ -37,7 +37,7 @@ func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (stri
 	}
 
 	input := ec2.GetConsoleOutputInput{
-		InstanceId: aws.String(instanceId),
+		InstanceId: aws.String(instanceID),
 	}
 
 	syslogB64, err := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
@@ -48,7 +48,7 @@ func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (stri
 
 		syslog := aws.StringValue(out.Output)
 		if syslog == "" {
-			return "", fmt.Errorf("Syslog is not yet available for instance %s in %s", instanceId, region)
+			return "", fmt.Errorf("Syslog is not yet available for instance %s in %s", instanceID, region)
 		}
 
 		return syslog, nil
@@ -66,7 +66,7 @@ func GetSyslogForInstanceE(t *testing.T, instanceId string, region string) (stri
 	return string(syslogBytes), nil
 }
 
-// Get the syslog for each of the Instances in the given ASG in the given region. These logs should be available ~1
+// GetSyslogForInstancesInAsg gets the syslog for each of the Instances in the given ASG in the given region. These logs should be available ~1
 // minute after the Instance boots and are very useful for debugging boot-time issues, such as an error in User Data.
 // Returns a map of Instance Id -> Syslog for that Instance.
 func GetSyslogForInstancesInAsg(t *testing.T, asgName string, awsRegion string) map[string]string {
@@ -77,24 +77,24 @@ func GetSyslogForInstancesInAsg(t *testing.T, asgName string, awsRegion string) 
 	return out
 }
 
-// Get the syslog for each of the Instances in the given ASG in the given region. These logs should be available ~1
+// GetSyslogForInstancesInAsgE gets the syslog for each of the Instances in the given ASG in the given region. These logs should be available ~1
 // minute after the Instance boots and are very useful for debugging boot-time issues, such as an error in User Data.
 // Returns a map of Instance Id -> Syslog for that Instance.
 func GetSyslogForInstancesInAsgE(t *testing.T, asgName string, awsRegion string) (map[string]string, error) {
 	logger.Logf(t, "Fetching syslog for each Instance in ASG %s in %s", asgName, awsRegion)
 
-	instanceIds, err := GetEc2InstanceIdsByTagE(t, awsRegion, "aws:autoscaling:groupName", asgName)
+	instanceIDs, err := GetEc2InstanceIdsByTagE(t, awsRegion, "aws:autoscaling:groupName", asgName)
 	if err != nil {
 		return nil, err
 	}
 
 	logs := map[string]string{}
-	for _, instanceId := range instanceIds {
-		syslog, err := GetSyslogForInstanceE(t, instanceId, awsRegion)
+	for _, id := range instanceIDs {
+		syslog, err := GetSyslogForInstanceE(t, id, awsRegion)
 		if err != nil {
 			return nil, err
 		}
-		logs[instanceId] = syslog
+		logs[id] = syslog
 	}
 
 	return logs, nil

@@ -13,7 +13,7 @@ import (
 	"github.com/pquerna/otp/totp"
 )
 
-// Get an AWS Session, checking that the user has credentials properly configured in their environment
+// NewAuthenticatedSession gets an AWS Session, checking that the user has credentials properly configured in their environment.
 func NewAuthenticatedSession(region string) (*session.Session, error) {
 	sess, err := session.NewSession(aws.NewConfig().WithRegion(region))
 	if err != nil {
@@ -61,14 +61,14 @@ func AssumeRole(sess *session.Session, roleARN string) *session.Session {
 	return sess
 }
 
-// Create a new AWS session using explicit credentials. This is useful if you want to create an IAM User dynamically and
+// CreateAwsSessionWithCreds creates a new AWS session using explicit credentials. This is useful if you want to create an IAM User dynamically and
 // create an AWS session authenticated as the new IAM User.
-func CreateAwsSessionWithCreds(region string, accessKeyId string, secretAccessKey string) (*session.Session, error) {
-	creds := CreateAwsCredentials(accessKeyId, secretAccessKey)
+func CreateAwsSessionWithCreds(region string, accessKeyID string, secretAccessKey string) (*session.Session, error) {
+	creds := CreateAwsCredentials(accessKeyID, secretAccessKey)
 	return session.NewSession(aws.NewConfig().WithRegion(region).WithCredentials(creds))
 }
 
-// Create a new AWS session authenticated using an MFA token retrieved using the given STS client and MFA Device
+// CreateAwsSessionWithMfa creates a new AWS session authenticated using an MFA token retrieved using the given STS client and MFA Device.
 func CreateAwsSessionWithMfa(region string, stsClient *sts.STS, mfaDevice *iam.VirtualMFADevice) (*session.Session, error) {
 	tokenCode, err := GetTimeBasedOneTimePassword(mfaDevice)
 	if err != nil {
@@ -83,32 +83,32 @@ func CreateAwsSessionWithMfa(region string, stsClient *sts.STS, mfaDevice *iam.V
 		return nil, err
 	}
 
-	accessKeyId := *output.Credentials.AccessKeyId
+	accessKeyID := *output.Credentials.AccessKeyId
 	secretAccessKey := *output.Credentials.SecretAccessKey
 	sessionToken := *output.Credentials.SessionToken
 
-	creds := CreateAwsCredentialsWithSessionToken(accessKeyId, secretAccessKey, sessionToken)
+	creds := CreateAwsCredentialsWithSessionToken(accessKeyID, secretAccessKey, sessionToken)
 	return session.NewSession(aws.NewConfig().WithRegion(region).WithCredentials(creds))
 }
 
-// Create an AWS Credentials configuration with specific AWS credentials.
-func CreateAwsCredentials(accessKeyId string, secretAccessKey string) *credentials.Credentials {
-	creds := credentials.Value{AccessKeyID: accessKeyId, SecretAccessKey: secretAccessKey}
+// CreateAwsCredentials creates an AWS Credentials configuration with specific AWS credentials.
+func CreateAwsCredentials(accessKeyID string, secretAccessKey string) *credentials.Credentials {
+	creds := credentials.Value{AccessKeyID: accessKeyID, SecretAccessKey: secretAccessKey}
 	return credentials.NewStaticCredentialsFromCreds(creds)
 }
 
-// Create an AWS Credentials configuration with temporary AWS credentials by including a session token (used for
-// authenticating with MFA)
-func CreateAwsCredentialsWithSessionToken(accessKeyId, secretAccessKey, sessionToken string) *credentials.Credentials {
+// CreateAwsCredentialsWithSessionToken creates an AWS Credentials configuration with temporary AWS credentials by including a session token (used for
+// authenticating with MFA).
+func CreateAwsCredentialsWithSessionToken(accessKeyID, secretAccessKey, sessionToken string) *credentials.Credentials {
 	creds := credentials.Value{
-		AccessKeyID:     accessKeyId,
+		AccessKeyID:     accessKeyID,
 		SecretAccessKey: secretAccessKey,
 		SessionToken:    sessionToken,
 	}
 	return credentials.NewStaticCredentialsFromCreds(creds)
 }
 
-// Get a One-Time Password from the given mfaDevice. Per the RFC 6238 standard, this value will be different every 30 seconds.
+// GetTimeBasedOneTimePassword gets a One-Time Password from the given mfaDevice. Per the RFC 6238 standard, this value will be different every 30 seconds.
 func GetTimeBasedOneTimePassword(mfaDevice *iam.VirtualMFADevice) (string, error) {
 	base32StringSeed := string(mfaDevice.Base32StringSeed)
 
@@ -120,6 +120,7 @@ func GetTimeBasedOneTimePassword(mfaDevice *iam.VirtualMFADevice) (string, error
 	return otp, nil
 }
 
+// ReadPasswordPolicyMinPasswordLength returns the minimal password length.
 func ReadPasswordPolicyMinPasswordLength(iamClient *iam.IAM) (int, error) {
 	output, err := iamClient.GetAccountPasswordPolicy(&iam.GetAccountPasswordPolicyInput{})
 	if err != nil {
@@ -129,6 +130,7 @@ func ReadPasswordPolicyMinPasswordLength(iamClient *iam.IAM) (int, error) {
 	return int(*output.PasswordPolicy.MinimumPasswordLength), nil
 }
 
+// CredentialsError is an error that occurs because AWS credentials can't be found.
 type CredentialsError struct {
 	UnderlyingErr error
 }

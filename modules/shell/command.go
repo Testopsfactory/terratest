@@ -14,7 +14,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// A simpler struct for defining commands than Go's built-in Cmd
+// Command is a simpler struct for defining commands than Go's built-in Cmd.
 type Command struct {
 	Command    string            // The command to run
 	Args       []string          // The args to pass to the command
@@ -22,7 +22,7 @@ type Command struct {
 	Env        map[string]string // Additional environment variables to set
 }
 
-// Run a shell command and redirect its stdout and stderr to the stdout of the atomic script itself
+// RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
 func RunCommand(t *testing.T, command Command) {
 	err := RunCommandE(t, command)
 	if err != nil {
@@ -30,13 +30,13 @@ func RunCommand(t *testing.T, command Command) {
 	}
 }
 
-// Run a shell command and redirect its stdout and stderr to the stdout of the atomic script itself
+// RunCommandE runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
 func RunCommandE(t *testing.T, command Command) error {
 	_, err := RunCommandAndGetOutputE(t, command)
 	return err
 }
 
-// Run a shell command and return its stdout and stderr as a string. The stdout and stderr of that command will also
+// RunCommandAndGetOutput runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of that command will also
 // be printed to the stdout and stderr of this Go program to make debugging easier.
 func RunCommandAndGetOutput(t *testing.T, command Command) string {
 	out, err := RunCommandAndGetOutputE(t, command)
@@ -46,7 +46,7 @@ func RunCommandAndGetOutput(t *testing.T, command Command) string {
 	return out
 }
 
-// Run a shell command and return its stdout and stderr as a string. The stdout and stderr of that command will also
+// RunCommandAndGetOutputE runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of that command will also
 // be printed to the stdout and stderr of this Go program to make debugging easier.
 func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 	logger.Logf(t, "Running command %s with args %s", command.Command, command.Args)
@@ -66,7 +66,8 @@ func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 		return "", err
 	}
 
-	if err := cmd.Start(); err != nil {
+	err = cmd.Start()
+	if err != nil {
 		return "", err
 	}
 
@@ -114,7 +115,7 @@ func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadClose
 	return strings.Join(allOutput, "\n"), nil
 }
 
-// Try to read the exit code for the error object returned from running a shell command. This is a bit tricky to do
+// GetExitCodeForRunCommandError tries to read the exit code for the error object returned from running a shell command. This is a bit tricky to do
 // in a way that works across platforms.
 func GetExitCodeForRunCommandError(err error) (int, error) {
 	// http://stackoverflow.com/a/10385867/483528
@@ -127,9 +128,8 @@ func GetExitCodeForRunCommandError(err error) (int, error) {
 		// an ExitStatus() method with the same signature.
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 			return status.ExitStatus(), nil
-		} else {
-			return 1, errors.New("Could not determine exit code")
 		}
+		return 1, errors.New("Could not determine exit code")
 	}
 
 	return 0, nil

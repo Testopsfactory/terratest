@@ -7,30 +7,30 @@ import (
 )
 
 func TestGetAccountId(t *testing.T) {
-	accountId := GetAccountId(t)
-	assert.Regexp(t, "^[0-9]{12}$", accountId)
+	accountID := GetAccountId(t)
+	assert.Regexp(t, "^[0-9]{12}$", accountID)
 }
 
 func TestExtractAccountIdFromValidArn(t *testing.T) {
 	t.Parallel()
 
-	expectedAccountId := "123456789012"
-	arn := "arn:aws:iam::" + expectedAccountId + ":user/test"
+	expectedAccountID := "123456789012"
+	arn := "arn:aws:iam::" + expectedAccountID + ":user/test"
 
-	actualAccountId, err := extractAccountIdFromArn(arn)
+	actualAccountID, err := extractAccountIDFromARN(arn)
 	if err != nil {
 		t.Fatalf("Unexpected error while extracting account id from arn %s: %s", arn, err)
 	}
 
-	if actualAccountId != expectedAccountId {
-		t.Fatalf("Did not get expected account id. Expected: %s. Actual: %s.", expectedAccountId, actualAccountId)
+	if actualAccountID != expectedAccountID {
+		t.Fatalf("Did not get expected account id. Expected: %s. Actual: %s.", expectedAccountID, actualAccountID)
 	}
 }
 
 func TestExtractAccountIdFromInvalidArn(t *testing.T) {
 	t.Parallel()
 
-	_, err := extractAccountIdFromArn("invalidArn")
+	_, err := extractAccountIDFromARN("invalidArn")
 	if err == nil {
 		t.Fatalf("Expected an error when extracting an account id from an invalid ARN, but got nil")
 	}

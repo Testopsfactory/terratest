@@ -11,7 +11,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// Find the name of the S3 bucket in the given region with the given tag key=value
+// FindS3BucketWithTag finds the name of the S3 bucket in the given region with the given tag key=value.
 func FindS3BucketWithTag(t *testing.T, awsRegion string, key string, value string) string {
 	bucket, err := FindS3BucketWithTagE(t, awsRegion, key, value)
 	if err != nil {
@@ -20,7 +20,7 @@ func FindS3BucketWithTag(t *testing.T, awsRegion string, key string, value strin
 	return bucket
 }
 
-// Find the name of the S3 bucket in the given region with the given tag key=value
+// FindS3BucketWithTagE finds the name of the S3 bucket in the given region with the given tag key=value.
 func FindS3BucketWithTagE(t *testing.T, awsRegion string, key string, value string) (string, error) {
 	s3Client, err := NewS3ClientE(t, awsRegion)
 	if err != nil {
@@ -54,7 +54,7 @@ func FindS3BucketWithTagE(t *testing.T, awsRegion string, key string, value stri
 	return "", nil
 }
 
-// Fetch the contents of the object in the given bucket with the given key and return it as a string
+// GetS3ObjectContents fetches the contents of the object in the given bucket with the given key and return it as a string.
 func GetS3ObjectContents(t *testing.T, awsRegion string, bucket string, key string) string {
 	contents, err := GetS3ObjectContentsE(t, awsRegion, bucket, key)
 	if err != nil {
@@ -63,7 +63,7 @@ func GetS3ObjectContents(t *testing.T, awsRegion string, bucket string, key stri
 	return contents
 }
 
-// Fetch the contents of the object in the given bucket with the given key and return it as a string
+// GetS3ObjectContentsE fetches the contents of the object in the given bucket with the given key and return it as a string.
 func GetS3ObjectContentsE(t *testing.T, awsRegion string, bucket string, key string) (string, error) {
 	s3Client, err := NewS3ClientE(t, awsRegion)
 	if err != nil {
@@ -91,7 +91,7 @@ func GetS3ObjectContentsE(t *testing.T, awsRegion string, bucket string, key str
 	return contents, nil
 }
 
-// Create an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
+// CreateS3Bucket creates an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
 func CreateS3Bucket(t *testing.T, region string, name string) {
 	err := CreateS3BucketE(t, region, name)
 	if err != nil {
@@ -99,7 +99,7 @@ func CreateS3Bucket(t *testing.T, region string, name string) {
 	}
 }
 
-// Create an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
+// CreateS3BucketE creates an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
 func CreateS3BucketE(t *testing.T, region string, name string) error {
 	logger.Logf(t, "Creating bucket %s in %s", region, name)
 
@@ -115,7 +115,7 @@ func CreateS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
-// Destroy the S3 bucket in the given region with the given name.
+// DeleteS3Bucket destroys the S3 bucket in the given region with the given name.
 func DeleteS3Bucket(t *testing.T, region string, name string) {
 	err := DeleteS3BucketE(t, region, name)
 	if err != nil {
@@ -123,7 +123,7 @@ func DeleteS3Bucket(t *testing.T, region string, name string) {
 	}
 }
 
-// Destroy the S3 bucket in the given region with the given name.
+// DeleteS3BucketE destroys the S3 bucket in the given region with the given name.
 func DeleteS3BucketE(t *testing.T, region string, name string) error {
 	logger.Logf(t, "Deleting bucket %s in %s", region, name)
 
@@ -139,7 +139,7 @@ func DeleteS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
-// Check if the given S3 bucket exists in the given region and fail the test if it does not
+// AssertS3BucketExists checks if the given S3 bucket exists in the given region and fail the test if it does not.
 func AssertS3BucketExists(t *testing.T, region string, name string) {
 	err := AssertS3BucketExistsE(t, region, name)
 	if err != nil {
@@ -147,7 +147,7 @@ func AssertS3BucketExists(t *testing.T, region string, name string) {
 	}
 }
 
-// Check if the given S3 bucket exists in the given region and return an error if it does not
+// AssertS3BucketExistsE checks if the given S3 bucket exists in the given region and return an error if it does not.
 func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 	s3Client, err := NewS3ClientE(t, region)
 	if err != nil {
@@ -161,7 +161,7 @@ func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 	return err
 }
 
-// Create an S3 client
+// NewS3Client creates an S3 client.
 func NewS3Client(t *testing.T, region string) *s3.S3 {
 	client, err := NewS3ClientE(t, region)
 	if err != nil {
@@ -170,7 +170,7 @@ func NewS3Client(t *testing.T, region string) *s3.S3 {
 	return client
 }
 
-// Create an S3 client
+// NewS3ClientE creates an S3 client.
 func NewS3ClientE(t *testing.T, region string) (*s3.S3, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {

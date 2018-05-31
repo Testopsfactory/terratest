@@ -101,9 +101,8 @@ func checkResultWithRetry(t *testing.T, maxRetries int, expectedValue interface{
 		actualValue := generateValue()
 		if assert.ObjectsAreEqual(expectedValue, actualValue) {
 			return
-		} else {
-			t.Logf("Retry %d of %s failed: expected %v, got %v", i, description, expectedValue, actualValue)
 		}
+		t.Logf("Retry %d of %s failed: expected %v, got %v", i, description, expectedValue, actualValue)
 	}
 
 	assert.Fail(t, "checkResultWithRetry failed", "After %d retries, %s still not succeeding (see retries above)", description)

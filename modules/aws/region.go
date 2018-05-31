@@ -20,7 +20,7 @@ const regionOverrideEnvVarName = "TERRATEST_REGION"
 // this region as a default.
 const defaultRegion = "us-east-1"
 
-// Get a randomly chosen AWS region. If approvedRegions is not empty, this will be a region from the approvedRegions
+// GetRandomRegion gets a randomly chosen AWS region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the AWS APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
 func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string) string {
@@ -31,7 +31,7 @@ func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []
 	return region
 }
 
-// Get a randomly chosen AWS region. If approvedRegions is not empty, this will be a region from the approvedRegions
+// GetRandomRegionE gets a randomly chosen AWS region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the AWS APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
 func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions []string) (string, error) {
@@ -58,7 +58,7 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 	return region, nil
 }
 
-// Get the list of AWS regions available in this account
+// GetAllAwsRegions gets the list of AWS regions available in this account.
 func GetAllAwsRegions(t *testing.T) []string {
 	out, err := GetAllAwsRegionsE(t)
 	if err != nil {
@@ -67,7 +67,7 @@ func GetAllAwsRegions(t *testing.T) []string {
 	return out
 }
 
-// Get the list of AWS regions available in this account
+// GetAllAwsRegionsE gets the list of AWS regions available in this account.
 func GetAllAwsRegionsE(t *testing.T) ([]string, error) {
 	logger.Log(t, "Looking up all AWS regions available in this account")
 
@@ -89,7 +89,7 @@ func GetAllAwsRegionsE(t *testing.T) ([]string, error) {
 	return regions, nil
 }
 
-// Get the Availability Zones for a given AWS region. Note that for certain regions (e.g. us-east-1), different AWS
+// GetAvailabilityZones gets the Availability Zones for a given AWS region. Note that for certain regions (e.g. us-east-1), different AWS
 // accounts have access to different availability zones.
 func GetAvailabilityZones(t *testing.T, region string) []string {
 	out, err := GetAvailabilityZonesE(t, region)
@@ -99,7 +99,7 @@ func GetAvailabilityZones(t *testing.T, region string) []string {
 	return out
 }
 
-// Get the Availability Zones for a given AWS region. Note that for certain regions (e.g. us-east-1), different AWS
+// GetAvailabilityZonesE gets the Availability Zones for a given AWS region. Note that for certain regions (e.g. us-east-1), different AWS
 // accounts have access to different availability zones.
 func GetAvailabilityZonesE(t *testing.T, region string) ([]string, error) {
 	logger.Logf(t, "Looking up all availability zones available in this account for region %s", region)

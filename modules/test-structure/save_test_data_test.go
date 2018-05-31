@@ -55,39 +55,39 @@ func TestIsEmptyJson(t *testing.T) {
 	var isEmpty bool
 
 	jsonValue = []byte("null")
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.True(t, isEmpty, `The JSON literal "null" should be treated as an empty value.`)
 
 	jsonValue = []byte("false")
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.True(t, isEmpty, `The JSON literal "false" should be treated as an empty value.`)
 
 	jsonValue = []byte("true")
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.False(t, isEmpty, `The JSON literal "true" should be treated as a non-empty value.`)
 
 	jsonValue = []byte("0")
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.True(t, isEmpty, `The JSON literal "0" should be treated as an empty value.`)
 
 	jsonValue = []byte("1")
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.False(t, isEmpty, `The JSON literal "1" should be treated as a non-empty value.`)
 
 	jsonValue = []byte("{}")
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.True(t, isEmpty, `The JSON value "{}" should be treated as an empty value.`)
 
 	jsonValue = []byte(`{ "key": "val" }`)
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.False(t, isEmpty, `The JSON value { "key": "val" } should be treated as a non-empty value.`)
 
 	jsonValue = []byte(`[]`)
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.True(t, isEmpty, `The JSON value "[]" should be treated as an empty value.`)
 
 	jsonValue = []byte(`[{ "key": "val" }]`)
-	isEmpty = isEmptyJson(t, jsonValue)
+	isEmpty = isEmptyJSON(t, jsonValue)
 	assert.False(t, isEmpty, `The JSON value [{ "key": "val" }] should be treated as a non-empty value.`)
 }
 

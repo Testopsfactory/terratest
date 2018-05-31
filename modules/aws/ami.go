@@ -10,22 +10,25 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-const CanonicalAccountId = "099720109477"
-const CentOsAccountId = "679593333241"
-const AmazonAccountId = "amazon"
+// These are commonly used AMI account IDs.
+const (
+	CanonicalAccountId = "099720109477"
+	CentOsAccountId    = "679593333241"
+	AmazonAccountId    = "amazon"
+)
 
-// Get the ID of the most recent AMI in the given region that has the given owner and matches the given filters. Each
+// GetMostRecentAmiId gets the ID of the most recent AMI in the given region that has the given owner and matches the given filters. Each
 // filter should correspond to the name and values of a filter supported by DescribeImagesInput:
 // https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#DescribeImagesInput
 func GetMostRecentAmiId(t *testing.T, region string, ownerId string, filters map[string][]string) string {
-	amiId, err := GetMostRecentAmiIdE(t, region, ownerId, filters)
+	amiID, err := GetMostRecentAmiIdE(t, region, ownerId, filters)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Get the ID of the most recent AMI in the given region that has the given owner and matches the given filters. Each
+// GetMostRecentAmiIdE gets the ID of the most recent AMI in the given region that has the given owner and matches the given filters. Each
 // filter should correspond to the name and values of a filter supported by DescribeImagesInput:
 // https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#DescribeImagesInput
 func GetMostRecentAmiIdE(t *testing.T, region string, ownerId string, filters map[string][]string) (string, error) {
@@ -53,7 +56,7 @@ func GetMostRecentAmiIdE(t *testing.T, region string, ownerId string, filters ma
 		return "", NoImagesFound{Region: region, OwnerId: ownerId, Filters: filters}
 	}
 
-	mostRecentImage := mostRecentAmi(out.Images)
+	mostRecentImage := mostRecentAMI(out.Images)
 	return aws.StringValue(mostRecentImage.ImageId), nil
 }
 
@@ -63,28 +66,34 @@ type imageSort []*ec2.Image
 func (a imageSort) Len() int      { return len(a) }
 func (a imageSort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a imageSort) Less(i, j int) bool {
-	itime, _ := time.Parse(time.RFC3339, *a[i].CreationDate)
-	jtime, _ := time.Parse(time.RFC3339, *a[j].CreationDate)
-	return itime.Unix() < jtime.Unix()
+	iTime, err := time.Parse(time.RFC3339, *a[i].CreationDate)
+	if err != nil {
+		panic(fmt.Errorf("error parsing creation date of EC2 image: %s", err))
+	}
+	jTime, err := time.Parse(time.RFC3339, *a[j].CreationDate)
+	if err != nil {
+		panic(fmt.Errorf("error parsing creation date of EC2 image: %s", err))
+	}
+	return iTime.Unix() < jTime.Unix()
 }
 
-// Returns the most recent AMI out of a slice of images.
-func mostRecentAmi(images []*ec2.Image) *ec2.Image {
+// mostRecentAMI returns the most recent AMI out of a slice of images.
+func mostRecentAMI(images []*ec2.Image) *ec2.Image {
 	sortedImages := images
 	sort.Sort(imageSort(sortedImages))
 	return sortedImages[len(sortedImages)-1]
 }
 
-// Get the ID of the most recent Ubuntu 14.04 HVM x86_64 EBS GP2 AMI in the given region
+// GetUbuntu1404Ami gets the ID of the most recent Ubuntu 14.04 HVM x86_64 EBS GP2 AMI in the given region.
 func GetUbuntu1404Ami(t *testing.T, region string) string {
-	amiId, err := GetUbuntu1404AmiE(t, region)
+	amiID, err := GetUbuntu1404AmiE(t, region)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Get the ID of the most recent Ubuntu 14.04 HVM x86_64 EBS GP2 AMI in the given region
+// GetUbuntu1404AmiE gets the ID of the most recent Ubuntu 14.04 HVM x86_64 EBS GP2 AMI in the given region.
 func GetUbuntu1404AmiE(t *testing.T, region string) (string, error) {
 	filters := map[string][]string{
 		"name":                             {"*ubuntu-trusty-14.04-amd64-server-*"},
@@ -97,16 +106,16 @@ func GetUbuntu1404AmiE(t *testing.T, region string) (string, error) {
 	return GetMostRecentAmiIdE(t, region, CanonicalAccountId, filters)
 }
 
-// Get the ID of the most recent Ubuntu 16.04 HVM x86_64 EBS GP2 AMI in the given region
+// GetUbuntu1604Ami gets the ID of the most recent Ubuntu 16.04 HVM x86_64 EBS GP2 AMI in the given region.
 func GetUbuntu1604Ami(t *testing.T, region string) string {
-	amiId, err := GetUbuntu1604AmiE(t, region)
+	amiID, err := GetUbuntu1604AmiE(t, region)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Get the ID of the most recent Ubuntu 16.04 HVM x86_64 EBS GP2 AMI in the given region
+// GetUbuntu1604AmiE gets the ID of the most recent Ubuntu 16.04 HVM x86_64 EBS GP2 AMI in the given region.
 func GetUbuntu1604AmiE(t *testing.T, region string) (string, error) {
 	filters := map[string][]string{
 		"name":                             {"*ubuntu-xenial-16.04-amd64-server-*"},
@@ -119,18 +128,18 @@ func GetUbuntu1604AmiE(t *testing.T, region string) (string, error) {
 	return GetMostRecentAmiIdE(t, region, CanonicalAccountId, filters)
 }
 
-// Return a CentOS 7 public AMI from the given region.
+// GetCentos7Ami returns a CentOS 7 public AMI from the given region.
 // WARNING: you may have to accept the terms & conditions of this AMI in AWS MarketPlace for your AWS Account before
 // you can successfully launch the AMI.
 func GetCentos7Ami(t *testing.T, region string) string {
-	amiId, err := GetCentos7AmiE(t, region)
+	amiID, err := GetCentos7AmiE(t, region)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Return a CentOS 7 public AMI from the given region.
+// GetCentos7AmiE returns a CentOS 7 public AMI from the given region.
 // WARNING: you may have to accept the terms & conditions of this AMI in AWS MarketPlace for your AWS Account before
 // you can successfully launch the AMI.
 func GetCentos7AmiE(t *testing.T, region string) (string, error) {
@@ -145,16 +154,16 @@ func GetCentos7AmiE(t *testing.T, region string) (string, error) {
 	return GetMostRecentAmiIdE(t, region, CentOsAccountId, filters)
 }
 
-// Return an Amazon Linux AMI HVM, SSD Volume Type public AMI for the given region.
+// GetAmazonLinuxAmi returns an Amazon Linux AMI HVM, SSD Volume Type public AMI for the given region.
 func GetAmazonLinuxAmi(t *testing.T, region string) string {
-	amiId, err := GetAmazonLinuxAmiE(t, region)
+	amiID, err := GetAmazonLinuxAmiE(t, region)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Return an Amazon Linux AMI HVM, SSD Volume Type public AMI for the given region.
+// GetAmazonLinuxAmiE returns an Amazon Linux AMI HVM, SSD Volume Type public AMI for the given region.
 func GetAmazonLinuxAmiE(t *testing.T, region string) (string, error) {
 	filters := map[string][]string{
 		"name":                             {"*amzn-ami-hvm-*-x86_64*"},
@@ -167,16 +176,16 @@ func GetAmazonLinuxAmiE(t *testing.T, region string) (string, error) {
 	return GetMostRecentAmiIdE(t, region, AmazonAccountId, filters)
 }
 
-// Return an Amazon ECS-Optimized Amazon Linux AMI for the given region. This AMI is useful for running an ECS cluster.
+// GetEcsOptimizedAmazonLinuxAmi returns an Amazon ECS-Optimized Amazon Linux AMI for the given region. This AMI is useful for running an ECS cluster.
 func GetEcsOptimizedAmazonLinuxAmi(t *testing.T, region string) string {
-	amiId, err := GetEcsOptimizedAmazonLinuxAmiE(t, region)
+	amiID, err := GetEcsOptimizedAmazonLinuxAmiE(t, region)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Return an Amazon ECS-Optimized Amazon Linux AMI for the given region. This AMI is useful for running an ECS cluster.
+// GetEcsOptimizedAmazonLinuxAmiE returns an Amazon ECS-Optimized Amazon Linux AMI for the given region. This AMI is useful for running an ECS cluster.
 func GetEcsOptimizedAmazonLinuxAmiE(t *testing.T, region string) (string, error) {
 	filters := map[string][]string{
 		"name":                             {"*amzn-ami*amazon-ecs-optimized*"},
@@ -189,6 +198,7 @@ func GetEcsOptimizedAmazonLinuxAmiE(t *testing.T, region string) (string, error)
 	return GetMostRecentAmiIdE(t, region, AmazonAccountId, filters)
 }
 
+// NoImagesFound is an error that occurs if no images were found.
 type NoImagesFound struct {
 	Region  string
 	OwnerId string

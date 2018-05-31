@@ -62,14 +62,14 @@ func TestTerraformRedeployExample(t *testing.T) {
 func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
 	// tests running in parallel
-	uniqueId := random.UniqueId()
+	uniqueID := random.UniqueId()
 
 	// Give the ASG and other resources in the Terraform code a name with a unique ID so it doesn't clash
 	// with anything else in the AWS account.
-	name := fmt.Sprintf("redeploy-test-%s", uniqueId)
+	name := fmt.Sprintf("redeploy-test-%s", uniqueID)
 
 	// Specify the text the ASG will return when we make HTTP requests to it.
-	text := fmt.Sprintf("Hello, %s!", uniqueId)
+	text := fmt.Sprintf("Hello, %s!", uniqueID)
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
@@ -99,7 +99,7 @@ func validateAsgRunningWebServer(t *testing.T, workingDir string) {
 	url := terraform.Output(t, terraformOptions, "url")
 
 	// Figure out what text the ASG should return for each request
-	expectedText := terraformOptions.Vars["instance_text"].(string)
+	expectedText, _ := terraformOptions.Vars["instance_text"].(string)
 
 	// It can take a few minutes for the ASG and ALB to boot up, so retry a few times
 	maxRetries := 30
@@ -115,7 +115,7 @@ func validateAsgRedeploy(t *testing.T, workingDir string) {
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 
 	// Figure out what text the ASG was returning for each request
-	originalText := terraformOptions.Vars["instance_text"].(string)
+	originalText, _ := terraformOptions.Vars["instance_text"].(string)
 
 	// New text for the ASG to return for each request
 	newText := fmt.Sprintf("%s-redeploy", originalText)
@@ -152,7 +152,7 @@ func fetchSyslogForAsg(t *testing.T, awsRegion string, workingDir string) {
 
 	logger.Logf(t, "===== Syslog for instances in ASG %s =====\n\n", asgName)
 
-	for instanceId, logs := range asgLogs {
-		logger.Logf(t, "Most recent syslog for Instance %s:\n\n%s\n", instanceId, logs)
+	for id, logs := range asgLogs {
+		logger.Logf(t, "Most recent syslog for Instance %s:\n\n%s\n", id, logs)
 	}
 }

@@ -1,7 +1,6 @@
 package aws
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -12,22 +11,24 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
+// Vpc is an Amazon Virtual Private Cloud.
 type Vpc struct {
 	Id      string   // The ID of the VPC
 	Name    string   // The name of the VPC
 	Subnets []Subnet // A list of subnets in the VPC
 }
 
+// Subnet is a subnet in an availability zone.
 type Subnet struct {
 	Id               string // The ID of the Subnet
 	AvailabilityZone string // The Availability Zone the subnet is in
 }
 
-var vpcIdFilterName = "vpc-id"
+var vpcIDFilterName = "vpc-id"
 var isDefaultFilterName = "isDefault"
 var isDefaultFilterValue = "true"
 
-// Fetch information about the default VPC in the given region
+// GetDefaultVpc fetches information about the default VPC in the given region.
 func GetDefaultVpc(t *testing.T, region string) *Vpc {
 	vpc, err := GetDefaultVpcE(t, region)
 	if err != nil {
@@ -36,7 +37,7 @@ func GetDefaultVpc(t *testing.T, region string) *Vpc {
 	return vpc
 }
 
-// Fetch information about the default VPC in the given region
+// GetDefaultVpcE fetches information about the default VPC in the given region.
 func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
@@ -51,7 +52,7 @@ func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
 
 	numVpcs := len(vpcs.Vpcs)
 	if numVpcs != 1 {
-		return nil, errors.New(fmt.Sprintf("Expected to find one default VPC in region %s but found %d", region, strconv.Itoa(numVpcs)))
+		return nil, fmt.Errorf("Expected to find one default VPC in region %s but found %s", region, strconv.Itoa(numVpcs))
 	}
 
 	defaultVpc := vpcs.Vpcs[0]
@@ -64,7 +65,7 @@ func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
 	return &Vpc{Id: aws.StringValue(defaultVpc.VpcId), Name: FindVpcName(defaultVpc), Subnets: subnets}, nil
 }
 
-// Extract the VPC name from its tags (if any). Fall back to "Default" if it's the default VPC or empty string
+// FindVpcName extracts the VPC name from its tags (if any). Fall back to "Default" if it's the default VPC or empty string
 // otherwise.
 func FindVpcName(vpc *ec2.Vpc) string {
 	for _, tag := range vpc.Tags {
@@ -80,24 +81,24 @@ func FindVpcName(vpc *ec2.Vpc) string {
 	return ""
 }
 
-// Get the subnets in the specified VPC
-func GetSubnetsForVpc(t *testing.T, vpcId string, region string) []Subnet {
-	subnets, err := GetSubnetsForVpcE(t, vpcId, region)
+// GetSubnetsForVpc gets the subnets in the specified VPC.
+func GetSubnetsForVpc(t *testing.T, vpcID string, region string) []Subnet {
+	subnets, err := GetSubnetsForVpcE(t, vpcID, region)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return subnets
 }
 
-// Get the subnets in the specified VPC
-func GetSubnetsForVpcE(t *testing.T, vpcId string, region string) ([]Subnet, error) {
+// GetSubnetsForVpcE gets the subnets in the specified VPC.
+func GetSubnetsForVpcE(t *testing.T, vpcID string, region string) ([]Subnet, error) {
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}
 
-	vpcIdFilter := ec2.Filter{Name: &vpcIdFilterName, Values: []*string{&vpcId}}
-	subnetOutput, err := client.DescribeSubnets(&ec2.DescribeSubnetsInput{Filters: []*ec2.Filter{&vpcIdFilter}})
+	vpcIDFilter := ec2.Filter{Name: &vpcIDFilterName, Values: []*string{&vpcID}}
+	subnetOutput, err := client.DescribeSubnets(&ec2.DescribeSubnetsInput{Filters: []*ec2.Filter{&vpcIDFilter}})
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +113,7 @@ func GetSubnetsForVpcE(t *testing.T, vpcId string, region string) ([]Subnet, err
 	return subnets, nil
 }
 
-// Get a random CIDR block from the range of acceptable private IP addresses per RFC 1918
+// GetRandomPrivateCidrBlock gets a random CIDR block from the range of acceptable private IP addresses per RFC 1918
 // (https://tools.ietf.org/html/rfc1918#section-3)
 // The routingPrefix refers to the "/28" in 1.2.3.4/28.
 // Note that, as written, this function will return a subset of all valid ranges. Since we will probably use this function
@@ -182,6 +183,7 @@ func GetRandomPrivateCidrBlock(routingPrefix int) string {
 	return fmt.Sprintf("%d.%d.%d.%d/%d", o1, o2, o3, o4, routingPrefix)
 }
 
+// GetFirstTwoOctets gets the first two octets from a CIDR block.
 func GetFirstTwoOctets(cidrBlock string) string {
 	ipAddr := strings.Split(cidrBlock, "/")[0]
 	octets := strings.Split(ipAddr, ".")

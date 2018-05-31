@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-// Convert the inputs to a format palatable to terraform. This includes converting the given vars to the format the
+// FormatArgs converts the inputs to a format palatable to terraform. This includes converting the given vars to the format the
 // Terraform CLI expects (-var key=value).
 func FormatArgs(customVars map[string]interface{}, args ...string) []string {
 	varsAsArgs := FormatTerraformVarsAsArgs(customVars)
 	return append(args, varsAsArgs...)
 }
 
-// Format the given variables as command-line args for Terraform (e.g. of the format -var key=value).
+// FormatTerraformVarsAsArgs formats the given variables as command-line args for Terraform (e.g. of the format -var key=value).
 func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
 	args := []string{}
 

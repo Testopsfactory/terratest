@@ -9,7 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// Get the username fo the current IAM user
+// GetIamCurrentUserName gets the username for the current IAM user.
 func GetIamCurrentUserName(t *testing.T) string {
 	out, err := GetIamCurrentUserNameE(t)
 	if err != nil {
@@ -18,7 +18,7 @@ func GetIamCurrentUserName(t *testing.T) string {
 	return out
 }
 
-// Get the username fo the current IAM user
+// GetIamCurrentUserNameE gets the username for the current IAM user.
 func GetIamCurrentUserNameE(t *testing.T) (string, error) {
 	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
@@ -33,7 +33,7 @@ func GetIamCurrentUserNameE(t *testing.T) (string, error) {
 	return *resp.User.UserName, nil
 }
 
-// Get the ARN for the current IAM user
+// GetIamCurrentUserArn gets the ARN for the current IAM user.
 func GetIamCurrentUserArn(t *testing.T) string {
 	out, err := GetIamCurrentUserArnE(t)
 	if err != nil {
@@ -42,7 +42,7 @@ func GetIamCurrentUserArn(t *testing.T) string {
 	return out
 }
 
-// Get the ARN for the current IAM user
+// GetIamCurrentUserArnE gets the ARN for the current IAM user.
 func GetIamCurrentUserArnE(t *testing.T) (string, error) {
 	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
@@ -57,7 +57,7 @@ func GetIamCurrentUserArnE(t *testing.T) (string, error) {
 	return *resp.User.Arn, nil
 }
 
-// Create an MFA device using the given IAM client
+// CreateMfaDevice creates an MFA device using the given IAM client.
 func CreateMfaDevice(t *testing.T, iamClient *iam.IAM, deviceName string) *iam.VirtualMFADevice {
 	mfaDevice, err := CreateMfaDeviceE(t, iamClient, deviceName)
 	if err != nil {
@@ -66,7 +66,7 @@ func CreateMfaDevice(t *testing.T, iamClient *iam.IAM, deviceName string) *iam.V
 	return mfaDevice
 }
 
-// Create an MFA device using the given IAM client
+// CreateMfaDeviceE creates an MFA device using the given IAM client.
 func CreateMfaDeviceE(t *testing.T, iamClient *iam.IAM, deviceName string) (*iam.VirtualMFADevice, error) {
 	logger.Logf(t, "Creating an MFA device called %s", deviceName)
 
@@ -84,8 +84,8 @@ func CreateMfaDeviceE(t *testing.T, iamClient *iam.IAM, deviceName string) (*iam
 	return output.VirtualMFADevice, nil
 }
 
-// Enable a newly created MFA Device by supplying the first two one-time passwords, so that it can be used for future
-// logins by the given IAM User
+// EnableMfaDevice enables a newly created MFA Device by supplying the first two one-time passwords, so that it can be used for future
+// logins by the given IAM User.
 func EnableMfaDevice(t *testing.T, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADevice) {
 	err := EnableMfaDeviceE(t, iamClient, mfaDevice)
 	if err != nil {
@@ -93,8 +93,8 @@ func EnableMfaDevice(t *testing.T, iamClient *iam.IAM, mfaDevice *iam.VirtualMFA
 	}
 }
 
-// Enable a newly created MFA Device by supplying the first two one-time passwords, so that it can be used for future
-// logins by the given IAM User
+// EnableMfaDeviceE enables a newly created MFA Device by supplying the first two one-time passwords, so that it can be used for future
+// logins by the given IAM User.
 func EnableMfaDeviceE(t *testing.T, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADevice) error {
 	logger.Logf(t, "Enabling MFA device %s", aws.StringValue(mfaDevice.SerialNumber))
 
@@ -133,7 +133,7 @@ func EnableMfaDeviceE(t *testing.T, iamClient *iam.IAM, mfaDevice *iam.VirtualMF
 	return nil
 }
 
-// Create a new IAM client
+// NewIamClient creates a new IAM client.
 func NewIamClient(t *testing.T, region string) *iam.IAM {
 	client, err := NewIamClientE(t, region)
 	if err != nil {
@@ -142,7 +142,7 @@ func NewIamClient(t *testing.T, region string) *iam.IAM {
 	return client
 }
 
-// Create a new IAM client
+// NewIamClientE creates a new IAM client.
 func NewIamClientE(t *testing.T, region string) (*iam.IAM, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {

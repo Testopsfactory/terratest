@@ -1,3 +1,4 @@
+// Package retry contains logic to retry actions with certain conditions.
 package retry
 
 import (
@@ -9,12 +10,13 @@ import (
 	"golang.org/x/net/context"
 )
 
+// Either contains a result and potentially an error.
 type Either struct {
 	Result string
 	Error  error
 }
 
-// Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
+// DoWithTimeout runs the specified action and waits up to the specified timeout for it to complete. Return the output of the action if
 // it completes on time or fail the test otherwise.
 func DoWithTimeout(t *testing.T, actionDescription string, timeout time.Duration, action func() (string, error)) string {
 	out, err := DoWithTimeoutE(t, actionDescription, timeout, action)
@@ -24,7 +26,7 @@ func DoWithTimeout(t *testing.T, actionDescription string, timeout time.Duration
 	return out
 }
 
-// Run the specified action and wait up to the specified timeout for it to complete. Return the output of the action if
+// DoWithTimeoutE runs the specified action and waits up to the specified timeout for it to complete. Return the output of the action if
 // it completes on time or an error otherwise.
 func DoWithTimeoutE(t *testing.T, actionDescription string, timeout time.Duration, action func() (string, error)) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -45,7 +47,7 @@ func DoWithTimeoutE(t *testing.T, actionDescription string, timeout time.Duratio
 	}
 }
 
-// Run the specified action. If it returns a value, return that value. If it returns a FatalError, return that error
+// DoWithRetry runs the specified action. If it returns a value, return that value. If it returns a FatalError, return that error
 // immediately. If it returns any other type of error, sleep for sleepBetweenRetries and try again, up to a maximum of
 // maxRetries retries. If maxRetries is exceeded, fail the test.
 func DoWithRetry(t *testing.T, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) string {
@@ -56,7 +58,7 @@ func DoWithRetry(t *testing.T, actionDescription string, maxRetries int, sleepBe
 	return out
 }
 
-// Run the specified action. If it returns a value, return that value. If it returns a FatalError, return that error
+// DoWithRetryE runs the specified action. If it returns a value, return that value. If it returns a FatalError, return that error
 // immediately. If it returns any other type of error, sleep for sleepBetweenRetries and try again, up to a maximum of
 // maxRetries retries. If maxRetries is exceeded, return a MaxRetriesExceeded error.
 func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) (string, error) {
@@ -83,15 +85,17 @@ func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepB
 	return output, MaxRetriesExceeded{Description: actionDescription, MaxRetries: maxRetries}
 }
 
+// Done can be stopped.
 type Done struct {
 	stop chan bool
 }
 
+// Done stops the execution.
 func (done Done) Done() {
 	done.stop <- true
 }
 
-// Run the specified action in the background (in a goroutine) repeatedly, waiting the specified amount of time between
+// DoInBackgroundUntilStopped runs the specified action in the background (in a goroutine) repeatedly, waiting the specified amount of time between
 // repetitions. To stop this action, call the Done() function on the returned value.
 func DoInBackgroundUntilStopped(t *testing.T, actionDescription string, sleepBetweenRepeats time.Duration, action func()) Done {
 	stop := make(chan bool)
@@ -119,6 +123,7 @@ func DoInBackgroundUntilStopped(t *testing.T, actionDescription string, sleepBet
 
 // Custom error types
 
+// TimeoutExceeded is an error that occurs when a timeout is exceeded.
 type TimeoutExceeded struct {
 	Description string
 	Timeout     time.Duration
@@ -128,6 +133,7 @@ func (err TimeoutExceeded) Error() string {
 	return fmt.Sprintf("'%s' did not complete before timeout of %s", err.Description, err.Timeout)
 }
 
+// MaxRetriesExceeded is an error that occurs when the maximum amount of retries is exceeded.
 type MaxRetriesExceeded struct {
 	Description string
 	MaxRetries  int
@@ -137,7 +143,7 @@ func (err MaxRetriesExceeded) Error() string {
 	return fmt.Sprintf("'%s' unsuccessful after %d retries", err.Description, err.MaxRetries)
 }
 
-// Marker interface for errors that should not be retried
+// FatalError is a marker interface for errors that should not be retried.
 type FatalError struct {
 	Underlying error
 }

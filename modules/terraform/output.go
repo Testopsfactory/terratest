@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// Call terraform output for the given variable and return its value
+// Output calls terraform output for the given variable and return its value.
 func Output(t *testing.T, options *Options, key string) string {
 	out, err := OutputE(t, options, key)
 	if err != nil {
@@ -15,7 +15,7 @@ func Output(t *testing.T, options *Options, key string) string {
 	return out
 }
 
-// Call terraform output for the given variable and return its value
+// OutputE calls terraform output for the given variable and return its value.
 func OutputE(t *testing.T, options *Options, key string) (string, error) {
 	output, err := RunTerraformCommandE(t, options, "output", "-no-color", key)
 
@@ -26,7 +26,7 @@ func OutputE(t *testing.T, options *Options, key string) (string, error) {
 	return strings.TrimSpace(output), nil
 }
 
-// Call terraform output for the given variable and return its value. If the value is empty, fail the test.
+// OutputRequired calls terraform output for the given variable and return its value. If the value is empty, fail the test.
 func OutputRequired(t *testing.T, options *Options, key string) string {
 	out, err := OutputRequiredE(t, options, key)
 	if err != nil {
@@ -35,7 +35,7 @@ func OutputRequired(t *testing.T, options *Options, key string) string {
 	return out
 }
 
-// Call terraform output for the given variable and return its value. If the value is empty, return an error.
+// OutputRequiredE calls terraform output for the given variable and return its value. If the value is empty, return an error.
 func OutputRequiredE(t *testing.T, options *Options, key string) (string, error) {
 	out, err := OutputE(t, options, key)
 
@@ -49,6 +49,7 @@ func OutputRequiredE(t *testing.T, options *Options, key string) (string, error)
 	return out, nil
 }
 
+// EmptyOutput is an error that occurs when an output is empty.
 type EmptyOutput string
 
 func (outputName EmptyOutput) Error() string {

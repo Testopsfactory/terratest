@@ -25,8 +25,8 @@ func TestPackerBasicExample(t *testing.T) {
 	}
 
 	// Make sure the Packer build completes successfully
-	amiId := packer.BuildAmi(t, packerOptions)
+	amiID := packer.BuildAmi(t, packerOptions)
 
 	// Clean up the AMI after we're done
-	defer aws.DeleteAmi(t, awsRegion, amiId)
+	defer aws.DeleteAmi(t, awsRegion, amiID)
 }

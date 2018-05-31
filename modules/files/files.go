@@ -1,3 +1,4 @@
+// Package files allows to interact with files on a file system.
 package files
 
 import (
@@ -7,13 +8,13 @@ import (
 	"strings"
 )
 
-// Return true if the given file exists
+// FileExists returns true if the given file exists.
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
 
-// Create a copy of the given folder and all its contents in a temp folder with a unique name and the given prefix.
+// CopyTerraformFolderToTemp creates a copy of the given folder and all its contents in a temp folder with a unique name and the given prefix.
 // This is useful when running multiple tests in parallel against the same set of Terraform files to ensure the
 // tests don't overwrite each other's .terraform working directory and terraform.tfstate files. This method returns
 // the path to the temp folder with the copied contents. Hidden files and folders, Terraform state files, and
@@ -48,14 +49,14 @@ func CopyTerraformFolderToTemp(folderPath string, tempFolderPrefix string) (stri
 	return destFolder, nil
 }
 
-// Copy all the files and folders within the given source folder to the destination folder.
+// CopyFolderContents copies all the files and folders within the given source folder to the destination folder.
 func CopyFolderContents(source string, destination string) error {
 	return CopyFolderContentsWithFilter(source, destination, func(path string) bool {
 		return true
 	})
 }
 
-// Copy the files and folders within the given source folder that pass the given filter (return true) to the
+// CopyFolderContentsWithFilter copies the files and folders within the given source folder that pass the given filter (return true) to the
 // destination folder.
 func CopyFolderContentsWithFilter(source string, destination string, filter func(path string) bool) error {
 	files, err := ioutil.ReadDir(source)
@@ -87,13 +88,13 @@ func CopyFolderContentsWithFilter(source string, destination string, filter func
 	return nil
 }
 
-// Returns true if the path corresponds to a Terraform state file or .tfvars file
+// PathContainsTerraformStateOrVars returns true if the path corresponds to a Terraform state file or .tfvars file.
 func PathContainsTerraformStateOrVars(path string) bool {
 	filename := filepath.Base(path)
 	return filename == "terraform.tfstate" || filename == "terraform.tfstate.backup" || filename == "terraform.tfvars"
 }
 
-// Returns true if the given path contains a hidden file or folder
+// PathContainsHiddenFileOrFolder returns true if the given path contains a hidden file or folder.
 func PathContainsHiddenFileOrFolder(path string) bool {
 	pathParts := strings.Split(path, string(filepath.Separator))
 	for _, pathPart := range pathParts {
@@ -104,7 +105,7 @@ func PathContainsHiddenFileOrFolder(path string) bool {
 	return false
 }
 
-// Copy a file from source to destination
+// CopyFile copies a file from source to destination.
 func CopyFile(source string, destination string) error {
 	contents, err := ioutil.ReadFile(source)
 	if err != nil {
@@ -114,7 +115,7 @@ func CopyFile(source string, destination string) error {
 	return WriteFileWithSamePermissions(source, destination, contents)
 }
 
-// Write a file to the given destination with the given contents using the same permissions as the file at source
+// WriteFileWithSamePermissions writes a file to the given destination with the given contents using the same permissions as the file at source.
 func WriteFileWithSamePermissions(source string, destination string, contents []byte) error {
 	fileInfo, err := os.Stat(source)
 	if err != nil {

@@ -15,8 +15,8 @@ func TestCreateImportAndDeleteEC2KeyPair(t *testing.T) {
 	t.Parallel()
 
 	region := GetRandomRegion(t, nil, nil)
-	uniqueId := random.UniqueId()
-	name := fmt.Sprintf("test-key-pair-%s", uniqueId)
+	uniqueID := random.UniqueId()
+	name := fmt.Sprintf("test-key-pair-%s", uniqueID)
 
 	keyPair := CreateAndImportEC2KeyPair(t, region, name)
 	defer deleteKeyPair(t, keyPair)

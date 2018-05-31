@@ -10,7 +10,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
-// Run terraform with the given arguments and options and return stdout/stderr
+// RunTerraformCommand runs terraform with the given arguments and options and return stdout/stderr.
 func RunTerraformCommand(t *testing.T, options *Options, args ...string) string {
 	out, err := RunTerraformCommandE(t, options, args...)
 	if err != nil {
@@ -19,7 +19,7 @@ func RunTerraformCommand(t *testing.T, options *Options, args ...string) string 
 	return out
 }
 
-// Run terraform with the given arguments and options and return stdout/stderr
+// RunTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
 func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (string, error) {
 	description := fmt.Sprintf("Running terraform %v", args)
 	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {

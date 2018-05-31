@@ -2,7 +2,7 @@ package http_helper
 
 import (
 	"fmt"
-	"net"
+	"io"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -12,8 +12,8 @@ import (
 func TestRunDummyServer(t *testing.T) {
 	t.Parallel()
 
-	uniqueId := random.UniqueId()
-	text := fmt.Sprintf("dummy-server-%s", uniqueId)
+	uniqueID := random.UniqueId()
+	text := fmt.Sprintf("dummy-server-%s", uniqueID)
 
 	listener, port := RunDummyServer(t, text)
 	defer shutDownServer(t, listener)
@@ -22,7 +22,7 @@ func TestRunDummyServer(t *testing.T) {
 	HttpGetWithValidation(t, url, 200, text)
 }
 
-func shutDownServer(t *testing.T, listener net.Listener) {
+func shutDownServer(t *testing.T, listener io.Closer) {
 	err := listener.Close()
 	assert.NoError(t, err)
 }

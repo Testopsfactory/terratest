@@ -1,3 +1,4 @@
+// Package http_helper contains helpers to interact with deployed resources through HTTP.
 package http_helper
 
 import (
@@ -12,7 +13,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
-// Perform an HTTP GET on the given URL and return the HTTP status code and body. If there's any error, fail the test.
+// HttpGet performs an HTTP GET on the given URL and return the HTTP status code and body. If there's any error, fail the test.
 func HttpGet(t *testing.T, url string) (int, string) {
 	statusCode, body, err := HttpGetE(t, url)
 	if err != nil {
@@ -21,7 +22,7 @@ func HttpGet(t *testing.T, url string) (int, string) {
 	return statusCode, body
 }
 
-// Perform an HTTP GET on the given URL and return the HTTP status code, body, and any error.
+// HttpGetE performs an HTTP GET on the given URL and return the HTTP status code, body, and any error.
 func HttpGetE(t *testing.T, url string) (int, string, error) {
 	logger.Logf(t, "Making an HTTP GET call to URL %s", url)
 
@@ -45,7 +46,7 @@ func HttpGetE(t *testing.T, url string) (int, string, error) {
 	return resp.StatusCode, strings.TrimSpace(string(body)), nil
 }
 
-// Perform an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// HttpGetWithValidation performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, fail the test.
 func HttpGetWithValidation(t *testing.T, url string, expectedStatusCode int, expectedBody string) {
 	err := HttpGetWithValidationE(t, url, expectedStatusCode, expectedBody)
@@ -54,7 +55,7 @@ func HttpGetWithValidation(t *testing.T, url string, expectedStatusCode int, exp
 	}
 }
 
-// Perform an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// HttpGetWithValidationE performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, return an error.
 func HttpGetWithValidationE(t *testing.T, url string, expectedStatusCode int, expectedBody string) error {
 	return HttpGetWithCustomValidationE(t, url, func(statusCode int, body string) bool {
@@ -62,7 +63,7 @@ func HttpGetWithValidationE(t *testing.T, url string, expectedStatusCode int, ex
 	})
 }
 
-// Perform an HTTP GET on the given URL and validate the returned status code and body using the given function.
+// HttpGetWithCustomValidation performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
 func HttpGetWithCustomValidation(t *testing.T, url string, validateResponse func(int, string) bool) {
 	err := HttpGetWithCustomValidationE(t, url, validateResponse)
 	if err != nil {
@@ -70,7 +71,7 @@ func HttpGetWithCustomValidation(t *testing.T, url string, validateResponse func
 	}
 }
 
-// Perform an HTTP GET on the given URL and validate the returned status code and body using the given function.
+// HttpGetWithCustomValidationE performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
 func HttpGetWithCustomValidationE(t *testing.T, url string, validateResponse func(int, string) bool) error {
 	statusCode, body, err := HttpGetE(t, url)
 
@@ -85,7 +86,7 @@ func HttpGetWithCustomValidationE(t *testing.T, url string, validateResponse fun
 	return nil
 }
 
-// Repeatedly perform an HTTP GET on the given URL until the given status code and body are returned or until max
+// HttpGetWithRetry repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetry(t *testing.T, url string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
 	err := HttpGetWithRetryE(t, url, expectedStatus, expectedBody, retries, sleepBetweenRetries)
@@ -94,7 +95,7 @@ func HttpGetWithRetry(t *testing.T, url string, expectedStatus int, expectedBody
 	}
 }
 
-// Repeatedly perform an HTTP GET on the given URL until the given status code and body are returned or until max
+// HttpGetWithRetryE repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetryE(t *testing.T, url string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
@@ -104,7 +105,7 @@ func HttpGetWithRetryE(t *testing.T, url string, expectedStatus int, expectedBod
 	return err
 }
 
-// Repeatedly perform an HTTP GET on the given URL until the given validation function returns true or max retries
+// HttpGetWithRetryWithCustomValidation repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
 // has been exceeded.
 func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) {
 	err := HttpGetWithRetryWithCustomValidationE(t, url, retries, sleepBetweenRetries, validateResponse)
@@ -113,7 +114,7 @@ func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, retries int,
 	}
 }
 
-// Repeatedly perform an HTTP GET on the given URL until the given validation function returns true or max retries
+// HttpGetWithRetryWithCustomValidationE repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
 // has been exceeded.
 func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
@@ -123,6 +124,7 @@ func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, retries int
 	return err
 }
 
+// ValidationFunctionFailed is an error that occurs if a validation function fails.
 type ValidationFunctionFailed struct {
 	Url    string
 	Status int
