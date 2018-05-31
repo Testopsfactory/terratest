@@ -66,14 +66,8 @@ type imageSort []*ec2.Image
 func (a imageSort) Len() int      { return len(a) }
 func (a imageSort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a imageSort) Less(i, j int) bool {
-	iTime, err := time.Parse(time.RFC3339, *a[i].CreationDate)
-	if err != nil {
-		panic(fmt.Errorf("error parsing creation date of EC2 image: %s", err))
-	}
-	jTime, err := time.Parse(time.RFC3339, *a[j].CreationDate)
-	if err != nil {
-		panic(fmt.Errorf("error parsing creation date of EC2 image: %s", err))
-	}
+	iTime, _ := time.Parse(time.RFC3339, *a[i].CreationDate)
+	jTime, _ := time.Parse(time.RFC3339, *a[j].CreationDate)
 	return iTime.Unix() < jTime.Unix()
 }
 

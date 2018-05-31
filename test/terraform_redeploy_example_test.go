@@ -152,7 +152,7 @@ func fetchSyslogForAsg(t *testing.T, awsRegion string, workingDir string) {
 
 	logger.Logf(t, "===== Syslog for instances in ASG %s =====\n\n", asgName)
 
-	for id, logs := range asgLogs {
-		logger.Logf(t, "Most recent syslog for Instance %s:\n\n%s\n", id, logs)
+	for instanceID, logs := range asgLogs {
+		logger.Logf(t, "Most recent syslog for Instance %s:\n\n%s\n", instanceID, logs)
 	}
 }

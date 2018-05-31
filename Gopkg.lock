@@ -43,8 +43,8 @@
     "service/sqs",
     "service/sts"
   ]
-  revision = "827e7eac8c2680d5bdea7bc3ef29c596eabe1eae"
-  version = "v1.13.59"
+  revision = "5197757a58a794d49d2d0c50a932997157734100"
+  version = "v1.13.60"
 
 [[projects]]
   name = "github.com/boombuler/barcode"
@@ -123,6 +123,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1f6b0348bfd109f28392fd20990147c164428239cf28066732ee780f2034557c"
+  inputs-digest = "a06f37538eea4e18f7e2df6fb35244241cbcdfc8b8abd0748d3d949f5eb492e9"
   solver-name = "gps-cdcl"
   solver-version = 1

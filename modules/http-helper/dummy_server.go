@@ -39,12 +39,7 @@ func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 		return nil, 0, fmt.Errorf("error listening: %s", err)
 	}
 
-	go func() {
-		err = http.Serve(listener, nil)
-		if err != nil {
-			panic(err)
-		}
-	}()
+	go http.Serve(listener, nil)
 
 	return listener, port, err
 }

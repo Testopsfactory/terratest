@@ -20,6 +20,9 @@ in Terraform, Go, Python, and Bash, and is used in production by hundreds of com
 swiss army knife for testing infrastructure code](https://blog.gruntwork.io/open-sourcing-terratest-a-swiss-army-knife-for-testing-infrastructure-code-5d883336fcd5)
 for more info.
 
+
+
+
 ## Introduction
 
 The basic usage pattern for writing automated tests with Terratest is to:
@@ -50,6 +53,9 @@ terraform.InitAndApply(t, terraformOptions)
 validateServerIsWorking(t, terraformOptions)
 ```
 
+
+
+
 ## Install
 
 Prerequisite: install [Go](https://golang.org/).
@@ -66,6 +72,9 @@ Alternatively, you can use `go get`:
 ```bash
 go get github.com/gruntwork-io/terratest/modules/terraform
 ```
+
+
+
 
 ## Examples
 
@@ -102,6 +111,9 @@ modules:
 1.  [Vault](https://github.com/hashicorp/terraform-aws-vault)
 1.  [Nomad](https://github.com/hashicorp/terraform-aws-nomad)
 
+
+
+
 ## Package by package overview
 
 Now that you've had a chance to browse the examples and their tests, here's an overview of the packages you'll find in
@@ -123,6 +135,9 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 | **ssh**            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`.                                                                                                                                                                                         |
 | **terraform**      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`.                                                                                                                                                                                        |
 | **test_structure** | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable.                                                                                                                     |
+
+
+
 
 ## Testing best practices
 
@@ -146,6 +161,7 @@ we'll outline some best practices to minimize the downsides of this sort of test
 1.  [Iterating locally using Docker](#iterating-locally-using-docker)
 1.  [Iterating locally using test stages](#iterating-locally-using-test-stages)
 
+
 ### Testing environment
 
 Since most automated tests written with Terratest can make potentially destructive changes in your environment, we
@@ -155,6 +171,7 @@ testing infrastructure code for AWS, you should run your tests in a completely s
 This means that you will have to write your infrastructure code in such a way that you can plug in ([dependency
 injection](https://en.wikipedia.org/wiki/Dependency_injection) environment-specific details, such as account IDs,
 domain names, IP addresses, etc. Adding support for this will typically make your code cleaner and more flexible.
+
 
 ### Namespacing
 
@@ -185,6 +202,7 @@ terraformOptions := &terraform.Options {
 terraform.Apply(t, terraformOptions)
 ```
 
+
 ### Cleanup
 
 Since automated tests with Terratest deploy real resources into real environments, you'll want to make sure your tests
@@ -194,11 +212,11 @@ always cleanup after themselves so you don't leave a bunch of resources lying ar
 For example, if your test runs `terraform apply`, you should run `terraform destroy` at the end to clean up:
 
 ```go
-// Deploy
-terraform.Apply(t, options)
-
 // Ensure cleanup always runs
 defer terraform.Destroy(t, options)
+
+// Deploy
+terraform.Apply(t, options)
 
 // Validate
 checkServerWorks(t, options)
@@ -208,6 +226,7 @@ Of course, despite your best efforts, occasionally cleanup will fail, perhaps du
 in your code, or a temporary network outage. To handle those cases, we run a tool called
 [cloud-nuke](https://github.com/gruntwork-io/cloud-nuke) in our test AWS account on a nightly basis to clean up any
 leftover resources.
+
 
 ### Timeouts and logging
 
@@ -244,6 +263,7 @@ difficulties with CI servers and debugging. The workaround is to tell Go to test
 go test -timeout 30m -p 1 ./...
 ```
 
+
 ### Avoid test caching
 
 Since Go 1.10, test results are automatically [cached](https://golang.org/doc/go1.10#test). This can lead to Go not
@@ -254,8 +274,9 @@ you run `go test` and the result is not just read from the cache.
 To turn caching off, you can use the `GOCACHE` environment variable and set it to `off`:
 
 ```shell
-$ GOCACHE=off go test ./...
+$ GOCACHE=off go test -timeout 30m -p 1 ./...
 ```
+
 
 ### Error handling
 
@@ -298,6 +319,7 @@ if err != nil {
 
 As you can see, the code above is more verbose, but gives you more flexibility with how to handle errors.
 
+
 ### Iterating locally using Docker
 
 For most infrastructure code, your only option is to deploy into a real environment such as AWS. However, if you're
@@ -322,6 +344,7 @@ Here are some techniques we use with Docker:
   example, if your script calls the `aws` CLI, you could create a mock script called `aws` that shows up earlier in the
   `PATH`. Using mocks allows you to test 100% locally, without external dependencies such as AWS.
 
+
 ### Iterating locally using test stages
 
 Most automated tests written with Terratest consist of multiple "stages", such as:
@@ -339,10 +362,14 @@ This is where Terratest's `test_structure` package comes in handy: it allows you
 stages and to be able to disable any one of those stages simply by setting an environment variable. Check out the
 [terraform_packer_example_test.go](/test/terraform_packer_example_test.go) for working sample code.
 
+
+
+
 ## Alternative testing tools
 
 1.  [A list of infrastructure testing tools](#a-list-of-infrastructure-testing-tools)
 1.  [How Terratest compares to other testing tools](#how-terratest-compares-to-other-testing-tools)
+
 
 ### A list of infrastructure testing tools
 
@@ -357,6 +384,7 @@ Terratest compares to other testing tools](#how-terratest-compares-to-other-test
 1.  [awspec](https://github.com/k1LoW/awspec)
 1.  [Terraform's acceptance testing framework](https://github.com/hashicorp/terraform/blob/master/.github/CONTRIBUTING.md#writing-an-acceptance-test)
 1.  [ruby_terraform](https://github.com/infrablocks/ruby_terraform)
+
 
 ### How Terratest compares to other testing tools
 
@@ -388,6 +416,7 @@ The steps above are exactly what you would've done to test the Vault module manu
 process. You can think of Terratest as a way to do end-to-end, acceptance or integration testing, whereas most other
 tools are focused on unit or functional testing.
 
+
 ### Why Terratest?
 
 Our experience with building the [Infrastructure as Code Library](https://gruntwork.io/infrastructure-as-code-library/)
@@ -400,16 +429,21 @@ catch bugs not only in our own code, but also in AWS, Azure, Terraform, Packer, 
 so on. Moreover, by running tests nightly, we're able to catch backwards incompatible changes and
 regressions in our dependencies (e.g., backwards incompatibilities in new versions of Terraform) as early as possible.
 
+
+
+
 ## Developing Terratest
 
 1.  [Contributing](#contributing)
 1.  [Running tests](#running-tests)
 1.  [Versioning](#versioning)
 
+
 ### Contributing
 
 Contributions are very welcome! Check out the
 [Contribution Guidelines](CONTRIBUTING.md) for instructions.
+
 
 ### Running tests
 
@@ -430,7 +464,7 @@ set the credentials as the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SE
 To run all the tests:
 
 ```bash
-go test -timeout 30m -p 1 ./...
+go test -v -timeout 30m -p 1 ./...
 ```
 
 To run the tests in a specific folder:
@@ -447,6 +481,7 @@ cd "<FOLDER_PATH>"
 go test -timeout30m -run "<TEST_NAME>"
 ```
 
+
 ### Versioning
 
 This repo follows the principles of [Semantic Versioning](http://semver.org/). You can find each new release,
@@ -455,6 +490,9 @@ along with the changelog, in the [Releases Page](https://github.com/gruntwork-io
 During initial development, the major version will be 0 (e.g., `0.x.y`), which indicates the code does not yet have a
 stable API. Once we hit `1.0.0`, we will make every effort to maintain a backwards compatible API and use the MAJOR,
 MINOR, and PATCH versions on each release to indicate any incompatibilities.
+
+
+
 
 ## License
 

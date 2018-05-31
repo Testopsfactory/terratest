@@ -129,7 +129,7 @@ func GetExitCodeForRunCommandError(err error) (int, error) {
 		if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 			return status.ExitStatus(), nil
 		}
-		return 1, errors.New("Could not determine exit code")
+		return 1, errors.New("could not determine exit code")
 	}
 
 	return 0, nil
