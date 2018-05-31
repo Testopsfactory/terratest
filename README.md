@@ -3,14 +3,14 @@
 Terratest is a Go library that makes it easier to write automated tests for your infrastructure code. It provides a
 variety of helper functions and patterns for common infrastructure testing tasks, including:
 
-* Testing Terraform code
-* Testing Packer templates
-* Testing Docker images
-* Executing commands on servers over SSH
-* Working with AWS APIs
-* Making HTTP requests
-* Running shell commands
-* And much more
+- Testing Terraform code
+- Testing Packer templates
+- Testing Docker images
+- Executing commands on servers over SSH
+- Working with AWS APIs
+- Making HTTP requests
+- Running shell commands
+- And much more
 
 Terratest was developed at [Gruntwork](https://gruntwork.io/) to help maintain the [Infrastructure as Code
 Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 250,000 lines of code written
@@ -18,20 +18,17 @@ in Terraform, Go, Python, and Bash, and is used in production by hundreds of com
 swiss army knife for testing infrastructure code](https://blog.gruntwork.io/open-sourcing-terratest-a-swiss-army-knife-for-testing-infrastructure-code-5d883336fcd5)
 for more info.
 
-
-
-
 ## Introduction
 
 The basic usage pattern for writing automated tests with Terratest is to:
 
-1. Write tests using Go's built-in [package testing](https://golang.org/pkg/testing/): you create a file ending in
-   `_test.go` and run tests with the `go test` command.
-1. Use Terratest to execute your *real* IaC tools (e.g., Terraform, Packer, etc.) to deploy *real* infrastructure
-   (e.g., servers) in a *real* environment (e.g., AWS).
-1. Validate that the infrastructure works correctly in that environment by making HTTP requests, API calls, SSH
-   connections, etc.
-1. Undeploy everything at the end of the test.
+1.  Write tests using Go's built-in [package testing](https://golang.org/pkg/testing/): you create a file ending in
+    `_test.go` and run tests with the `go test` command.
+1.  Use Terratest to execute your _real_ IaC tools (e.g., Terraform, Packer, etc.) to deploy _real_ infrastructure
+    (e.g., servers) in a _real_ environment (e.g., AWS).
+1.  Validate that the infrastructure works correctly in that environment by making HTTP requests, API calls, SSH
+    connections, etc.
+1.  Undeploy everything at the end of the test.
 
 Here's a simple example of how to test some Terraform code:
 
@@ -51,9 +48,6 @@ terraform.InitAndApply(t, terraformOptions)
 validateServerIsWorking(t, terraformOptions)
 ```
 
-
-
-
 ## Install
 
 Prerequisite: install [Go](https://golang.org/).
@@ -71,9 +65,6 @@ Alternatively, you can use `go get`:
 go get github.com/gruntwork-io/terratest/modules/terraform
 ```
 
-
-
-
 ## Examples
 
 The best way to learn how to use Terratest is through examples.
@@ -81,61 +72,55 @@ The best way to learn how to use Terratest is through examples.
 First, check out the [examples folder](/examples) for different types of infrastructure code you may want to test,
 such as:
 
-1. [Basic Terraform Example](/examples/terraform-basic-example): A simple "Hello, World" Terraform configuration.
-1. [HTTP Terraform Example](/examples/terraform-http-example): A more complicated Terraform configuration that deploys
-   a simple web server that responds to HTTP requests in AWS.
-1. [Basic Packer Example](/examples/packer-basic-example): A simple Packer template for building an Amazon Machine
-   Image (AMI).
-1. [Terraform Packer Example](/examples/terraform-packer-example): A more complicated example that shows how to use
-   Packer to build an AMI with a web server installed and deploy that AMI in AWS using Terraform.
+1.  [Basic Terraform Example](/examples/terraform-basic-example): A simple "Hello, World" Terraform configuration.
+1.  [HTTP Terraform Example](/examples/terraform-http-example): A more complicated Terraform configuration that deploys
+    a simple web server that responds to HTTP requests in AWS.
+1.  [Basic Packer Example](/examples/packer-basic-example): A simple Packer template for building an Amazon Machine
+    Image (AMI).
+1.  [Terraform Packer Example](/examples/terraform-packer-example): A more complicated example that shows how to use
+    Packer to build an AMI with a web server installed and deploy that AMI in AWS using Terraform.
 
 Next, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
 
-1. [terraform_basic_example_test.go](/test/terraform_basic_example_test.go): Use Terratest to run `terraform apply` on
-   the Basic Terraform Example and verify you get the expected outputs.
-1. [terraform_http_example_test.go](/test/terraform_http_example_test.go): Use Terratest to run `terraform apply` on
-   the HTTP Terraform Example to deploy the web server, make HTTP requests to the web server to check that it is
-   working correctly, and run `terraform destroy` to undeploy the web server.
-1. [packer_basic_example_test.go](/test/packer_basic_example_test.go): Use Terratest to run `packer build` to build an
-   AMI and then use the AWS APIs to delete that AMI.
-1. [terraform_packer_example_test.go](/test/terraform_packer_example_test.go): Use Terratest to run `packer build` to
-   build an AMI with a web server installed, deploy that AMI in AWS by running `terraform apply`, make HTTP requests to
-   the web server to check that it is working correctly, and run `terraform destroy` to undeploy the web server.
+1.  [terraform_basic_example_test.go](/test/terraform_basic_example_test.go): Use Terratest to run `terraform apply` on
+    the Basic Terraform Example and verify you get the expected outputs.
+1.  [terraform_http_example_test.go](/test/terraform_http_example_test.go): Use Terratest to run `terraform apply` on
+    the HTTP Terraform Example to deploy the web server, make HTTP requests to the web server to check that it is
+    working correctly, and run `terraform destroy` to undeploy the web server.
+1.  [packer_basic_example_test.go](/test/packer_basic_example_test.go): Use Terratest to run `packer build` to build an
+    AMI and then use the AWS APIs to delete that AMI.
+1.  [terraform_packer_example_test.go](/test/terraform_packer_example_test.go): Use Terratest to run `packer build` to
+    build an AMI with a web server installed, deploy that AMI in AWS by running `terraform apply`, make HTTP requests to
+    the web server to check that it is working correctly, and run `terraform destroy` to undeploy the web server.
 
 Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure
 modules:
 
-1. [Consul](https://github.com/hashicorp/terraform-aws-consul)
-1. [Vault](https://github.com/hashicorp/terraform-aws-vault)
-1. [Nomad](https://github.com/hashicorp/terraform-aws-nomad)
-
-
-
+1.  [Consul](https://github.com/hashicorp/terraform-aws-consul)
+1.  [Vault](https://github.com/hashicorp/terraform-aws-vault)
+1.  [Nomad](https://github.com/hashicorp/terraform-aws-nomad)
 
 ## Package by package overview
 
 Now that you've had a chance to browse the examples and their tests, here's an overview of the packages you'll find in
 Terratest's [modules folder](/modules) and how they can help you test different types infrastructure:
 
-| Package          | Description                                                                                         |
-| -----------------|-----------------------------------------------------------------------------------------------------|
-| **aws**            | Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID. |
-| **collections**    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other. |
-| **docker**         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands. |
-| **files**          | Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of its contents. |
-| **git**            | Functions for working with Git. Examples: get the name of the current Git branch. |
-| **http-helper**    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally. |
-| **logger**         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier. |
-| **packer**         | Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that was created. |
-| **random**         | Functions for generating random data. Examples: generate a unique ID that can be used to namespace resources so multiple tests running in parallel don't clash. |
+| Package            | Description                                                                                                                                                                                                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **aws**            | Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID.                                                                                                                     |
+| **collections**    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other.                                                                                                                      |
+| **docker**         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands.                                                                                                                                                                                       |
+| **files**          | Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of its contents.                                                                                                                                                                               |
+| **git**            | Functions for working with Git. Examples: get the name of the current Git branch.                                                                                                                                                                                                                    |
+| **http-helper**    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally.                                                                                                                        |
+| **logger**         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier.                                                                                                      |
+| **packer**         | Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that was created.                                                                                                                                                                                  |
+| **random**         | Functions for generating random data. Examples: generate a unique ID that can be used to namespace resources so multiple tests running in parallel don't clash.                                                                                                                                      |
 | **retry**          | Functions for retrying actions. Examples: retry a function up to a maximum number of retries, retry a function until a stop function is called, wait up to a certain timeout for a function to complete. These are especially useful when working with distributed systems and eventual consistency. |
-| **shell**          | Functions to run shell commands. Examples: run a shell command and return its `stdout` and `stderr`. |
-| **ssh**            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`. |
-| **terraform**      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`. |
-| **test_structure** | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable. |
-
-
-
+| **shell**          | Functions to run shell commands. Examples: run a shell command and return its `stdout` and `stderr`.                                                                                                                                                                                                 |
+| **ssh**            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`.                                                                                                                                                                                         |
+| **terraform**      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`.                                                                                                                                                                                        |
+| **test_structure** | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable.                                                                                                                     |
 
 ## Testing best practices
 
@@ -150,14 +135,14 @@ That means that most of the tests are going to be integration tests that deploy 
 the tests effective at catching real-world bugs, but it also makes them much slower and more brittle. In this section,
 we'll outline some best practices to minimize the downsides of this sort of testing.
 
-1. [Test environment](#test-environment)
-1. [Namespacing](#namespacing)
-1. [Cleanup](#cleanup)
-1. [Timeouts and logging](#timeouts-and-logging)
-1. [Error handling](#error-handling)
-1. [Iterating locally using Docker](#iterating-locally-using-docker)
-1. [Iterating locally using test stages](#iterating-locally-using-test-stages)
-
+1.  [Test environment](#test-environment)
+1.  [Namespacing](#namespacing)
+1.  [Cleanup](#cleanup)
+1.  [Timeouts and logging](#timeouts-and-logging)
+1.  [Avoid test caching](#avoid-test-caching)
+1.  [Error handling](#error-handling)
+1.  [Iterating locally using Docker](#iterating-locally-using-docker)
+1.  [Iterating locally using test stages](#iterating-locally-using-test-stages)
 
 ### Testing environment
 
@@ -169,15 +154,14 @@ This means that you will have to write your infrastructure code in such a way th
 injection](https://en.wikipedia.org/wiki/Dependency_injection) environment-specific details, such as account IDs,
 domain names, IP addresses, etc. Adding support for this will typically make your code cleaner and more flexible.
 
-
 ### Namespacing
 
 Just about all resources your tests create (e.g., servers, load balancers, machine images) should be "namespaced" with
 a unique name to ensure that:
 
-1. You don't accidentally overwrite any "production" resources in that environment (though as mentioned in the previous
-   section, your test environment should be completely isolated from prod anyway).
-1. You don't accidentally clash with other tests running in parallel.
+1.  You don't accidentally overwrite any "production" resources in that environment (though as mentioned in the previous
+    section, your test environment should be completely isolated from prod anyway).
+1.  You don't accidentally clash with other tests running in parallel.
 
 For example, when deploying AWS infrastructure with Terraform, that typically means exposing variables that allow you
 to configure auto scaling group names, security group names, IAM role names, and any other names that must be unique.
@@ -198,7 +182,6 @@ terraformOptions := &terraform.Options {
 
 terraform.Apply(t, terraformOptions)
 ```
-
 
 ### Cleanup
 
@@ -223,7 +206,6 @@ Of course, despite your best efforts, occasionally cleanup will fail, perhaps du
 in your code, or a temporary network outage. To handle those cases, we run a tool called
 [cloud-nuke](https://github.com/gruntwork-io/cloud-nuke) in our test AWS account on a nightly basis to clean up any
 leftover resources.
-
 
 ### Timeouts and logging
 
@@ -260,6 +242,18 @@ difficulties with CI servers and debugging. The workaround is to tell Go to test
 go test -timeout 30m -p 1 ./...
 ```
 
+### Avoid test caching
+
+Since Go 1.10, test results are automatically [cached](https://golang.org/doc/go1.10#test). This can lead to Go not
+running your tests again if you haven't changed any of the Go code. Since you're probably mainly manipulating Terraform
+files, you should consider turning the caching of test results off. This ensures that the tests are run every time
+you run `go test` and the result is not just read from the cache.
+
+To turn caching off, you can use the `GOCACHE` environment variable and set it to `off`:
+
+```shell
+$ GOCACHE=off go test ./...
+```
 
 ### Error handling
 
@@ -282,7 +276,7 @@ url := terraform.Output(t, terraformOptions, "url")
 ```
 
 In the code above, if `Init`, `Apply`, or `Output` hits an error, the method will call `t.Fatal` and fail the test
-immediately, which is typically the behavior you want. However, if you are *expecting* an error and don't want it to
+immediately, which is typically the behavior you want. However, if you are _expecting_ an error and don't want it to
 cause a test failure, use the method name that ends with a capital `E`:
 
 ```go
@@ -302,7 +296,6 @@ if err != nil {
 
 As you can see, the code above is more verbose, but gives you more flexibility with how to handle errors.
 
-
 ### Iterating locally using Docker
 
 For most infrastructure code, your only option is to deploy into a real environment such as AWS. However, if you're
@@ -312,62 +305,56 @@ much faster.
 
 Here are some techniques we use with Docker:
 
-* If your script is used in a Packer template, add a [Docker
+- If your script is used in a Packer template, add a [Docker
   builder](https://www.packer.io/docs/builders/docker.html) to the template so you can create a Docker image from the
   same code. See the [Packer Docker Example](https://github.com/gruntwork-io/terratest/tree/master/examples/packer-docker-example) for working sample code.
 
-* We have prebuilt Docker images for major Linux distros that have many important dependencies (e.g., curl, vim,
+- We have prebuilt Docker images for major Linux distros that have many important dependencies (e.g., curl, vim,
   tar, sudo) already installed. See the [test-docker-images folder](/test-docker-images) for more details.
 
-* Create a `docker-compose.yml` to make it easier to run your Docker image with all the ports, environment variables,
+- Create a `docker-compose.yml` to make it easier to run your Docker image with all the ports, environment variables,
   and other settings it needs. See the [Packer Docker Example](https://github.com/gruntwork-io/terratest/tree/master/examples/packer-docker-example) for working sample code.
 
-* With scripts in Docker, you can replace *some* real-world dependencies with mocks! One way to do this is to create
+- With scripts in Docker, you can replace _some_ real-world dependencies with mocks! One way to do this is to create
   some "mock scripts" and to bind-mount them in `docker-compose.yml` in a way that replaces the real dependency. For
   example, if your script calls the `aws` CLI, you could create a mock script called `aws` that shows up earlier in the
   `PATH`. Using mocks allows you to test 100% locally, without external dependencies such as AWS.
-
 
 ### Iterating locally using test stages
 
 Most automated tests written with Terratest consist of multiple "stages", such as:
 
-1. Build an AMI using Packer
-1. Deploy the AMI using Terraform
-1. Validate that the AMI works as expected
-1. Undeploy the AMI using Terraform
+1.  Build an AMI using Packer
+1.  Deploy the AMI using Terraform
+1.  Validate that the AMI works as expected
+1.  Undeploy the AMI using Terraform
 
 Often, while testing locally, you'll want to re-run some subset of these stages over and over again: for example, you
-might want to repeatedly run the validation step while you work out the kinks. Having to run *all* of these stages
+might want to repeatedly run the validation step while you work out the kinks. Having to run _all_ of these stages
 each time you change a single line of code can be very slow.
 
 This is where Terratest's `test_structure` package comes in handy: it allows you to explicitly break up your tests into
 stages and to be able to disable any one of those stages simply by setting an environment variable. Check out the
 [terraform_packer_example_test.go](/test/terraform_packer_example_test.go) for working sample code.
 
-
-
-
 ## Alternative testing tools
 
-1. [A list of infrastructure testing tools](#a-list-of-infrastructure-testing-tools)
-1. [How Terratest compares to other testing tools](#how-terratest-compares-to-other-testing-tools)
-
+1.  [A list of infrastructure testing tools](#a-list-of-infrastructure-testing-tools)
+1.  [How Terratest compares to other testing tools](#how-terratest-compares-to-other-testing-tools)
 
 ### A list of infrastructure testing tools
 
 Below is a list of other infrastructure testing tools you may wish to use in addition to Terratest. Check out [How
 Terratest compares to other testing tools](#how-terratest-compares-to-other-testing-tools) to understand the trade-offs.
 
-1. [kitchen-terraform](https://github.com/newcontext-oss/kitchen-terraform)
-1. [rspec-terraform](https://github.com/bsnape/rspec-terraform)
-1. [serverspec](https://serverspec.org/)
-1. [inspec](https://www.inspec.io/)
-1. [Goss](https://github.com/aelsabbahy/goss)
-1. [awspec](https://github.com/k1LoW/awspec)
-1. [Terraform's acceptance testing framework](https://github.com/hashicorp/terraform/blob/master/.github/CONTRIBUTING.md#writing-an-acceptance-test)
-1. [ruby_terraform](https://github.com/infrablocks/ruby_terraform)
-
+1.  [kitchen-terraform](https://github.com/newcontext-oss/kitchen-terraform)
+1.  [rspec-terraform](https://github.com/bsnape/rspec-terraform)
+1.  [serverspec](https://serverspec.org/)
+1.  [inspec](https://www.inspec.io/)
+1.  [Goss](https://github.com/aelsabbahy/goss)
+1.  [awspec](https://github.com/k1LoW/awspec)
+1.  [Terraform's acceptance testing framework](https://github.com/hashicorp/terraform/blob/master/.github/CONTRIBUTING.md#writing-an-acceptance-test)
+1.  [ruby_terraform](https://github.com/infrablocks/ruby_terraform)
 
 ### How Terratest compares to other testing tools
 
@@ -385,25 +372,24 @@ and make sure the orchestration tool can roll out the new container with no down
 Moreover, we use Terratest not only with individual servers, but to test entire systems. For example, the automated
 tests for the [Vault module](https://github.com/hashicorp/terraform-aws-vault/tree/master/modules) do the following:
 
-1. Use Packer to build an AMI.
-1. Use Terraform to create self-signed TLS certificates.
-1. Use Terraform to deploy all the infrastructure: a Vault cluster (which runs the AMI from the previous step), Consul
-   cluster, load balancers, security groups, S3 buckets, and so on.
-1. SSH to a Vault node to initialize the cluster.
-1. SSH to all the Vault nodes to unseal them.
-1. Use the Vault SDK to store data in Vault.
-1. Use the Vault SDK to make sure you can read the same data back out of Vault.
-1. Use Terraform to undeploy and clean up all the infrastructure.
+1.  Use Packer to build an AMI.
+1.  Use Terraform to create self-signed TLS certificates.
+1.  Use Terraform to deploy all the infrastructure: a Vault cluster (which runs the AMI from the previous step), Consul
+    cluster, load balancers, security groups, S3 buckets, and so on.
+1.  SSH to a Vault node to initialize the cluster.
+1.  SSH to all the Vault nodes to unseal them.
+1.  Use the Vault SDK to store data in Vault.
+1.  Use the Vault SDK to make sure you can read the same data back out of Vault.
+1.  Use Terraform to undeploy and clean up all the infrastructure.
 
 The steps above are exactly what you would've done to test the Vault module manually. Terratest helps automate this
 process. You can think of Terratest as a way to do end-to-end, acceptance or integration testing, whereas most other
 tools are focused on unit or functional testing.
 
-
 ### Why Terratest?
 
 Our experience with building the [Infrastructure as Code Library](https://gruntwork.io/infrastructure-as-code-library/)
-is that the *only* way to create reliable, maintainable infrastructure code is to have a thorough suite of real-world,
+is that the _only_ way to create reliable, maintainable infrastructure code is to have a thorough suite of real-world,
 end-to-end acceptance tests. Without these sorts of tests, you simply cannot be confident that the infrastructure code
 actually works.
 
@@ -412,21 +398,16 @@ catch bugs not only in our own code, but also in AWS, Azure, Terraform, Packer, 
 so on. Moreover, by running tests nightly, we're able to catch backwards incompatible changes and
 regressions in our dependencies (e.g., backwards incompatibilities in new versions of Terraform) as early as possible.
 
-
-
-
 ## Developing Terratest
 
-1. [Contributing](#contributing)
-1. [Running tests](#running-tests)
-1. [Versioning](#versioning)
-
+1.  [Contributing](#contributing)
+1.  [Running tests](#running-tests)
+1.  [Versioning](#versioning)
 
 ### Contributing
 
 Contributions are very welcome! Check out the
 [Contribution Guidelines](CONTRIBUTING.md) for instructions.
-
 
 ### Running tests
 
@@ -464,7 +445,6 @@ cd "<FOLDER_PATH>"
 go test -timeout30m -run "<TEST_NAME>"
 ```
 
-
 ### Versioning
 
 This repo follows the principles of [Semantic Versioning](http://semver.org/). You can find each new release,
@@ -473,8 +453,6 @@ along with the changelog, in the [Releases Page](https://github.com/gruntwork-io
 During initial development, the major version will be 0 (e.g., `0.x.y`), which indicates the code does not yet have a
 stable API. Once we hit `1.0.0`, we will make every effort to maintain a backwards compatible API and use the MAJOR,
 MINOR, and PATCH versions on each release to indicate any incompatibilities.
-
-
 
 ## License
 
