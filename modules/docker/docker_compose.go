@@ -6,12 +6,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
+// Options are Docker options.
 type Options struct {
 	WorkingDir string
 	EnvVars    map[string]string
 }
 
-// Run docker-compose with the given arguments and options and return stdout/stderr
+// RunDockerCompose runs docker-compose with the given arguments and options and return stdout/stderr.
 func RunDockerCompose(t *testing.T, options *Options, args ...string) string {
 	out, err := RunDockerComposeE(t, options, args...)
 	if err != nil {
@@ -20,7 +21,7 @@ func RunDockerCompose(t *testing.T, options *Options, args ...string) string {
 	return out
 }
 
-// Run docker-compose with the given arguments and options and return stdout/stderr
+// RunDockerComposeE runs docker-compose with the given arguments and options and return stdout/stderr.
 func RunDockerComposeE(t *testing.T, options *Options, args ...string) (string, error) {
 	cmd := shell.Command{
 		Command: "docker-compose",

@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
-// Get the Account ID for the currently logged in IAM User.
+// GetAccountId gets the Account ID for the currently logged in IAM User.
 func GetAccountId(t *testing.T) string {
 	id, err := GetAccountIdE(t)
 	if err != nil {
@@ -17,7 +17,7 @@ func GetAccountId(t *testing.T) string {
 	return id
 }
 
-// Get the Account ID for the currently logged in IAM User.
+// GetAccountIdE gets the Account ID for the currently logged in IAM User.
 func GetAccountIdE(t *testing.T) (string, error) {
 	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
@@ -29,12 +29,12 @@ func GetAccountIdE(t *testing.T) (string, error) {
 		return "", err
 	}
 
-	return extractAccountIdFromArn(*user.User.Arn)
+	return extractAccountIDFromARN(*user.User.Arn)
 }
 
 // An IAM arn is of the format arn:aws:iam::123456789012:user/test. The account id is the number after arn:aws:iam::,
 // so we split on a colon and return the 5th item.
-func extractAccountIdFromArn(arn string) (string, error) {
+func extractAccountIDFromARN(arn string) (string, error) {
 	arnParts := strings.Split(arn, ":")
 
 	if len(arnParts) < 5 {

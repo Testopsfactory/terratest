@@ -9,34 +9,34 @@ import (
 func TestGetUbuntu1404AmiReturnsSomeAmi(t *testing.T) {
 	t.Parallel()
 
-	amiId := GetUbuntu1404Ami(t, "us-east-1")
-	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiId)
+	amiID := GetUbuntu1404Ami(t, "us-east-1")
+	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiID)
 }
 
 func TestGetUbuntu1604AmiReturnsSomeAmi(t *testing.T) {
 	t.Parallel()
 
-	amiId := GetUbuntu1604Ami(t, "us-west-1")
-	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiId)
+	amiID := GetUbuntu1604Ami(t, "us-west-1")
+	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiID)
 }
 
 func TestGetCentos7AmiReturnsSomeAmi(t *testing.T) {
 	t.Parallel()
 
-	amiId := GetCentos7Ami(t, "eu-west-1")
-	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiId)
+	amiID := GetCentos7Ami(t, "eu-west-1")
+	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiID)
 }
 
 func TestGetAmazonLinuxAmiReturnsSomeAmi(t *testing.T) {
 	t.Parallel()
 
-	amiId := GetAmazonLinuxAmi(t, "ap-southeast-1")
-	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiId)
+	amiID := GetAmazonLinuxAmi(t, "ap-southeast-1")
+	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiID)
 }
 
 func TestGetEcsOptimizedAmazonLinuxAmiEReturnsSomeAmi(t *testing.T) {
 	t.Parallel()
 
-	amiId := GetEcsOptimizedAmazonLinuxAmi(t, "us-east-2")
-	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiId)
+	amiID := GetEcsOptimizedAmazonLinuxAmi(t, "us-east-2")
+	assert.Regexp(t, "^ami-[[:alnum:]]+$", amiID)
 }

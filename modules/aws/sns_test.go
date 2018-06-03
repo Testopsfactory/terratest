@@ -15,8 +15,8 @@ func TestCreateAndDeleteSnsTopic(t *testing.T) {
 	t.Parallel()
 
 	region := GetRandomRegion(t, nil, nil)
-	uniqueId := random.UniqueId()
-	name := fmt.Sprintf("test-sns-topic-%s", uniqueId)
+	uniqueID := random.UniqueId()
+	name := fmt.Sprintf("test-sns-topic-%s", uniqueID)
 
 	arn := CreateSnsTopic(t, region, name)
 	defer deleteTopic(t, region, arn)

@@ -1,3 +1,4 @@
+// Package test_structure allows to set up tests and their environment.
 package test_structure
 
 import (
@@ -11,9 +12,10 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
+// SKIP_STAGE_ENV_VAR_PREFIX is the prefix used for skipping stage environment variables.
 const SKIP_STAGE_ENV_VAR_PREFIX = "SKIP_"
 
-// Execute the given test stage (e.g., setup, teardown, validation) if an environment variable of the name
+// RunTestStage executes the given test stage (e.g., setup, teardown, validation) if an environment variable of the name
 // `SKIP_<stageName>` (e.g., SKIP_teardown) is not set.
 func RunTestStage(t *testing.T, stageName string, stage func()) {
 	envVarName := fmt.Sprintf("%s%s", SKIP_STAGE_ENV_VAR_PREFIX, stageName)
@@ -25,7 +27,7 @@ func RunTestStage(t *testing.T, stageName string, stage func()) {
 	}
 }
 
-// Returns true if an environment variable is set instructing Terratest to skip a test stage. This can be an easy way
+// SkipStageEnvVarSet returns true if an environment variable is set instructing Terratest to skip a test stage. This can be an easy way
 // to tell if the tests are running in a local dev environment vs a CI server.
 func SkipStageEnvVarSet() bool {
 	for _, environmentVariable := range os.Environ() {
@@ -37,7 +39,7 @@ func SkipStageEnvVarSet() bool {
 	return false
 }
 
-// Copy the given root folder to a randomly-named temp folder and return the path to the given examples folder within
+// CopyTerraformFolderToTemp copies the given root folder to a randomly-named temp folder and return the path to the given examples folder within
 // the new temp root folder. This is useful when running multiple tests in parallel against the same set of Terraform
 // files to ensure the tests don't overwrite each other's .terraform working directory and terraform.tfstate files. To
 // ensure relative paths work, we copy over the entire root folder to a temp folder, and then return the path within

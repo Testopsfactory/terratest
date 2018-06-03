@@ -8,7 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// Create an SNS Topic and return the ARN
+// CreateSnsTopic creates an SNS Topic and return the ARN.
 func CreateSnsTopic(t *testing.T, region string, snsTopicName string) string {
 	out, err := CreateSnsTopicE(t, region, snsTopicName)
 	if err != nil {
@@ -17,7 +17,7 @@ func CreateSnsTopic(t *testing.T, region string, snsTopicName string) string {
 	return out
 }
 
-// Create an SNS Topic and return the ARN
+// CreateSnsTopicE creates an SNS Topic and return the ARN.
 func CreateSnsTopicE(t *testing.T, region string, snsTopicName string) (string, error) {
 	logger.Logf(t, "Creating SNS topic %s in %s", snsTopicName, region)
 
@@ -38,7 +38,7 @@ func CreateSnsTopicE(t *testing.T, region string, snsTopicName string) (string, 
 	return aws.StringValue(output.TopicArn), err
 }
 
-// Delete an SNS Topic
+// DeleteSNSTopic deletes an SNS Topic.
 func DeleteSNSTopic(t *testing.T, region string, snsTopicArn string) {
 	err := DeleteSNSTopicE(t, region, snsTopicArn)
 	if err != nil {
@@ -46,7 +46,7 @@ func DeleteSNSTopic(t *testing.T, region string, snsTopicArn string) {
 	}
 }
 
-// Delete an SNS Topic
+// DeleteSNSTopicE deletes an SNS Topic.
 func DeleteSNSTopicE(t *testing.T, region string, snsTopicArn string) error {
 	logger.Logf(t, "Deleting SNS topic %s in %s", snsTopicArn, region)
 
@@ -63,7 +63,7 @@ func DeleteSNSTopicE(t *testing.T, region string, snsTopicArn string) error {
 	return err
 }
 
-// Create a new SNS client
+// NewSnsClient creates a new SNS client.
 func NewSnsClient(t *testing.T, region string) *sns.SNS {
 	client, err := NewSnsClientE(t, region)
 	if err != nil {
@@ -72,7 +72,7 @@ func NewSnsClient(t *testing.T, region string) *sns.SNS {
 	return client
 }
 
-// Create a new SNS client
+// NewSnsClientE creates a new SNS client.
 func NewSnsClientE(t *testing.T, region string) (*sns.SNS, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {

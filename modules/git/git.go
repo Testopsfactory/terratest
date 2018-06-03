@@ -1,3 +1,4 @@
+// Package git allows to interact with Git.
 package git
 
 import (
@@ -6,6 +7,7 @@ import (
 	"testing"
 )
 
+// GetCurrentBranchName retrieves the current branch name.
 func GetCurrentBranchName(t *testing.T) string {
 	out, err := GetCurrentBranchNameE(t)
 	if err != nil {
@@ -14,6 +16,7 @@ func GetCurrentBranchName(t *testing.T) string {
 	return out
 }
 
+// GetCurrentBranchNameE retrieves the current branch name.
 func GetCurrentBranchNameE(t *testing.T) (string, error) {
 	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
 	bytes, err := cmd.Output()

@@ -1,3 +1,4 @@
+// Package logger contains different methods to log.
 package logger
 
 import (
@@ -10,7 +11,7 @@ import (
 	"time"
 )
 
-// Log the given format and arguments, formatted using fmt.Sprintf, to stdout, along with a timestamp and information
+// Logf logs the given format and arguments, formatted using fmt.Sprintf, to stdout, along with a timestamp and information
 // about what test and file is doing the logging. This is an alternative to t.Logf that logs to stdout immediately,
 // rather than buffering all log output and only displaying it at the very end of the test. This is useful because:
 //
@@ -31,14 +32,14 @@ func Logf(t *testing.T, format string, args ...interface{}) {
 	DoLog(t, 2, os.Stdout, fmt.Sprintf(format, args...))
 }
 
-// Log the given arguments to stdout, along with a timestamp and information about what test and file is doing the
+// Log logs the given arguments to stdout, along with a timestamp and information about what test and file is doing the
 // logging. This is an alternative to t.Logf that logs to stdout immediately, rather than buffering all log output and
 // only displaying it at the very end of the test. See the Logf method for more info.
 func Log(t *testing.T, args ...interface{}) {
 	DoLog(t, 2, os.Stdout, args...)
 }
 
-// Log the given arguments to the given writer, along with a timestamp and information about what test and file is
+// DoLog logs the given arguments to the given writer, along with a timestamp and information about what test and file is
 // doing the logging.
 func DoLog(t *testing.T, callDepth int, writer io.Writer, args ...interface{}) {
 	date := time.Now()
@@ -47,7 +48,7 @@ func DoLog(t *testing.T, callDepth int, writer io.Writer, args ...interface{}) {
 	fmt.Fprintln(writer, allArgs...)
 }
 
-// Returns the file and line number information about the methods that called this method, based on the current
+// CallerPrefix returns the file and line number information about the methods that called this method, based on the current
 // goroutine's stack. The argument callDepth is the number of stack frames to ascend, with 0 identifying the method
 // that called CallerPrefix, 1 identifying the method that called that method, and so on.
 //

@@ -11,7 +11,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// Run a dummy HTTP server on a unique port that will return the given text. Returns the Listener for the server, the
+// RunDummyServer runs a dummy HTTP server on a unique port that will return the given text. Returns the Listener for the server, the
 // port it's listening on, or an error if something went wrong while trying to start the listener. Make sure to call
 // the Close() method on the Listener when you're done!
 func RunDummyServer(t *testing.T, text string) (net.Listener, int) {
@@ -22,7 +22,7 @@ func RunDummyServer(t *testing.T, text string) (net.Listener, int) {
 	return listener, port
 }
 
-// Run a dummy HTTP server on a unique port that will return the given text. Returns the Listener for the server, the
+// RunDummyServerE runs a dummy HTTP server on a unique port that will return the given text. Returns the Listener for the server, the
 // port it's listening on, or an error if something went wrong while trying to start the listener. Make sure to call
 // the Close() method on the Listener when you're done!
 func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
@@ -35,10 +35,11 @@ func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 	logger.Logf(t, "Starting dummy HTTP server in port %d that will return the text '%s'", port, text)
 
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
-
-	if err == nil {
-		go http.Serve(listener, nil)
+	if err != nil {
+		return nil, 0, fmt.Errorf("error listening: %s", err)
 	}
+
+	go http.Serve(listener, nil)
 
 	return listener, port, err
 }

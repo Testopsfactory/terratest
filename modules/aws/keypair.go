@@ -9,13 +9,14 @@ import (
 	"github.com/gruntwork-io/terratest/modules/ssh"
 )
 
+// Ec2Keypair is an EC2 key pair.
 type Ec2Keypair struct {
 	*ssh.KeyPair
 	Name   string // The name assigned in AWS to the EC2 Key Pair
 	Region string // The AWS region where the EC2 Key Pair lives
 }
 
-// Generate a public/private KeyPair and import it into EC2 in the given region under the given name.
+// CreateAndImportEC2KeyPair generates a public/private KeyPair and import it into EC2 in the given region under the given name.
 func CreateAndImportEC2KeyPair(t *testing.T, region string, name string) *Ec2Keypair {
 	keyPair, err := CreateAndImportEC2KeyPairE(t, region, name)
 	if err != nil {
@@ -24,7 +25,7 @@ func CreateAndImportEC2KeyPair(t *testing.T, region string, name string) *Ec2Key
 	return keyPair
 }
 
-// Generate a public/private KeyPair and import it into EC2 in the given region under the given name.
+// CreateAndImportEC2KeyPairE generates a public/private KeyPair and import it into EC2 in the given region under the given name.
 func CreateAndImportEC2KeyPairE(t *testing.T, region string, name string) (*Ec2Keypair, error) {
 	keyPair, err := ssh.GenerateRSAKeyPairE(t, 2048)
 	if err != nil {
@@ -34,7 +35,7 @@ func CreateAndImportEC2KeyPairE(t *testing.T, region string, name string) (*Ec2K
 	return ImportEC2KeyPairE(t, region, name, keyPair)
 }
 
-// Create a Key Pair in EC2 by importing an existing public key
+// ImportEC2KeyPair creates a Key Pair in EC2 by importing an existing public key.
 func ImportEC2KeyPair(t *testing.T, region string, name string, keyPair *ssh.KeyPair) *Ec2Keypair {
 	ec2KeyPair, err := ImportEC2KeyPairE(t, region, name, keyPair)
 	if err != nil {
@@ -43,7 +44,7 @@ func ImportEC2KeyPair(t *testing.T, region string, name string, keyPair *ssh.Key
 	return ec2KeyPair
 }
 
-// Create a Key Pair in EC2 by importing an existing public key
+// ImportEC2KeyPairE creates a Key Pair in EC2 by importing an existing public key.
 func ImportEC2KeyPairE(t *testing.T, region string, name string, keyPair *ssh.KeyPair) (*Ec2Keypair, error) {
 	logger.Logf(t, "Creating new Key Pair in EC2 region %s named %s", region, name)
 
@@ -65,7 +66,7 @@ func ImportEC2KeyPairE(t *testing.T, region string, name string, keyPair *ssh.Ke
 	return &Ec2Keypair{Name: name, Region: region, KeyPair: keyPair}, nil
 }
 
-// Delete an EC2 Keypair
+// DeleteEC2KeyPair deletes an EC2 key pair.
 func DeleteEC2KeyPair(t *testing.T, keyPair *Ec2Keypair) {
 	err := DeleteEC2KeyPairE(t, keyPair)
 	if err != nil {
@@ -73,7 +74,7 @@ func DeleteEC2KeyPair(t *testing.T, keyPair *Ec2Keypair) {
 	}
 }
 
-// Delete an EC2 Keypair
+// DeleteEC2KeyPairE deletes an EC2 key pair.
 func DeleteEC2KeyPairE(t *testing.T, keyPair *Ec2Keypair) error {
 	logger.Logf(t, "Deleting Key Pair in EC2 region %s named %s", keyPair.Region, keyPair.Name)
 

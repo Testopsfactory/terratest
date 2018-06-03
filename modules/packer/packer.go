@@ -1,3 +1,4 @@
+// Package packer allows to interact with Packer.
 package packer
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
+// Options are the options for Packer.
 type Options struct {
 	Template string            // The path to the Packer template
 	Vars     map[string]string // The custom vars to pass when running the build command
@@ -17,16 +19,16 @@ type Options struct {
 	Env      map[string]string // Custom environment variables to set when running Packer
 }
 
-// Build the given Packer template and return the generated AMI ID
+// BuildAmi builds the given Packer template and return the generated AMI ID.
 func BuildAmi(t *testing.T, options *Options) string {
-	amiId, err := BuildAmiE(t, options)
+	amiID, err := BuildAmiE(t, options)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiId
+	return amiID
 }
 
-// Build the given Packer template and return the generated AMI ID
+// BuildAmiE builds the given Packer template and return the generated AMI ID.
 func BuildAmiE(t *testing.T, options *Options) (string, error) {
 	logger.Logf(t, "Running Packer to generate AMI for template %s", options.Template)
 
@@ -41,7 +43,7 @@ func BuildAmiE(t *testing.T, options *Options) (string, error) {
 		return "", err
 	}
 
-	return extractAmiId(output)
+	return extractAMIID(output)
 }
 
 // The Packer machine-readable log output should contain an entry of this format:
@@ -51,15 +53,14 @@ func BuildAmiE(t *testing.T, options *Options) (string, error) {
 // For example:
 //
 // 1456332887,amazon-ebs,artifact,0,id,us-east-1:ami-b481b3de
-func extractAmiId(packerLogOutput string) (string, error) {
-	re := regexp.MustCompile(".+artifact,\\d+?,id,.+?:(.+)")
+func extractAMIID(packerLogOutput string) (string, error) {
+	re := regexp.MustCompile(`.+artifact,\d+?,id,.+?:(.+)`)
 	matches := re.FindStringSubmatch(packerLogOutput)
 
 	if len(matches) == 2 {
 		return matches[1], nil
-	} else {
-		return "", errors.New("Could not find AMI ID pattern in Packer output")
 	}
+	return "", errors.New("Could not find AMI ID pattern in Packer output")
 }
 
 // Convert the inputs to a format palatable to packer. The build command should have the format:

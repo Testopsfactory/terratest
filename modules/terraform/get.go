@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-// Call terraform get and return stdout/stderr
+// Get calls terraform get and return stdout/stderr.
 func Get(t *testing.T, options *Options) string {
 	out, err := GetE(t, options)
 	if err != nil {
@@ -13,7 +13,7 @@ func Get(t *testing.T, options *Options) string {
 	return out
 }
 
-// Call terraform get and return stdout/stderr
+// GetE calls terraform get and return stdout/stderr.
 func GetE(t *testing.T, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, "get", "-update")
 }

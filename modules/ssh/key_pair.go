@@ -11,13 +11,13 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// A public and private key pair that can be used for SSH access
+// KeyPair is a public and private key pair that can be used for SSH access.
 type KeyPair struct {
 	PublicKey  string
 	PrivateKey string
 }
 
-// Generate an RSA Keypair and return the public and private keys
+// GenerateRSAKeyPair generates an RSA Keypair and return the public and private keys.
 func GenerateRSAKeyPair(t *testing.T, keySize int) *KeyPair {
 	keyPair, err := GenerateRSAKeyPairE(t, keySize)
 	if err != nil {
@@ -26,7 +26,7 @@ func GenerateRSAKeyPair(t *testing.T, keySize int) *KeyPair {
 	return keyPair
 }
 
-// Generate an RSA Keypair and return the public and private keys
+// GenerateRSAKeyPairE generates an RSA Keypair and return the public and private keys.
 func GenerateRSAKeyPairE(t *testing.T, keySize int) (*KeyPair, error) {
 	logger.Logf(t, "Generating new public/private key of size %d", keySize)
 

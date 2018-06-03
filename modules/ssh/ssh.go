@@ -1,3 +1,4 @@
+// Package ssh allows to manage SSH connections and send commands through them.
 package ssh
 
 import (
@@ -8,13 +9,14 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// Host is a host on AWS.
 type Host struct {
 	Hostname    string
 	SshUserName string
 	SshKeyPair  *KeyPair
 }
 
-// Check that you can connect via SSH to the given host and fail the test if the connection fails.
+// CheckSshConnection checks that you can connect via SSH to the given host and fail the test if the connection fails.
 func CheckSshConnection(t *testing.T, host Host) {
 	err := CheckSshConnectionE(t, host)
 	if err != nil {
@@ -22,13 +24,13 @@ func CheckSshConnection(t *testing.T, host Host) {
 	}
 }
 
-// Check that you can connect via SSH to the given host and return an error if the connection fails
+// CheckSshConnectionE checks that you can connect via SSH to the given host and return an error if the connection fails.
 func CheckSshConnectionE(t *testing.T, host Host) error {
 	_, err := CheckSshCommandE(t, host, "'exit'")
 	return err
 }
 
-// Check that you can connect via SSH to the given host and run the given command. Returns the stdout/stderr.
+// CheckSshCommand checks that you can connect via SSH to the given host and run the given command. Returns the stdout/stderr.
 func CheckSshCommand(t *testing.T, host Host, command string) string {
 	out, err := CheckSshCommandE(t, host, command)
 	if err != nil {
@@ -37,7 +39,7 @@ func CheckSshCommand(t *testing.T, host Host, command string) string {
 	return out
 }
 
-// Check that you can connect via SSH to the given host and run the given command. Returns the stdout/stderr.
+// CheckSshCommandE checks that you can connect via SSH to the given host and run the given command. Returns the stdout/stderr.
 func CheckSshCommandE(t *testing.T, host Host, command string) (string, error) {
 	authMethods, err := createAuthMethodsForHost(host)
 	if err != nil {
@@ -59,7 +61,7 @@ func CheckSshCommandE(t *testing.T, host Host, command string) (string, error) {
 
 	defer sshSession.Cleanup(t)
 
-	return runSshCommand(sshSession)
+	return runSSHCommand(sshSession)
 }
 
 // CheckPrivateSshConnection attempts to connect to privateHost (which is not addressable from the Internet) via a
@@ -73,7 +75,7 @@ func CheckPrivateSshConnection(t *testing.T, publicHost Host, privateHost Host, 
 	return out
 }
 
-// CheckPrivateSshConnection attempts to connect to privateHost (which is not addressable from the Internet) via a
+// CheckPrivateSshConnectionE attempts to connect to privateHost (which is not addressable from the Internet) via a
 // separate publicHost (which is addressable from the Internet) and then executes "command" on privateHost and returns
 // its output. It is useful for checking that it's possible to SSH from a Bastion Host to a private instance.
 func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host, command string) (string, error) {
@@ -110,15 +112,15 @@ func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host,
 
 	defer sshSession.Cleanup(t)
 
-	return runSshCommand(sshSession)
+	return runSSHCommand(sshSession)
 }
 
-func runSshCommand(sshSession *SshSession) (string, error) {
-	if err := setupSshClient(sshSession); err != nil {
+func runSSHCommand(sshSession *SshSession) (string, error) {
+	if err := setUpSSHClient(sshSession); err != nil {
 		return "", err
 	}
 
-	if err := setupSshSession(sshSession); err != nil {
+	if err := setUpSSHSession(sshSession); err != nil {
 		return "", err
 	}
 
@@ -130,16 +132,15 @@ func runSshCommand(sshSession *SshSession) (string, error) {
 	return string(bytes), nil
 }
 
-func setupSshClient(sshSession *SshSession) error {
+func setUpSSHClient(sshSession *SshSession) error {
 	if sshSession.Options.JumpHost == nil {
-		return fillSshClientForHost(sshSession)
-	} else {
-		return fillSshClientForJumpHost(sshSession)
+		return fillSSHClientForHost(sshSession)
 	}
+	return fillSSHClientForJumpHost(sshSession)
 }
 
-func fillSshClientForHost(sshSession *SshSession) error {
-	client, err := createSshClient(sshSession.Options)
+func fillSSHClientForHost(sshSession *SshSession) error {
+	client, err := createSSHClient(sshSession.Options)
 
 	if err != nil {
 		return err
@@ -149,8 +150,8 @@ func fillSshClientForHost(sshSession *SshSession) error {
 	return nil
 }
 
-func fillSshClientForJumpHost(sshSession *SshSession) error {
-	jumpHostClient, err := createSshClient(sshSession.Options.JumpHost)
+func fillSSHClientForJumpHost(sshSession *SshSession) error {
+	jumpHostClient, err := createSSHClient(sshSession.Options.JumpHost)
 	if err != nil {
 		return err
 	}
@@ -162,7 +163,7 @@ func fillSshClientForJumpHost(sshSession *SshSession) error {
 	}
 	sshSession.JumpHost.HostVirtualConnection = hostVirtualConn
 
-	hostConn, hostIncomingChannels, hostIncomingRequests, err := ssh.NewClientConn(hostVirtualConn, sshSession.Options.ConnectionString(), createSshClientConfig(sshSession.Options))
+	hostConn, hostIncomingChannels, hostIncomingRequests, err := ssh.NewClientConn(hostVirtualConn, sshSession.Options.ConnectionString(), createSSHClientConfig(sshSession.Options))
 	if err != nil {
 		return err
 	}
@@ -172,7 +173,7 @@ func fillSshClientForJumpHost(sshSession *SshSession) error {
 	return nil
 }
 
-func setupSshSession(sshSession *SshSession) error {
+func setUpSSHSession(sshSession *SshSession) error {
 	session, err := sshSession.Client.NewSession()
 	if err != nil {
 		return err
@@ -182,12 +183,12 @@ func setupSshSession(sshSession *SshSession) error {
 	return nil
 }
 
-func createSshClient(options *SshConnectionOptions) (*ssh.Client, error) {
-	sshClientConfig := createSshClientConfig(options)
+func createSSHClient(options *SshConnectionOptions) (*ssh.Client, error) {
+	sshClientConfig := createSSHClientConfig(options)
 	return ssh.Dial("tcp", options.ConnectionString(), sshClientConfig)
 }
 
-func createSshClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig {
+func createSSHClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig {
 	clientConfig := &ssh.ClientConfig{
 		User: hostOptions.Username,
 		Auth: hostOptions.AuthMethods,
@@ -200,7 +201,7 @@ func createSshClientConfig(hostOptions *SshConnectionOptions) *ssh.ClientConfig 
 	return clientConfig
 }
 
-// An ssh.HostKeyCallback that does nothing. Only use this when you're sure you don't want to check the host key at all
+// NoOpHostKeyCallback is an ssh.HostKeyCallback that does nothing. Only use this when you're sure you don't want to check the host key at all
 // (e.g., only for testing and non-production use cases).
 func NoOpHostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) error {
 	return nil

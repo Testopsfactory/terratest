@@ -23,9 +23,8 @@ func TestDoWithRetry(t *testing.T) {
 			count++
 			if count > 5 {
 				return expectedOutput, nil
-			} else {
-				return expectedOutput, expectedError
 			}
+			return expectedOutput, expectedError
 		}
 	}
 

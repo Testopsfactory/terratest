@@ -12,7 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
-// Create a new SQS queue with a random name that starts with the given prefix and return the queue URL
+// CreateRandomQueue creates a new SQS queue with a random name that starts with the given prefix and return the queue URL.
 func CreateRandomQueue(t *testing.T, awsRegion string, prefix string) string {
 	url, err := CreateRandomQueueE(t, awsRegion, prefix)
 	if err != nil {
@@ -21,7 +21,7 @@ func CreateRandomQueue(t *testing.T, awsRegion string, prefix string) string {
 	return url
 }
 
-// Create a new SQS queue with a random name that starts with the given prefix and return the queue URL
+// CreateRandomQueueE creates a new SQS queue with a random name that starts with the given prefix and return the queue URL.
 func CreateRandomQueueE(t *testing.T, awsRegion string, prefix string) (string, error) {
 	logger.Logf(t, "Creating randomly named SQS queue with prefix %s", prefix)
 
@@ -48,17 +48,17 @@ func CreateRandomQueueE(t *testing.T, awsRegion string, prefix string) (string, 
 	return aws.StringValue(queue.QueueUrl), nil
 }
 
-// Delete the SQS queue with the given URL
-func DeleteQueue(t *testing.T, awsRegion string, queueUrl string) {
-	err := DeleteQueueE(t, awsRegion, queueUrl)
+// DeleteQueue deletes the SQS queue with the given URL.
+func DeleteQueue(t *testing.T, awsRegion string, queueURL string) {
+	err := DeleteQueueE(t, awsRegion, queueURL)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-// Delete the SQS queue with the given URL
-func DeleteQueueE(t *testing.T, awsRegion string, queueUrl string) error {
-	logger.Logf(t, "Deleting SQS Queue %s", queueUrl)
+// DeleteQueueE deletes the SQS queue with the given URL.
+func DeleteQueueE(t *testing.T, awsRegion string, queueURL string) error {
+	logger.Logf(t, "Deleting SQS Queue %s", queueURL)
 
 	sqsClient, err := NewSqsClientE(t, awsRegion)
 	if err != nil {
@@ -66,23 +66,23 @@ func DeleteQueueE(t *testing.T, awsRegion string, queueUrl string) error {
 	}
 
 	_, err = sqsClient.DeleteQueue(&sqs.DeleteQueueInput{
-		QueueUrl: aws.String(queueUrl),
+		QueueUrl: aws.String(queueURL),
 	})
 
 	return err
 }
 
-// Delete the message with the given receipt from the SQS queue with the given URL
-func DeleteMessageFromQueue(t *testing.T, awsRegion string, queueUrl string, receipt string) {
-	err := DeleteMessageFromQueueE(t, awsRegion, queueUrl, receipt)
+// DeleteMessageFromQueue deletes the message with the given receipt from the SQS queue with the given URL.
+func DeleteMessageFromQueue(t *testing.T, awsRegion string, queueURL string, receipt string) {
+	err := DeleteMessageFromQueueE(t, awsRegion, queueURL, receipt)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-// Delete the message with the given receipt from the SQS queue with the given URL
-func DeleteMessageFromQueueE(t *testing.T, awsRegion string, queueUrl string, receipt string) error {
-	logger.Logf(t, "Deleting message from queue %s (%s)", queueUrl, receipt)
+// DeleteMessageFromQueueE deletes the message with the given receipt from the SQS queue with the given URL.
+func DeleteMessageFromQueueE(t *testing.T, awsRegion string, queueURL string, receipt string) error {
+	logger.Logf(t, "Deleting message from queue %s (%s)", queueURL, receipt)
 
 	sqsClient, err := NewSqsClientE(t, awsRegion)
 	if err != nil {
@@ -91,23 +91,23 @@ func DeleteMessageFromQueueE(t *testing.T, awsRegion string, queueUrl string, re
 
 	_, err = sqsClient.DeleteMessage(&sqs.DeleteMessageInput{
 		ReceiptHandle: &receipt,
-		QueueUrl:      &queueUrl,
+		QueueUrl:      &queueURL,
 	})
 
 	return err
 }
 
-// Send the given message to the SQS queue with the given URL
-func SendMessageToQueue(t *testing.T, awsRegion string, queueUrl string, message string) {
-	err := SendMessageToQueueE(t, awsRegion, queueUrl, message)
+// SendMessageToQueue sends the given message to the SQS queue with the given URL.
+func SendMessageToQueue(t *testing.T, awsRegion string, queueURL string, message string) {
+	err := SendMessageToQueueE(t, awsRegion, queueURL, message)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-// Send the given message to the SQS queue with the given URL
-func SendMessageToQueueE(t *testing.T, awsRegion string, queueUrl string, message string) error {
-	logger.Logf(t, "Sending message %s to queue %s", message, queueUrl)
+// SendMessageToQueueE sends the given message to the SQS queue with the given URL.
+func SendMessageToQueueE(t *testing.T, awsRegion string, queueURL string, message string) error {
+	logger.Logf(t, "Sending message %s to queue %s", message, queueURL)
 
 	sqsClient, err := NewSqsClientE(t, awsRegion)
 	if err != nil {
@@ -116,31 +116,32 @@ func SendMessageToQueueE(t *testing.T, awsRegion string, queueUrl string, messag
 
 	res, err := sqsClient.SendMessage(&sqs.SendMessageInput{
 		MessageBody: &message,
-		QueueUrl:    &queueUrl,
+		QueueUrl:    &queueURL,
 	})
 
 	if err != nil {
 		if strings.Contains(err.Error(), "AWS.SimpleQueueService.NonExistentQueue") {
-			logger.Logf(t, fmt.Sprintf("WARN: Client has stopped listening on queue %s", queueUrl))
+			logger.Logf(t, fmt.Sprintf("WARN: Client has stopped listening on queue %s", queueURL))
 			return nil
 		}
 		return err
 	}
 
-	logger.Logf(t, "Message id %s sent to queue %s", aws.StringValue(res.MessageId), queueUrl)
+	logger.Logf(t, "Message id %s sent to queue %s", aws.StringValue(res.MessageId), queueURL)
 
 	return nil
 }
 
+// QueueMessageResponse contains a queue message.
 type QueueMessageResponse struct {
 	ReceiptHandle string
 	MessageBody   string
 	Error         error
 }
 
-// Waits to receive a message from on the queueUrl. Since the API only allows us to wait a max 20 seconds for a new
+// WaitForQueueMessage waits to receive a message from on the queueURL. Since the API only allows us to wait a max 20 seconds for a new
 // message to arrive, we must loop TIMEOUT/20 number of times to be able to wait for a total of TIMEOUT seconds
-func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeout int) QueueMessageResponse {
+func WaitForQueueMessage(t *testing.T, awsRegion string, queueURL string, timeout int) QueueMessageResponse {
 	sqsClient, err := NewSqsClientE(t, awsRegion)
 	if err != nil {
 		return QueueMessageResponse{Error: err}
@@ -154,9 +155,9 @@ func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeou
 	}
 
 	for i := 0; i < cycles; i++ {
-		logger.Logf(t, "Waiting for message on %s (%ss)", queueUrl, strconv.Itoa(i*cycleLength))
+		logger.Logf(t, "Waiting for message on %s (%ss)", queueURL, strconv.Itoa(i*cycleLength))
 		result, err := sqsClient.ReceiveMessage(&sqs.ReceiveMessageInput{
-			QueueUrl:              aws.String(queueUrl),
+			QueueUrl:              aws.String(queueURL),
 			AttributeNames:        aws.StringSlice([]string{"SentTimestamp"}),
 			MaxNumberOfMessages:   aws.Int64(1),
 			MessageAttributeNames: aws.StringSlice([]string{"All"}),
@@ -168,15 +169,15 @@ func WaitForQueueMessage(t *testing.T, awsRegion string, queueUrl string, timeou
 		}
 
 		if len(result.Messages) > 0 {
-			logger.Logf(t, "Message %s received on %s", *result.Messages[0].MessageId, queueUrl)
+			logger.Logf(t, "Message %s received on %s", *result.Messages[0].MessageId, queueURL)
 			return QueueMessageResponse{ReceiptHandle: *result.Messages[0].ReceiptHandle, MessageBody: *result.Messages[0].Body}
 		}
 	}
 
-	return QueueMessageResponse{Error: ReceiveMessageTimeout{QueueUrl: queueUrl, TimeoutSec: timeout}}
+	return QueueMessageResponse{Error: ReceiveMessageTimeout{QueueUrl: queueURL, TimeoutSec: timeout}}
 }
 
-// Create a new SQS client
+// NewSqsClient creates a new SQS client.
 func NewSqsClient(t *testing.T, region string) *sqs.SQS {
 	client, err := NewSqsClientE(t, region)
 	if err != nil {
@@ -185,7 +186,7 @@ func NewSqsClient(t *testing.T, region string) *sqs.SQS {
 	return client
 }
 
-// Create a new SQS client
+// NewSqsClientE creates a new SQS client.
 func NewSqsClientE(t *testing.T, region string) (*sqs.SQS, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
@@ -195,6 +196,7 @@ func NewSqsClientE(t *testing.T, region string) (*sqs.SQS, error) {
 	return sqs.New(sess), nil
 }
 
+// ReceiveMessageTimeout is an error that occurs if receiving a message times out.
 type ReceiveMessageTimeout struct {
 	QueueUrl   string
 	TimeoutSec int

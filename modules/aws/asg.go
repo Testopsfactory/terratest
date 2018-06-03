@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
-// Get the IDs of EC2 Instances in the given ASG
+// GetInstanceIdsForAsg gets the IDs of EC2 Instances in the given ASG.
 func GetInstanceIdsForAsg(t *testing.T, asgName string, awsRegion string) []string {
 	ids, err := GetInstanceIdsForAsgE(t, asgName, awsRegion)
 	if err != nil {
@@ -16,7 +16,7 @@ func GetInstanceIdsForAsg(t *testing.T, asgName string, awsRegion string) []stri
 	return ids
 }
 
-// Get the IDs of EC2 Instances in the given ASG
+// GetInstanceIdsForAsgE gets the IDs of EC2 Instances in the given ASG.
 func GetInstanceIdsForAsgE(t *testing.T, asgName string, awsRegion string) ([]string, error) {
 	asgClient, err := NewAsgClientE(t, awsRegion)
 	if err != nil {
@@ -29,17 +29,17 @@ func GetInstanceIdsForAsgE(t *testing.T, asgName string, awsRegion string) ([]st
 		return nil, err
 	}
 
-	instanceIds := []string{}
+	instanceIDs := []string{}
 	for _, asg := range output.AutoScalingGroups {
 		for _, instance := range asg.Instances {
-			instanceIds = append(instanceIds, aws.StringValue(instance.InstanceId))
+			instanceIDs = append(instanceIDs, aws.StringValue(instance.InstanceId))
 		}
 	}
 
-	return instanceIds, nil
+	return instanceIDs, nil
 }
 
-// Create an Auto Scaling Group client
+// NewAsgClient creates an Auto Scaling Group client.
 func NewAsgClient(t *testing.T, region string) *autoscaling.AutoScaling {
 	client, err := NewAsgClientE(t, region)
 	if err != nil {
@@ -48,7 +48,7 @@ func NewAsgClient(t *testing.T, region string) *autoscaling.AutoScaling {
 	return client
 }
 
-// Create an Auto Scaling Group client
+// NewAsgClientE creates an Auto Scaling Group client.
 func NewAsgClientE(t *testing.T, region string) (*autoscaling.AutoScaling, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {

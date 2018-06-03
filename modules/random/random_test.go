@@ -59,10 +59,10 @@ func TestUniqueId(t *testing.T) {
 	previouslySeen := map[string]bool{}
 
 	for i := 0; i < 100; i++ {
-		uniqueId := UniqueId()
-		assert.Len(t, uniqueId, 6)
-		assert.NotContains(t, previouslySeen, uniqueId)
+		uniqueID := UniqueId()
+		assert.Len(t, uniqueID, 6)
+		assert.NotContains(t, previouslySeen, uniqueID)
 
-		previouslySeen[uniqueId] = true
+		previouslySeen[uniqueID] = true
 	}
 }

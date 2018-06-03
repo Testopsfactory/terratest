@@ -15,15 +15,15 @@ func TestSqsQueueMethods(t *testing.T) {
 	t.Parallel()
 
 	region := GetRandomRegion(t, nil, nil)
-	uniqueId := random.UniqueId()
-	namePrefix := fmt.Sprintf("sqs-queue-test-%s", uniqueId)
+	uniqueID := random.UniqueId()
+	namePrefix := fmt.Sprintf("sqs-queue-test-%s", uniqueID)
 
 	url := CreateRandomQueue(t, region, namePrefix)
 	defer deleteQueue(t, region, url)
 
 	assert.True(t, queueExists(t, region, url))
 
-	message := fmt.Sprintf("test-message-%s", uniqueId)
+	message := fmt.Sprintf("test-message-%s", uniqueID)
 	timeoutSec := 20
 
 	SendMessageToQueue(t, region, url, message)
