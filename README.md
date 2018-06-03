@@ -110,6 +110,7 @@ modules:
 1.  [Consul](https://github.com/hashicorp/terraform-aws-consul)
 1.  [Vault](https://github.com/hashicorp/terraform-aws-vault)
 1.  [Nomad](https://github.com/hashicorp/terraform-aws-nomad)
+1.  [Couchbase](https://github.com/gruntwork-io/terraform-aws-couchbase/)
 
 
 
