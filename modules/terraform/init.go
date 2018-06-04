@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -15,5 +16,6 @@ func Init(t *testing.T, options *Options) string {
 
 // InitE calls terraform init and return stdout/stderr.
 func InitE(t *testing.T, options *Options) (string, error) {
-	return RunTerraformCommandE(t, options, "init")
+	upgradeFlag := fmt.Sprintf("-upgrade=%t", options.Upgrade)
+	return RunTerraformCommandE(t, options, "init", upgradeFlag)
 }
