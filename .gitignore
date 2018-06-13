@@ -6,6 +6,7 @@ terraform.tfvars
 .terragrunt
 
 .idea
+*.iml
 vendor
 
 # Folder used to store temporary test data by Terratest

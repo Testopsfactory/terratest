@@ -35,6 +35,7 @@ type SshSession struct {
 	Client   *ssh.Client
 	Session  *ssh.Session
 	JumpHost *JumpHostSession
+	Input    *func(io.WriteCloser)
 }
 
 // Cleanup cleans up an existing SSH session.

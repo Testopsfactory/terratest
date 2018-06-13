@@ -6,6 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"fmt"
+	"io"
+	"os"
+	"path"
+	"strconv"
+
 	"golang.org/x/crypto/ssh"
 )
 
@@ -14,6 +20,52 @@ type Host struct {
 	Hostname    string
 	SshUserName string
 	SshKeyPair  *KeyPair
+}
+
+// ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
+func ScpFileTo(t *testing.T, host Host, mode os.FileMode, remotePath, contents string) {
+	err := ScpFileToE(t, host, mode, remotePath, contents)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// ScpFileToE uploads the contents using SCP to the given host and return an error if the process fails.
+func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents string) error {
+	authMethods, err := createAuthMethodsForHost(host)
+	if err != nil {
+		return err
+	}
+	file := path.Base(remotePath)
+	dir := path.Dir(remotePath)
+
+	hostOptions := SshConnectionOptions{
+		Username:    host.SshUserName,
+		Address:     host.Hostname,
+		Port:        22,
+		Command:     "/usr/bin/scp -t " + dir,
+		AuthMethods: authMethods,
+	}
+
+	scp := func(w io.WriteCloser) {
+		// https://web.archive.org/web/20170215184048/https://blogs.oracle.com/janp/entry/how_the_scp_protocol_works
+		defer w.Close()
+		octalMode := "0" + strconv.FormatInt(int64(os.FileMode(mode)), 8)
+		fmt.Fprintln(w, "C"+octalMode, len(contents), file)
+		fmt.Fprint(w, contents)
+		fmt.Fprint(w, "\x00")
+	}
+
+	sshSession := &SshSession{
+		Options:  &hostOptions,
+		JumpHost: &JumpHostSession{},
+		Input:    &scp,
+	}
+
+	defer sshSession.Cleanup(t)
+
+	_, err = runSSHCommand(sshSession)
+	return err
 }
 
 // CheckSshConnection checks that you can connect via SSH to the given host and fail the test if the connection fails.
@@ -122,6 +174,14 @@ func runSSHCommand(sshSession *SshSession) (string, error) {
 
 	if err := setUpSSHSession(sshSession); err != nil {
 		return "", err
+	}
+
+	if sshSession.Input != nil {
+		w, err := sshSession.Session.StdinPipe()
+		if err != nil {
+			return "", err
+		}
+		go (*sshSession.Input)(w)
 	}
 
 	bytes, err := sshSession.Session.CombinedOutput(sshSession.Options.Command)
