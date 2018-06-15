@@ -9,8 +9,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"strconv"
+
+	"path/filepath"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -36,8 +37,7 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 	if err != nil {
 		return err
 	}
-	file := path.Base(remotePath)
-	dir := path.Dir(remotePath)
+	dir, file := filepath.Split(remotePath)
 
 	hostOptions := SshConnectionOptions{
 		Username:    host.SshUserName,
@@ -47,14 +47,7 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 		AuthMethods: authMethods,
 	}
 
-	scp := func(w io.WriteCloser) {
-		// https://web.archive.org/web/20170215184048/https://blogs.oracle.com/janp/entry/how_the_scp_protocol_works
-		defer w.Close()
-		octalMode := "0" + strconv.FormatInt(int64(os.FileMode(mode)), 8)
-		fmt.Fprintln(w, "C"+octalMode, len(contents), file)
-		fmt.Fprint(w, contents)
-		fmt.Fprint(w, "\x00")
-	}
+	scp := sendScpCommandsToCopyFile(mode, file, contents)
 
 	sshSession := &SshSession{
 		Options:  &hostOptions,
@@ -181,7 +174,10 @@ func runSSHCommand(sshSession *SshSession) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		go (*sshSession.Input)(w)
+		go func() {
+			defer w.Close()
+			(*sshSession.Input)(w)
+		}()
 	}
 
 	bytes, err := sshSession.Session.CombinedOutput(sshSession.Options.Command)
@@ -274,4 +270,23 @@ func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 	}
 
 	return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
+}
+
+// sendScpCommandsToCopyFile returns a function which will send commands to the SCP binary to output a file on the remote machine.
+// A full explanation of the SCP protocol can be found at
+// https://web.archive.org/web/20170215184048/https://blogs.oracle.com/janp/entry/how_the_scp_protocol_works
+func sendScpCommandsToCopyFile(mode os.FileMode, fileName, contents string) func(io.WriteCloser) {
+	return func(input io.WriteCloser) {
+
+		octalMode := "0" + strconv.FormatInt(int64(mode), 8)
+
+		// Create a file at <filename> with Unix permissions set to <octalMost> and the file will be <len(content)> bytes long.
+		fmt.Fprintln(input, "C"+octalMode, len(contents), fileName)
+
+		// Actually send the file
+		fmt.Fprint(input, contents)
+
+		// End of transfer
+		fmt.Fprint(input, "\x00")
+	}
 }
