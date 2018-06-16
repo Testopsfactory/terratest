@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"os"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
@@ -52,6 +54,7 @@ func TestTerraformSshExample(t *testing.T) {
 
 		testSSHToPublicHost(t, terraformOptions, keyPair)
 		testSSHToPrivateHost(t, terraformOptions, keyPair)
+		testSCPToPublicHost(t, terraformOptions, keyPair)
 	})
 
 }
@@ -155,6 +158,47 @@ func testSSHToPrivateHost(t *testing.T, terraformOptions *terraform.Options, key
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		actualText, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, command)
+
+		if err != nil {
+			return "", err
+		}
+
+		if strings.TrimSpace(actualText) != expectedText {
+			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)
+		}
+
+		return "", nil
+	})
+}
+
+func testSCPToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+	// Run `terraform output` to get the value of an output variable
+	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
+
+	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
+	// as we know the Instance is running an Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: "ubuntu",
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 10
+	timeBetweenRetries := 1 * time.Second
+	description := fmt.Sprintf("SCP file to public host %s", publicInstanceIP)
+
+	// Run a simple echo command on the server
+	expectedText := "Hello, World"
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		err := ssh.ScpFileToE(t, publicHost, os.FileMode(0644), "/tmp/test.txt", expectedText)
+		if err != nil {
+			return "", err
+		}
+
+		actualText, err := ssh.CheckSshCommandE(t, publicHost, "cat /tmp/test.txt")
 
 		if err != nil {
 			return "", err

@@ -6,6 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"fmt"
+	"io"
+	"os"
+	"strconv"
+
+	"path/filepath"
+
 	"golang.org/x/crypto/ssh"
 )
 
@@ -14,6 +21,44 @@ type Host struct {
 	Hostname    string
 	SshUserName string
 	SshKeyPair  *KeyPair
+}
+
+// ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
+func ScpFileTo(t *testing.T, host Host, mode os.FileMode, remotePath, contents string) {
+	err := ScpFileToE(t, host, mode, remotePath, contents)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// ScpFileToE uploads the contents using SCP to the given host and return an error if the process fails.
+func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents string) error {
+	authMethods, err := createAuthMethodsForHost(host)
+	if err != nil {
+		return err
+	}
+	dir, file := filepath.Split(remotePath)
+
+	hostOptions := SshConnectionOptions{
+		Username:    host.SshUserName,
+		Address:     host.Hostname,
+		Port:        22,
+		Command:     "/usr/bin/scp -t " + dir,
+		AuthMethods: authMethods,
+	}
+
+	scp := sendScpCommandsToCopyFile(mode, file, contents)
+
+	sshSession := &SshSession{
+		Options:  &hostOptions,
+		JumpHost: &JumpHostSession{},
+		Input:    &scp,
+	}
+
+	defer sshSession.Cleanup(t)
+
+	_, err = runSSHCommand(sshSession)
+	return err
 }
 
 // CheckSshConnection checks that you can connect via SSH to the given host and fail the test if the connection fails.
@@ -124,6 +169,17 @@ func runSSHCommand(sshSession *SshSession) (string, error) {
 		return "", err
 	}
 
+	if sshSession.Input != nil {
+		w, err := sshSession.Session.StdinPipe()
+		if err != nil {
+			return "", err
+		}
+		go func() {
+			defer w.Close()
+			(*sshSession.Input)(w)
+		}()
+	}
+
 	bytes, err := sshSession.Session.CombinedOutput(sshSession.Options.Command)
 	if err != nil {
 		return "", err
@@ -214,4 +270,23 @@ func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 	}
 
 	return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
+}
+
+// sendScpCommandsToCopyFile returns a function which will send commands to the SCP binary to output a file on the remote machine.
+// A full explanation of the SCP protocol can be found at
+// https://web.archive.org/web/20170215184048/https://blogs.oracle.com/janp/entry/how_the_scp_protocol_works
+func sendScpCommandsToCopyFile(mode os.FileMode, fileName, contents string) func(io.WriteCloser) {
+	return func(input io.WriteCloser) {
+
+		octalMode := "0" + strconv.FormatInt(int64(mode), 8)
+
+		// Create a file at <filename> with Unix permissions set to <octalMost> and the file will be <len(content)> bytes long.
+		fmt.Fprintln(input, "C"+octalMode, len(contents), fileName)
+
+		// Actually send the file
+		fmt.Fprint(input, contents)
+
+		// End of transfer
+		fmt.Fprint(input, "\x00")
+	}
 }
