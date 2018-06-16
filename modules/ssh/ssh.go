@@ -13,6 +13,7 @@ import (
 
 	"path/filepath"
 
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -57,7 +58,7 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 
 	defer sshSession.Cleanup(t)
 
-	_, err = runSSHCommand(sshSession)
+	_, err = runSSHCommand(t, sshSession)
 	return err
 }
 
@@ -106,7 +107,7 @@ func CheckSshCommandE(t *testing.T, host Host, command string) (string, error) {
 
 	defer sshSession.Cleanup(t)
 
-	return runSSHCommand(sshSession)
+	return runSSHCommand(t, sshSession)
 }
 
 // CheckPrivateSshConnection attempts to connect to privateHost (which is not addressable from the Internet) via a
@@ -157,10 +158,11 @@ func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host,
 
 	defer sshSession.Cleanup(t)
 
-	return runSSHCommand(sshSession)
+	return runSSHCommand(t, sshSession)
 }
 
-func runSSHCommand(sshSession *SshSession) (string, error) {
+func runSSHCommand(t *testing.T, sshSession *SshSession) (string, error) {
+	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
 	if err := setUpSSHClient(sshSession); err != nil {
 		return "", err
 	}
