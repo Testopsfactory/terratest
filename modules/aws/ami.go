@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // These are commonly used AMI account IDs.
@@ -16,6 +17,44 @@ const (
 	CentOsAccountId    = "679593333241"
 	AmazonAccountId    = "amazon"
 )
+
+// GetEbsSnapshotsForAmi retrieves the EBS snapshots which back the given AMI
+func GetEbsSnapshotsForAmi(t *testing.T, region string, ami string) []string {
+	snapshots, err := GetEbsSnapshotsForAmiE(t, region, ami)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return snapshots
+}
+
+// GetEbsSnapshotsForAmi retrieves the EBS snapshots which back the given AMI
+func GetEbsSnapshotsForAmiE(t *testing.T, region string, ami string) ([]string, error) {
+	logger.Logf(t, "Retrieving EBS snapshots backing AMI %s", ami)
+	ec2Client, err := NewEc2ClientE(t, region)
+	if err != nil {
+		return []string{}, err
+	}
+
+	images, err := ec2Client.DescribeImages(&ec2.DescribeImagesInput{
+		ImageIds: []*string{
+			aws.String(ami),
+		},
+	})
+	if err != nil {
+		return []string{}, err
+	}
+
+	var snapshots []string
+	for _, image := range images.Images {
+		for _, mapping := range image.BlockDeviceMappings {
+			if mapping.Ebs != nil && mapping.Ebs.SnapshotId != nil {
+				snapshots = append(snapshots, aws.StringValue(mapping.Ebs.SnapshotId))
+			}
+		}
+	}
+
+	return snapshots, err
+}
 
 // GetMostRecentAmiId gets the ID of the most recent AMI in the given region that has the given owner and matches the given filters. Each
 // filter should correspond to the name and values of a filter supported by DescribeImagesInput:
