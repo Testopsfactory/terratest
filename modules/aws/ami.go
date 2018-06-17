@@ -18,6 +18,36 @@ const (
 	AmazonAccountId    = "amazon"
 )
 
+// DeleteAmiAndAllSnapshots will delete the given AMI along with all EBS snapshots that backed that AMI
+func DeleteAmiAndAllSnapshots(t *testing.T, region string, ami string) {
+	err := DeleteAmiAndAllSnapshotsE(t, region, ami)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// DeleteAmiAndAllSnapshots will delete the given AMI along with all EBS snapshots that backed that AMI
+func DeleteAmiAndAllSnapshotsE(t *testing.T, region string, ami string) error {
+	snapshots, err := GetEbsSnapshotsForAmiE(t, region, ami)
+	if err != nil {
+		return err
+	}
+
+	err = DeleteAmiE(t, region, ami)
+	if err != nil {
+		return err
+	}
+
+	for _, snapshot := range snapshots {
+		err = DeleteEbsSnapshotE(t, region, snapshot)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // GetEbsSnapshotsForAmi retrieves the EBS snapshots which back the given AMI
 func GetEbsSnapshotsForAmi(t *testing.T, region string, ami string) []string {
 	snapshots, err := GetEbsSnapshotsForAmiE(t, region, ami)
@@ -32,7 +62,7 @@ func GetEbsSnapshotsForAmiE(t *testing.T, region string, ami string) ([]string, 
 	logger.Logf(t, "Retrieving EBS snapshots backing AMI %s", ami)
 	ec2Client, err := NewEc2ClientE(t, region)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	images, err := ec2Client.DescribeImages(&ec2.DescribeImagesInput{
@@ -41,7 +71,7 @@ func GetEbsSnapshotsForAmiE(t *testing.T, region string, ami string) ([]string, 
 		},
 	})
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var snapshots []string
