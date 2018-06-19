@@ -45,8 +45,14 @@ func TestTerraformAwsExample(t *testing.T) {
 	// Run `terraform output` to get the value of an output variable
 	instanceID := terraform.Output(t, terraformOptions, "instance_id")
 
+	aws.AddTagsToResource(t, awsRegion, instanceID, map[string]string{"testing": "testing-tag-value"})
+
 	// Look up the tags for the given Instance ID
 	instanceTags := aws.GetTagsForEc2Instance(t, awsRegion, instanceID)
+
+	testingTag, containsTestingTag := instanceTags["testing"]
+	assert.True(t, containsTestingTag)
+	assert.Equal(t, "testing-tag-value", testingTag)
 
 	// Verify that our expected name tag is one of the tags
 	nameTag, containsNameTag := instanceTags["Name"]

@@ -164,6 +164,35 @@ func DeleteAmiE(t *testing.T, region string, imageID string) error {
 	return err
 }
 
+func AddTagsToResource(t *testing.T, region string, resource string, tags map[string]string) {
+	err := AddTagsToResourceE(t, region, resource, tags)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func AddTagsToResourceE(t *testing.T, region string, resource string, tags map[string]string) error {
+	client, err := NewEc2ClientE(t, region)
+	if err != nil {
+		return err
+	}
+
+	var awsTags []*ec2.Tag
+	for key, value := range tags {
+		awsTags = append(awsTags, &ec2.Tag{
+			Key: &key,
+			Value: &value,
+		})
+	}
+
+	_, err = client.CreateTags(&ec2.CreateTagsInput{
+		Resources: []*string{aws.String(resource)},
+		Tags: awsTags,
+	})
+
+	return err
+}
+
 // TerminateInstance terminates the EC2 instance with the given ID in the given region.
 func TerminateInstance(t *testing.T, region string, instanceID string) {
 	err := TerminateInstanceE(t, region, instanceID)
