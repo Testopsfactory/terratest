@@ -164,6 +164,7 @@ func DeleteAmiE(t *testing.T, region string, imageID string) error {
 	return err
 }
 
+// AddTagsToResource adds the tags to the given taggable AWS resource such as EC2, AMI or VPC.
 func AddTagsToResource(t *testing.T, region string, resource string, tags map[string]string) {
 	err := AddTagsToResourceE(t, region, resource, tags)
 	if err != nil {
@@ -171,6 +172,7 @@ func AddTagsToResource(t *testing.T, region string, resource string, tags map[st
 	}
 }
 
+// AddTagsToResourceE adds the tags to the given taggable AWS resource such as EC2, AMI or VPC.
 func AddTagsToResourceE(t *testing.T, region string, resource string, tags map[string]string) error {
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
@@ -180,8 +182,8 @@ func AddTagsToResourceE(t *testing.T, region string, resource string, tags map[s
 	var awsTags []*ec2.Tag
 	for key, value := range tags {
 		awsTags = append(awsTags, &ec2.Tag{
-			Key: &key,
-			Value: &value,
+			Key: aws.String(key),
+			Value: aws.String(value),
 		})
 	}
 
