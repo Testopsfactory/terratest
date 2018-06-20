@@ -21,6 +21,8 @@ func TestTerraformBasicExample(t *testing.T) {
 		Vars: map[string]interface{}{
 			"example": expectedText,
 		},
+
+		NoColor: true,
 	}
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created

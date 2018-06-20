@@ -11,4 +11,5 @@ type Options struct {
 	MaxRetries               int                    // Maximum number of times to retry errors matching RetryableTerraformErrors
 	TimeBetweenRetries       time.Duration          // The amount of time to wait between retries
 	Upgrade                  bool                   // Whether the -upgrade flag of the terraform init command should be set to true or not
+	NoColor                  bool                   // Whether the -no-color flag will be set for any Terraform command or not
 }

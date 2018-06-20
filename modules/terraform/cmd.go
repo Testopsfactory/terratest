@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/shell"
@@ -21,6 +22,10 @@ func RunTerraformCommand(t *testing.T, options *Options, args ...string) string 
 
 // RunTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
 func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (string, error) {
+	if options.NoColor && !collections.ListContains(args, "-no-color") {
+		args = append(args, "-no-color")
+	}
+
 	description := fmt.Sprintf("Running terraform %v", args)
 	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		cmd := shell.Command{
