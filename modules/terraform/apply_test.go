@@ -17,11 +17,15 @@ func TestApplyNoError(t *testing.T) {
 
 	options := &Options{
 		TerraformDir: testFolder,
+		NoColor: true,
 	}
 
 	out := InitAndApply(t, options)
 
 	assert.Contains(t, out, "Hello, World")
+
+	// Check that NoColor correctly doesn't output the colour escape codes which look like [0m,[1m or [32m
+	assert.NotRegexp(t, `\[\d*m`, out, "Output should not contain color escape codes")
 }
 
 func TestApplyWithErrorNoRetry(t *testing.T) {
