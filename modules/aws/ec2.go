@@ -182,14 +182,14 @@ func AddTagsToResourceE(t *testing.T, region string, resource string, tags map[s
 	var awsTags []*ec2.Tag
 	for key, value := range tags {
 		awsTags = append(awsTags, &ec2.Tag{
-			Key: aws.String(key),
+			Key:   aws.String(key),
 			Value: aws.String(value),
 		})
 	}
 
 	_, err = client.CreateTags(&ec2.CreateTagsInput{
 		Resources: []*string{aws.String(resource)},
-		Tags: awsTags,
+		Tags:      awsTags,
 	})
 
 	return err
