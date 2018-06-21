@@ -17,7 +17,7 @@ func TestApplyNoError(t *testing.T) {
 
 	options := &Options{
 		TerraformDir: testFolder,
-		NoColor: true,
+		NoColor:      true,
 	}
 
 	out := InitAndApply(t, options)
