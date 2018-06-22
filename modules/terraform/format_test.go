@@ -14,7 +14,7 @@ func TestFormatTerraformVarsAsArgs(t *testing.T) {
 		vars     map[string]interface{}
 		expected []string
 	}{
-		{map[string]interface{}{}, []string{}},
+		{map[string]interface{}{}, nil},
 		{map[string]interface{}{"foo": "bar"}, []string{"-var", "foo=\"bar\""}},
 		{map[string]interface{}{"foo": 123}, []string{"-var", "foo=\"123\""}},
 		{map[string]interface{}{"foo": true}, []string{"-var", "foo=\"1\""}},
