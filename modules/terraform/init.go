@@ -16,6 +16,7 @@ func Init(t *testing.T, options *Options) string {
 
 // InitE calls terraform init and return stdout/stderr.
 func InitE(t *testing.T, options *Options) (string, error) {
-	upgradeFlag := fmt.Sprintf("-upgrade=%t", options.Upgrade)
-	return RunTerraformCommandE(t, options, "init", upgradeFlag)
+	args := []string{"init", fmt.Sprintf("-upgrade=%t", options.Upgrade)}
+	args = append(args, FormatTerraformBackendConfigAsArgs(options.BackendConfig)...)
+	return RunTerraformCommandE(t, options, args...)
 }

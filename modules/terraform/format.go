@@ -16,12 +16,23 @@ func FormatArgs(customVars map[string]interface{}, args ...string) []string {
 // FormatTerraformVarsAsArgs formats the given variables as command-line args for Terraform (e.g. of the format
 // -var key=value).
 func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
-	args := []string{}
+	return formatTerraformArgs(vars, "-var")
+}
+
+// FormatTerraformBackendConfigAsArgs formats the given variables as backend config args for Terraform (e.g. of the
+// format -backend-config key=value).
+func FormatTerraformBackendConfigAsArgs(vars map[string]interface{}) []string {
+	return formatTerraformArgs(vars, "-backend-config")
+}
+
+// Format the given vars into 'Terraform' format, with each var being prefixed with the given prefix.
+func formatTerraformArgs(vars map[string]interface{}, prefix string) []string {
+	var args []string
 
 	for key, value := range vars {
 		hclString := toHclString(value)
 		argValue := fmt.Sprintf("%s=%s", key, hclString)
-		args = append(args, "-var", argValue)
+		args = append(args, prefix, argValue)
 	}
 
 	return args
