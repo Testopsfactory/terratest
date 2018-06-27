@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -40,8 +41,28 @@ func Apply(t *testing.T, options *Options) string {
 	return out
 }
 
+// ApplyAll runs terragrunt apply with the given options and return stdout/stderr. Note that this method does NOT call destroy and
+// assumes the caller is responsible for cleaning up any resources created by running apply.
+func ApplyAll(t *testing.T, options *Options) string {
+	out, err := ApplyAllE(t, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
 // ApplyE runs terraform apply with the given options and return stdout/stderr. Note that this method does NOT call destroy and
 // assumes the caller is responsible for cleaning up any resources created by running apply.
 func ApplyE(t *testing.T, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, FormatArgs(options, "apply", "-input=false", "-lock=false", "-auto-approve")...)
+}
+
+// ApplyAllE runs terragrunt apply-all with the given options and return stdout/stderr. Note that this method does NOT call destroy and
+// assumes the caller is responsible for cleaning up any resources created by running apply.
+func ApplyAllE(t *testing.T, options *Options) (string, error) {
+	if options.TerraformBinary != "terragrunt" {
+		return "", errors.New("terragrunt must be set as TerraformBinary to use this method")
+	}
+
+	return RunTerraformCommandE(t, options, FormatArgs(options.Vars, "apply-all", "-input=false", "-lock=false", "-auto-approve")...)
 }

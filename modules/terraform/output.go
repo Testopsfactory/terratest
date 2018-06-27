@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -16,9 +17,38 @@ func Output(t *testing.T, options *Options, key string) string {
 	return out
 }
 
+// OutputAll calls terragrunt output for the given variable and return its value.
+func OutputAll(t *testing.T, options *Options, key string) string {
+	out, err := OutputAllE(t, options, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
 // OutputE calls terraform output for the given variable and return its value.
 func OutputE(t *testing.T, options *Options, key string) (string, error) {
+	if options.TerraformBinary == "terragrunt" {
+		options.NoStderr = true
+	}
+
 	output, err := RunTerraformCommandE(t, options, "output", "-no-color", key)
+
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(output), nil
+}
+
+// OutputAllE calls terragrunt output for the given variable and return its value.
+func OutputAllE(t *testing.T, options *Options, key string) (string, error) {
+	if options.TerraformBinary != "terragrunt" {
+		return "", errors.New("terragrunt must be set as TerraformBinary to use this method")
+	}
+
+	options.NoStderr = true
+	output, err := RunTerraformCommandE(t, options, "output-all", "-no-color", key)
 
 	if err != nil {
 		return "", err
