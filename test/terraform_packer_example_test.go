@@ -161,7 +161,7 @@ func validateInstanceRunningWebServer(t *testing.T, workingDir string) {
 	instanceText, _ := terraformOptions.Vars["instance_text"].(string)
 
 	// It can take a minute or so for the Instance to boot up, so retry a few times
-	maxRetries := 15
+	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
 
 	// Verify that we get back a 200 OK with the expected instanceText

@@ -103,7 +103,7 @@ func testSSHToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyP
 	}
 
 	// It can take a minute or so for the Instance to boot up, so retry a few times
-	maxRetries := 15
+	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
 	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
 
@@ -147,7 +147,7 @@ func testSSHToPrivateHost(t *testing.T, terraformOptions *terraform.Options, key
 	}
 
 	// It can take a minute or so for the Instance to boot up, so retry a few times
-	maxRetries := 15
+	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
 	description := fmt.Sprintf("SSH to private host %s via public host %s", publicInstanceIP, privateInstanceIP)
 
