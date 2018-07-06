@@ -33,7 +33,8 @@ func TestTerraformRedeployExample(t *testing.T) {
 
 	// At the end of the test, clean up all the resources we created
 	defer test_structure.RunTestStage(t, "teardown", func() {
-		undeployUsingTerraform(t, workingDir)
+		terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, terraformOptions)
 	})
 
 	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
