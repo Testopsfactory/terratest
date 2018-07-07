@@ -153,7 +153,7 @@ That means that most of the tests are going to be integration tests that deploy 
 the tests effective at catching real-world bugs, but it also makes them much slower and more brittle. In this section,
 we'll outline some best practices to minimize the downsides of this sort of testing.
 
-1.  [Test environment](#test-environment)
+1.  [Testing environment](#testing-environment)
 1.  [Namespacing](#namespacing)
 1.  [Cleanup](#cleanup)
 1.  [Timeouts and logging](#timeouts-and-logging)
