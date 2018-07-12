@@ -3,59 +3,13 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = [
-    "aws",
-    "aws/awserr",
-    "aws/awsutil",
-    "aws/client",
-    "aws/client/metadata",
-    "aws/corehandlers",
-    "aws/credentials",
-    "aws/credentials/ec2rolecreds",
-    "aws/credentials/endpointcreds",
-    "aws/credentials/stscreds",
-    "aws/csm",
-    "aws/defaults",
-    "aws/ec2metadata",
-    "aws/endpoints",
-    "aws/request",
-    "aws/session",
-    "aws/signer/v4",
-    "internal/sdkio",
-    "internal/sdkrand",
-    "internal/shareddefaults",
-    "private/protocol",
-    "private/protocol/ec2query",
-    "private/protocol/eventstream",
-    "private/protocol/eventstream/eventstreamapi",
-    "private/protocol/json/jsonutil",
-    "private/protocol/jsonrpc",
-    "private/protocol/query",
-    "private/protocol/query/queryutil",
-    "private/protocol/rest",
-    "private/protocol/restxml",
-    "private/protocol/xml/xmlutil",
-    "service/acm",
-    "service/autoscaling",
-    "service/cloudwatchlogs",
-    "service/ec2",
-    "service/iam",
-    "service/kms",
-    "service/s3",
-    "service/sns",
-    "service/sqs",
-    "service/sts"
-  ]
-  revision = "e79e9fd4ec11ccc242a472f980be78830f9eba80"
-  version = "v1.14.13"
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/sdkuri","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/eventstream","private/protocol/eventstream/eventstreamapi","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/acm","service/autoscaling","service/cloudwatchlogs","service/ec2","service/iam","service/kms","service/s3","service/s3/s3iface","service/s3/s3manager","service/sns","service/sqs","service/sts"]
+  revision = "9e9afa0895e9daff556cc18f90dc53eb91f41ffd"
+  version = "v1.14.26"
 
 [[projects]]
   name = "github.com/boombuler/barcode"
-  packages = [
-    ".",
-    "qr",
-    "utils"
-  ]
+  packages = [".","qr","utils"]
   revision = "3cfea5ab600ae37946be2b763b8ec2c1cf2d272d"
   version = "v1.0.0"
 
@@ -90,32 +44,20 @@
 
 [[projects]]
   name = "github.com/pquerna/otp"
-  packages = [
-    ".",
-    "hotp",
-    "totp"
-  ]
+  packages = [".","hotp","totp"]
   revision = "b7b89250c468c06871d3837bee02e2d5c155ae19"
   version = "v1.0.0"
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = ["assert","require"]
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = [
-    "curve25519",
-    "ed25519",
-    "ed25519/internal/edwards25519",
-    "internal/chacha20",
-    "internal/subtle",
-    "poly1305",
-    "ssh"
-  ]
+  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","internal/chacha20","internal/subtle","poly1305","ssh"]
   revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
@@ -127,6 +69,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3ef150e8e675e2696ca2487883e2861d3f59e2aad2173fcaa75bd4456c2c44e8"
+  inputs-digest = "2935fab23cebe180ad641694f9de5bf02acefc3fb3cedf23af1a2c1dd479915f"
   solver-name = "gps-cdcl"
   solver-version = 1

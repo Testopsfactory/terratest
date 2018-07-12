@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
@@ -101,7 +102,7 @@ func CreateS3Bucket(t *testing.T, region string, name string) {
 
 // CreateS3BucketE creates an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
 func CreateS3BucketE(t *testing.T, region string, name string) error {
-	logger.Logf(t, "Creating bucket %s in %s", region, name)
+	logger.Logf(t, "Creating bucket %s in %s", name, region)
 
 	s3Client, err := NewS3ClientE(t, region)
 	if err != nil {
@@ -156,28 +157,29 @@ func EmptyS3BucketE(t *testing.T, region string, name string) error {
 		return err
 	}
 
-	params := &s3.ListObjectsInput{
+	params := &s3.ListObjectVersionsInput{
 		Bucket: aws.String(name),
 	}
 
 	for {
 		// Requesting a batch of objects from s3 bucket
-		bucketObjects, err := s3Client.ListObjects(params)
+		bucketObjects, err := s3Client.ListObjectVersions(params)
 		if err != nil {
 			return err
 		}
 
 		//Checks if the bucket is already empty
-		if len((*bucketObjects).Contents) == 0 {
+		if len((*bucketObjects).Versions) == 0 {
 			logger.Logf(t, "Bucket %s is already empty", name)
 			return nil
 		}
 
 		//creating an array of pointers of ObjectIdentifier
 		objectsToDelete := make([]*s3.ObjectIdentifier, 0, 1000)
-		for _, object := range (*bucketObjects).Contents {
+		for _, object := range (*bucketObjects).Versions {
 			obj := s3.ObjectIdentifier{
-				Key: object.Key,
+				Key:       object.Key,
+				VersionId: object.VersionId,
 			}
 			objectsToDelete = append(objectsToDelete, &obj)
 		}
@@ -196,12 +198,14 @@ func EmptyS3BucketE(t *testing.T, region string, name string) error {
 		}
 
 		if *(*bucketObjects).IsTruncated { //if there are more objects in the bucket, IsTruncated = true
-			params.Marker = (*deleteParams).Delete.Objects[len((*deleteParams).Delete.Objects)-1].Key
-			logger.Logf(t,"Requesting next batch | %s", *(params.Marker))
+			// params.Marker = (*deleteParams).Delete.Objects[len((*deleteParams).Delete.Objects)-1].Key
+			params.KeyMarker = bucketObjects.NextKeyMarker
+			logger.Logf(t, "Requesting next batch | %s", *(params.KeyMarker))
 		} else { //if all objects in the bucket have been cleaned up.
 			break
 		}
 	}
+	logger.Logf(t, "Bucket %s is now empty", name)
 	return err
 }
 
@@ -244,4 +248,23 @@ func NewS3ClientE(t *testing.T, region string) (*s3.S3, error) {
 	}
 
 	return s3.New(sess), nil
+}
+
+// NewS3Uploader creates an S3 Uploader.
+func NewS3Uploader(t *testing.T, region string) *s3manager.Uploader {
+	uploader, err := NewS3UploaderE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return uploader
+}
+
+// NewS3UploaderE creates an S3 Uploader.
+func NewS3UploaderE(t *testing.T, region string) (*s3manager.Uploader, error) {
+	sess, err := NewAuthenticatedSession(region)
+	if err != nil {
+		return nil, err
+	}
+
+	return s3manager.NewUploader(sess), nil
 }
