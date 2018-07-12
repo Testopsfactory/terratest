@@ -139,6 +139,72 @@ func DeleteS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
+// EmptyS3BucketE removes the contents of an S3 bucket in the given region with the given name.
+func EmptyS3Bucket(t *testing.T, region string, name string) {
+	err := EmptyS3BucketE(t, region, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// EmptyS3BucketE removes the contents of an S3 bucket in the given region with the given name.
+func EmptyS3BucketE(t *testing.T, region string, name string) error {
+	logger.Logf(t, "Emptying bucket %s in %s", region, name)
+
+	s3Client, err := NewS3ClientE(t, region)
+	if err != nil {
+		return err
+	}
+
+	params := &s3.ListObjectsInput{
+		Bucket: aws.String(name),
+	}
+
+	for {
+		// Requesting a batch of objects from s3 bucket
+		bucketObjects, err := s3Client.ListObjects(params)
+		if err != nil {
+			return err
+		}
+
+		//Checks if the bucket is already empty
+		if len((*bucketObjects).Contents) == 0 {
+			logger.Logf(t, "Bucket %s is already empty", name)
+			return nil
+		}
+
+		//creating an array of pointers of ObjectIdentifier
+		objectsToDelete := make([]*s3.ObjectIdentifier, 0, 1000)
+		for _, object := range (*bucketObjects).Contents {
+			obj := s3.ObjectIdentifier{
+				Key: object.Key,
+			}
+			objectsToDelete = append(objectsToDelete, &obj)
+		}
+
+		//Creating JSON payload for bulk delete
+		deleteArray := s3.Delete{Objects: objectsToDelete}
+		deleteParams := &s3.DeleteObjectsInput{
+			Bucket: aws.String(name),
+			Delete: &deleteArray,
+		}
+
+		//Running the Bulk delete job (limit 1000)
+		_, err = s3Client.DeleteObjects(deleteParams)
+		if err != nil {
+			return err
+		}
+
+		if *(*bucketObjects).IsTruncated { //if there are more objects in the bucket, IsTruncated = true
+			params.Marker = (*deleteParams).Delete.Objects[len((*deleteParams).Delete.Objects)-1].Key
+			logger.Logf(t,"Requesting next batch | %s", *(params.Marker))
+		} else { //if all objects in the bucket have been cleaned up.
+			break
+		}
+	}
+	return err
+}
+
 // AssertS3BucketExists checks if the given S3 bucket exists in the given region and fail the test if it does not.
 func AssertS3BucketExists(t *testing.T, region string, name string) {
 	err := AssertS3BucketExistsE(t, region, name)
