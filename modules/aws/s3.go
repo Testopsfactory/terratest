@@ -150,7 +150,7 @@ func EmptyS3Bucket(t *testing.T, region string, name string) {
 
 // EmptyS3BucketE removes the contents of an S3 bucket in the given region with the given name.
 func EmptyS3BucketE(t *testing.T, region string, name string) error {
-	logger.Logf(t, "Emptying bucket %s in %s", region, name)
+	logger.Logf(t, "Emptying bucket %s in %s", name, region)
 
 	s3Client, err := NewS3ClientE(t, region)
 	if err != nil {
