@@ -15,6 +15,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 // Host is a host on AWS.
@@ -22,6 +23,7 @@ type Host struct {
 	Hostname    string
 	SshUserName string
 	SshKeyPair  *KeyPair
+	SshAgent    bool
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
@@ -266,12 +268,23 @@ func NoOpHostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) er
 }
 
 func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
-	signer, err := ssh.ParsePrivateKey([]byte(host.SshKeyPair.PrivateKey))
-	if err != nil {
-		return []ssh.AuthMethod{}, err
+	var methods []ssh.AuthMethod
+	var err error
+	if host.SshAgent {
+		socket := os.Getenv("SSH_AUTH_SOCK")
+		conn, errDial := net.Dial("unix", socket)
+		if errDial == nil {
+			agentClient := agent.NewClient(conn)
+			methods = append(methods, []ssh.AuthMethod{ssh.PublicKeysCallback(agentClient.Signers)}...)
+		}
 	}
-
-	return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
+	if host.SshKeyPair != nil {
+		signer, err := ssh.ParsePrivateKey([]byte(host.SshKeyPair.PrivateKey))
+		if err == nil {
+			methods = append(methods, []ssh.AuthMethod{ssh.PublicKeys(signer)}...)
+		}
+	}
+	return methods, err
 }
 
 // sendScpCommandsToCopyFile returns a function which will send commands to the SCP binary to output a file on the remote machine.
