@@ -35,7 +35,7 @@ also can help you test Packer templates, Docker images, and much more. I propose
 
 1. Move from Glide to Dep
 1. Move from CircleCI 1.0 to 2.0
-
+1. Add support for Google Cloud Platform
 
 
 
