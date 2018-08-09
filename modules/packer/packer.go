@@ -19,18 +19,18 @@ type Options struct {
 	Env      map[string]string // Custom environment variables to set when running Packer
 }
 
-// BuildAmi builds the given Packer template and return the generated AMI ID.
-func BuildAmi(t *testing.T, options *Options) string {
-	amiID, err := BuildAmiE(t, options)
+// BuildArtifact builds the given Packer template and return the generated Artifact ID.
+func BuildArtifact(t *testing.T, options *Options) string {
+	artifactID, err := BuildArtifactE(t, options)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return amiID
+	return artifactID
 }
 
-// BuildAmiE builds the given Packer template and return the generated AMI ID.
-func BuildAmiE(t *testing.T, options *Options) (string, error) {
-	logger.Logf(t, "Running Packer to generate AMI for template %s", options.Template)
+// BuildArtifactE builds the given Packer template and return the generated Artifact ID.
+func BuildArtifactE(t *testing.T, options *Options) (string, error) {
+	logger.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
 
 	cmd := shell.Command{
 		Command: "packer",
@@ -43,24 +43,41 @@ func BuildAmiE(t *testing.T, options *Options) (string, error) {
 		return "", err
 	}
 
-	return extractAMIID(output)
+	return extractArtifactID(output)
+}
+
+// BuildAmi builds the given Packer template and return the generated AMI ID.
+//
+// This function is deprecated.
+func BuildAmi(t *testing.T, options *Options) string {
+	return BuildArtifact(t, options)
+}
+
+// BuildAmiE builds the given Packer template and return the generated AMI ID.
+//
+// This function is deprecated.
+func BuildAmiE(t *testing.T, options *Options) (string, error) {
+	return BuildArtifactE(t, options)
 }
 
 // The Packer machine-readable log output should contain an entry of this format:
 //
-// <timestamp>,<builder>,artifact,<index>,id,<region>:<ami_id>
+// AWS: <timestamp>,<builder>,artifact,<index>,id,<region>:<image_id>
+// GCP: <timestamp>,<builder>,artifact,<index>,id,<image_id>
 //
 // For example:
 //
 // 1456332887,amazon-ebs,artifact,0,id,us-east-1:ami-b481b3de
-func extractAMIID(packerLogOutput string) (string, error) {
-	re := regexp.MustCompile(`.+artifact,\d+?,id,.+?:(.+)`)
+// 1533742764,googlecompute,artifact,0,id,terratest-packer-example-2018-08-08t15-35-19z
+//
+func extractArtifactID(packerLogOutput string) (string, error) {
+	re := regexp.MustCompile(`.+artifact,\d+?,id,(?:.+?:|)(.+)`)
 	matches := re.FindStringSubmatch(packerLogOutput)
 
 	if len(matches) == 2 {
 		return matches[1], nil
 	}
-	return "", errors.New("Could not find AMI ID pattern in Packer output")
+	return "", errors.New("Could not find Artifact ID pattern in Packer output")
 }
 
 // Convert the inputs to a format palatable to packer. The build command should have the format:

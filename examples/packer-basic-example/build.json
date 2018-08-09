@@ -1,13 +1,16 @@
 {
+  "min_packer_version": "1.0.4",
   "variables": {
-    "aws_region": "us-east-1"
+    "aws_region": "us-east-1",
+    "gcp_project_id": "",
+    "gcp_zone": "us-central1-a"
   },
   "builders": [{
+    "type": "amazon-ebs",
     "ami_name": "terratest-packer-example-{{isotime | clean_ami_name}}",
     "ami_description": "An example of how to create a custom AMI on top of Ubuntu",
     "instance_type": "t2.micro",
     "region": "{{user `aws_region`}}",
-    "type": "amazon-ebs",
     "source_ami_filter": {
       "filters": {
         "virtualization-type": "hvm",
@@ -21,6 +24,14 @@
     },
     "ssh_username": "ubuntu",
     "encrypt_boot": false
+  }, {
+    "type": "googlecompute",
+    "image_name": "terratest-packer-example-{{isotime | clean_image_name}}",
+    "image_family": "terratest",
+    "project_id": "{{user `gcp_project_id`}}",
+    "source_image_family": "ubuntu-1604-lts",
+    "zone": "{{user `gcp_zone`}}",
+    "ssh_username": "ubuntu"
   }],
   "provisioners": [{
     "type": "shell",
