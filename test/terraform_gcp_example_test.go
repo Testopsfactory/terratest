@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/gcp"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -16,8 +17,7 @@ var projectId = os.Getenv("GOOGLE_CLOUD_PROJECT_ID")
 func TestTerraformGcpExample(t *testing.T) {
 	t.Parallel()
 
-	// Give this EC2 Instance a unique ID for a name tag so we can distinguish it from any other EC2 Instance running
-	// in your AWS account
+	// Give this bucket a unique name so we can distinguish it from any other bucket in your GCP account
 	expectedName := fmt.Sprintf("terratest-gcp-example-%s", strings.ToLower(random.UniqueId()))
 
 	terraformOptions := &terraform.Options{
@@ -44,4 +44,7 @@ func TestTerraformGcpExample(t *testing.T) {
 
 	// Verify that our expected name tag is one of the tags
 	assert.Equal(t, expectedURL, bucketURL)
+
+	// Verify that the Storage Bucket exists
+	gcp.AssertStorageBucketExists(t, expectedName)
 }
