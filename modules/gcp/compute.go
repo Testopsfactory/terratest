@@ -40,7 +40,7 @@ func DeleteImageE(t *testing.T, projectID string, imageID string) error {
 	return err
 }
 
-// NewComputeService creates a Compute client.
+// NewComputeService creates a new Compute service.
 func NewComputeService(t *testing.T) *compute.Service {
 	client, err := NewComputeServiceE(t)
 	if err != nil {
@@ -49,7 +49,7 @@ func NewComputeService(t *testing.T) *compute.Service {
 	return client
 }
 
-// NewComputeServiceE creates a Compute client.
+// NewComputeServiceE creates a new Compute service.
 func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	ctx := context.Background()
 
