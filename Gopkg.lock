@@ -276,9 +276,10 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:03aa096e6f13f0e835df75b11983b8267aff3d1384f521ba57cdbc030f32aeeb"
+  digest = "1:ae916a19b847a25ad0420bab8383da2012aba97f8d0a52920bb375c479603101"
   name = "google.golang.org/api"
   packages = [
+    "compute/v1",
     "gensupport",
     "googleapi",
     "googleapi/internal/uritemplates",
@@ -385,6 +386,8 @@
     "github.com/stretchr/testify/require",
     "golang.org/x/crypto/ssh",
     "golang.org/x/net/context",
+    "golang.org/x/oauth2/google",
+    "google.golang.org/api/compute/v1",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
