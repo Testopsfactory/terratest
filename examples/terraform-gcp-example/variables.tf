@@ -1,9 +1,9 @@
 variable "bucket_name" {
-    default = "gruntwork-terratest-bucket"
+  default = "gruntwork-terratest-bucket"
 }
 
 variable "location" {
-    default = "US"
+  default = "US"
 }
 
 variable "project" {}
