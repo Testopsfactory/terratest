@@ -1,9 +1,47 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES
+# Define these secrets as environment variables
+# ---------------------------------------------------------------------------------------------------------------------
+
+# GOOGLE_CREDENTIALS
+# or
+# GOOGLE_APPLICATION_CREDENTIALS
+
+# ---------------------------------------------------------------------------------------------------------------------
+# REQUIRED PARAMETERS
+# You must provide a value for each of these parameters.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "project" {
+  description = "The ID of the project to apply any resources to."
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "instance_name" {
+  description = "The Name to use for the Cloud Instance."
+  default     = "terratest-example"
+}
+
+variable "machine_type" {
+  description = "The Machine Type to use for the Cloud Instance."
+  default     = "f1-micro"
+}
+
+variable "zone" {
+  description = "The Zone to launch the Cloud Instance into."
+  default     = "us-central1-a"
+}
+
 variable "bucket_name" {
-  default = "gruntwork-terratest-bucket"
+  description = "The Name of the example Bucket to create."
+  default     = "gruntwork-terratest-bucket"
 }
 
-variable "location" {
-  default = "US"
+variable "bucket_location" {
+  description = "The location to store the Bucket. This value can be regional or multi-regional."
+  default     = "US"
 }
-
-variable "project" {}
