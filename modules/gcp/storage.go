@@ -37,7 +37,6 @@ func CreateStorageBucketE(t *testing.T, projectID string, name string, attr *sto
 
 // DeleteStorageBucket destroys the Google Storage bucket.
 func DeleteStorageBucket(t *testing.T, name string) {
-
 	err := DeleteStorageBucketE(t, name)
 	if err != nil {
 		t.Fatal(err)
