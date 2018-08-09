@@ -14,6 +14,34 @@ const (
 	cloudScope = "https://www.googleapis.com/auth/cloud-platform"
 )
 
+// GetLabelsForComputeInstance returns all the tags for the given Compute Instance.
+func GetLabelsForComputeInstance(t *testing.T, projectID string, zone string, instanceID string) map[string]string {
+	labels, err := GetLabelsForComputeInstanceE(t, projectID, zone, instanceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return labels
+}
+
+// GetLabelsForComputeInstanceE returns all the tags for the given Compute Instance.
+func GetLabelsForComputeInstanceE(t *testing.T, projectID string, zone string, instanceID string) (map[string]string, error) {
+	logger.Logf(t, "Getting Labels for Compute Instance %s", instanceID)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return nil, err
+	}
+
+	instance, err := service.Instances.Get(projectID, zone, instanceID).Context(ctx).Do()
+	if err != nil {
+		return nil, fmt.Errorf("Instances.Get(%s) got error: %v", instanceID, err)
+	}
+
+	return instance.Labels, err
+}
+
 // DeleteImage deletes the given Compute Image.
 func DeleteImage(t *testing.T, projectID string, imageID string) {
 	err := DeleteImageE(t, projectID, imageID)
@@ -35,6 +63,40 @@ func DeleteImageE(t *testing.T, projectID string, imageID string) error {
 
 	if _, err := service.Images.Delete(projectID, imageID).Context(ctx).Do(); err != nil {
 		return fmt.Errorf("Images.Delete(%s) got error: %v", imageID, err)
+	}
+
+	return err
+}
+
+// AddLabelsToInstance adds the tags to the given taggable instance.
+func AddLabelsToInstance(t *testing.T, projectID string, zone string, instance string, labels map[string]string) {
+	err := AddLabelsToInstanceE(t, projectID, zone, instance, labels)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// AddLabelsToInstanceE adds the tags to the given taggable instance.
+func AddLabelsToInstanceE(t *testing.T, projectID string, zone string, instance string, labels map[string]string) error {
+	logger.Logf(t, "Adding labels to instance %s in zone %s", instance, zone)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return err
+	}
+
+	// Get the fingerprint of the existing labels
+	existingInstance, err := service.Instances.Get(projectID, zone, instance).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("Instances.Get(%s) got error: %v", instance, err)
+	}
+	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: existingInstance.LabelFingerprint}
+
+	// Perform the SetLabels request
+	if _, err := service.Instances.SetLabels(projectID, zone, instance, &req).Context(ctx).Do(); err != nil {
+		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", instance, err)
 	}
 
 	return err
