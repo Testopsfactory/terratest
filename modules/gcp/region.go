@@ -27,7 +27,7 @@ const defaultRegion = "us-west1"
 // Some GCP API calls require a GCP zone. We typically require the user to set one explicitly, but in some
 // cases, this doesn't make sense (e.g., for fetching the list of regions in an account), so for those cases, we use
 // this zone as a default.
-const defaultZone = "us-west1b"
+const defaultZone = "us-west1-b"
 
 // GetRandomRegion gets a randomly chosen GCP region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the GCP APIs and pick one of those. If
