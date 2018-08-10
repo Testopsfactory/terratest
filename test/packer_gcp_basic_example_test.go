@@ -11,6 +11,12 @@ import (
 func TestPackerGCPBasicExample(t *testing.T) {
 	t.Parallel()
 
+	// Get the Project Id to use
+	projectID := gcp.GetGoogleProjectIDFromEnvVar()
+
+	// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
+	zone := gcp.GetRandomZone(t, nil, nil)
+
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
 	//awsRegion := aws.GetRandomRegion(t, nil, nil)
 
@@ -20,8 +26,8 @@ func TestPackerGCPBasicExample(t *testing.T) {
 
 		// Variables to pass to our Packer build using -var options
 		Vars: map[string]string{
-			"gcp_project_id": projectId,
-			"gcp_zone":       "us-central1-a",
+			"gcp_project_id": projectID,
+			"gcp_zone":       zone,
 		},
 
 		// Only build the AWS AMI
@@ -32,5 +38,5 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	imageID := packer.BuildArtifact(t, packerOptions)
 
 	// Delete the Image after we're done
-	defer gcp.DeleteImage(t, projectId, imageID)
+	defer gcp.DeleteImage(t, projectID, imageID)
 }
