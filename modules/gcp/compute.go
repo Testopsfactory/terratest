@@ -10,10 +10,6 @@ import (
 	compute "google.golang.org/api/compute/v1"
 )
 
-const (
-	cloudScope = "https://www.googleapis.com/auth/cloud-platform"
-)
-
 // GetLabelsForComputeInstance returns all the tags for the given Compute Instance.
 func GetLabelsForComputeInstance(t *testing.T, projectID string, zone string, instanceID string) map[string]string {
 	labels, err := GetLabelsForComputeInstanceE(t, projectID, zone, instanceID)
@@ -115,9 +111,9 @@ func NewComputeService(t *testing.T) *compute.Service {
 func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	ctx := context.Background()
 
-	client, err := google.DefaultClient(ctx, cloudScope)
+	client, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
 	if err != nil {
-		t.Fatalf("failed to get default client: %v", err)
+		t.Fatalf("Failed to get default client: %v", err)
 	}
 
 	service, err := compute.New(client)
