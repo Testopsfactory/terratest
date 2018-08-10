@@ -35,8 +35,8 @@ func TestGetRandomRegionExcludesForbiddenRegions(t *testing.T) {
 func TestGetRandomZoneExcludesForbiddenZones(t *testing.T) {
 	t.Parallel()
 
-	approvedZones := []string{"us-east1b", "us-east1c", "us-east1d", "us-east4a", "us-east4b", "us-east4c", "us-west2a", "us-west2b", "us-west2c", "us-central1f", "europe-west2b"}
-	forbiddenZones := []string{"us-east1a", "europe-west1a", "europe-west2a", "europe-west2c"}
+	approvedZones := []string{"us-east1-b", "us-east1-c", "us-east1-d", "us-east4-a", "us-east4-b", "us-east4-c", "us-west2-a", "us-west2-b", "us-west2-c", "us-central1-f", "europe-west2-b"}
+	forbiddenZones := []string{"us-east1-a", "europe-west1-a", "europe-west2-a", "europe-west2-c"}
 
 	for i := 0; i < 1000; i++ {
 		randomZone := GetRandomZone(t, approvedZones, forbiddenZones)
@@ -73,5 +73,5 @@ func assertLooksLikeRegionName(t *testing.T, regionName string) {
 }
 
 func assertLooksLikeZoneName(t *testing.T, zoneName string) {
-	assert.Regexp(t, "[a-z]+-[a-z]+?[[:digit:]]+", zoneName)
+	assert.Regexp(t, "[a-z]+-[a-z]+?[[:digit:]]+-[a-z]{1}", zoneName)
 }

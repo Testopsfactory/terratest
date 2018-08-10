@@ -71,7 +71,7 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 // list; otherwise, this method will fetch the latest list of zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned region is not in the forbiddenZones list.
 func GetRandomZone(t *testing.T, approvedZones []string, forbiddenZones []string) string {
-	zone, err := GetRandomRegionE(t, approvedZones, forbiddenZones)
+	zone, err := GetRandomZoneE(t, approvedZones, forbiddenZones)
 	if err != nil {
 		t.Fatal(err)
 	}
