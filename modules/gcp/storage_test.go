@@ -1,12 +1,15 @@
 package gcp
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -17,12 +20,30 @@ func TestCreateAndDestroyStorageBucket(t *testing.T) {
 	t.Parallel()
 
 	id := random.UniqueId()
-	logger.Logf(t, "Random values selected Id = %s\n", id)
-
 	gsBucketName := "gruntwork-terratest-" + strings.ToLower(id)
+	testFilePath := fmt.Sprintf("test-file-%s.txt", random.UniqueId())
+	testFileBody := "test file text"
+
+	logger.Logf(t, "Random values selected Bucket Name = %s, Test Filepath: %s\n", gsBucketName, testFilePath)
 
 	CreateStorageBucket(t, projectId, gsBucketName, nil)
-	DeleteStorageBucket(t, gsBucketName)
+	defer DeleteStorageBucket(t, gsBucketName)
+
+	// Write a test file to the storage bucket
+	objectURL := WriteBucketObject(t, gsBucketName, testFilePath, strings.NewReader(testFileBody), "text/plain")
+	logger.Logf(t, "Got URL: %s", objectURL)
+
+	// Then verify its contents matches the expected result
+	fileReader := ReadBucketObject(t, gsBucketName, testFilePath)
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(fileReader)
+	result := buf.String()
+
+	require.Equal(t, testFileBody, result)
+
+	// Empty the storage bucket so we can delete it
+	EmptyStorageBucket(t, gsBucketName)
 }
 
 func TestAssertStorageBucketExistsNoFalseNegative(t *testing.T) {
