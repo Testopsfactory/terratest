@@ -155,7 +155,7 @@ func EmptyStorageBucketE(t *testing.T, name string) error {
 	// List all objects in the bucket
 	//
 	// TODO - we should really do a bulk delete call here, but I couldn't find
-	// anything in the SDK
+	// anything in the SDK.
 	bucket := client.Bucket(name)
 	it := bucket.Objects(ctx, nil)
 	for {
