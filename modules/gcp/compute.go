@@ -3,12 +3,44 @@ package gcp
 import (
 	"context"
 	"fmt"
+	"path"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
 )
+
+// GetPublicIPOfInstance gets the public IP address of the given Instance in the given region.
+func GetPublicIPOfInstance(t *testing.T, projectID string, zone string, instanceID string) string {
+	ip, err := GetPublicIPOfInstanceE(t, projectID, zone, instanceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ip
+}
+
+// GetPublicIPOfInstanceE gets the public IP address of the given Instance in the given region.
+func GetPublicIPOfInstanceE(t *testing.T, projectID string, zone string, instanceID string) (string, error) {
+	logger.Logf(t, "Getting Public IP for Compute Instance %s", instanceID)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return "", err
+	}
+
+	instance, err := service.Instances.Get(projectID, zone, instanceID).Context(ctx).Do()
+	if err != nil {
+		return "", fmt.Errorf("Instances.Get(%s) got error: %v", instanceID, err)
+	}
+
+	// TODO - should we check whether or not we have an 'AccessConfig' ?
+	ip := instance.NetworkInterfaces[0].AccessConfigs[0].NatIP
+
+	return ip, nil
+}
 
 // GetLabelsForComputeInstance returns all the tags for the given Compute Instance.
 func GetLabelsForComputeInstance(t *testing.T, projectID string, zone string, instanceID string) map[string]string {
@@ -35,7 +67,7 @@ func GetLabelsForComputeInstanceE(t *testing.T, projectID string, zone string, i
 		return nil, fmt.Errorf("Instances.Get(%s) got error: %v", instanceID, err)
 	}
 
-	return instance.Labels, err
+	return instance.Labels, nil
 }
 
 // DeleteImage deletes the given Compute Image.
@@ -98,6 +130,45 @@ func AddLabelsToInstanceE(t *testing.T, projectID string, zone string, instance 
 	return err
 }
 
+// GetInstanceIdsForInstanceGroup gets the IDs of Instances in the given Instance Group.
+func GetInstanceIdsForInstanceGroup(t *testing.T, projectID string, zone string, groupName string) []string {
+	ids, err := GetInstanceIdsForInstanceGroupE(t, projectID, zone, groupName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ids
+}
+
+// GetInstanceIdsForInstanceGroupE gets the IDs of Instances in the given Instance Group.
+func GetInstanceIdsForInstanceGroupE(t *testing.T, projectID string, zone string, groupName string) ([]string, error) {
+	logger.Logf(t, "Get instances for instance group %s in zone %s", groupName, zone)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return nil, err
+	}
+
+	rb := &compute.InstanceGroupsListInstancesRequest{
+		InstanceState: "ALL",
+	}
+
+	instanceIDs := []string{}
+	req := service.InstanceGroups.ListInstances(projectID, zone, groupName, rb)
+	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
+		for _, instance := range page.Items {
+			instanceID := path.Base(instance.Instance)
+			instanceIDs = append(instanceIDs, instanceID)
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("InstanceGroups.ListInstances(%s) got error: %v", groupName, err)
+	}
+
+	return instanceIDs, nil
+}
+
 // NewComputeService creates a new Compute service.
 func NewComputeService(t *testing.T) *compute.Service {
 	client, err := NewComputeServiceE(t)
@@ -113,7 +184,7 @@ func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 
 	client, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
 	if err != nil {
-		t.Fatalf("Failed to get default client: %v", err)
+		return nil, fmt.Errorf("Failed to get default client: %v", err)
 	}
 
 	service, err := compute.New(client)
