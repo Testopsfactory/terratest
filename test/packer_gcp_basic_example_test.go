@@ -17,9 +17,6 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
 	zone := gcp.GetRandomZone(t, nil, nil)
 
-	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	//awsRegion := aws.GetRandomRegion(t, nil, nil)
-
 	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
 		Template: "../examples/packer-basic-example/build.json",
