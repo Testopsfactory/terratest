@@ -1,9 +1,7 @@
 package test
 
 import (
-	"crypto/rand"
 	"crypto/x509"
-	"encoding/hex"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -245,12 +243,7 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
 	// Instantiate a temporary SSH agent
-	rHex, err := randomHex(20)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	socketFile := "/tmp/ssh-agent-" + rHex + ".sock"
+	socketFile := "/tmp/ssh-agent-" + random.UniqueId() + ".sock"
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
 	sshAgent := NewSSHAgent(socketFile)
 	defer sshAgent.Stop()
@@ -259,8 +252,7 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	block, _ := pem.Decode([]byte(keyPair.KeyPair.PrivateKey))
 	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 	key := agent.AddedKey{PrivateKey: pkey}
 
@@ -317,12 +309,7 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
 	// Instantiate a temporary SSH agent
-	rHex, err := randomHex(20)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	socketFile := "/tmp/ssh-agent-" + rHex + ".sock"
+	socketFile := "/tmp/ssh-agent-" + random.UniqueId() + ".sock"
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
 	sshAgent := NewSSHAgent(socketFile)
 	defer sshAgent.Stop()
@@ -331,8 +318,7 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	block, _ := pem.Decode([]byte(keyPair.KeyPair.PrivateKey))
 	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 	key := agent.AddedKey{PrivateKey: pkey}
 
@@ -415,13 +401,4 @@ func (s *SSHAgent) Stop() {
 	s.ln.Close()
 	<-s.stopped
 	os.Remove(s.socketFile)
-}
-
-// Returns a random hexadecimal string of the given lengh
-func randomHex(n int) (string, error) {
-	bytes := make([]byte, n)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
 }
