@@ -21,11 +21,11 @@ import (
 
 // Host is a host on AWS.
 type Host struct {
-	Hostname    string   // host name or ip address
-	SshUserName string   // user name
+	Hostname    string // host name or ip address
+	SshUserName string // user name
 	// set one or both authentication methods
-	SshKeyPair  *KeyPair // ssh key pair to use as authentication method (disabled by default)
-	SshAgent    bool     // enable authentication using your existing local SSH agent (disabled by default)
+	SshKeyPair *KeyPair // ssh key pair to use as authentication method (disabled by default)
+	SshAgent   bool     // enable authentication using your existing local SSH agent (disabled by default)
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
