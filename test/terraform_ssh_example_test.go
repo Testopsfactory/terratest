@@ -15,6 +15,7 @@ import (
 	"os"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
@@ -251,7 +252,10 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	}
 	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
-	sshAgent := NewSSHAgent(socketDir, socketFile)
+	sshAgent, err := NewSSHAgent(socketDir, socketFile)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer sshAgent.Stop()
 
 	// Create SSH key for the agent using the existing AWS SSH key pair
@@ -262,14 +266,31 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	}
 	key := agent.AddedKey{PrivateKey: pkey}
 
+	// Add SSH key to the agent
+	// Retry until agent is ready or give up with a fatal error
+	for i := 0; i < 15; i++ {
+		var keys []*agent.Key
+		keys, err = sshAgent.agent.List()
+		if err != nil {
+			logger.Logf(t, "Error listing SSH keys %v", err)
+		}
+		if len(keys) > 0 {
+			logger.Logf(t, "Agent SSH keys: %v", keys)
+			break
+		} else {
+			err = sshAgent.agent.Add(key)
+			if err != nil {
+				logger.Logf(t, "Error adding SSH key %v", err)
+			}
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	if err != nil {
+		t.Fatal("Could not add any SSH key to the agent after several retries")
+	}
+
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-
-		// Add SSH key to the agent
-		keys, err := sshAgent.agent.List()
-		if len(keys) == 0 {
-			sshAgent.agent.Add(key)
-		}
 
 		actualText, err := ssh.CheckSshCommandE(t, publicHost, command)
 
@@ -321,7 +342,10 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	}
 	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
-	sshAgent := NewSSHAgent(socketDir, socketFile)
+	sshAgent, err := NewSSHAgent(socketDir, socketFile)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer sshAgent.Stop()
 
 	// Create SSH key for the agent using the existing AWS SSH key pair
@@ -332,14 +356,31 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	}
 	key := agent.AddedKey{PrivateKey: pkey}
 
+	// Add SSH key to the agent
+	// Retry until agent is ready or give up with a fatal error
+	for i := 0; i < 15; i++ {
+		var keys []*agent.Key
+		keys, err = sshAgent.agent.List()
+		if err != nil {
+			logger.Logf(t, "Error listing SSH keys %v", err)
+		}
+		if len(keys) > 0 {
+			logger.Logf(t, "Agent SSH keys: %v", keys)
+			break
+		} else {
+			err = sshAgent.agent.Add(key)
+			if err != nil {
+				logger.Logf(t, "Error adding SSH key %v", err)
+			}
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	if err != nil {
+		t.Fatal("Could not add any SSH key to the agent after several retries")
+	}
+
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-
-		// Add SSH key to the agent
-		keys, err := sshAgent.agent.List()
-		if len(keys) == 0 {
-			sshAgent.agent.Add(key)
-		}
 
 		actualText, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, command)
 
@@ -365,20 +406,20 @@ type SSHAgent struct {
 }
 
 // Create SSH agent, start it in background and returns control back to the main thread
-func NewSSHAgent(socketDir string, socketFile string) *SSHAgent {
+func NewSSHAgent(socketDir string, socketFile string) (*SSHAgent, error) {
+	var err error
 	s := &SSHAgent{make(chan bool), make(chan bool), socketDir, socketFile, agent.NewKeyring(), nil}
+	s.ln, err = net.Listen("unix", s.socketFile)
+	if err != nil {
+		return nil, err
+	}
 	go s.run()
-	return s
+	return s, nil
 }
 
 // SSH Agent listner and handler
 func (s *SSHAgent) run() {
 	defer close(s.stopped)
-	var err error
-	s.ln, err = net.Listen("unix", s.socketFile)
-	if err != nil {
-		fmt.Errorf("Could not create socket %v", err)
-	}
 	for {
 		select {
 		case <-s.stop:
@@ -387,12 +428,15 @@ func (s *SSHAgent) run() {
 			c, err := s.ln.Accept()
 			if err != nil {
 				select {
+				// When s.Stop() closes the listner, s.ln.Accept() returns an error that can be ignored
+				// since the agent is in stopping process
 				case <-s.stop:
 					return
+				// When s.ln.Accept() returns a legit error, we print it and continue accepting further requests
 				default:
 					fmt.Errorf("Could not accept connection to agent %v", err)
+					continue
 				}
-				continue
 			} else {
 				defer c.Close()
 				go func(c io.ReadWriter) {
