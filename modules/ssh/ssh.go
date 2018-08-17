@@ -2,6 +2,7 @@
 package ssh
 
 import (
+	"errors"
 	"net"
 	"testing"
 	"time"
@@ -15,13 +16,16 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 // Host is a host on AWS.
 type Host struct {
-	Hostname    string
-	SshUserName string
-	SshKeyPair  *KeyPair
+	Hostname    string   // host name or ip address
+	SshUserName string   // user name
+	// set one or both authentication methods
+	SshKeyPair  *KeyPair // ssh key pair to use as authentication method (disabled by default)
+	SshAgent    bool     // enable authentication using your existing local SSH agent (disabled by default)
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
@@ -265,13 +269,32 @@ func NoOpHostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) er
 	return nil
 }
 
+// Returns an array of authentication methods
 func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
-	signer, err := ssh.ParsePrivateKey([]byte(host.SshKeyPair.PrivateKey))
-	if err != nil {
-		return []ssh.AuthMethod{}, err
+	var methods []ssh.AuthMethod
+	// use existing ssh agent socket
+	// if agent authentication is enabled and no agent is set up, returns an error
+	if host.SshAgent {
+		socket := os.Getenv("SSH_AUTH_SOCK")
+		conn, err := net.Dial("unix", socket)
+		if err != nil {
+			return methods, err
+		}
+		agentClient := agent.NewClient(conn)
+		methods = append(methods, []ssh.AuthMethod{ssh.PublicKeysCallback(agentClient.Signers)}...)
 	}
-
-	return []ssh.AuthMethod{ssh.PublicKeys(signer)}, nil
+	// use provided ssh key pair
+	if host.SshKeyPair != nil {
+		signer, err := ssh.ParsePrivateKey([]byte(host.SshKeyPair.PrivateKey))
+		if err != nil {
+			return methods, err
+		}
+		methods = append(methods, []ssh.AuthMethod{ssh.PublicKeys(signer)}...)
+		// if no valid authentication method is provided, return a custom error message
+	} else if !host.SshAgent {
+		return methods, errors.New("no authentication method defined")
+	}
+	return methods, nil
 }
 
 // sendScpCommandsToCopyFile returns a function which will send commands to the SCP binary to output a file on the remote machine.

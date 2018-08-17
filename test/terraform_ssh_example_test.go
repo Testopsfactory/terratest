@@ -1,7 +1,13 @@
 package test
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -9,11 +15,13 @@ import (
 	"os"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 // An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest. The test also
@@ -54,6 +62,8 @@ func TestTerraformSshExample(t *testing.T) {
 
 		testSSHToPublicHost(t, terraformOptions, keyPair)
 		testSSHToPrivateHost(t, terraformOptions, keyPair)
+		testSSHAgentToPublicHost(t, terraformOptions, keyPair)
+		testSSHAgentToPrivateHost(t, terraformOptions, keyPair)
 		testSCPToPublicHost(t, terraformOptions, keyPair)
 	})
 
@@ -210,4 +220,240 @@ func testSCPToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyP
 
 		return "", nil
 	})
+}
+
+func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+	// Run `terraform output` to get the value of an output variable
+	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
+
+	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier. Instead of
+	// directly using the SSH key in the SSH connection, we're going to rely on an existing SSH agent that we
+	// programatically emulate within this test. We're going to use the user "ubuntu" as we know the Instance
+	// is running an Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshUserName: "ubuntu",
+		SshAgent:    true,
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH with Agent to public host %s", publicInstanceIP)
+
+	// Run a simple echo command on the server
+	expectedText := "Hello, World"
+	command := fmt.Sprintf("echo -n '%s'", expectedText)
+
+	// Instantiate a temporary SSH agent
+	socketDir, err := ioutil.TempDir("", "ssh-agent-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
+	os.Setenv("SSH_AUTH_SOCK", socketFile)
+	sshAgent, err := NewSSHAgent(socketDir, socketFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sshAgent.Stop()
+
+	// Create SSH key for the agent using the existing AWS SSH key pair
+	block, _ := pem.Decode([]byte(keyPair.KeyPair.PrivateKey))
+	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := agent.AddedKey{PrivateKey: pkey}
+
+	// Add SSH key to the agent
+	// Retry until agent is ready or give up with a fatal error
+	for i := 0; i < 15; i++ {
+		var keys []*agent.Key
+		keys, err = sshAgent.agent.List()
+		if err != nil {
+			logger.Logf(t, "Error listing SSH keys %v", err)
+		}
+		if len(keys) > 0 {
+			logger.Logf(t, "Agent SSH keys: %v", keys)
+			break
+		} else {
+			err = sshAgent.agent.Add(key)
+			if err != nil {
+				logger.Logf(t, "Error adding SSH key %v", err)
+			}
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	if err != nil {
+		t.Fatal("Could not add any SSH key to the agent after several retries")
+	}
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+
+		actualText, err := ssh.CheckSshCommandE(t, publicHost, command)
+
+		if err != nil {
+			return "", err
+		}
+
+		if strings.TrimSpace(actualText) != expectedText {
+			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)
+		}
+
+		return "", nil
+	})
+}
+
+func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+	// Run `terraform output` to get the value of an output variable
+	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
+	privateInstanceIP := terraform.Output(t, terraformOptions, "private_instance_ip")
+
+	// We're going to try to SSH to the private instance using the public instance as a jump host. Instead of
+	// directly using the SSH key in the SSH connection, we're going to rely on an existing SSH agent that we
+	// programatically emulate within this test. For both instances, we are using the Key Pair we created earlier,
+	// and the user "ubuntu", as we know the Instances are running an Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshUserName: "ubuntu",
+		SshAgent:    true,
+	}
+	privateHost := ssh.Host{
+		Hostname:    privateInstanceIP,
+		SshUserName: "ubuntu",
+		SshAgent:    true,
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH with Agent to private host %s via public host %s", publicInstanceIP, privateInstanceIP)
+
+	// Run a simple echo command on the server
+	expectedText := "Hello, World"
+	command := fmt.Sprintf("echo -n '%s'", expectedText)
+
+	// Instantiate a temporary SSH agent
+	socketDir, err := ioutil.TempDir("", "ssh-agent-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
+	os.Setenv("SSH_AUTH_SOCK", socketFile)
+	sshAgent, err := NewSSHAgent(socketDir, socketFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sshAgent.Stop()
+
+	// Create SSH key for the agent using the existing AWS SSH key pair
+	block, _ := pem.Decode([]byte(keyPair.KeyPair.PrivateKey))
+	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := agent.AddedKey{PrivateKey: pkey}
+
+	// Add SSH key to the agent
+	// Retry until agent is ready or give up with a fatal error
+	for i := 0; i < 15; i++ {
+		var keys []*agent.Key
+		keys, err = sshAgent.agent.List()
+		if err != nil {
+			logger.Logf(t, "Error listing SSH keys %v", err)
+		}
+		if len(keys) > 0 {
+			logger.Logf(t, "Agent SSH keys: %v", keys)
+			break
+		} else {
+			err = sshAgent.agent.Add(key)
+			if err != nil {
+				logger.Logf(t, "Error adding SSH key %v", err)
+			}
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	if err != nil {
+		t.Fatal("Could not add any SSH key to the agent after several retries")
+	}
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+
+		actualText, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, command)
+
+		if err != nil {
+			return "", err
+		}
+
+		if strings.TrimSpace(actualText) != expectedText {
+			return "", fmt.Errorf("Expected SSH command to return '%s' but got '%s'", expectedText, actualText)
+		}
+
+		return "", nil
+	})
+}
+
+type SSHAgent struct {
+	stop       chan bool
+	stopped    chan bool
+	socketDir  string
+	socketFile string
+	agent      agent.Agent
+	ln         net.Listener
+}
+
+// Create SSH agent, start it in background and returns control back to the main thread
+func NewSSHAgent(socketDir string, socketFile string) (*SSHAgent, error) {
+	var err error
+	s := &SSHAgent{make(chan bool), make(chan bool), socketDir, socketFile, agent.NewKeyring(), nil}
+	s.ln, err = net.Listen("unix", s.socketFile)
+	if err != nil {
+		return nil, err
+	}
+	go s.run()
+	return s, nil
+}
+
+// SSH Agent listner and handler
+func (s *SSHAgent) run() {
+	defer close(s.stopped)
+	for {
+		select {
+		case <-s.stop:
+			return
+		default:
+			c, err := s.ln.Accept()
+			if err != nil {
+				select {
+				// When s.Stop() closes the listner, s.ln.Accept() returns an error that can be ignored
+				// since the agent is in stopping process
+				case <-s.stop:
+					return
+				// When s.ln.Accept() returns a legit error, we print it and continue accepting further requests
+				default:
+					fmt.Errorf("Could not accept connection to agent %v", err)
+					continue
+				}
+			} else {
+				defer c.Close()
+				go func(c io.ReadWriter) {
+					err := agent.ServeAgent(s.agent, c)
+					if err != nil {
+						fmt.Errorf("Could not serve ssh agent %v", err)
+					}
+				}(c)
+			}
+		}
+	}
+}
+
+// Stop and clean up SSH agent
+func (s *SSHAgent) Stop() {
+	close(s.stop)
+	s.ln.Close()
+	<-s.stopped
+	os.RemoveAll(s.socketDir)
 }
