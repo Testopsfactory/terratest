@@ -5,7 +5,9 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -243,9 +245,13 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
 	// Instantiate a temporary SSH agent
-	socketFile := "/tmp/ssh-agent-" + random.UniqueId() + ".sock"
+	socketDir, err := ioutil.TempDir("", "ssh-agent-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
-	sshAgent := NewSSHAgent(socketFile)
+	sshAgent := NewSSHAgent(socketDir, socketFile)
 	defer sshAgent.Stop()
 
 	// Create SSH key for the agent using the existing AWS SSH key pair
@@ -309,9 +315,13 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
 	// Instantiate a temporary SSH agent
-	socketFile := "/tmp/ssh-agent-" + random.UniqueId() + ".sock"
+	socketDir, err := ioutil.TempDir("", "ssh-agent-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
-	sshAgent := NewSSHAgent(socketFile)
+	sshAgent := NewSSHAgent(socketDir, socketFile)
 	defer sshAgent.Stop()
 
 	// Create SSH key for the agent using the existing AWS SSH key pair
@@ -348,14 +358,15 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 type SSHAgent struct {
 	stop       chan bool
 	stopped    chan bool
+	socketDir  string
 	socketFile string
 	agent      agent.Agent
 	ln         net.Listener
 }
 
 // Create SSH agent, start it in background and returns control back to the main thread
-func NewSSHAgent(socketFile string) *SSHAgent {
-	s := &SSHAgent{make(chan bool), make(chan bool), socketFile, agent.NewKeyring(), nil}
+func NewSSHAgent(socketDir string, socketFile string) *SSHAgent {
+	s := &SSHAgent{make(chan bool), make(chan bool), socketDir, socketFile, agent.NewKeyring(), nil}
 	go s.run()
 	return s
 }
@@ -400,5 +411,5 @@ func (s *SSHAgent) Stop() {
 	close(s.stop)
 	s.ln.Close()
 	<-s.stopped
-	os.Remove(s.socketFile)
+	os.RemoveAll(s.socketDir)
 }
