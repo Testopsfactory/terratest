@@ -172,7 +172,7 @@ func fetchSyslogForAsg(t *testing.T, awsRegion string, workingDir string) {
 const syslogPathUbuntu = "/var/log/syslog"
 
 // Default location where the User Data script generates an index.html on Ubuntu
-const indexHtmlUbuntu = "/home/ubuntu/index.html"
+const indexHtmlUbuntu = "/index.html"
 
 // This size is configured in the terraform-redeploy-example itself
 const asgSize = 3
