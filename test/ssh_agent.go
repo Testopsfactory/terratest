@@ -1,10 +1,11 @@
 package test
 
 import (
-	"net"
 	"fmt"
 	"io"
+	"net"
 	"os"
+
 	"golang.org/x/crypto/ssh/agent"
 )
 

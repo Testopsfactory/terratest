@@ -365,4 +365,3 @@ func sendScpCommandsToCopyFile(mode os.FileMode, fileName, contents string) func
 		fmt.Fprint(input, "\x00")
 	}
 }
-

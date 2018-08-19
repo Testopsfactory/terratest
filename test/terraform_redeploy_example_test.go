@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"strings"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -14,7 +16,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"strings"
 )
 
 // An example of how to test the Terraform module in examples/terraform-redeploy-example using Terratest. We deploy the

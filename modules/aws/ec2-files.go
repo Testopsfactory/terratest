@@ -2,6 +2,7 @@ package aws
 
 import (
 	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/ssh"
 )
 
@@ -27,8 +28,8 @@ func FetchContentsOfFileFromInstanceE(t *testing.T, awsRegion string, sshUserNam
 
 	host := ssh.Host{
 		SshUserName: sshUserName,
-		SshKeyPair: keyPair.KeyPair,
-		Hostname: publicIp,
+		SshKeyPair:  keyPair.KeyPair,
+		Hostname:    publicIp,
 	}
 
 	return ssh.FetchContentsOfFileE(t, host, useSudo, filePath)
@@ -56,8 +57,8 @@ func FetchContentsOfFilesFromInstanceE(t *testing.T, awsRegion string, sshUserNa
 
 	host := ssh.Host{
 		SshUserName: sshUserName,
-		SshKeyPair: keyPair.KeyPair,
-		Hostname: publicIp,
+		SshKeyPair:  keyPair.KeyPair,
+		Hostname:    publicIp,
 	}
 
 	return ssh.FetchContentsOfFilesE(t, host, useSudo, filePaths...)
