@@ -174,6 +174,9 @@ const syslogPathUbuntu = "/var/log/syslog"
 // Default location where the User Data script generates an index.html on Ubuntu
 const indexHtmlUbuntu = "/home/ubuntu/index.html"
 
+// This size is configured in the terraform-redeploy-example itself
+const asgSize = 3
+
 func fetchFilesFromAsg(t *testing.T, awsRegion string, workingDir string) {
 	// Load the Terraform Options and Key Pair saved by the earlier deploy_terraform stage
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
@@ -181,6 +184,8 @@ func fetchFilesFromAsg(t *testing.T, awsRegion string, workingDir string) {
 
 	asgName := terraform.OutputRequired(t, terraformOptions, "asg_name")
 	instanceIdToFilePathToContents := aws.FetchContentsOfFilesFromAsg(t, awsRegion, "ubuntu", keyPair, asgName, true, syslogPathUbuntu, indexHtmlUbuntu)
+
+	require.Len(t, instanceIdToFilePathToContents, asgSize)
 
 	// Check that the index.html file on each Instance contains the expected text
 	expectedText := terraformOptions.Vars["instance_text"]
