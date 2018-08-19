@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"strings"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -12,6 +14,8 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // An example of how to test the Terraform module in examples/terraform-redeploy-example using Terratest. We deploy the
@@ -37,10 +41,11 @@ func TestTerraformRedeployExample(t *testing.T) {
 		terraform.Destroy(t, terraformOptions)
 	})
 
-	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
+	// At the end of the test, fetch the logs from each Instance. This can be useful for
 	// debugging issues without having to manually SSH to the server.
 	defer test_structure.RunTestStage(t, "logs", func() {
 		fetchSyslogForAsg(t, awsRegion, workingDir)
+		fetchFilesFromAsg(t, awsRegion, workingDir)
 	})
 
 	// Deploy the web app
@@ -65,6 +70,10 @@ func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 	// tests running in parallel
 	uniqueID := random.UniqueId()
 
+	// Create a KeyPair we can use later to SSH to each Instance
+	keyPair := aws.CreateAndImportEC2KeyPair(t, awsRegion, uniqueID)
+	test_structure.SaveEc2KeyPair(t, workingDir, keyPair)
+
 	// Give the ASG and other resources in the Terraform code a name with a unique ID so it doesn't clash
 	// with anything else in the AWS account.
 	name := fmt.Sprintf("redeploy-test-%s", uniqueID)
@@ -81,6 +90,7 @@ func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 			"aws_region":    awsRegion,
 			"instance_name": name,
 			"instance_text": text,
+			"key_pair_name": keyPair.Name,
 		},
 	}
 
@@ -142,6 +152,8 @@ func validateAsgRedeploy(t *testing.T, workingDir string) {
 	elbChecks.Done()
 }
 
+// (Deprecated) See the fetchFilesFromAsg method below for a more powerful solution.
+//
 // Fetch the most recent syslogs for the instances in the ASG. This is a handy way to see what happened on each
 // Instance as part of your test log output, without having to re-run the test and manually SSH to the Instances.
 func fetchSyslogForAsg(t *testing.T, awsRegion string, workingDir string) {
@@ -151,9 +163,45 @@ func fetchSyslogForAsg(t *testing.T, awsRegion string, workingDir string) {
 	asgName := terraform.OutputRequired(t, terraformOptions, "asg_name")
 	asgLogs := aws.GetSyslogForInstancesInAsg(t, asgName, awsRegion)
 
-	logger.Logf(t, "===== Syslog for instances in ASG %s =====\n\n", asgName)
+	logger.Logf(t, "===== First few hundred bytes of syslog for instances in ASG %s =====\n\n", asgName)
 
 	for instanceID, logs := range asgLogs {
 		logger.Logf(t, "Most recent syslog for Instance %s:\n\n%s\n", instanceID, logs)
+	}
+}
+
+// Default syslog location on Ubuntu
+const syslogPathUbuntu = "/var/log/syslog"
+
+// Default location where the User Data script generates an index.html on Ubuntu
+const indexHtmlUbuntu = "/index.html"
+
+// This size is configured in the terraform-redeploy-example itself
+const asgSize = 3
+
+func fetchFilesFromAsg(t *testing.T, awsRegion string, workingDir string) {
+	// Load the Terraform Options and Key Pair saved by the earlier deploy_terraform stage
+	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
+	keyPair := test_structure.LoadEc2KeyPair(t, workingDir)
+
+	asgName := terraform.OutputRequired(t, terraformOptions, "asg_name")
+	instanceIdToFilePathToContents := aws.FetchContentsOfFilesFromAsg(t, awsRegion, "ubuntu", keyPair, asgName, true, syslogPathUbuntu, indexHtmlUbuntu)
+
+	require.Len(t, instanceIdToFilePathToContents, asgSize)
+
+	// Check that the index.html file on each Instance contains the expected text
+	expectedText := terraformOptions.Vars["instance_text"]
+	for instanceID, filePathToContents := range instanceIdToFilePathToContents {
+		require.Contains(t, filePathToContents, indexHtmlUbuntu)
+		assert.Equal(t, expectedText, strings.TrimSpace(filePathToContents[indexHtmlUbuntu]), "Expected %s on instance %s to contain %s", indexHtmlUbuntu, instanceID, expectedText)
+	}
+
+	logger.Logf(t, "===== Full contents of syslog for instances in ASG %s =====\n\n", asgName)
+
+	// Print out the FULL contents of syslog (unlike the deprecated GetSyslogForInstancesInAsg, which only returns the
+	// first few hundred bytes)
+	for instanceID, filePathToContents := range instanceIdToFilePathToContents {
+		require.Contains(t, filePathToContents, syslogPathUbuntu)
+		logger.Logf(t, "Full syslog for Instance %s:\n\n%s\n", instanceID, filePathToContents[syslogPathUbuntu])
 	}
 }

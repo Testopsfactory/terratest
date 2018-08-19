@@ -60,6 +60,7 @@ resource "aws_launch_configuration" "web_servers" {
   instance_type   = "t2.micro"
   security_groups = ["${aws_security_group.web_server.id}"]
   user_data       = "${data.template_file.user_data.rendered}"
+  key_name        = "${var.key_pair_name}"
 
   # When used with an aws_autoscaling_group resource, the aws_launch_configuration must set create_before_destroy to
   # true. Note: as soon as you set create_before_destroy = true in one resource, you must also set it in every resource
@@ -130,6 +131,15 @@ resource "aws_security_group_rule" "web_server_allow_http_inbound" {
   type              = "ingress"
   from_port         = "${var.instance_port}"
   to_port           = "${var.instance_port}"
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.web_server.id}"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "web_server_allow_ssh_inbound" {
+  type              = "ingress"
+  from_port         = "${var.ssh_port}"
+  to_port           = "${var.ssh_port}"
   protocol          = "tcp"
   security_group_id = "${aws_security_group.web_server.id}"
   cidr_blocks       = ["0.0.0.0/0"]
