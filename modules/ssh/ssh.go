@@ -165,6 +165,56 @@ func CheckPrivateSshConnectionE(t *testing.T, publicHost Host, privateHost Host,
 	return runSSHCommand(t, sshSession)
 }
 
+// FetchContentsOfFiles connects to the given host via SSH and fetches the contents of the files at the given filePaths.
+// If useSudo is true, then the contents will be retrieved using sudo. This method returns a map from file path to
+// contents.
+func FetchContentsOfFiles(t *testing.T, host Host, useSudo bool, filePaths ...string) map[string]string {
+	out, err := FetchContentsOfFilesE(t, host, useSudo, filePaths...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// FetchContentsOfFilesE connects to the given host via SSH and fetches the contents of the files at the given filePaths.
+// If useSudo is true, then the contents will be retrieved using sudo. This method returns a map from file path to
+// contents.
+func FetchContentsOfFilesE(t *testing.T, host Host, useSudo bool, filePaths ...string) (map[string]string, error) {
+	filePathToContents := map[string]string{}
+
+	for _, filePath := range filePaths {
+		contents, err := FetchContentsOfFileE(t, host, useSudo, filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		filePathToContents[filePath] = contents
+	}
+
+	return filePathToContents, nil
+}
+
+// FetchContentsOfFile connects to the given host via SSH and fetches the contents of the file at the given filePath.
+// If useSudo is true, then the contents will be retrieved using sudo. This method returns the contents of that file.
+func FetchContentsOfFile(t *testing.T, host Host, useSudo bool, filePath string) string {
+	out, err := FetchContentsOfFileE(t, host, useSudo, filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// FetchContentsOfFileE connects to the given host via SSH and fetches the contents of the file at the given filePath.
+// If useSudo is true, then the contents will be retrieved using sudo. This method returns the contents of that file.
+func FetchContentsOfFileE(t *testing.T, host Host, useSudo bool, filePath string) (string, error) {
+	command := fmt.Sprintf("cat %s", filePath)
+	if useSudo {
+		command = fmt.Sprintf("sudo %s", command)
+	}
+
+	return CheckSshCommandE(t, host, command)
+}
+
 func runSSHCommand(t *testing.T, sshSession *SshSession) (string, error) {
 	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
 	if err := setUpSSHClient(sshSession); err != nil {
@@ -315,3 +365,4 @@ func sendScpCommandsToCopyFile(mode os.FileMode, fileName, contents string) func
 		fmt.Fprint(input, "\x00")
 	}
 }
+

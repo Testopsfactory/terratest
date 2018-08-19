@@ -41,3 +41,8 @@ variable "alb_port" {
   description = "The port the ALB should listen on for HTTP requests"
   default     = 80
 }
+
+variable "key_pair_name" {
+  description = "The EC2 Key Pair to associate with the EC2 Instance for SSH access."
+  default     = ""
+}
