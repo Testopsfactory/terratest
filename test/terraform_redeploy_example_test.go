@@ -14,6 +14,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"strings"
 )
 
 // An example of how to test the Terraform module in examples/terraform-redeploy-example using Terratest. We deploy the
@@ -191,7 +192,7 @@ func fetchFilesFromAsg(t *testing.T, awsRegion string, workingDir string) {
 	expectedText := terraformOptions.Vars["instance_text"]
 	for instanceID, filePathToContents := range instanceIdToFilePathToContents {
 		require.Contains(t, filePathToContents, indexHtmlUbuntu)
-		assert.Equal(t, expectedText, filePathToContents[indexHtmlUbuntu], "Expected %s on instance %s to contain %s", indexHtmlUbuntu, instanceID, expectedText)
+		assert.Equal(t, expectedText, strings.TrimSpace(filePathToContents[indexHtmlUbuntu]), "Expected %s on instance %s to contain %s", indexHtmlUbuntu, instanceID, expectedText)
 	}
 
 	logger.Logf(t, "===== Full contents of syslog for instances in ASG %s =====\n\n", asgName)
