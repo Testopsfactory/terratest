@@ -3,7 +3,6 @@ package gcp
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -12,13 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	projectId = os.Getenv("GOOGLE_STORAGE_PROJECT_ID")
-)
-
 func TestCreateAndDestroyStorageBucket(t *testing.T) {
 	t.Parallel()
 
+	projectID := GetGoogleProjectIDFromEnvVar()
 	id := random.UniqueId()
 	gsBucketName := "gruntwork-terratest-" + strings.ToLower(id)
 	testFilePath := fmt.Sprintf("test-file-%s.txt", random.UniqueId())
@@ -26,7 +22,7 @@ func TestCreateAndDestroyStorageBucket(t *testing.T) {
 
 	logger.Logf(t, "Random values selected Bucket Name = %s, Test Filepath: %s\n", gsBucketName, testFilePath)
 
-	CreateStorageBucket(t, projectId, gsBucketName, nil)
+	CreateStorageBucket(t, projectID, gsBucketName, nil)
 	defer DeleteStorageBucket(t, gsBucketName)
 
 	// Write a test file to the storage bucket
@@ -49,11 +45,12 @@ func TestCreateAndDestroyStorageBucket(t *testing.T) {
 func TestAssertStorageBucketExistsNoFalseNegative(t *testing.T) {
 	t.Parallel()
 
+	projectID := GetGoogleProjectIDFromEnvVar()
 	id := random.UniqueId()
 	gsBucketName := "gruntwork-terratest-" + strings.ToLower(id)
 	logger.Logf(t, "Random values selected Id = %s\n", id)
 
-	CreateStorageBucket(t, projectId, gsBucketName, nil)
+	CreateStorageBucket(t, projectID, gsBucketName, nil)
 	defer DeleteStorageBucket(t, gsBucketName)
 
 	AssertStorageBucketExists(t, gsBucketName)
