@@ -14,18 +14,15 @@ resource "google_compute_instance" "example" {
     }
   }
 
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-1604-lts"
+    }
+  }
+
   network_interface {
     network = "default"
   }
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# LOOK UP THE LATEST UBUNTU 16.04 LTS AMI
-# ---------------------------------------------------------------------------------------------------------------------
-
-data "google_compute_image" "ubuntu" {
-  family  = "ubuntu-1604-lts"
-  project = "ubuntu-os-cloud"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
