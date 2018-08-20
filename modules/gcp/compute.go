@@ -158,6 +158,9 @@ func GetInstanceIdsForInstanceGroupE(t *testing.T, projectID string, zone string
 	req := service.InstanceGroups.ListInstances(projectID, zone, groupName, rb)
 	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
+			// For some reason service.InstanceGroups.ListInstances returns us a collection
+			// with Instance URLs and we need only the Instance ID for the next call. Use
+			// the path functions to chop the Instance ID off the end of the URL.
 			instanceID := path.Base(instance.Instance)
 			instanceIDs = append(instanceIDs, instanceID)
 		}
