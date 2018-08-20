@@ -30,11 +30,11 @@ it should be free, but you are completely responsible for all GCP charges.
 ## Running automated tests against this module
 
 1. Sign up for [GCP](https://cloud.google.com/free/).
-1. Configure your GCP credentials using the GCP CLI
+1. Configure your GCP credentials using the [GCP CLI
    tools](https://cloud.google.com/sdk/docs/quickstarts).
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`.
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
-1. Set `GOOGLE_CLOUD_PROJECT_ID` environment variable to your project name.
+1. Set `GOOGLE_CLOUD_PROJECT` environment variable to your project name.
 1. `cd test`
 1. `dep ensure`
 1. `go test -v -run TestTerraformGcpExample`

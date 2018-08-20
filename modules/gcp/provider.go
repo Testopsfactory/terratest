@@ -11,9 +11,10 @@ var credsEnvVars = []string{
 
 var projectEnvVars = []string{
 	"GOOGLE_PROJECT",
+	"GOOGLE_CLOUD_PROJECT",
+	"GOOGLE_CLOUD_PROJECT_ID",
 	"GCLOUD_PROJECT",
 	"CLOUDSDK_CORE_PROJECT",
-	"GOOGLE_CLOUD_PROJECT_ID",
 }
 
 var regionEnvVars = []string{
