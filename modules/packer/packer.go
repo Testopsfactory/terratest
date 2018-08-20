@@ -48,14 +48,14 @@ func BuildArtifactE(t *testing.T, options *Options) (string, error) {
 
 // BuildAmi builds the given Packer template and return the generated AMI ID.
 //
-// This function is deprecated.
+// Deprecated: Use BuildArtifact instead.
 func BuildAmi(t *testing.T, options *Options) string {
 	return BuildArtifact(t, options)
 }
 
 // BuildAmiE builds the given Packer template and return the generated AMI ID.
 //
-// This function is deprecated.
+// Deprecated: Use BuildArtifactE instead.
 func BuildAmiE(t *testing.T, options *Options) (string, error) {
 	return BuildArtifactE(t, options)
 }

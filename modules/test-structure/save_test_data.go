@@ -118,7 +118,7 @@ func LoadArtifactID(t *testing.T, testFolder string) string {
 // SaveAmiId serializes and saves an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
 // AMI later during validation and teardown.
 //
-// deprecated.
+// Deprecated: Use SaveArtifactID instead.
 func SaveAmiId(t *testing.T, testFolder string, amiId string) {
 	SaveString(t, testFolder, "AMI", amiId)
 }
@@ -126,7 +126,7 @@ func SaveAmiId(t *testing.T, testFolder string, amiId string) {
 // LoadAmiId loads and unserializes an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
 // earlier setup step in later validation and teardown steps.
 //
-// deprecated.
+// Deprecated: Use LoadArtifactID instead.
 func LoadAmiId(t *testing.T, testFolder string) string {
 	return LoadString(t, testFolder, "AMI")
 }
