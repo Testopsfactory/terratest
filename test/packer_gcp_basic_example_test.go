@@ -27,7 +27,7 @@ func TestPackerGCPBasicExample(t *testing.T) {
 			"gcp_zone":       zone,
 		},
 
-		// Only build the AWS AMI
+		// Only build the Google Compute Image
 		Only: "googlecompute",
 	}
 
