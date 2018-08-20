@@ -32,6 +32,11 @@ variable "instance_port" {
   default     = 8080
 }
 
+variable "ssh_port" {
+  description = "The port each EC2 Instance should listen on for SSH requests."
+  default     = 22
+}
+
 variable "instance_text" {
   description = "The text each EC2 Instance should return when it gets an HTTP request."
   default     = "Hello, World!"
@@ -40,4 +45,9 @@ variable "instance_text" {
 variable "alb_port" {
   description = "The port the ALB should listen on for HTTP requests"
   default     = 80
+}
+
+variable "key_pair_name" {
+  description = "The EC2 Key Pair to associate with the EC2 Instance for SSH access."
+  default     = ""
 }
