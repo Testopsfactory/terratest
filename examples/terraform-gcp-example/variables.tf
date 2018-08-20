@@ -1,11 +1,13 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # ENVIRONMENT VARIABLES
-# Define these secrets as environment variables
+# You must define the following environment variables.
 # ---------------------------------------------------------------------------------------------------------------------
 
 # GOOGLE_CREDENTIALS
 # or
 # GOOGLE_APPLICATION_CREDENTIALS
+# and
+# GOOGLE_CLOUD_PROJECT
 
 # ---------------------------------------------------------------------------------------------------------------------
 # REQUIRED PARAMETERS
