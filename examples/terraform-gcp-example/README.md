@@ -22,8 +22,9 @@ it should be free, but you are completely responsible for all GCP charges.
 1. Configure your GCP credentials using one of the [supported methods for GCP CLI
    tools](https://cloud.google.com/sdk/docs/quickstarts).
 1. Install [Terraform](https://www.terraform.io/) and make sure it's in your `PATH`.
+1. Ensure the desired Project ID is set: `export GOOGLE_CLOUD_PROJECT=terratest-ABCXYZ`.
 1. Run `terraform init`.
-1. Run `terraform apply -var project=<projectID>`.
+1. Run `terraform apply`.
 1. When you're done, run `terraform destroy`.
 
 ## Running automated tests against this module

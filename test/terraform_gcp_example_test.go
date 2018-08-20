@@ -32,7 +32,6 @@ func TestTerraformGcpExample(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"project":       projectId,
 			"zone":          zone,
 			"instance_name": expectedInstanceName,
 			"bucket_name":   expectedBucketName,
