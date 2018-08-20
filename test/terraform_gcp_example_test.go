@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -12,10 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var projectId = os.Getenv("GOOGLE_CLOUD_PROJECT_ID")
-
 func TestTerraformGcpExample(t *testing.T) {
 	t.Parallel()
+
+	// Get the Project Id to use
+	projectId := gcp.GetGoogleProjectIDFromEnvVar()
 
 	// Create all resources in the following zone
 	zone := "us-east1-b"
