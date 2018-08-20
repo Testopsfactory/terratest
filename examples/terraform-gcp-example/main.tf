@@ -10,12 +10,6 @@ resource "google_compute_instance" "example" {
 
   boot_disk {
     initialize_params {
-      image = "${data.google_compute_image.ubuntu.self_link}"
-    }
-  }
-
-  boot_disk {
-    initialize_params {
       image = "ubuntu-os-cloud/ubuntu-1604-lts"
     }
   }
