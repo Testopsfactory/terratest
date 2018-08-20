@@ -36,7 +36,12 @@ func GetPublicIPOfInstanceE(t *testing.T, projectID string, zone string, instanc
 		return "", fmt.Errorf("Instances.Get(%s) got error: %v", instanceID, err)
 	}
 
-	// TODO - should we check whether or not we have an 'AccessConfig' ?
+	// If there are no accessConfigs specified, then this instance will have no external internet access:
+	// https://cloud.google.com/compute/docs/reference/rest/v1/instances.
+	if len(instance.NetworkInterfaces[0].AccessConfigs) == 0 {
+		return "", fmt.Errorf("Attempted to get public IP of Compute Instance %s, but that Compute Instance does not have a public IP address", instanceID)
+	}
+
 	ip := instance.NetworkInterfaces[0].AccessConfigs[0].NatIP
 
 	return ip, nil
