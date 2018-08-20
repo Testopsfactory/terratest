@@ -87,9 +87,10 @@ such as:
 1.  [HTTP Terraform Example](/examples/terraform-http-example): A more complicated Terraform configuration that deploys
     a simple web server that responds to HTTP requests in AWS.
 1.  [Basic Packer Example](/examples/packer-basic-example): A simple Packer template for building an Amazon Machine
-    Image (AMI).
+    Image (AMI) or Google Cloud Platform Compute Image.
 1.  [Terraform Packer Example](/examples/terraform-packer-example): A more complicated example that shows how to use
     Packer to build an AMI with a web server installed and deploy that AMI in AWS using Terraform.
+1.  [Terraform GCP Example](/examples/terraform-gcp-example): A simple Terraform configuration that creates a GCP Compute Instance and Storage Bucket.
 
 Next, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
 
@@ -100,9 +101,13 @@ Next, head over to the [test folder](/test) to see how you can use Terraform to 
     working correctly, and run `terraform destroy` to undeploy the web server.
 1.  [packer_basic_example_test.go](/test/packer_basic_example_test.go): Use Terratest to run `packer build` to build an
     AMI and then use the AWS APIs to delete that AMI.
+1.  [packer_gcp_basic_example_test.go](/test/packer_gcp_basic_example_test.go): Use Terratest to run `packer build`
+    to build a Google Cloud Platform Compute Image and then use the GCP APIs to delete that image.
 1.  [terraform_packer_example_test.go](/test/terraform_packer_example_test.go): Use Terratest to run `packer build` to
     build an AMI with a web server installed, deploy that AMI in AWS by running `terraform apply`, make HTTP requests to
     the web server to check that it is working correctly, and run `terraform destroy` to undeploy the web server.
+1.  [terraform_gcp_example_test.go](/test/terraform_gcp_example_test.go): Use Terratest to run `terraform apply` on
+    the Terraform GCP Example and verify you get the expected outputs.
 
 Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure
 modules:
@@ -126,6 +131,7 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 | **collections**    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other.                                                                                                                      |
 | **docker**         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands.                                                                                                                                                                                       |
 | **files**          | Functions for manipulating files and folders. Examples: check if a file exists, copy a folder and all of its contents.                                                                                                                                                                               |
+| **gcp**            | Functions that make it easier to work with the GCP APIs. Examples: Add labels to a Compute Instance, get the Public IPs of an Instance, Get a list of Instances in a Managed Instance Group, Work with Storage Buckets and Objects.                                                                                                                                                                                                                     |
 | **git**            | Functions for working with Git. Examples: get the name of the current Git branch.                                                                                                                                                                                                                    |
 | **http-helper**    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally.                                                                                                                        |
 | **logger**         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier.                                                                                                      |
