@@ -39,7 +39,7 @@ func TestCreateAndDestroyStorageBucket(t *testing.T) {
 	require.Equal(t, testFileBody, result)
 
 	// Empty the storage bucket so we can delete it
-	EmptyStorageBucket(t, gsBucketName)
+	defer EmptyStorageBucket(t, gsBucketName)
 }
 
 func TestAssertStorageBucketExistsNoFalseNegative(t *testing.T) {
