@@ -155,12 +155,12 @@ func GetInstanceIdsForInstanceGroupE(t *testing.T, projectID string, zone string
 		return nil, err
 	}
 
-	rb := &compute.InstanceGroupsListInstancesRequest{
+	requestBody := &compute.InstanceGroupsListInstancesRequest{
 		InstanceState: "ALL",
 	}
 
 	instanceIDs := []string{}
-	req := service.InstanceGroups.ListInstances(projectID, zone, groupName, rb)
+	req := service.InstanceGroups.ListInstances(projectID, zone, groupName, requestBody)
 	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
