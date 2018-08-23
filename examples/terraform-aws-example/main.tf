@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AN EC2 INSTANCE RUNNING UBUNTU
-# See test/terraform_aws_example.go for how to write automated tests for this code.
+# See test/terraform_aws_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_instance" "example" {

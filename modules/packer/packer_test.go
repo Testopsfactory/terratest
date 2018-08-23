@@ -10,7 +10,7 @@ func TestExtractAmiIdFromOneLine(t *testing.T) {
 
 	expectedAMIID := "ami-b481b3de"
 	text := fmt.Sprintf("1456332887,amazon-ebs,artifact,0,id,us-east-1:%s", expectedAMIID)
-	actualAMIID, err := extractAMIID(text)
+	actualAMIID, err := extractArtifactID(text)
 
 	if err != nil {
 		t.Errorf("Did not expect to get an error when extracting a valid AMI ID: %s", err)
@@ -18,6 +18,22 @@ func TestExtractAmiIdFromOneLine(t *testing.T) {
 
 	if actualAMIID != expectedAMIID {
 		t.Errorf("Did not get expected AMI ID. Expected: %s. Actual: %s.", expectedAMIID, actualAMIID)
+	}
+}
+
+func TestExtractImageIdFromOneLine(t *testing.T) {
+	t.Parallel()
+
+	expectedImageID := "terratest-packer-example-2018-08-09t12-02-58z"
+	text := fmt.Sprintf("1533816302,googlecompute,artifact,0,id,%s", expectedImageID)
+	actualImageID, err := extractArtifactID(text)
+
+	if err != nil {
+		t.Errorf("Did not expect to get an error when extracting a valid Image ID: %s", err)
+	}
+
+	if actualImageID != expectedImageID {
+		t.Errorf("Did not get expected Image ID. Expected: %s. Actual: %s.", expectedImageID, actualImageID)
 	}
 }
 
@@ -33,7 +49,7 @@ func TestExtractAmiIdFromMultipleLines(t *testing.T) {
 	blah
 	`, expectedAMIID)
 
-	actualAMIID, err := extractAMIID(text)
+	actualAMIID, err := extractArtifactID(text)
 
 	if err != nil {
 		t.Errorf("Did not expect to get an error when extracting a valid AMI ID: %s", err)
@@ -41,6 +57,29 @@ func TestExtractAmiIdFromMultipleLines(t *testing.T) {
 
 	if actualAMIID != expectedAMIID {
 		t.Errorf("Did not get expected AMI ID. Expected: %s. Actual: %s.", expectedAMIID, actualAMIID)
+	}
+}
+
+func TestExtractImageIdFromMultipleLines(t *testing.T) {
+	t.Parallel()
+
+	expectedImageID := "terratest-packer-example-2018-08-09t12-02-58z"
+	text := fmt.Sprintf(`
+	foo
+	bar
+	1533816302,googlecompute,artifact,0,id,%s
+	baz
+	blah
+	`, expectedImageID)
+
+	actualImageID, err := extractArtifactID(text)
+
+	if err != nil {
+		t.Errorf("Did not expect to get an error when extracting a valid Image ID: %s", err)
+	}
+
+	if actualImageID != expectedImageID {
+		t.Errorf("Did not get the expected Image ID. Expected: %s. Actual: %s.", expectedImageID, actualImageID)
 	}
 }
 
@@ -54,10 +93,27 @@ func TestExtractAmiIdNoIdPresent(t *testing.T) {
 	blah
 	`
 
-	_, err := extractAMIID(text)
+	_, err := extractArtifactID(text)
 
 	if err == nil {
 		t.Error("Expected to get an error when extracting an AMI ID from text with no AMI in it, but got nil")
 	}
 
+}
+
+func TestExtractArtifactINoIdPresent(t *testing.T) {
+	t.Parallel()
+
+	text := `
+	foo
+	bar
+	baz
+	blah
+	`
+
+	_, err := extractArtifactID(text)
+
+	if err == nil {
+		t.Error("Expected to get an error when extracting an Artifact ID from text with no Artifact ID in it, but got nil")
+	}
 }

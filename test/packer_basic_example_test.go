@@ -22,10 +22,13 @@ func TestPackerBasicExample(t *testing.T) {
 		Vars: map[string]string{
 			"aws_region": awsRegion,
 		},
+
+		// Only build the AWS AMI
+		Only: "amazon-ebs",
 	}
 
 	// Make sure the Packer build completes successfully
-	amiID := packer.BuildAmi(t, packerOptions)
+	amiID := packer.BuildArtifact(t, packerOptions)
 
 	// Clean up the AMI after we're done
 	defer aws.DeleteAmiAndAllSnapshots(t, awsRegion, amiID)

@@ -103,14 +103,30 @@ func LoadInt(t *testing.T, testFolder string, name string) int {
 	return val
 }
 
+// SaveArtifactID serializes and saves an Artifact ID into the given folder. This allows you to build an Artifact during setup and to reuse that
+// Artifact later during validation and teardown.
+func SaveArtifactID(t *testing.T, testFolder string, artifactID string) {
+	SaveString(t, testFolder, "Artifact", artifactID)
+}
+
+// LoadArtifactID loads and unserializes an Artifact ID from the given folder. This allows you to reuse an Artifact that was created during an
+// earlier setup step in later validation and teardown steps.
+func LoadArtifactID(t *testing.T, testFolder string) string {
+	return LoadString(t, testFolder, "Artifact")
+}
+
 // SaveAmiId serializes and saves an AMI ID into the given folder. This allows you to build an AMI during setup and to reuse that
 // AMI later during validation and teardown.
+//
+// Deprecated: Use SaveArtifactID instead.
 func SaveAmiId(t *testing.T, testFolder string, amiId string) {
 	SaveString(t, testFolder, "AMI", amiId)
 }
 
 // LoadAmiId loads and unserializes an AMI ID from the given folder. This allows you to reuse an AMI  that was created during an
 // earlier setup step in later validation and teardown steps.
+//
+// Deprecated: Use LoadArtifactID instead.
 func LoadAmiId(t *testing.T, testFolder string) string {
 	return LoadString(t, testFolder, "AMI")
 }

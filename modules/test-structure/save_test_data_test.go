@@ -124,6 +124,21 @@ func TestSaveAndLoadAmiId(t *testing.T) {
 	assert.Equal(t, expectedData, actualData)
 }
 
+func TestSaveAndLoadArtifactID(t *testing.T) {
+	t.Parallel()
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-artifact-id")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	expectedData := "terratest-packer-example-2018-08-08t15-35-19z"
+	SaveArtifactID(t, tmpFolder, expectedData)
+
+	actualData := LoadArtifactID(t, tmpFolder)
+	assert.Equal(t, expectedData, actualData)
+}
+
 func TestSaveAndLoadNamedStrings(t *testing.T) {
 	t.Parallel()
 
@@ -138,14 +153,26 @@ func TestSaveAndLoadNamedStrings(t *testing.T) {
 	name2 := "test-ami2"
 	expectedData2 := "ami-xyz98765"
 
+	name3 := "test-image"
+	expectedData3 := "terratest-packer-example-2018-08-08t15-35-19z"
+
+	name4 := "test-image2"
+	expectedData4 := "terratest-packer-example-2018-01-03t12-35-00z"
+
 	SaveString(t, tmpFolder, name1, expectedData1)
 	SaveString(t, tmpFolder, name2, expectedData2)
+	SaveString(t, tmpFolder, name3, expectedData3)
+	SaveString(t, tmpFolder, name4, expectedData4)
 
 	actualData1 := LoadString(t, tmpFolder, name1)
 	actualData2 := LoadString(t, tmpFolder, name2)
+	actualData3 := LoadString(t, tmpFolder, name3)
+	actualData4 := LoadString(t, tmpFolder, name4)
 
 	assert.Equal(t, expectedData1, actualData1)
 	assert.Equal(t, expectedData2, actualData2)
+	assert.Equal(t, expectedData3, actualData3)
+	assert.Equal(t, expectedData4, actualData4)
 }
 
 func TestSaveDuplicateTestData(t *testing.T) {
