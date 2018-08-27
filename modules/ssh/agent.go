@@ -3,13 +3,14 @@ package ssh
 import (
 	"crypto/x509"
 	"encoding/pem"
-	"golang.org/x/crypto/ssh/agent"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"golang.org/x/crypto/ssh/agent"
 )
 
 type SshAgent struct {
