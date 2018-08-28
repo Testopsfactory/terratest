@@ -79,24 +79,45 @@ func (s *SshAgent) Stop() {
 // Instantiates and returns an in-memory ssh agent with the given KeyPair already added
 // You should stop the agent to cleanup files afterwards by calling `defer sshAgent.Stop()`
 func SshAgentWithKeyPair(t *testing.T, keyPair *KeyPair) *SshAgent {
-	return SshAgentWithKeyPairs(t, []*KeyPair{keyPair})
+	sshAgent, err := SshAgentWithKeyPairE(t, keyPair)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return sshAgent
+}
+
+func SshAgentWithKeyPairE(t *testing.T, keyPair *KeyPair) (*SshAgent, error) {
+	sshAgent, err := SshAgentWithKeyPairsE(t, []*KeyPair{keyPair})
+	return sshAgent, err
+}
+
+func SshAgentWithKeyPairs(t *testing.T, keyPairs []*KeyPair) *SshAgent {
+	sshAgent, err := SshAgentWithKeyPairsE(t, keyPairs)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return sshAgent
 }
 
 // Instantiates and returns an in-memory ssh agent with the given KeyPair(s) already added
 // You should stop the agent to cleanup files afterwards by calling `defer sshAgent.Stop()`
-func SshAgentWithKeyPairs(t *testing.T, keyPairs []*KeyPair) *SshAgent {
+func SshAgentWithKeyPairsE(t *testing.T, keyPairs []*KeyPair) (*SshAgent, error) {
 	t.Log("Generating SSH Agent with given KeyPair(s)")
 
 	// Instantiate a temporary SSH agent
 	socketDir, err := ioutil.TempDir("", "ssh-agent-")
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
 	os.Setenv("SSH_AUTH_SOCK", socketFile)
 	sshAgent, err := NewSshAgent(t, socketDir, socketFile)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	// add given ssh keys to the newly created agent
@@ -105,11 +126,11 @@ func SshAgentWithKeyPairs(t *testing.T, keyPairs []*KeyPair) *SshAgent {
 		block, _ := pem.Decode([]byte(keyPair.PrivateKey))
 		privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 		if err != nil {
-			t.Fatal(err)
+			return nil, err
 		}
 		key := agent.AddedKey{PrivateKey: privateKey}
 		sshAgent.agent.Add(key)
 	}
 
-	return sshAgent
+	return sshAgent, err
 }
