@@ -23,6 +23,7 @@ type SshAgent struct {
 }
 
 // Create SSH agent, start it in background and returns control back to the main thread
+// You should stop the agent to cleanup files afterwards by calling `defer s.Stop()`
 func NewSshAgent(t *testing.T, socketDir string, socketFile string) (*SshAgent, error) {
 	var err error
 	s := &SshAgent{make(chan bool), make(chan bool), socketDir, socketFile, agent.NewKeyring(), nil}
@@ -76,11 +77,13 @@ func (s *SshAgent) Stop() {
 }
 
 // Instantiates and returns an in-memory ssh agent with the given KeyPair already added
+// You should stop the agent to cleanup files afterwards by calling `defer sshAgent.Stop()`
 func SshAgentWithKeyPair(t *testing.T, keyPair *KeyPair) *SshAgent {
 	return SshAgentWithKeyPairs(t, []*KeyPair{keyPair})
 }
 
 // Instantiates and returns an in-memory ssh agent with the given KeyPair(s) already added
+// You should stop the agent to cleanup files afterwards by calling `defer sshAgent.Stop()`
 func SshAgentWithKeyPairs(t *testing.T, keyPairs []*KeyPair) *SshAgent {
 	t.Log("Generating SSH Agent with given KeyPair(s)")
 
