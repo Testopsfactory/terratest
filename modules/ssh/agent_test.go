@@ -21,7 +21,8 @@ func TestSshAgentWithKeyPair(t *testing.T) {
 	assert.Equal(t, sockFileEnv, sockFile)
 
 	// assert that there's 1 key in the agent
-	keys, _ := sshAgent.agent.List()
+	keys, err := sshAgent.agent.List()
+	assert.NoError(t, err)
 	assert.Len(t, keys, 1)
 
 	sshAgent.Stop()
