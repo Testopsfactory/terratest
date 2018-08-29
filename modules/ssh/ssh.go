@@ -23,7 +23,8 @@ import (
 type Host struct {
 	Hostname    string // host name or ip address
 	SshUserName string // user name
-	// set one or both authentication methods
+	// set one or more authentication methods,
+	// the first valid method will be used
 	SshKeyPair *KeyPair // ssh key pair to use as authentication method (disabled by default)
 	SshAgent   bool     // enable authentication using your existing local SSH agent (disabled by default)
 	OverrideSshAgent *SshAgent
