@@ -3,8 +3,7 @@ package ssh
 import (
 	"os"
 	"path/filepath"
-
-	//"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,6 +36,30 @@ func TestSshAgentWithKeyPairs(t *testing.T) {
 	sshAgent := SshAgentWithKeyPairs(t, []*KeyPair{keyPair, keyPair2})
 	defer sshAgent.Stop()
 
-	keys, _ := sshAgent.agent.List()
+	keys, err := sshAgent.agent.List()
+	assert.NoError(t, err)
 	assert.Len(t, keys, 2)
+}
+
+func TestMultipleSshAgents(t *testing.T) {
+	keyPair := GenerateRSAKeyPair(t, 2048)
+	keyPair2 := GenerateRSAKeyPair(t, 2048)
+
+	// start a couple of agents
+	sshAgent := SshAgentWithKeyPair(t, keyPair)
+	sshAgent2 := SshAgentWithKeyPair(t, keyPair2)
+	defer sshAgent.Stop()
+	defer sshAgent2.Stop()
+
+	// collect public keys from the agents
+	keys, err := sshAgent.agent.List()
+	assert.NoError(t, err)
+	keys2, err := sshAgent2.agent.List()
+	assert.NoError(t, err)
+
+	// check that all keys match up to expected
+	assert.NotEqual(t, keys, keys2)
+	assert.Equal(t, strings.TrimSpace(keyPair.PublicKey), keys[0].String())
+	assert.Equal(t, strings.TrimSpace(keyPair2.PublicKey), keys2[0].String())
+
 }
