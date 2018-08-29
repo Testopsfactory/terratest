@@ -3,6 +3,8 @@ package ssh
 import (
 	"os"
 	"path/filepath"
+
+	//"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,11 +16,7 @@ func TestSshAgentWithKeyPair(t *testing.T) {
 
 	// ensure that socket directory is set in environment, and it exists
 	sockFile := filepath.Join(sshAgent.socketDir, "ssh_auth.sock")
-
-	sockFileEnv, found := os.LookupEnv("SSH_AUTH_SOCK")
 	assert.FileExists(t, sockFile)
-	assert.True(t, found)
-	assert.Equal(t, sockFileEnv, sockFile)
 
 	// assert that there's 1 key in the agent
 	keys, err := sshAgent.agent.List()

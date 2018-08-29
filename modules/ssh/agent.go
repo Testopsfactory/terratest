@@ -114,7 +114,7 @@ func SshAgentWithKeyPairsE(t *testing.T, keyPairs []*KeyPair) (*SshAgent, error)
 		return nil, err
 	}
 	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
-	os.Setenv("SSH_AUTH_SOCK", socketFile)
+	//os.Setenv("SSH_AUTH_SOCK", socketFile)
 	sshAgent, err := NewSshAgent(t, socketDir, socketFile)
 	if err != nil {
 		return nil, err
