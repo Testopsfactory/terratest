@@ -10,6 +10,8 @@ import (
 )
 
 func TestSshAgentWithKeyPair(t *testing.T) {
+	t.Parallel()
+
 	keyPair := GenerateRSAKeyPair(t, 2048)
 	sshAgent := SshAgentWithKeyPair(t, keyPair)
 
@@ -31,6 +33,8 @@ func TestSshAgentWithKeyPair(t *testing.T) {
 }
 
 func TestSshAgentWithKeyPairs(t *testing.T) {
+	t.Parallel()
+
 	keyPair := GenerateRSAKeyPair(t, 2048)
 	keyPair2 := GenerateRSAKeyPair(t, 2048)
 	sshAgent := SshAgentWithKeyPairs(t, []*KeyPair{keyPair, keyPair2})
@@ -42,6 +46,8 @@ func TestSshAgentWithKeyPairs(t *testing.T) {
 }
 
 func TestMultipleSshAgents(t *testing.T) {
+	t.Parallel()
+
 	keyPair := GenerateRSAKeyPair(t, 2048)
 	keyPair2 := GenerateRSAKeyPair(t, 2048)
 
