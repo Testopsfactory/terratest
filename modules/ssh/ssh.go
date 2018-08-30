@@ -27,7 +27,7 @@ type Host struct {
 	// the first valid method will be used
 	SshKeyPair *KeyPair // ssh key pair to use as authentication method (disabled by default)
 	SshAgent   bool     // enable authentication using your existing local SSH agent (disabled by default)
-	OverrideSshAgent *SshAgent
+	OverrideSshAgent *SshAgent // enable an in process `SshAgent` for connections to this host (disabled by default)
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
