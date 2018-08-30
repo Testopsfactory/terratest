@@ -226,8 +226,8 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	// programatically emulate within this test. We're going to use the user "ubuntu" as we know the Instance
 	// is running an Ubuntu AMI that has such a user
 	publicHost := ssh.Host{
-		Hostname: publicInstanceIP,
-		SshUserName: "ubuntu",
+		Hostname:         publicInstanceIP,
+		SshUserName:      "ubuntu",
 		OverrideSshAgent: sshAgent,
 	}
 
@@ -271,13 +271,13 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	// programatically emulate within this test. For both instances, we are using the Key Pair we created earlier,
 	// and the user "ubuntu", as we know the Instances are running an Ubuntu AMI that has such a user
 	publicHost := ssh.Host{
-		Hostname: publicInstanceIP,
-		SshUserName: "ubuntu",
+		Hostname:         publicInstanceIP,
+		SshUserName:      "ubuntu",
 		OverrideSshAgent: sshAgent,
 	}
 	privateHost := ssh.Host{
-		Hostname: privateInstanceIP,
-		SshUserName: "ubuntu",
+		Hostname:         privateInstanceIP,
+		SshUserName:      "ubuntu",
 		OverrideSshAgent: sshAgent,
 	}
 
@@ -289,8 +289,6 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
-
-
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
