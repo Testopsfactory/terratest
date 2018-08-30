@@ -1,25 +1,18 @@
 package test
 
 import (
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"os"
-
 	"github.com/gruntwork-io/terratest/modules/aws"
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
-	"golang.org/x/crypto/ssh/agent"
 )
 
 // An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest. The test also
@@ -224,14 +217,18 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
 
+	// start the ssh agent
+	sshAgent := ssh.SshAgentWithKeyPair(t, keyPair.KeyPair)
+	defer sshAgent.Stop()
+
 	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier. Instead of
 	// directly using the SSH key in the SSH connection, we're going to rely on an existing SSH agent that we
 	// programatically emulate within this test. We're going to use the user "ubuntu" as we know the Instance
 	// is running an Ubuntu AMI that has such a user
 	publicHost := ssh.Host{
-		Hostname:    publicInstanceIP,
+		Hostname: publicInstanceIP,
 		SshUserName: "ubuntu",
-		SshAgent:    true,
+		OverrideSshAgent: sshAgent,
 	}
 
 	// It can take a minute or so for the Instance to boot up, so retry a few times
@@ -242,50 +239,6 @@ func testSSHAgentToPublicHost(t *testing.T, terraformOptions *terraform.Options,
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
-
-	// Instantiate a temporary SSH agent
-	socketDir, err := ioutil.TempDir("", "ssh-agent-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
-	os.Setenv("SSH_AUTH_SOCK", socketFile)
-	sshAgent, err := NewSSHAgent(socketDir, socketFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer sshAgent.Stop()
-
-	// Create SSH key for the agent using the existing AWS SSH key pair
-	block, _ := pem.Decode([]byte(keyPair.KeyPair.PrivateKey))
-	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	key := agent.AddedKey{PrivateKey: pkey}
-
-	// Add SSH key to the agent
-	// Retry until agent is ready or give up with a fatal error
-	for i := 0; i < 15; i++ {
-		var keys []*agent.Key
-		keys, err = sshAgent.agent.List()
-		if err != nil {
-			logger.Logf(t, "Error listing SSH keys %v", err)
-		}
-		if len(keys) > 0 {
-			logger.Logf(t, "Agent SSH keys: %v", keys)
-			break
-		} else {
-			err = sshAgent.agent.Add(key)
-			if err != nil {
-				logger.Logf(t, "Error adding SSH key %v", err)
-			}
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-	if err != nil {
-		t.Fatal("Could not add any SSH key to the agent after several retries")
-	}
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
@@ -309,19 +262,23 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
 	privateInstanceIP := terraform.Output(t, terraformOptions, "private_instance_ip")
 
+	// start the ssh agent
+	sshAgent := ssh.SshAgentWithKeyPair(t, keyPair.KeyPair)
+	defer sshAgent.Stop()
+
 	// We're going to try to SSH to the private instance using the public instance as a jump host. Instead of
 	// directly using the SSH key in the SSH connection, we're going to rely on an existing SSH agent that we
 	// programatically emulate within this test. For both instances, we are using the Key Pair we created earlier,
 	// and the user "ubuntu", as we know the Instances are running an Ubuntu AMI that has such a user
 	publicHost := ssh.Host{
-		Hostname:    publicInstanceIP,
+		Hostname: publicInstanceIP,
 		SshUserName: "ubuntu",
-		SshAgent:    true,
+		OverrideSshAgent: sshAgent,
 	}
 	privateHost := ssh.Host{
-		Hostname:    privateInstanceIP,
+		Hostname: privateInstanceIP,
 		SshUserName: "ubuntu",
-		SshAgent:    true,
+		OverrideSshAgent: sshAgent,
 	}
 
 	// It can take a minute or so for the Instance to boot up, so retry a few times
@@ -333,49 +290,7 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	expectedText := "Hello, World"
 	command := fmt.Sprintf("echo -n '%s'", expectedText)
 
-	// Instantiate a temporary SSH agent
-	socketDir, err := ioutil.TempDir("", "ssh-agent-")
-	if err != nil {
-		t.Fatal(err)
-	}
-	socketFile := filepath.Join(socketDir, "ssh_auth.sock")
-	os.Setenv("SSH_AUTH_SOCK", socketFile)
-	sshAgent, err := NewSSHAgent(socketDir, socketFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer sshAgent.Stop()
 
-	// Create SSH key for the agent using the existing AWS SSH key pair
-	block, _ := pem.Decode([]byte(keyPair.KeyPair.PrivateKey))
-	pkey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	key := agent.AddedKey{PrivateKey: pkey}
-
-	// Add SSH key to the agent
-	// Retry until agent is ready or give up with a fatal error
-	for i := 0; i < 15; i++ {
-		var keys []*agent.Key
-		keys, err = sshAgent.agent.List()
-		if err != nil {
-			logger.Logf(t, "Error listing SSH keys %v", err)
-		}
-		if len(keys) > 0 {
-			logger.Logf(t, "Agent SSH keys: %v", keys)
-			break
-		} else {
-			err = sshAgent.agent.Add(key)
-			if err != nil {
-				logger.Logf(t, "Error adding SSH key %v", err)
-			}
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-	if err != nil {
-		t.Fatal("Could not add any SSH key to the agent after several retries")
-	}
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {

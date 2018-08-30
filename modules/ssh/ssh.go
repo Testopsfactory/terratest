@@ -23,9 +23,11 @@ import (
 type Host struct {
 	Hostname    string // host name or ip address
 	SshUserName string // user name
-	// set one or both authentication methods
+	// set one or more authentication methods,
+	// the first valid method will be used
 	SshKeyPair *KeyPair // ssh key pair to use as authentication method (disabled by default)
 	SshAgent   bool     // enable authentication using your existing local SSH agent (disabled by default)
+	OverrideSshAgent *SshAgent // enable an in process `SshAgent` for connections to this host (disabled by default)
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
@@ -322,6 +324,18 @@ func NoOpHostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) er
 // Returns an array of authentication methods
 func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 	var methods []ssh.AuthMethod
+
+	// override local ssh agent with given sshAgent instance
+	if host.OverrideSshAgent != nil {
+		conn, err := net.Dial("unix", host.OverrideSshAgent.socketFile)
+		if err != nil {
+			fmt.Print("Failed to dial in memory ssh agent")
+			return methods, err
+		}
+		agentClient := agent.NewClient(conn)
+		methods = append(methods, []ssh.AuthMethod{ssh.PublicKeysCallback(agentClient.Signers)}...)
+	}
+
 	// use existing ssh agent socket
 	// if agent authentication is enabled and no agent is set up, returns an error
 	if host.SshAgent {
@@ -333,6 +347,7 @@ func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 		agentClient := agent.NewClient(conn)
 		methods = append(methods, []ssh.AuthMethod{ssh.PublicKeysCallback(agentClient.Signers)}...)
 	}
+
 	// use provided ssh key pair
 	if host.SshKeyPair != nil {
 		signer, err := ssh.ParsePrivateKey([]byte(host.SshKeyPair.PrivateKey))
@@ -340,10 +355,13 @@ func createAuthMethodsForHost(host Host) ([]ssh.AuthMethod, error) {
 			return methods, err
 		}
 		methods = append(methods, []ssh.AuthMethod{ssh.PublicKeys(signer)}...)
-		// if no valid authentication method is provided, return a custom error message
-	} else if !host.SshAgent {
+	}
+
+	// no valid authentication method was provided
+	if len(methods) < 1 {
 		return methods, errors.New("no authentication method defined")
 	}
+
 	return methods, nil
 }
 
