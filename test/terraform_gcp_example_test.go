@@ -76,7 +76,7 @@ func TestTerraformGcpExample(t *testing.T) {
 
 		testingTag, containsTestingTag := instanceLabels["testing"]
 		actualText := strings.TrimSpace(testingTag)
-		if containsTestingTag != true {
+		if !containsTestingTag {
 			return "", fmt.Errorf("Expected the tag 'testing' to exist")
 		}
 
