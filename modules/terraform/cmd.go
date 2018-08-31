@@ -26,6 +26,15 @@ func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (strin
 		args = append(args, "-no-color")
 	}
 
+	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
+	if options.SshAgent != nil {
+		// Initialize EnvVars, if it hasn't been set yet
+		if options.EnvVars == nil {
+			options.EnvVars = map[string]string{}
+		}
+		options.EnvVars["SSH_AUTH_SOCK"] = options.SshAgent.SocketFile()
+	}
+
 	description := fmt.Sprintf("Running terraform %v", args)
 	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		cmd := shell.Command{
