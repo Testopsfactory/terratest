@@ -23,6 +23,8 @@ variable "username" {
   default     = "username"
 }
 
+# Not a good idea to keep in plain text. Would be better to pass through encrypted
+# environment variables or through some secret management solution.
 variable "password" {
   description = "Master password of the DB"
   default     = "password"

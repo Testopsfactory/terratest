@@ -1,6 +1,6 @@
 # Terraform AWS RDS Example
 
-This folder contains a simple Terraform module that deploys a database instance(MySQL by default) in [AWS](https://aws.amazon.com/)
+This folder contains a simple Terraform module that deploys a database instance (MySQL by default) in [AWS](https://aws.amazon.com/)
 to demonstrate how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an [RDS
 Instance](https://aws.amazon.com/rds/) and associates it with an option group and parameter group to customize it.
 

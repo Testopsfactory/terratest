@@ -1,34 +1,22 @@
-resource "aws_vpc" "example" {
-  cidr_block = "10.0.0.0/16"
-  tags {
-    Name = "${var.name}"
-  }
+data "aws_vpc" "default" {
+  default = true
 }
 
 data "aws_availability_zones" "available" {}
 
-
-resource "aws_subnet" "example_1" {
-  vpc_id     = "${aws_vpc.example.id}"
-  cidr_block = "10.0.0.0/24"
+data "aws_subnet" "example_1" {
+  vpc_id     = "${data.aws_vpc.default.id}"
   availability_zone = "${data.aws_availability_zones.available.names[0]}"
-  tags {
-    Name = "${var.name}-1"
-  }
 }
 
-resource "aws_subnet" "example_2" {
-  vpc_id     = "${aws_vpc.example.id}"
-  cidr_block = "10.0.1.0/24"
+data "aws_subnet" "example_2" {
+  vpc_id     = "${data.aws_vpc.default.id}"
   availability_zone = "${data.aws_availability_zones.available.names[1]}"
-  tags {
-    Name = "${var.name}-2"
-  }
 }
 
 resource "aws_db_subnet_group" "example" {
   name       = "${var.name}"
-  subnet_ids = ["${aws_subnet.example_1.id}", "${aws_subnet.example_2.id}"]
+  subnet_ids = ["${data.aws_subnet.example_1.id}", "${data.aws_subnet.example_2.id}"]
 
   tags {
     Name = "${var.name}"

@@ -38,10 +38,7 @@ func GetParameterValueForParameterOfRdsInstanceE(t *testing.T, parameterName str
 	output := GetAllParametersOfRdsInstance(t, dbInstanceID, awsRegion)
 	for _, parameter := range output {
 		if *parameter.ParameterName == parameterName {
-			if parameter.ParameterValue != nil {
-				return *parameter.ParameterValue, nil
-			}
-			return "", nil
+			return aws.StringValue(parameter.ParameterValue), nil
 		}
 	}
 	return "", ParameterForDbInstanceNotFound{ParameterName: parameterName, DbInstanceID: dbInstanceID, AwsRegion: awsRegion}
@@ -64,7 +61,7 @@ func GetOptionSettingForOfRdsInstanceE(t *testing.T, optionName string, optionSe
 		if *option.OptionName == optionName {
 			for _, optionSetting := range option.OptionSettings {
 				if *optionSetting.Name == optionSettingName {
-					return *optionSetting.Value, nil
+					return aws.StringValue(optionSetting.Value), nil
 				}
 			}
 		}
@@ -124,14 +121,22 @@ func GetAllParametersOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion
 
 // GetRdsInstanceDetails gets the details of a single DB instance whose identifier is passed.
 func GetRdsInstanceDetails(t *testing.T, dbInstanceID string, awsRegion string) *rds.DBInstance {
-	rdsClient := NewRdsClient(t, awsRegion)
-
-	input := rds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(dbInstanceID)}
-	output, err := rdsClient.DescribeDBInstances(&input)
+	output, err := GetRdsInstanceDetailsE(t, dbInstanceID, awsRegion)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return output.DBInstances[0]
+	return output
+}
+
+// GetRdsInstanceDetailsE gets the details of a single DB instance whose identifier is passed.
+func GetRdsInstanceDetailsE(t *testing.T, dbInstanceID string, awsRegion string) (*rds.DBInstance, error) {
+	rdsClient := NewRdsClient(t, awsRegion)
+	input := rds.DescribeDBInstancesInput{DBInstanceIdentifier: aws.String(dbInstanceID)}
+	output, err := rdsClient.DescribeDBInstances(&input)
+	if err != nil {
+		return nil, err
+	}
+	return output.DBInstances[0], nil
 }
 
 // NewRdsClient creates an RDS client.
