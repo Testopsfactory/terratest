@@ -26,7 +26,7 @@
   version = "v0.5.0"
 
 [[projects]]
-  digest = "1:29d1184d739762635b4e4e6f14c5610fa43ac4f1013750dd669b1ffa00040db1"
+  digest = "1:7489dd2f5db685253a59a30ff0c97570d55731a977c1da1b7e4372331a3489ff"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -67,6 +67,7 @@
     "service/ec2",
     "service/iam",
     "service/kms",
+    "service/rds",
     "service/s3",
     "service/s3/s3iface",
     "service/s3/s3manager",
@@ -138,6 +139,29 @@
   version = "v2.0.0"
 
 [[projects]]
+  digest = "1:6e7e5dd1938177c114669191835123a0c46d0989700dc0cc4370ec9c2d23dc24"
+  name = "github.com/gruntwork-io/terratest"
+  packages = [
+    "modules/aws",
+    "modules/collections",
+    "modules/docker",
+    "modules/files",
+    "modules/gcp",
+    "modules/http-helper",
+    "modules/logger",
+    "modules/packer",
+    "modules/random",
+    "modules/retry",
+    "modules/shell",
+    "modules/ssh",
+    "modules/terraform",
+    "modules/test-structure",
+  ]
+  pruneopts = "UT"
+  revision = "0fd2dfc371c4c829b34f75b535daabc279fa9764"
+  version = "v0.10.1"
+
+[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -198,7 +222,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dec72d8441e4e88bbf27cc98e28e962e065ebd11bcd42063f0444020b7249618"
+  digest = "1:8e56f01a7d273a0c67edb531e176e93b9f27cbe567bc84213b9b5c03bcb57b78"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -208,6 +232,7 @@
     "internal/subtle",
     "poly1305",
     "ssh",
+    "ssh/agent",
   ]
   pruneopts = "UT"
   revision = "f027049dab0ad238e394a753dba2d14753473a04"
@@ -375,19 +400,36 @@
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/kms",
+    "github.com/aws/aws-sdk-go/service/rds",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/s3/s3manager",
     "github.com/aws/aws-sdk-go/service/sns",
     "github.com/aws/aws-sdk-go/service/sqs",
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/google/uuid",
+    "github.com/gruntwork-io/terratest/modules/aws",
+    "github.com/gruntwork-io/terratest/modules/collections",
+    "github.com/gruntwork-io/terratest/modules/docker",
+    "github.com/gruntwork-io/terratest/modules/files",
+    "github.com/gruntwork-io/terratest/modules/gcp",
+    "github.com/gruntwork-io/terratest/modules/http-helper",
+    "github.com/gruntwork-io/terratest/modules/logger",
+    "github.com/gruntwork-io/terratest/modules/packer",
+    "github.com/gruntwork-io/terratest/modules/random",
+    "github.com/gruntwork-io/terratest/modules/retry",
+    "github.com/gruntwork-io/terratest/modules/shell",
+    "github.com/gruntwork-io/terratest/modules/ssh",
+    "github.com/gruntwork-io/terratest/modules/terraform",
+    "github.com/gruntwork-io/terratest/modules/test-structure",
     "github.com/pquerna/otp/totp",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "golang.org/x/crypto/ssh",
+    "golang.org/x/crypto/ssh/agent",
     "golang.org/x/net/context",
     "golang.org/x/oauth2/google",
     "google.golang.org/api/compute/v1",
+    "google.golang.org/api/iterator",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
