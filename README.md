@@ -91,7 +91,8 @@ such as:
 1.  [Terraform Packer Example](/examples/terraform-packer-example): A more complicated example that shows how to use
     Packer to build an AMI with a web server installed and deploy that AMI in AWS using Terraform.
 1.  [Terraform GCP Example](/examples/terraform-gcp-example): A simple Terraform configuration that creates a GCP Compute Instance and Storage Bucket.
-1.  [Terraform remote-exec Example](/examples/terraform-remote-exec-example): A terraform configuration that creates and AWS instance and then uses `remote-exec`to provision it.
+1.  [Terraform remote-exec Example](/examples/terraform-remote-exec-example): A terraform configuration that creates and 
+    AWS instance and then uses `remote-exec` to provision it.
 
 Next, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
 
