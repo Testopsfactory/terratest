@@ -23,6 +23,22 @@ func TestTerraformRemoteExecExample(t *testing.T) {
 
 	terraformDirectory := "../examples/terraform-remote-exec-example"
 
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer test_structure.RunTestStage(t, "teardown", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, terraformDirectory)
+		keyPair := test_structure.LoadEc2KeyPair(t, terraformDirectory)
+
+		// destroy terraform resources and delete ec2 key pair
+		terraform.Destroy(t, terraformOptions)
+		aws.DeleteEC2KeyPair(t, keyPair)
+
+		// remove testFile, if it exists
+		testFile := filepath.Join(terraformDirectory, "public-ip")
+		if _, err := os.Stat(testFile); err == nil {
+			os.Remove(testFile)
+		}
+	})
+
 	// Deploy the example
 	test_structure.RunTestStage(t, "setup", func() {
 
@@ -90,20 +106,6 @@ func TestTerraformRemoteExecExample(t *testing.T) {
 		assert.Equal(t, strings.TrimSpace(publicIP), strings.TrimSpace(string(b)))
 	})
 
-	// At the end of the test, run `terraform destroy` to clean up any resources that were created
-	defer test_structure.RunTestStage(t, "teardown", func() {
-		terraformOptions := test_structure.LoadTerraformOptions(t, terraformDirectory)
-		keyPair := test_structure.LoadEc2KeyPair(t, terraformDirectory)
 
-		// destroy terraform resources and delete ec2 key pair
-		terraform.Destroy(t, terraformOptions)
-		aws.DeleteEC2KeyPair(t, keyPair)
-
-		// remove testFile, if it exists
-		testFile := filepath.Join(terraformDirectory, "public-ip")
-		if _, err := os.Stat(testFile); err == nil {
-			os.Remove(testFile)
-		}
-	})
 
 }
