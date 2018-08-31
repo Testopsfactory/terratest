@@ -35,6 +35,11 @@ func NewSshAgent(t *testing.T, socketDir string, socketFile string) (*SshAgent, 
 	return s, nil
 }
 
+// expose socketFile variable
+func (s *SshAgent) SocketFile() string {
+	return s.socketFile
+}
+
 // SSH Agent listener and handler
 func (s *SshAgent) run(t *testing.T) {
 	defer close(s.stopped)

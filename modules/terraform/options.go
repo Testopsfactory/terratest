@@ -1,6 +1,9 @@
 package terraform
 
-import "time"
+import (
+	"github.com/gruntwork-io/terratest/modules/ssh"
+	"time"
+)
 
 // Options for running Terraform commands
 type Options struct {
@@ -13,4 +16,5 @@ type Options struct {
 	TimeBetweenRetries       time.Duration          // The amount of time to wait between retries
 	Upgrade                  bool                   // Whether the -upgrade flag of the terraform init command should be set to true or not
 	NoColor                  bool                   // Whether the -no-color flag will be set for any Terraform command or not
+	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
 }
