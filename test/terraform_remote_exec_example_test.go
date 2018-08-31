@@ -2,17 +2,18 @@ package test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"testing"
 )
 
 // This test shows how to override the systems local SSH Agent, with an in-process SSH agent, whose keys can be managed
@@ -105,7 +106,5 @@ func TestTerraformRemoteExecExample(t *testing.T) {
 		}
 		assert.Equal(t, strings.TrimSpace(publicIP), strings.TrimSpace(string(b)))
 	})
-
-
 
 }
