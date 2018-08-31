@@ -19,7 +19,10 @@ func GetAddressOfRdsInstance(t *testing.T, dbInstanceID string, awsRegion string
 
 // GetAddressOfRdsInstanceE gets the address of the given RDS Instance in the given region.
 func GetAddressOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion string) (string, error) {
-	dbInstance := GetRdsInstanceDetails(t, dbInstanceID, awsRegion)
+	dbInstance, err := GetRdsInstanceDetailsE(t, dbInstanceID, awsRegion)
+	if err != nil {
+		return "", err
+	}
 
 	return aws.StringValue(dbInstance.Endpoint.Address), nil
 }
@@ -71,9 +74,22 @@ func GetOptionSettingForOfRdsInstanceE(t *testing.T, optionName string, optionSe
 
 // GetOptionGroupNameOfRdsInstance gets the name of the option group associated with the RDS instance
 func GetOptionGroupNameOfRdsInstance(t *testing.T, dbInstanceID string, awsRegion string) string {
-	dbInstance := GetRdsInstanceDetails(t, dbInstanceID, awsRegion)
-	return aws.StringValue(dbInstance.OptionGroupMemberships[0].OptionGroupName)
+	dbInstance, err := GetOptionGroupNameOfRdsInstanceE(t, dbInstanceID, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return dbInstance
 }
+
+// GetOptionGroupNameOfRdsInstanceE gets the name of the option group associated with the RDS instance
+func GetOptionGroupNameOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion string) (string, error) {
+	dbInstance, err := GetRdsInstanceDetailsE(t, dbInstanceID, awsRegion)
+	if err != nil {
+		return "", err
+	}
+	return aws.StringValue(dbInstance.OptionGroupMemberships[0].OptionGroupName), nil
+}
+
 
 // GetOptionsOfOptionGroup gets the options of the option group specified
 func GetOptionsOfOptionGroup(t *testing.T, optionGroupName string, awsRegion string) []*rds.Option {
@@ -106,7 +122,10 @@ func GetAllParametersOfRdsInstance(t *testing.T, dbInstanceID string, awsRegion 
 
 // GetAllParametersOfRdsInstanceE gets all the parameters defined in the parameter group for the RDS instance in the given region.
 func GetAllParametersOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion string) ([]*rds.Parameter, error) {
-	dbInstance := GetRdsInstanceDetails(t, dbInstanceID, awsRegion)
+	dbInstance, dbInstanceErr := GetRdsInstanceDetailsE(t, dbInstanceID, awsRegion)
+	if dbInstanceErr != nil {
+		return []*rds.Parameter{}, dbInstanceErr
+	}
 	parameterGroupName := aws.StringValue(dbInstance.DBParameterGroups[0].DBParameterGroupName)
 
 	rdsClient := NewRdsClient(t, awsRegion)
@@ -117,15 +136,6 @@ func GetAllParametersOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion
 		return []*rds.Parameter{}, err
 	}
 	return output.Parameters, nil
-}
-
-// GetRdsInstanceDetails gets the details of a single DB instance whose identifier is passed.
-func GetRdsInstanceDetails(t *testing.T, dbInstanceID string, awsRegion string) *rds.DBInstance {
-	output, err := GetRdsInstanceDetailsE(t, dbInstanceID, awsRegion)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return output
 }
 
 // GetRdsInstanceDetailsE gets the details of a single DB instance whose identifier is passed.
