@@ -2,8 +2,9 @@ package test
 
 import (
 	"fmt"
-	"testing"
 	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -17,6 +18,10 @@ func TestTerraformAwsRdsExample(t *testing.T) {
 	// Give this EC2 Instance a unique ID for a name tag so we can distinguish it from any other EC2 Instance running
 	// in your AWS account
 	expectedName := fmt.Sprintf("terratest-aws-example-%s", strings.ToLower(random.UniqueId()))
+	expectedPort := int64(3306)
+	expectedDatabaseName := "terratest"
+	username := "username"
+	password := "password"
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
 	awsRegion := aws.GetRandomRegion(t, nil, nil)
 
@@ -25,16 +30,19 @@ func TestTerraformAwsRdsExample(t *testing.T) {
 		TerraformDir: "../examples/terraform-aws-rds-example",
 
 		// Variables to pass to our Terraform code using -var options
+		// "username" and "password" should not be passed from here in a production scenario.
 		Vars: map[string]interface{}{
-			"name": expectedName,
-			"engine_name" : "mysql",
+			"name":                 expectedName,
+			"engine_name":          "mysql",
 			"major_engine_version": "5.7",
-			"family": "mysql5.7",
-			"username" : "username",
-			"password" : "password",
-			"allocated_storage": 5,
-			"license_model" : "general-public-license",
-			"engine_version" : "5.7.21",
+			"family":               "mysql5.7",
+			"username":             username,
+			"password":             password,
+			"allocated_storage":    5,
+			"license_model":        "general-public-license",
+			"engine_version":       "5.7.21",
+			"port":                 expectedPort,
+			"database_name":        expectedDatabaseName,
 		},
 
 		// Environment variables to set when running Terraform
@@ -52,9 +60,10 @@ func TestTerraformAwsRdsExample(t *testing.T) {
 	// Run `terraform output` to get the value of an output variable
 	dbInstanceID := terraform.Output(t, terraformOptions, "db_instance_id")
 
-	// Look up the endpoint address of the RDS instance
+	// Look up the endpoint address and port of the RDS instance
 	address := aws.GetAddressOfRdsInstance(t, dbInstanceID, awsRegion)
-
+	port := aws.GetPortOfRdsInstance(t, dbInstanceID, awsRegion)
+	schemaExistsInRdsInstance := aws.GetWhetherSchemaExistsInRdsInstance(t, address, port, username, password, expectedDatabaseName)
 	// Lookup parameter values. All defined values are strings in the API call response
 	generalLogParameterValue := aws.GetParameterValueForParameterOfRdsInstance(t, "general_log", dbInstanceID, awsRegion)
 	allowSuspiciousUdfsParameterValue := aws.GetParameterValueForParameterOfRdsInstance(t, "allow-suspicious-udfs", dbInstanceID, awsRegion)
@@ -64,6 +73,10 @@ func TestTerraformAwsRdsExample(t *testing.T) {
 
 	// Verify that the address is not null
 	assert.NotNil(t, address)
+	// Verify that the DB instance is listening on the port mentioned
+	assert.Equal(t, expectedPort, port)
+	// Verify that the table/schema requested for creation is actually present in the database
+	assert.True(t, schemaExistsInRdsInstance)
 	// Booleans are (string) "0", "1"
 	assert.Equal(t, "0", generalLogParameterValue)
 	// Values not set are "". This is custom behavior defined.

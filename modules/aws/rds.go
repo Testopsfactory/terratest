@@ -1,8 +1,11 @@
 package aws
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -27,6 +30,54 @@ func GetAddressOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion strin
 	return aws.StringValue(dbInstance.Endpoint.Address), nil
 }
 
+// GetPortOfRdsInstance gets the address of the given RDS Instance in the given region.
+func GetPortOfRdsInstance(t *testing.T, dbInstanceID string, awsRegion string) int64 {
+	port, err := GetPortOfRdsInstanceE(t, dbInstanceID, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return port
+}
+
+// GetPortOfRdsInstanceE gets the address of the given RDS Instance in the given region.
+func GetPortOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion string) (int64, error) {
+	dbInstance, err := GetRdsInstanceDetailsE(t, dbInstanceID, awsRegion)
+	if err != nil {
+		return -1, err
+	}
+
+	return *dbInstance.Endpoint.Port, nil
+}
+
+// GetWhetherSchemaExistsInRdsInstance checks whether the specified schema/table name exists in the RDS instance
+func GetWhetherSchemaExistsInRdsInstance(t *testing.T, dbUrl string, dbPort int64, dbUsername string, dbPassword string, expectedSchemaName string) bool {
+	output, err := GetWhetherSchemaExistsInRdsInstanceE(t, dbUrl, dbPort, dbUsername, dbPassword, expectedSchemaName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return output
+}
+
+// GetWhetherSchemaExistsInRdsInstanceE checks whether the specified schema/table name exists in the RDS instance
+func GetWhetherSchemaExistsInRdsInstanceE(t *testing.T, dbUrl string, dbPort int64, dbUsername string, dbPassword string, expectedSchemaName string) (bool, error) {
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/", dbUsername, dbPassword, dbUrl, dbPort)
+	db, connErr := sql.Open("mysql", connectionString)
+	if connErr != nil {
+		return false, connErr
+	}
+	defer db.Close()
+	var (
+		schemaName string
+	)
+	sqlStatement := "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME=?;"
+	row := db.QueryRow(sqlStatement, expectedSchemaName)
+	scanErr := row.Scan(&schemaName)
+	if scanErr != nil {
+		return false, scanErr
+	}
+	return true, nil
+}
+
 // GetParameterValueForParameterOfRdsInstance gets the value of the parameter name specified for the RDS instance in the given region.
 func GetParameterValueForParameterOfRdsInstance(t *testing.T, parameterName string, dbInstanceID string, awsRegion string) string {
 	parameterValue, err := GetParameterValueForParameterOfRdsInstanceE(t, parameterName, dbInstanceID, awsRegion)
@@ -40,7 +91,7 @@ func GetParameterValueForParameterOfRdsInstance(t *testing.T, parameterName stri
 func GetParameterValueForParameterOfRdsInstanceE(t *testing.T, parameterName string, dbInstanceID string, awsRegion string) (string, error) {
 	output := GetAllParametersOfRdsInstance(t, dbInstanceID, awsRegion)
 	for _, parameter := range output {
-		if *parameter.ParameterName == parameterName {
+		if aws.StringValue(parameter.ParameterName) == parameterName {
 			return aws.StringValue(parameter.ParameterValue), nil
 		}
 	}
@@ -61,9 +112,9 @@ func GetOptionSettingForOfRdsInstanceE(t *testing.T, optionName string, optionSe
 	optionGroupName := GetOptionGroupNameOfRdsInstance(t, dbInstanceID, awsRegion)
 	options := GetOptionsOfOptionGroup(t, optionGroupName, awsRegion)
 	for _, option := range options {
-		if *option.OptionName == optionName {
+		if aws.StringValue(option.OptionName) == optionName {
 			for _, optionSetting := range option.OptionSettings {
-				if *optionSetting.Name == optionSettingName {
+				if aws.StringValue(optionSetting.Name) == optionSettingName {
 					return aws.StringValue(optionSetting.Value), nil
 				}
 			}
@@ -89,7 +140,6 @@ func GetOptionGroupNameOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegi
 	}
 	return aws.StringValue(dbInstance.OptionGroupMemberships[0].OptionGroupName), nil
 }
-
 
 // GetOptionsOfOptionGroup gets the options of the option group specified
 func GetOptionsOfOptionGroup(t *testing.T, optionGroupName string, awsRegion string) []*rds.Option {

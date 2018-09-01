@@ -1,3 +1,34 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES
+# Define these secrets as environment variables
+# ---------------------------------------------------------------------------------------------------------------------
+
+# AWS_ACCESS_KEY_ID
+# AWS_SECRET_ACCESS_KEY
+
+# ---------------------------------------------------------------------------------------------------------------------
+# REQUIRED PARAMETERS
+# You must provide a value for each of these parameters.
+# Given these are credentials, security of the values should be considered.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "username" {
+  description = "Master username of the DB"
+}
+
+variable "password" {
+  description = "Master password of the DB"
+}
+
+variable "database_name" {
+  description = "Name of the database to be created"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "name" {
   description = "Name of the database"
   default     = "terratest-example"
@@ -8,26 +39,24 @@ variable "engine_name" {
   default     = "mysql"
 }
 
-variable "major_engine_version" {
-  description = "MAJOR.MINOR version of the DB engine"
-  default     = "5.7"
-}
-
 variable "family" {
   description = "Family of the database"
   default     = "mysql5.7"
 }
 
-variable "username" {
-  description = "Master username of the DB"
-  default     = "username"
+variable "port" {
+  description = "Port which the database should run on"
+  default     = 3306
 }
 
-# Not a good idea to keep in plain text. Would be better to pass through encrypted
-# environment variables or through some secret management solution.
-variable "password" {
-  description = "Master password of the DB"
-  default     = "password"
+variable "major_engine_version" {
+  description = "MAJOR.MINOR version of the DB engine"
+  default     = "5.7"
+}
+
+variable "engine_version" {
+  default     = "5.7.21"
+  description = "Version of the database to be launched"
 }
 
 variable "allocated_storage" {
@@ -38,9 +67,4 @@ variable "allocated_storage" {
 variable "license_model" {
   default     = "general-public-license"
   description = "License model of the DB instance"
-}
-
-variable "engine_version" {
-  default     = "5.7.21"
-  description = "Version of the database to be launched"
 }
