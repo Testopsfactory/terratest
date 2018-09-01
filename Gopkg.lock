@@ -147,29 +147,6 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:6e7e5dd1938177c114669191835123a0c46d0989700dc0cc4370ec9c2d23dc24"
-  name = "github.com/gruntwork-io/terratest"
-  packages = [
-    "modules/aws",
-    "modules/collections",
-    "modules/docker",
-    "modules/files",
-    "modules/gcp",
-    "modules/http-helper",
-    "modules/logger",
-    "modules/packer",
-    "modules/random",
-    "modules/retry",
-    "modules/shell",
-    "modules/ssh",
-    "modules/terraform",
-    "modules/test-structure",
-  ]
-  pruneopts = "UT"
-  revision = "0fd2dfc371c4c829b34f75b535daabc279fa9764"
-  version = "v0.10.1"
-
-[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -417,20 +394,6 @@
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/go-sql-driver/mysql",
     "github.com/google/uuid",
-    "github.com/gruntwork-io/terratest/modules/aws",
-    "github.com/gruntwork-io/terratest/modules/collections",
-    "github.com/gruntwork-io/terratest/modules/docker",
-    "github.com/gruntwork-io/terratest/modules/files",
-    "github.com/gruntwork-io/terratest/modules/gcp",
-    "github.com/gruntwork-io/terratest/modules/http-helper",
-    "github.com/gruntwork-io/terratest/modules/logger",
-    "github.com/gruntwork-io/terratest/modules/packer",
-    "github.com/gruntwork-io/terratest/modules/random",
-    "github.com/gruntwork-io/terratest/modules/retry",
-    "github.com/gruntwork-io/terratest/modules/shell",
-    "github.com/gruntwork-io/terratest/modules/ssh",
-    "github.com/gruntwork-io/terratest/modules/terraform",
-    "github.com/gruntwork-io/terratest/modules/test-structure",
     "github.com/pquerna/otp/totp",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
