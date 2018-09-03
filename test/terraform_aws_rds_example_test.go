@@ -63,7 +63,7 @@ func TestTerraformAwsRdsExample(t *testing.T) {
 	// Look up the endpoint address and port of the RDS instance
 	address := aws.GetAddressOfRdsInstance(t, dbInstanceID, awsRegion)
 	port := aws.GetPortOfRdsInstance(t, dbInstanceID, awsRegion)
-	schemaExistsInRdsInstance := aws.GetWhetherSchemaExistsInRdsInstance(t, address, port, username, password, expectedDatabaseName)
+	schemaExistsInRdsInstance := aws.GetWhetherSchemaExistsInRdsMySqlInstance(t, address, port, username, password, expectedDatabaseName)
 	// Lookup parameter values. All defined values are strings in the API call response
 	generalLogParameterValue := aws.GetParameterValueForParameterOfRdsInstance(t, "general_log", dbInstanceID, awsRegion)
 	allowSuspiciousUdfsParameterValue := aws.GetParameterValueForParameterOfRdsInstance(t, "allow-suspicious-udfs", dbInstanceID, awsRegion)

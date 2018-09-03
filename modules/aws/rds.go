@@ -49,17 +49,17 @@ func GetPortOfRdsInstanceE(t *testing.T, dbInstanceID string, awsRegion string) 
 	return *dbInstance.Endpoint.Port, nil
 }
 
-// GetWhetherSchemaExistsInRdsInstance checks whether the specified schema/table name exists in the RDS instance
-func GetWhetherSchemaExistsInRdsInstance(t *testing.T, dbUrl string, dbPort int64, dbUsername string, dbPassword string, expectedSchemaName string) bool {
-	output, err := GetWhetherSchemaExistsInRdsInstanceE(t, dbUrl, dbPort, dbUsername, dbPassword, expectedSchemaName)
+// GetWhetherSchemaExistsInRdsMySqlInstance checks whether the specified schema/table name exists in the RDS instance
+func GetWhetherSchemaExistsInRdsMySqlInstance(t *testing.T, dbUrl string, dbPort int64, dbUsername string, dbPassword string, expectedSchemaName string) bool {
+	output, err := GetWhetherSchemaExistsInRdsMySqlInstanceE(t, dbUrl, dbPort, dbUsername, dbPassword, expectedSchemaName)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return output
 }
 
-// GetWhetherSchemaExistsInRdsInstanceE checks whether the specified schema/table name exists in the RDS instance
-func GetWhetherSchemaExistsInRdsInstanceE(t *testing.T, dbUrl string, dbPort int64, dbUsername string, dbPassword string, expectedSchemaName string) (bool, error) {
+// GetWhetherSchemaExistsInRdsMySqlInstanceE checks whether the specified schema/table name exists in the RDS instance
+func GetWhetherSchemaExistsInRdsMySqlInstanceE(t *testing.T, dbUrl string, dbPort int64, dbUsername string, dbPassword string, expectedSchemaName string) (bool, error) {
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/", dbUsername, dbPassword, dbUrl, dbPort)
 	db, connErr := sql.Open("mysql", connectionString)
 	if connErr != nil {
