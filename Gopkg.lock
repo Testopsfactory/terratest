@@ -26,7 +26,7 @@
   version = "v0.5.0"
 
 [[projects]]
-  digest = "1:29d1184d739762635b4e4e6f14c5610fa43ac4f1013750dd669b1ffa00040db1"
+  digest = "1:7489dd2f5db685253a59a30ff0c97570d55731a977c1da1b7e4372331a3489ff"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -67,6 +67,7 @@
     "service/ec2",
     "service/iam",
     "service/kms",
+    "service/rds",
     "service/s3",
     "service/s3/s3iface",
     "service/s3/s3manager",
@@ -105,6 +106,14 @@
   pruneopts = "UT"
   revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
   version = "v1.38.1"
+
+[[projects]]
+  digest = "1:adea5a94903eb4384abef30f3d878dc9ff6b6b5b0722da25b82e5169216dfb61"
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d523deb1b23d913de5bdada721a6071e71283618"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:14834e04828af9e53954f1be45ea7f190c4c26d746009c2ab07c5828595539e9"
@@ -198,7 +207,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:dec72d8441e4e88bbf27cc98e28e962e065ebd11bcd42063f0444020b7249618"
+  digest = "1:8e56f01a7d273a0c67edb531e176e93b9f27cbe567bc84213b9b5c03bcb57b78"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -208,6 +217,7 @@
     "internal/subtle",
     "poly1305",
     "ssh",
+    "ssh/agent",
   ]
   pruneopts = "UT"
   revision = "f027049dab0ad238e394a753dba2d14753473a04"
@@ -294,10 +304,11 @@
   revision = "9bdf771af19ab16b6a5084e5d542a7e04cb97004"
 
 [[projects]]
-  digest = "1:c8907869850adaa8bd7631887948d0684f3787d0912f1c01ab72581a6c34432e"
+  digest = "1:77ecc625329a7797b3e24a8432692cd388e87ecd2e8aea2660e9673c3059f36c"
   name = "google.golang.org/appengine"
   packages = [
     ".",
+    "cloudsql",
     "internal",
     "internal/app_identity",
     "internal/base",
@@ -375,19 +386,23 @@
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/kms",
+    "github.com/aws/aws-sdk-go/service/rds",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/s3/s3manager",
     "github.com/aws/aws-sdk-go/service/sns",
     "github.com/aws/aws-sdk-go/service/sqs",
     "github.com/aws/aws-sdk-go/service/sts",
+    "github.com/go-sql-driver/mysql",
     "github.com/google/uuid",
     "github.com/pquerna/otp/totp",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
     "golang.org/x/crypto/ssh",
+    "golang.org/x/crypto/ssh/agent",
     "golang.org/x/net/context",
     "golang.org/x/oauth2/google",
     "google.golang.org/api/compute/v1",
+    "google.golang.org/api/iterator",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
