@@ -22,19 +22,12 @@ import (
 func TestTerraformPackerExample(t *testing.T) {
 	t.Parallel()
 
-	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.GetRandomRegion(t, nil, nil)
-
 	// The folder where we have our Terraform code
 	workingDir := "../examples/terraform-packer-example"
 
-	// Build the AMI for the web app
-	test_structure.RunTestStage(t, "build_ami", func() {
-		buildAMI(t, awsRegion, workingDir)
-	})
-
 	// At the end of the test, delete the AMI
 	defer test_structure.RunTestStage(t, "cleanup_ami", func() {
+		awsRegion := test_structure.LoadString(t, workingDir, "awsRegion")
 		deleteAMI(t, awsRegion, workingDir)
 	})
 
@@ -46,11 +39,21 @@ func TestTerraformPackerExample(t *testing.T) {
 	// At the end of the test, fetch the most recent syslog entries from each Instance. This can be useful for
 	// debugging issues without having to manually SSH to the server.
 	defer test_structure.RunTestStage(t, "logs", func() {
+		awsRegion := test_structure.LoadString(t, workingDir, "awsRegion")
 		fetchSyslogForInstance(t, awsRegion, workingDir)
+	})
+
+	// Build the AMI for the web app
+	test_structure.RunTestStage(t, "build_ami", func() {
+		// Pick a random AWS region to test in. This helps ensure your code works in all regions.
+		awsRegion := aws.GetRandomRegion(t, nil, nil)
+		test_structure.SaveString(t, workingDir, "awsRegion", awsRegion)
+		buildAMI(t, awsRegion, workingDir)
 	})
 
 	// Deploy the web app using Terraform
 	test_structure.RunTestStage(t, "deploy_terraform", func() {
+		awsRegion := test_structure.LoadString(t, workingDir, "awsRegion")
 		deployUsingTerraform(t, awsRegion, workingDir)
 	})
 
