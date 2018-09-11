@@ -59,3 +59,46 @@ func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (strin
 		return out, retry.FatalError{Underlying: err}
 	})
 }
+
+// GetExitCodeForTerraformCommand runs terraform with the given arguments and options and return stdout/stderr.
+func GetExitCodeForTerraformCommand(t *testing.T, options *Options, args ...string) int {
+	exitCode, err := GetExitCodeForTerraformCommandE(t, options, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return exitCode
+}
+
+// GetExitCodeForTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
+func GetExitCodeForTerraformCommandE(t *testing.T, options *Options, args ...string) (int, error) {
+	if options.NoColor && !collections.ListContains(args, "-no-color") {
+		args = append(args, "-no-color")
+	}
+
+	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
+	if options.SshAgent != nil {
+		// Initialize EnvVars, if it hasn't been set yet
+		if options.EnvVars == nil {
+			options.EnvVars = map[string]string{}
+		}
+		options.EnvVars["SSH_AUTH_SOCK"] = options.SshAgent.SocketFile()
+	}
+
+	fmt.Printf("Running terraform %v", args)
+	cmd := shell.Command{
+		Command:    "terraform",
+		Args:       args,
+		WorkingDir: options.TerraformDir,
+		Env:        options.EnvVars,
+	}
+
+	_, err := shell.RunCommandAndGetOutputE(t, cmd)
+	if err == nil {
+		return 0, nil
+	}
+	exitCode, getExitCodeErr := shell.GetExitCodeForRunCommandError(err)
+	if getExitCodeErr == nil {
+		return exitCode, nil
+	}
+	return -1, getExitCodeErr
+}
