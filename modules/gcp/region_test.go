@@ -1,6 +1,7 @@
 package gcp
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,6 +66,25 @@ func TestGetAllGcpZones(t *testing.T) {
 	assert.True(t, len(zones) >= 52, "Number of zones: %d", len(zones))
 	for _, zone := range zones {
 		assertLooksLikeZoneName(t, zone)
+	}
+}
+
+func TestGetRandomZoneForRegion(t *testing.T) {
+	t.Parallel()
+
+	regions := []string{
+		"us-west1",
+		"us-west2",
+		"us-central1",
+	}
+
+	for _, region := range regions {
+		zone, err := GetRandomZoneForRegionE(t, region)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.True(t, strings.Contains(zone, region), "Expected zone %s to be in region %s", zone, region)
 	}
 }
 
