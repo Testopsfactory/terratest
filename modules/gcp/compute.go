@@ -136,17 +136,17 @@ func AddLabelsToInstanceE(t *testing.T, projectID string, zone string, instance 
 }
 
 // GetInstanceIdsForInstanceGroup gets the IDs of Instances in the given Instance Group.
-func GetInstanceIdsForInstanceGroup(t *testing.T, projectID string, zone string, groupName string) []string {
-	ids, err := GetInstanceIdsForInstanceGroupE(t, projectID, zone, groupName)
+func GetInstanceIdsForZonalInstanceGroup(t *testing.T, projectID string, zone string, groupName string) []string {
+	ids, err := GetInstanceIdsForZonalInstanceGroupE(t, projectID, zone, groupName)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return ids
 }
 
-// GetInstanceIdsForInstanceGroupE gets the IDs of Instances in the given Instance Group.
-func GetInstanceIdsForInstanceGroupE(t *testing.T, projectID string, zone string, groupName string) ([]string, error) {
-	logger.Logf(t, "Get instances for instance group %s in zone %s", groupName, zone)
+// GetInstanceIdsForZonalInstanceGroupE gets the IDs of Instances in the given Zonal Instance Group.
+func GetInstanceIdsForZonalInstanceGroupE(t *testing.T, projectID string, zone string, groupName string) ([]string, error) {
+	logger.Logf(t, "Get instances for Zonal Instance Group %s in zone %s", groupName, zone)
 
 	ctx := context.Background()
 
@@ -162,6 +162,48 @@ func GetInstanceIdsForInstanceGroupE(t *testing.T, projectID string, zone string
 	instanceIDs := []string{}
 	req := service.InstanceGroups.ListInstances(projectID, zone, groupName, requestBody)
 	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
+		for _, instance := range page.Items {
+			// For some reason service.InstanceGroups.ListInstances returns us a collection
+			// with Instance URLs and we need only the Instance ID for the next call. Use
+			// the path functions to chop the Instance ID off the end of the URL.
+			instanceID := path.Base(instance.Instance)
+			instanceIDs = append(instanceIDs, instanceID)
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("InstanceGroups.ListInstances(%s) got error: %v", groupName, err)
+	}
+
+	return instanceIDs, nil
+}
+
+// GetInstanceIdsForInstanceGroup gets the IDs of Instances in the given Regional Instance Group.
+func GetInstanceIdsForRegionalInstanceGroup(t *testing.T, projectID string, region string, groupName string) []string {
+	ids, err := GetInstanceIdsForRegionalInstanceGroupE(t, projectID, region, groupName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ids
+}
+
+// GetInstanceIdsForRegionalInstanceGroupE gets the IDs of Instances in the given Regional Instance Group.
+func GetInstanceIdsForRegionalInstanceGroupE(t *testing.T, projectID string, region string, groupName string) ([]string, error) {
+	logger.Logf(t, "Get instances for Regional Instance Group %s in Region %s", groupName, region)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return nil, err
+	}
+
+	requestBody := &compute.RegionInstanceGroupsListInstancesRequest{
+		InstanceState: "ALL",
+	}
+
+	instanceIDs := []string{}
+	req := service.RegionInstanceGroups.ListInstances(projectID, region, groupName, requestBody)
+	if err := req.Pages(ctx, func(page *compute.RegionInstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
 			// with Instance URLs and we need only the Instance ID for the next call. Use
