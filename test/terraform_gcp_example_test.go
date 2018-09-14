@@ -17,7 +17,7 @@ func TestTerraformGcpExample(t *testing.T) {
 	t.Parallel()
 
 	// Get the Project Id to use
-	projectId := gcp.GetGoogleProjectIDFromEnvVar()
+	projectId := gcp.GetGoogleProjectIDFromEnvVar(t)
 
 	// Create all resources in the following zone
 	zone := "us-east1-b"

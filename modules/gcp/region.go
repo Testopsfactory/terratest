@@ -129,7 +129,7 @@ func GetAllGcpRegionsE(t *testing.T) ([]string, error) {
 
 	// Project ID for this request.
 	// TODO - should we read the Project ID or pass it in?
-	projectID := GetGoogleProjectIDFromEnvVar()
+	projectID := GetGoogleProjectIDFromEnvVar(t)
 
 	req := service.Regions.List(projectID)
 
@@ -170,7 +170,7 @@ func GetAllGcpZonesE(t *testing.T) ([]string, error) {
 
 	// Project ID for this request.
 	// TODO - should we read the Project ID or pass it in?
-	projectID := GetGoogleProjectIDFromEnvVar()
+	projectID := GetGoogleProjectIDFromEnvVar(t)
 
 	req := service.Zones.List(projectID)
 

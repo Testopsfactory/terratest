@@ -12,7 +12,7 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	t.Parallel()
 
 	// Get the Project Id to use
-	projectID := gcp.GetGoogleProjectIDFromEnvVar()
+	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 
 	// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
 	zone := gcp.GetRandomZone(t, nil, nil)

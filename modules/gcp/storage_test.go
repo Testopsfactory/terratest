@@ -14,7 +14,7 @@ import (
 func TestCreateAndDestroyStorageBucket(t *testing.T) {
 	t.Parallel()
 
-	projectID := GetGoogleProjectIDFromEnvVar()
+	projectID := GetGoogleProjectIDFromEnvVar(t)
 	id := random.UniqueId()
 	gsBucketName := "gruntwork-terratest-" + strings.ToLower(id)
 	testFilePath := fmt.Sprintf("test-file-%s.txt", random.UniqueId())
@@ -45,7 +45,7 @@ func TestCreateAndDestroyStorageBucket(t *testing.T) {
 func TestAssertStorageBucketExistsNoFalseNegative(t *testing.T) {
 	t.Parallel()
 
-	projectID := GetGoogleProjectIDFromEnvVar()
+	projectID := GetGoogleProjectIDFromEnvVar(t)
 	id := random.UniqueId()
 	gsBucketName := "gruntwork-terratest-" + strings.ToLower(id)
 	logger.Logf(t, "Random values selected Id = %s\n", id)
