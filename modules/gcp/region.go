@@ -33,8 +33,8 @@ const defaultZone = "us-west1-b"
 // GetRandomRegion gets a randomly chosen GCP Region. If approvedRegions is not empty, this will be a Region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the GCP APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned Region is not in the forbiddenRegions list.
-func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string) string {
-	region, err := GetRandomRegionE(t, approvedRegions, forbiddenRegions)
+func GetRandomRegion(t *testing.T, projectID string, approvedRegions []string, forbiddenRegions []string) string {
+	region, err := GetRandomRegionE(t, projectID, approvedRegions, forbiddenRegions)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []
 // GetRandomRegionE gets a randomly chosen GCP Region. If approvedRegions is not empty, this will be a Region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the GCP APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned Region is not in the forbiddenRegions list.
-func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions []string) (string, error) {
+func GetRandomRegionE(t *testing.T, projectID string, approvedRegions []string, forbiddenRegions []string) (string, error) {
 	regionFromEnvVar := os.Getenv(regionOverrideEnvVarName)
 	if regionFromEnvVar != "" {
 		logger.Logf(t, "Using GCP Region %s from environment variable %s", regionFromEnvVar, regionOverrideEnvVarName)
@@ -54,7 +54,7 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 	regionsToPickFrom := approvedRegions
 
 	if len(regionsToPickFrom) == 0 {
-		allRegions, err := GetAllGcpRegionsE(t)
+		allRegions, err := GetAllGcpRegionsE(t, projectID)
 		if err != nil {
 			return "", err
 		}
@@ -71,8 +71,8 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 // GetRandomZone gets a randomly chosen GCP Zone. If approvedRegions is not empty, this will be a Zone from the approvedZones
 // list; otherwise, this method will fetch the latest list of Zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned Region is not in the forbiddenZones list.
-func GetRandomZone(t *testing.T, approvedZones []string, forbiddenZones []string) string {
-	zone, err := GetRandomZoneE(t, approvedZones, forbiddenZones)
+func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string) string {
+	zone, err := GetRandomZoneE(t, projectID, approvedZones, forbiddenZones)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func GetRandomZone(t *testing.T, approvedZones []string, forbiddenZones []string
 // GetRandomZoneE gets a randomly chosen GCP Zone. If approvedRegions is not empty, this will be a Zone from the approvedZones
 // list; otherwise, this method will fetch the latest list of Zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned Region is not in the forbiddenZones list.
-func GetRandomZoneE(t *testing.T, approvedZones []string, forbiddenZones []string) (string, error) {
+func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string) (string, error) {
 	zoneFromEnvVar := os.Getenv(zoneOverrideEnvVarName)
 	if zoneFromEnvVar != "" {
 		logger.Logf(t, "Using GCP Zone %s from environment variable %s", zoneFromEnvVar, zoneOverrideEnvVarName)
@@ -92,7 +92,7 @@ func GetRandomZoneE(t *testing.T, approvedZones []string, forbiddenZones []strin
 	zonesToPickFrom := approvedZones
 
 	if len(zonesToPickFrom) == 0 {
-		allZones, err := GetAllGcpZonesE(t)
+		allZones, err := GetAllGcpZonesE(t, projectID)
 		if err != nil {
 			return "", err
 		}
@@ -107,8 +107,8 @@ func GetRandomZoneE(t *testing.T, approvedZones []string, forbiddenZones []strin
 }
 
 // GetRandomZoneForRegion gets a randomly chosen GCP Zone in the given Region.
-func GetRandomZoneForRegion(t *testing.T, region string) string {
-	zone, err := GetRandomZoneForRegionE(t, region)
+func GetRandomZoneForRegion(t *testing.T, projectID string, region string) string {
+	zone, err := GetRandomZoneForRegionE(t, projectID, region)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,14 +116,14 @@ func GetRandomZoneForRegion(t *testing.T, region string) string {
 }
 
 // GetRandomZoneForRegionE gets a randomly chosen GCP Zone in the given Region.
-func GetRandomZoneForRegionE(t *testing.T, region string) (string, error) {
+func GetRandomZoneForRegionE(t *testing.T, projectID string, region string) (string, error) {
 	zoneFromEnvVar := os.Getenv(zoneOverrideEnvVarName)
 	if zoneFromEnvVar != "" {
 		logger.Logf(t, "Using GCP Zone %s from environment variable %s", zoneFromEnvVar, zoneOverrideEnvVarName)
 		return zoneFromEnvVar, nil
 	}
 
-	allZones, err := GetAllGcpZonesE(t)
+	allZones, err := GetAllGcpZonesE(t, projectID)
 	if err != nil {
 		return "", err
 	}
@@ -143,8 +143,8 @@ func GetRandomZoneForRegionE(t *testing.T, region string) (string, error) {
 }
 
 // GetAllGcpRegions gets the list of GCP regions available in this account.
-func GetAllGcpRegions(t *testing.T) []string {
-	out, err := GetAllGcpRegionsE(t)
+func GetAllGcpRegions(t *testing.T, projectID string) []string {
+	out, err := GetAllGcpRegionsE(t, projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,21 +152,17 @@ func GetAllGcpRegions(t *testing.T) []string {
 }
 
 // GetAllGcpRegionsE gets the list of GCP regions available in this account.
-func GetAllGcpRegionsE(t *testing.T) ([]string, error) {
+func GetAllGcpRegionsE(t *testing.T, projectID string) ([]string, error) {
 	logger.Log(t, "Looking up all GCP regions available in this account")
 
-	// TODO - NewComputeServiceE creates a context, should we get that somehow
-	// or use a new one here?
+	// Note that NewComputeServiceE creates a context, but it appears to be empty so we keep the code simpler by
+	// creating a new one here
 	ctx := context.Background()
 
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		return nil, err
 	}
-
-	// Project ID for this request.
-	// TODO - should we read the Project ID or pass it in?
-	projectID := GetGoogleProjectIDFromEnvVar(t)
 
 	req := service.Regions.List(projectID)
 
@@ -184,8 +180,8 @@ func GetAllGcpRegionsE(t *testing.T) ([]string, error) {
 }
 
 // GetAllGcpZones gets the list of GCP Zones available in this account.
-func GetAllGcpZones(t *testing.T) []string {
-	out, err := GetAllGcpZonesE(t)
+func GetAllGcpZones(t *testing.T, projectID string) []string {
+	out, err := GetAllGcpZonesE(t, projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,7 +189,7 @@ func GetAllGcpZones(t *testing.T) []string {
 }
 
 // GetAllGcpZonesE gets the list of GCP Zones available in this account.
-func GetAllGcpZonesE(t *testing.T) ([]string, error) {
+func GetAllGcpZonesE(t *testing.T, projectID string) ([]string, error) {
 	// Note that NewComputeServiceE creates a context, but it appears to be empty so we keep the code simpler by
 	// creating a new one here
 	ctx := context.Background()
@@ -202,10 +198,6 @@ func GetAllGcpZonesE(t *testing.T) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Project ID for this request.
-	// TODO - should we read the Project ID or pass it in?
-	projectID := GetGoogleProjectIDFromEnvVar(t)
 
 	req := service.Zones.List(projectID)
 

@@ -10,25 +10,31 @@ import (
 func TestGetRandomRegion(t *testing.T) {
 	t.Parallel()
 
-	randomRegion := GetRandomRegion(t, nil, nil)
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
+	randomRegion := GetRandomRegion(t, projectID, nil, nil)
 	assertLooksLikeRegionName(t, randomRegion)
 }
 
 func TestGetRandomZone(t *testing.T) {
 	t.Parallel()
 
-	randomZone := GetRandomZone(t, nil, nil)
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
+	randomZone := GetRandomZone(t, projectID, nil, nil)
 	assertLooksLikeZoneName(t, randomZone)
 }
 
 func TestGetRandomRegionExcludesForbiddenRegions(t *testing.T) {
 	t.Parallel()
 
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
 	approvedRegions := []string{"asia-east1", "asia-northeast1", "asia-south1", "asia-southeast1", "australia-southeast1", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "northamerica-northeast1", "southamerica-east1", "us-central1", "us-east1", "us-east4", "us-west2"}
 	forbiddenRegions := []string{"europe-west4", "us-west1"}
 
 	for i := 0; i < 1000; i++ {
-		randomRegion := GetRandomRegion(t, approvedRegions, forbiddenRegions)
+		randomRegion := GetRandomRegion(t, projectID, approvedRegions, forbiddenRegions)
 		assert.NotContains(t, forbiddenRegions, randomRegion)
 	}
 }
@@ -36,11 +42,13 @@ func TestGetRandomRegionExcludesForbiddenRegions(t *testing.T) {
 func TestGetRandomZoneExcludesForbiddenZones(t *testing.T) {
 	t.Parallel()
 
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
 	approvedZones := []string{"us-east1-b", "us-east1-c", "us-east1-d", "us-east4-a", "us-east4-b", "us-east4-c", "us-west2-a", "us-west2-b", "us-west2-c", "us-central1-f", "europe-west2-b"}
 	forbiddenZones := []string{"us-east1-a", "europe-west1-a", "europe-west2-a", "europe-west2-c"}
 
 	for i := 0; i < 1000; i++ {
-		randomZone := GetRandomZone(t, approvedZones, forbiddenZones)
+		randomZone := GetRandomZone(t, projectID, approvedZones, forbiddenZones)
 		assert.NotContains(t, forbiddenZones, randomZone)
 	}
 }
@@ -48,7 +56,9 @@ func TestGetRandomZoneExcludesForbiddenZones(t *testing.T) {
 func TestGetAllGcpRegions(t *testing.T) {
 	t.Parallel()
 
-	regions := GetAllGcpRegions(t)
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
+	regions := GetAllGcpRegions(t, projectID)
 
 	// The typical account had access to 17 regions as of August, 2018: https://cloud.google.com/compute/docs/regions-zones/
 	assert.True(t, len(regions) >= 17, "Number of regions: %d", len(regions))
@@ -60,7 +70,9 @@ func TestGetAllGcpRegions(t *testing.T) {
 func TestGetAllGcpZones(t *testing.T) {
 	t.Parallel()
 
-	zones := GetAllGcpZones(t)
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
+	zones := GetAllGcpZones(t, projectID)
 
 	// The typical account had access to 52 zones as of August, 2018: https://cloud.google.com/compute/docs/regions-zones/
 	assert.True(t, len(zones) >= 52, "Number of zones: %d", len(zones))
@@ -72,6 +84,8 @@ func TestGetAllGcpZones(t *testing.T) {
 func TestGetRandomZoneForRegion(t *testing.T) {
 	t.Parallel()
 
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
 	regions := []string{
 		"us-west1",
 		"us-west2",
@@ -79,7 +93,7 @@ func TestGetRandomZoneForRegion(t *testing.T) {
 	}
 
 	for _, region := range regions {
-		zone, err := GetRandomZoneForRegionE(t, region)
+		zone, err := GetRandomZoneForRegionE(t, projectID, region)
 		if err != nil {
 			t.Fatal(err)
 		}
