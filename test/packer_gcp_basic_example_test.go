@@ -15,7 +15,7 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 
 	// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
-	zone := gcp.GetRandomZone(t, nil, nil)
+	zone := gcp.GetRandomZone(t, projectID, nil, nil)
 
 	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
