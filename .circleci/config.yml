@@ -22,8 +22,8 @@ jobs:
 
       # Use the Gruntwork Installer to install the gruntwork-module-circleci-helpers
       - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
-      - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.7.1"
-      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --go-dep-version v0.5.0 --terraform-version 0.11.8
+      - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
+      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --terraform-version 0.11.8
       - save_cache:
           key: v1-external-dep
           paths:
