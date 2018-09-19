@@ -11,17 +11,8 @@ import (
 	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
-// RunTerraformCommand runs terraform with the given arguments and options and return stdout/stderr.
-func RunTerraformCommand(t *testing.T, options *Options, args ...string) string {
-	out, err := RunTerraformCommandE(t, options, args...)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return out
-}
-
-// RunTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
-func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (string, error) {
+// GetCommonOptions extracts commons terraform options
+func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	if options.NoColor && !collections.ListContains(args, "-no-color") {
 		args = append(args, "-no-color")
 	}
@@ -34,6 +25,21 @@ func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (strin
 		}
 		options.EnvVars["SSH_AUTH_SOCK"] = options.SshAgent.SocketFile()
 	}
+	return options, args
+}
+
+// RunTerraformCommand runs terraform with the given arguments and options and return stdout/stderr.
+func RunTerraformCommand(t *testing.T, additionalOptions *Options, args ...string) string {
+	out, err := RunTerraformCommandE(t, additionalOptions, args...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// RunTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
+func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (string, error) {
+	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
 	description := fmt.Sprintf("Running terraform %v", args)
 	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
@@ -60,31 +66,20 @@ func RunTerraformCommandE(t *testing.T, options *Options, args ...string) (strin
 	})
 }
 
-// GetExitCodeForTerraformCommand runs terraform with the given arguments and options and return stdout/stderr.
-func GetExitCodeForTerraformCommand(t *testing.T, options *Options, args ...string) int {
-	exitCode, err := GetExitCodeForTerraformCommandE(t, options, args...)
+// GetExitCodeForTerraformCommand runs terraform with the given arguments and options and returns exit code
+func GetExitCodeForTerraformCommand(t *testing.T, additionalOptions *Options, args ...string) int {
+	exitCode, err := GetExitCodeForTerraformCommandE(t, additionalOptions, args...)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return exitCode
 }
 
-// GetExitCodeForTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
-func GetExitCodeForTerraformCommandE(t *testing.T, options *Options, args ...string) (int, error) {
-	if options.NoColor && !collections.ListContains(args, "-no-color") {
-		args = append(args, "-no-color")
-	}
+// GetExitCodeForTerraformCommandE runs terraform with the given arguments and options and returns exit code
+func GetExitCodeForTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (int, error) {
+	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
-	if options.SshAgent != nil {
-		// Initialize EnvVars, if it hasn't been set yet
-		if options.EnvVars == nil {
-			options.EnvVars = map[string]string{}
-		}
-		options.EnvVars["SSH_AUTH_SOCK"] = options.SshAgent.SocketFile()
-	}
-
-	fmt.Printf("Running terraform %v", args)
+	logger.Log(t, "Running terraform %v", args)
 	cmd := shell.Command{
 		Command:    "terraform",
 		Args:       args,
@@ -94,11 +89,11 @@ func GetExitCodeForTerraformCommandE(t *testing.T, options *Options, args ...str
 
 	_, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err == nil {
-		return 0, nil
+		return DefaultSuccessExitCode, nil
 	}
 	exitCode, getExitCodeErr := shell.GetExitCodeForRunCommandError(err)
 	if getExitCodeErr == nil {
 		return exitCode, nil
 	}
-	return -1, getExitCodeErr
+	return DefaultErrorExitCode, getExitCodeErr
 }

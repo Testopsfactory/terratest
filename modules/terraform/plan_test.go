@@ -9,6 +9,7 @@ import (
 )
 
 func TestPlanWithNoChanges(t *testing.T) {
+	t.Parallel()
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
 	if err != nil {
 		t.Fatal(err)
@@ -21,10 +22,12 @@ func TestPlanWithNoChanges(t *testing.T) {
 			"AWS_DEFAULT_REGION": awsRegion,
 		},
 	}
-	AssertPlanHasNoChanges(t, options)
+	exitCode := InitAndPlan(t, options)
+	assert.Equal(t, DefaultSuccessExitCode, exitCode)
 }
 
 func TestPlanWithChanges(t *testing.T) {
+	t.Parallel()
 	testFolder, err := files.CopyTerraformFolderToTemp("../../examples/terraform-aws-example", t.Name())
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +40,8 @@ func TestPlanWithChanges(t *testing.T) {
 			"AWS_DEFAULT_REGION": awsRegion,
 		},
 	}
-	AssertPlanHasChanges(t, options)
+	exitCode := InitAndPlan(t, options)
+	assert.Equal(t, TerraformPlanChangesPresentExitCode, exitCode)
 }
 
 func TestPlanWithFailure(t *testing.T) {
