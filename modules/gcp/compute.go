@@ -12,72 +12,29 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-// GetPublicIPOfInstance gets the public IP address of the given Instance in the given region.
-func GetPublicIPOfInstance(t *testing.T, projectID string, instanceID string) string {
-	ip, err := GetPublicIPOfInstanceE(t, projectID, instanceID)
+type ComputeInstance struct {
+	instance *compute.Instance
+}
+
+func newComputeInstance(instance *compute.Instance) *ComputeInstance {
+	return &ComputeInstance{
+		instance: instance,
+	}
+}
+
+// GetInstance gets the given Instance in the given region.
+func GetInstance(t *testing.T, projectID string, instanceName string) *ComputeInstance {
+	instance, err := GetInstanceE(t, projectID, instanceName)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return ip
+
+	return instance
 }
 
-// GetPublicIPOfInstanceE gets the public IP address of the given Instance in the given region.
-func GetPublicIPOfInstanceE(t *testing.T, projectID string, instanceID string) (string, error) {
-	logger.Logf(t, "Getting Public IP for Compute Instance %s", instanceID)
-
-	ctx := context.Background()
-
-	service, err := NewComputeServiceE(t)
-	if err != nil {
-		return "", err
-	}
-
-	instanceAggregatedList, err := service.Instances.AggregatedList(projectID).Context(ctx).Do()
-	if err != nil {
-		return "", fmt.Errorf("Instances.AggregatedList(%s) got error: %v", projectID, err)
-	}
-
-	for _, instanceList := range instanceAggregatedList.Items {
-		for _, instance := range instanceList.Instances {
-			if instanceID == instance.Name {
-				ip, err := getPublicIP(t, instance)
-				if err != nil {
-					return "", err
-				}
-
-				return ip, nil
-			}
-		}
-	}
-
-	return "", fmt.Errorf("Instance %s could not be found in project %s", instanceID, projectID)
-}
-
-// getPublicIP returns the public IP address of the given GCP Instance struct
-func getPublicIP(t *testing.T, instance *compute.Instance) (string, error) {
-	// If there are no accessConfigs specified, then this instance will have no external internet access:
-	// https://cloud.google.com/compute/docs/reference/rest/v1/instances.
-	if len(instance.NetworkInterfaces[0].AccessConfigs) == 0 {
-		return "", fmt.Errorf("Attempted to get public IP of Compute Instance %s, but that Compute Instance does not have a public IP address", instance.Name)
-	}
-
-	ip := instance.NetworkInterfaces[0].AccessConfigs[0].NatIP
-
-	return ip, nil
-}
-
-// GetLabelsForComputeInstance returns all the tags for the given Compute Instance.
-func GetLabelsForComputeInstance(t *testing.T, projectID string, zone string, instanceID string) map[string]string {
-	labels, err := GetLabelsForComputeInstanceE(t, projectID, zone, instanceID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return labels
-}
-
-// GetLabelsForComputeInstanceE returns all the tags for the given Compute Instance.
-func GetLabelsForComputeInstanceE(t *testing.T, projectID string, zone string, instanceID string) (map[string]string, error) {
-	logger.Logf(t, "Getting Labels for Compute Instance %s", instanceID)
+// GetInstanceE gets the given Instance in the given region.
+func GetInstanceE(t *testing.T, projectID string, instanceName string) (*ComputeInstance, error) {
+	logger.Logf(t, "Getting Compute Instance %s", instanceName)
 
 	ctx := context.Background()
 
@@ -86,12 +43,47 @@ func GetLabelsForComputeInstanceE(t *testing.T, projectID string, zone string, i
 		return nil, err
 	}
 
-	instance, err := service.Instances.Get(projectID, zone, instanceID).Context(ctx).Do()
+	instanceAggregatedList, err := service.Instances.AggregatedList(projectID).Context(ctx).Do()
 	if err != nil {
-		return nil, fmt.Errorf("Instances.Get(%s) got error: %v", instanceID, err)
+		return nil, fmt.Errorf("Instances.AggregatedList(%s) got error: %v", projectID, err)
 	}
 
-	return instance.Labels, nil
+	for _, instanceList := range instanceAggregatedList.Items {
+		for _, instance := range instanceList.Instances {
+			if instanceName == instance.Name {
+				return newComputeInstance(instance), nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("Compute Instance %s could not be found in project %s", instanceName, projectID)
+}
+
+// GetPublicIPOfComputeInstance gets the public IP address of the given Compute Instance.
+func (c *ComputeInstance) GetPublicIp(t *testing.T) string {
+	ip, err := c.GetPublicIpE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ip
+}
+
+// GetPublicIpE gets the public IP address of the given Compute Instance.
+func (c *ComputeInstance) GetPublicIpE(t *testing.T) (string, error) {
+	// If there are no accessConfigs specified, then this instance will have no external internet access:
+	// https://cloud.google.com/compute/docs/reference/rest/v1/instances.
+	if len(c.instance.NetworkInterfaces[0].AccessConfigs) == 0 {
+		return "", fmt.Errorf("Attempted to get public IP of Compute Instance %s, but that Compute Instance does not have a public IP address", c.instance.Name)
+	}
+
+	ip := c.instance.NetworkInterfaces[0].AccessConfigs[0].NatIP
+
+	return ip, nil
+}
+
+// GetLabelsForComputeInstanceE returns all the tags for the given Compute Instance.
+func (c *ComputeInstance) GetLabels(t *testing.T) map[string]string {
+	return c.instance.Labels
 }
 
 // DeleteImage deletes the given Compute Image.
