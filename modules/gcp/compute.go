@@ -13,13 +13,19 @@ import (
 )
 
 type ComputeInstance struct {
-	instance *compute.Instance
+	*compute.Instance
+}
+
+type ComputeImage struct {
+	*compute.Image
 }
 
 func newComputeInstance(instance *compute.Instance) *ComputeInstance {
-	return &ComputeInstance{
-		instance: instance,
-	}
+	return &ComputeInstance{instance}
+}
+
+func newComputeImage(image *compute.Image) *ComputeImage {
+	return &ComputeImage{image}
 }
 
 // GetInstance gets the given Instance in the given region.
@@ -32,7 +38,7 @@ func GetInstance(t *testing.T, projectID string, instanceName string) *ComputeIn
 	return instance
 }
 
-// GetInstanceE gets the given Instance in the given region.
+// GetInstanceE gets the given Compute Instance for the given Comput Instance name.
 func GetInstanceE(t *testing.T, projectID string, instanceName string) (*ComputeInstance, error) {
 	logger.Logf(t, "Getting Compute Instance %s", instanceName)
 
@@ -72,57 +78,31 @@ func (c *ComputeInstance) GetPublicIp(t *testing.T) string {
 func (c *ComputeInstance) GetPublicIpE(t *testing.T) (string, error) {
 	// If there are no accessConfigs specified, then this instance will have no external internet access:
 	// https://cloud.google.com/compute/docs/reference/rest/v1/instances.
-	if len(c.instance.NetworkInterfaces[0].AccessConfigs) == 0 {
+	if len(c.NetworkInterfaces[0].AccessConfigs) == 0 {
 		return "", fmt.Errorf("Attempted to get public IP of Compute Instance %s, but that Compute Instance does not have a public IP address", c.instance.Name)
 	}
 
-	ip := c.instance.NetworkInterfaces[0].AccessConfigs[0].NatIP
+	ip := c.NetworkInterfaces[0].AccessConfigs[0].NatIP
 
 	return ip, nil
 }
 
 // GetLabelsForComputeInstanceE returns all the tags for the given Compute Instance.
 func (c *ComputeInstance) GetLabels(t *testing.T) map[string]string {
-	return c.instance.Labels
-}
-
-// DeleteImage deletes the given Compute Image.
-func DeleteImage(t *testing.T, projectID string, imageID string) {
-	err := DeleteImageE(t, projectID, imageID)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-// DeleteImageE deletes the given Compute Image.
-func DeleteImageE(t *testing.T, projectID string, imageID string) error {
-	logger.Logf(t, "Destroying Image %s", imageID)
-
-	ctx := context.Background()
-
-	service, err := NewComputeServiceE(t)
-	if err != nil {
-		return err
-	}
-
-	if _, err := service.Images.Delete(projectID, imageID).Context(ctx).Do(); err != nil {
-		return fmt.Errorf("Images.Delete(%s) got error: %v", imageID, err)
-	}
-
-	return err
+	return c.Labels
 }
 
 // AddLabelsToInstance adds the tags to the given taggable instance.
-func AddLabelsToInstance(t *testing.T, projectID string, zone string, instance string, labels map[string]string) {
-	err := AddLabelsToInstanceE(t, projectID, zone, instance, labels)
+func (c *ComputeInstance) AddLabelsToInstance(t *testing.T, projectID string, labels map[string]string) {
+	err := c.AddLabelsToInstanceE(t, projectID, labels)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 // AddLabelsToInstanceE adds the tags to the given taggable instance.
-func AddLabelsToInstanceE(t *testing.T, projectID string, zone string, instance string, labels map[string]string) error {
-	logger.Logf(t, "Adding labels to instance %s in zone %s", instance, zone)
+func (c *ComputeInstance) AddLabelsToInstanceE(t *testing.T, projectID string, labels map[string]string) error {
+	logger.Logf(t, "Adding labels to instance %s in zone %s", c.Name, c.Zone)
 
 	ctx := context.Background()
 
@@ -131,16 +111,35 @@ func AddLabelsToInstanceE(t *testing.T, projectID string, zone string, instance 
 		return err
 	}
 
-	// Get the fingerprint of the existing labels
-	existingInstance, err := service.Instances.Get(projectID, zone, instance).Context(ctx).Do()
-	if err != nil {
-		return fmt.Errorf("Instances.Get(%s) got error: %v", instance, err)
+	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: c.LabelFingerprint}
+	if _, err := service.Instances.SetLabels(projectID, c.Zone, c.Name, &req).Context(ctx).Do(); err != nil {
+		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", c.Name, err)
 	}
-	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: existingInstance.LabelFingerprint}
 
-	// Perform the SetLabels request
-	if _, err := service.Instances.SetLabels(projectID, zone, instance, &req).Context(ctx).Do(); err != nil {
-		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", instance, err)
+	return err
+}
+
+// DeleteImage deletes the given Compute Image.
+func (i *ComputeImage) DeleteImage(t *testing.T, projectID string) {
+	err := i.DeleteImageE(t, projectID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// DeleteImageE deletes the given Compute Image.
+func (i *ComputeImage) DeleteImageE(t *testing.T, projectID string) error {
+	logger.Logf(t, "Destroying Image %s", i.Name)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return err
+	}
+
+	if _, err := service.Images.Delete(projectID, i.Name).Context(ctx).Do(); err != nil {
+		return fmt.Errorf("Images.Delete(%s) got error: %v", i.Name, err)
 	}
 
 	return err
