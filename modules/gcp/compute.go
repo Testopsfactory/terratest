@@ -16,26 +16,30 @@ import (
 
 // Corresponds to a GCP Compute Instance (https://cloud.google.com/compute/docs/instances/)
 type Instance struct {
+	projectID string
 	*compute.Instance
 }
 
 // Corresponds to a GCP Image (https://cloud.google.com/compute/docs/images)
 type Image struct {
+	projectID string
 	*compute.Image
 }
 
 // Corresponds to a GCP Zonal Instance Group (https://cloud.google.com/compute/docs/instance-groups/)
 type ZonalInstanceGroup struct {
+	projectID string
 	*compute.InstanceGroup
 }
 
 // Corresponds to a GCP Regional Instance Group (https://cloud.google.com/compute/docs/instance-groups/)
 type RegionalInstanceGroup struct {
+	projectID string
 	*compute.InstanceGroup
 }
 
-// NewInstance creates a new instance of the (GCP Compute) Instance type
-func NewInstance(t *testing.T, projectID string, name string) *Instance {
+// FetchInstance creates a new instance of the (GCP Compute) Instance type
+func FetchInstance(t *testing.T, projectID string, name string) *Instance {
 	logger.Logf(t, "Getting Compute Instance %s", name)
 
 	ctx := context.Background()
@@ -53,7 +57,7 @@ func NewInstance(t *testing.T, projectID string, name string) *Instance {
 	for _, instanceList := range instanceAggregatedList.Items {
 		for _, instance := range instanceList.Instances {
 			if name == instance.Name {
-				return &Instance{instance}
+				return &Instance{projectID, instance}
 			}
 		}
 	}
@@ -62,8 +66,8 @@ func NewInstance(t *testing.T, projectID string, name string) *Instance {
 	return nil
 }
 
-// NewImage creates a new instance of the (GCP Compute) Image type
-func NewImage(t *testing.T, projectID string, name string) *Image {
+// FetchImage creates a new instance of the (GCP Compute) Image type
+func FetchImage(t *testing.T, projectID string, name string) *Image {
 	logger.Logf(t, "Getting Image %s", name)
 
 	service, err := NewComputeServiceE(t)
@@ -78,11 +82,11 @@ func NewImage(t *testing.T, projectID string, name string) *Image {
 		t.Fatal(err)
 	}
 
-	return &Image{image}
+	return &Image{projectID, image}
 }
 
-// NewRegionalInstanceGroup creates a new instance of the Regional Instance Group type
-func NewRegionalInstanceGroup(t *testing.T, projectID string, region string, name string) *RegionalInstanceGroup {
+// FetchRegionalInstanceGroup creates a new instance of the Regional Instance Group type
+func FetchRegionalInstanceGroup(t *testing.T, projectID string, region string, name string) *RegionalInstanceGroup {
 	logger.Logf(t, "Getting Regional Instance Group %s", name)
 
 	service, err := NewComputeServiceE(t)
@@ -97,11 +101,11 @@ func NewRegionalInstanceGroup(t *testing.T, projectID string, region string, nam
 		t.Fatal(err)
 	}
 
-	return &RegionalInstanceGroup{instanceGroup}
+	return &RegionalInstanceGroup{projectID, instanceGroup}
 }
 
-// NewZonalInstanceGroup creates a new instance of the Regional Instance Group type
-func NewZonalInstanceGroup(t *testing.T, projectID string, zone string, name string) *ZonalInstanceGroup {
+// FetchZonalInstanceGroup creates a new instance of the Regional Instance Group type
+func FetchZonalInstanceGroup(t *testing.T, projectID string, zone string, name string) *ZonalInstanceGroup {
 	logger.Logf(t, "Getting Zonal Instance Group %s", name)
 
 	service, err := NewComputeServiceE(t)
@@ -116,7 +120,7 @@ func NewZonalInstanceGroup(t *testing.T, projectID string, zone string, name str
 		t.Fatal(err)
 	}
 
-	return &ZonalInstanceGroup{instanceGroup}
+	return &ZonalInstanceGroup{projectID, instanceGroup}
 }
 
 // GetPublicIP gets the public IP address of the given Compute Instance.
@@ -152,15 +156,15 @@ func (c *Instance) GetZone(t *testing.T) string {
 }
 
 // SetLabels adds the tags to the given Compute Instance.
-func (c *Instance) SetLabels(t *testing.T, projectID string, labels map[string]string) {
-	err := c.SetLabelsE(t, projectID, labels)
+func (c *Instance) SetLabels(t *testing.T, labels map[string]string) {
+	err := c.SetLabelsE(t, c.projectID, labels)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 // SetLabelsE adds the tags to the given Compute Instance.
-func (c *Instance) SetLabelsE(t *testing.T, projectID string, labels map[string]string) error {
+func (c *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
 	logger.Logf(t, "Adding labels to instance %s in zone %s", c.Name, c.Zone)
 
 	ctx := context.Background()
@@ -171,7 +175,7 @@ func (c *Instance) SetLabelsE(t *testing.T, projectID string, labels map[string]
 	}
 
 	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: c.LabelFingerprint}
-	if _, err := service.Instances.SetLabels(projectID, c.GetZone(t), c.Name, &req).Context(ctx).Do(); err != nil {
+	if _, err := service.Instances.SetLabels(c.projectID, c.GetZone(t), c.Name, &req).Context(ctx).Do(); err != nil {
 		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", c.Name, err)
 	}
 
@@ -179,15 +183,15 @@ func (c *Instance) SetLabelsE(t *testing.T, projectID string, labels map[string]
 }
 
 // DeleteImage deletes the given Compute Image.
-func (i *Image) DeleteImage(t *testing.T, projectID string) {
-	err := i.DeleteImageE(t, projectID)
+func (i *Image) DeleteImage(t *testing.T) {
+	err := i.DeleteImageE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 // DeleteImageE deletes the given Compute Image.
-func (i *Image) DeleteImageE(t *testing.T, projectID string) error {
+func (i *Image) DeleteImageE(t *testing.T) error {
 	logger.Logf(t, "Destroying Image %s", i.Name)
 
 	ctx := context.Background()
@@ -197,7 +201,7 @@ func (i *Image) DeleteImageE(t *testing.T, projectID string) error {
 		return err
 	}
 
-	if _, err := service.Images.Delete(projectID, i.Name).Context(ctx).Do(); err != nil {
+	if _, err := service.Images.Delete(i.projectID, i.Name).Context(ctx).Do(); err != nil {
 		return fmt.Errorf("Images.Delete(%s) got error: %v", i.Name, err)
 	}
 
@@ -205,8 +209,8 @@ func (i *Image) DeleteImageE(t *testing.T, projectID string) error {
 }
 
 // GetInstanceIds gets the IDs of Instances in the given Instance Group.
-func (ig *ZonalInstanceGroup) GetInstanceIds(t *testing.T, projectID string) []string {
-	ids, err := ig.GetInstanceIdsE(t, projectID)
+func (ig *ZonalInstanceGroup) GetInstanceIds(t *testing.T) []string {
+	ids, err := ig.GetInstanceIdsE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +218,7 @@ func (ig *ZonalInstanceGroup) GetInstanceIds(t *testing.T, projectID string) []s
 }
 
 // GetInstanceIdsE gets the IDs of Instances in the given Zonal Instance Group.
-func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([]string, error) {
+func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error) {
 	logger.Logf(t, "Get instances for Zonal Instance Group %s", ig.Name)
 
 	ctx := context.Background()
@@ -231,7 +235,7 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([
 	instanceIDs := []string{}
 	zone := ZoneUrlToZone(ig.Zone)
 
-	req := service.InstanceGroups.ListInstances(projectID, zone, ig.Name, requestBody)
+	req := service.InstanceGroups.ListInstances(ig.projectID, zone, ig.Name, requestBody)
 	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
@@ -249,8 +253,8 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([
 }
 
 // GetInstanceIds gets the IDs of Instances in the given Regional Instance Group.
-func (ig *RegionalInstanceGroup) GetInstanceIds(t *testing.T, projectID string) []string {
-	ids, err := ig.GetInstanceIdsE(t, projectID)
+func (ig *RegionalInstanceGroup) GetInstanceIds(t *testing.T) []string {
+	ids, err := ig.GetInstanceIdsE(t, ig.projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -258,7 +262,7 @@ func (ig *RegionalInstanceGroup) GetInstanceIds(t *testing.T, projectID string) 
 }
 
 // GetInstanceIdsE gets the IDs of Instances in the given Regional Instance Group.
-func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([]string, error) {
+func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error) {
 	logger.Logf(t, "Get instances for Regional Instance Group %s", ig.Name)
 
 	ctx := context.Background()
@@ -275,7 +279,7 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string)
 	instanceIDs := []string{}
 	region := RegionUrlToRegion(ig.Region)
 
-	req := service.RegionInstanceGroups.ListInstances(projectID, region, ig.Name, requestBody)
+	req := service.RegionInstanceGroups.ListInstances(ig.projectID, region, ig.Name, requestBody)
 	if err := req.Pages(ctx, func(page *compute.RegionInstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
@@ -293,8 +297,8 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string)
 }
 
 // GetRandomInstance returns a randomly selected Instance from the Regional Instance Group
-func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T, projectID string) *Instance {
-	instance, err := ig.GetRandomInstanceE(t, projectID)
+func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
+	instance, err := ig.GetRandomInstanceE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,8 +307,8 @@ func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T, projectID strin
 }
 
 // GetRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
-func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID string) (*Instance, error) {
-	instanceIDs := ig.GetInstanceIds(t, projectID)
+func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
+	instanceIDs := ig.GetInstanceIds(t)
 
 	clusterSize := int(ig.Size)
 	randIndex := random.Random(1, clusterSize)
@@ -314,15 +318,15 @@ func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID stri
 	}
 
 	instanceID := instanceIDs[randIndex-1]
-	instance := NewInstance(t, projectID, instanceID)
+	instance := FetchInstance(t, ig.projectID, instanceID)
 
 	return instance, nil
 }
 
 // TODO: Is there some way to avoid the total duplication of this function and the Regional Instance Group equivalent in Go?
 // GetRandomInstance returns a randomly selected Instance from the Zonal Instance Group
-func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T, projectID string) *Instance {
-	instance, err := ig.GetRandomInstanceE(t, projectID)
+func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
+	instance, err := ig.GetRandomInstanceE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -331,8 +335,8 @@ func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T, projectID string) 
 }
 
 // GetRandomInstanceE returns a randomly selected Instance from the Zonal Instance Group
-func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID string) (*Instance, error) {
-	instanceIDs := ig.GetInstanceIds(t, projectID)
+func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
+	instanceIDs := ig.GetInstanceIds(t)
 
 	clusterSize := int(ig.Size)
 	randIndex := random.Random(1, clusterSize)
@@ -342,7 +346,7 @@ func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID string)
 	}
 
 	instanceID := instanceIDs[randIndex-1]
-	instance := NewInstance(t, projectID, instanceID)
+	instance := FetchInstance(t, ig.projectID, instanceID)
 
 	return instance, nil
 }

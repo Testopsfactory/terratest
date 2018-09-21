@@ -36,7 +36,7 @@ func TestGetPublicIpOfInstance(t *testing.T) {
 	ip := retry.DoWithRetry(t, "Read IP address of Compute Instance", maxRetries, sleepBetweenRetries, func() (string, error) {
 		// Consider attempting to connect to the Compute Instance at this IP in the future, but for now, we just call the
 		// the function to ensure we don't have errors
-		instance := NewInstance(t, projectID, instanceName)
+		instance := FetchInstance(t, projectID, instanceName)
 		ip := instance.GetPublicIp(t)
 
 		if ip == "" {
@@ -77,19 +77,19 @@ func TestGetAndSetLabels(t *testing.T) {
 
 	// Now that our Instance is launched, set the labels. Note that in GCP label keys and values can only contain
 	// lowercase letters, numeric characters, underscores and dashes.
-	instance := NewInstance(t, projectID, instanceName)
+	instance := FetchInstance(t, projectID, instanceName)
 
 	labelsToWrite := map[string]string{
 		"context": "terratest",
 	}
-	instance.SetLabels(t, projectID, labelsToWrite)
+	instance.SetLabels(t, labelsToWrite)
 
 	// Now attempt to read the labels we just set.
 	maxRetries := 10
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Read newly set labels", maxRetries, sleepBetweenRetries, func() (string, error) {
-		instance := NewInstance(t, projectID, instanceName)
+		instance := FetchInstance(t, projectID, instanceName)
 		labelsFromRead := instance.GetLabels(t)
 		if !reflect.DeepEqual(labelsFromRead, labelsToWrite) {
 			return "", fmt.Errorf("Labels that were written did not match labels that were read. Retrying.\n")

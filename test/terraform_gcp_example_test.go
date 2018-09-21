@@ -58,7 +58,7 @@ func TestTerraformGcpExample(t *testing.T) {
 	gcp.AssertStorageBucketExists(t, expectedBucketName)
 
 	// Add a tag to the Compute Instance
-	instance := gcp.NewInstance(t, projectId, instanceName)
+	instance := gcp.FetchInstance(t, projectId, instanceName)
 	instance.SetLabels(t, projectId, map[string]string{"testing": "testing-tag-value2"})
 
 	// Check for the labels within a retry loop as it can sometimes take a while for the
@@ -69,7 +69,7 @@ func TestTerraformGcpExample(t *testing.T) {
 
 	retry.DoWithRetry(t, fmt.Sprintf("Checking Instance %s for labels", instanceName), maxRetries, timeBetweenRetries, func() (string, error) {
 		// Look up the tags for the given Instance ID
-		instance := gcp.NewInstance(t, projectId, instanceName)
+		instance := gcp.FetchInstance(t, projectId, instanceName)
 		instanceLabels := instance.GetLabels(t)
 
 		testingTag, containsTestingTag := instanceLabels["testing"]
