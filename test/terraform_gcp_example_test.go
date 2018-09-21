@@ -59,7 +59,7 @@ func TestTerraformGcpExample(t *testing.T) {
 
 	// Add a tag to the Compute Instance
 	instance := gcp.FetchInstance(t, projectId, instanceName)
-	instance.SetLabels(t, projectId, map[string]string{"testing": "testing-tag-value2"})
+	instance.SetLabels(t, map[string]string{"testing": "testing-tag-value2"})
 
 	// Check for the labels within a retry loop as it can sometimes take a while for the
 	// changes to propagate.

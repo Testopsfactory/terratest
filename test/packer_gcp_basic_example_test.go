@@ -36,5 +36,5 @@ func TestPackerGCPBasicExample(t *testing.T) {
 
 	// Delete the Image after we're done
 	image := gcp.FetchImage(t, projectID, imageName)
-	defer image.DeleteImage(t, projectID)
+	defer image.DeleteImage(t)
 }
