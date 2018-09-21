@@ -36,8 +36,31 @@ type RegionalInstanceGroup struct {
 }
 
 // NewInstance creates a new instance of the (GCP Compute) Instance type
-func NewInstance(t *testing.T, instance *compute.Instance) *Instance {
-	return &Instance{instance}
+func NewInstance(t *testing.T, projectID string, name string) *Instance {
+	logger.Logf(t, "Getting Compute Instance %s", name)
+
+	ctx := context.Background()
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	instanceAggregatedList, err := service.Instances.AggregatedList(projectID).Context(ctx).Do()
+	if err != nil {
+		t.Fatalf("Instances.AggregatedList(%s) got error: %v", projectID, err)
+	}
+
+	for _, instanceList := range instanceAggregatedList.Items {
+		for _, instance := range instanceList.Instances {
+			if name == instance.Name {
+				return &Instance{instance}
+			}
+		}
+	}
+
+	t.Fatalf("Compute Instance %s could not be found in project %s", name, projectID)
+	return nil
 }
 
 // NewImage creates a new instance of the (GCP Compute) Image type
@@ -95,43 +118,6 @@ func NewZonalInstanceGroup(t *testing.T, projectID string, zone string, name str
 	}
 
 	return &ZonalInstanceGroup{instanceGroup}
-}
-
-// GetInstance gets the given Instance in the given region.
-func GetInstance(t *testing.T, projectID string, instanceName string) *Instance {
-	instance, err := GetInstanceE(t, projectID, instanceName)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return instance
-}
-
-// GetInstanceE gets the given Compute Instance for the given Compute Instance name.
-func GetInstanceE(t *testing.T, projectID string, instanceName string) (*Instance, error) {
-	logger.Logf(t, "Getting Compute Instance %s", instanceName)
-
-	ctx := context.Background()
-
-	service, err := NewComputeServiceE(t)
-	if err != nil {
-		return nil, err
-	}
-
-	instanceAggregatedList, err := service.Instances.AggregatedList(projectID).Context(ctx).Do()
-	if err != nil {
-		return nil, fmt.Errorf("Instances.AggregatedList(%s) got error: %v", projectID, err)
-	}
-
-	for _, instanceList := range instanceAggregatedList.Items {
-		for _, instance := range instanceList.Instances {
-			if instanceName == instance.Name {
-				return NewInstance(instance), nil
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("Compute Instance %s could not be found in project %s", instanceName, projectID)
 }
 
 // GetPublicIP gets the public IP address of the given Compute Instance.
@@ -310,8 +296,59 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string)
 	return instanceIDs, nil
 }
 
-func (ig *RegionalInstanceGroup) GetRandomPublicIp(t *testing.T, projectID string) string {
-	randIndex := random.Random(1, ConsulClusterExampleDefaultNumServers)
+// GetRandomInstance returns a randomly selected Instance from the Regional Instance Group
+func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T, projectID string) *Instance {
+	instance, err := ig.GetRandomInstanceE(t, projectID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return instance
+}
+
+// GetRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
+func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID string) (*Instance, error) {
+	instanceIDs := ig.GetInstanceIds(t, projectID)
+
+	clusterSize := int(ig.Size)
+	randIndex := random.Random(1, clusterSize)
+
+	if randIndex > len(instanceIDs) {
+		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, ig.Region)
+	}
+
+	instanceID := instanceIDs[randIndex-1]
+	instance := NewInstance(t, projectID, instanceID)
+
+	return instance, nil
+}
+
+// TODO: Is there some way to avoid the total duplication of this function and the Regional Instance Group equivalent in Go?
+// GetRandomInstance returns a randomly selected Instance from the Zonal Instance Group
+func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T, projectID string) *Instance {
+	instance, err := ig.GetRandomInstanceE(t, projectID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return instance
+}
+
+// GetRandomInstanceE returns a randomly selected Instance from the Zonal Instance Group
+func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID string) (*Instance, error) {
+	instanceIDs := ig.GetInstanceIds(t, projectID)
+
+	clusterSize := int(ig.Size)
+	randIndex := random.Random(1, clusterSize)
+
+	if randIndex > len(instanceIDs) {
+		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, ig.Region)
+	}
+
+	instanceID := instanceIDs[randIndex-1]
+	instance := NewInstance(t, projectID, instanceID)
+
+	return instance, nil
 }
 
 // NewComputeService creates a new Compute service, which is used to make GCP API calls.
