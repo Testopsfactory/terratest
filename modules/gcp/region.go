@@ -213,3 +213,17 @@ func GetAllGcpZonesE(t *testing.T, projectID string) ([]string, error) {
 
 	return zones, nil
 }
+
+// Given a GCP Zone URL formatted like https://www.googleapis.com/compute/v1/projects/project-123456/zones/asia-east1-b,
+// return "asia-east1-b".
+func ZoneUrlToZone(zoneUrl string) string {
+	tokens := strings.Split(zoneUrl, "/")
+	return tokens[len(tokens)-1]
+}
+
+// Given a GCP Zone URL formatted like https://www.googleapis.com/compute/v1/projects/project-123456/regions/southamerica-east1,
+// return "southamerica-east1".
+func RegionUrlToRegion(zoneUrl string) string {
+	tokens := strings.Split(zoneUrl, "/")
+	return tokens[len(tokens)-1]
+}

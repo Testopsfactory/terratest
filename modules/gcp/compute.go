@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -152,13 +151,6 @@ func (c *Instance) GetZone(t *testing.T) string {
 	return ZoneUrlToZone(c.Zone)
 }
 
-// Given a GCP Zone URL formatted like https://www.googleapis.com/compute/v1/projects/project-123456/zones/asia-east1-b,
-// return "asia-east1-b".
-func ZoneUrlToZone(zoneUrl string) string {
-	tokens := strings.Split(zoneUrl, "/")
-	return tokens[len(tokens)-1]
-}
-
 // SetLabels adds the tags to the given Compute Instance.
 func (c *Instance) SetLabels(t *testing.T, projectID string, labels map[string]string) {
 	err := c.SetLabelsE(t, projectID, labels)
@@ -223,7 +215,7 @@ func (ig *ZonalInstanceGroup) GetInstanceIds(t *testing.T, projectID string) []s
 
 // GetInstanceIdsE gets the IDs of Instances in the given Zonal Instance Group.
 func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([]string, error) {
-	logger.Logf(t, "Get instances for Zonal Instance Group %s in zone %s", ig.Name, ig.Zone)
+	logger.Logf(t, "Get instances for Zonal Instance Group %s", ig.Name)
 
 	ctx := context.Background()
 
@@ -237,7 +229,9 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([
 	}
 
 	instanceIDs := []string{}
-	req := service.InstanceGroups.ListInstances(projectID, ig.Zone, ig.Name, requestBody)
+	zone := ZoneUrlToZone(ig.Zone)
+
+	req := service.InstanceGroups.ListInstances(projectID, zone, ig.Name, requestBody)
 	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
@@ -265,7 +259,7 @@ func (ig *RegionalInstanceGroup) GetInstanceIds(t *testing.T, projectID string) 
 
 // GetInstanceIdsE gets the IDs of Instances in the given Regional Instance Group.
 func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string) ([]string, error) {
-	logger.Logf(t, "Get instances for Regional Instance Group %s in Region %s", ig.Name, ig.Region)
+	logger.Logf(t, "Get instances for Regional Instance Group %s", ig.Name)
 
 	ctx := context.Background()
 
@@ -279,7 +273,9 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string)
 	}
 
 	instanceIDs := []string{}
-	req := service.RegionInstanceGroups.ListInstances(projectID, ig.Region, ig.Name, requestBody)
+	region := RegionUrlToRegion(ig.Region)
+
+	req := service.RegionInstanceGroups.ListInstances(projectID, region, ig.Name, requestBody)
 	if err := req.Pages(ctx, func(page *compute.RegionInstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
@@ -342,7 +338,7 @@ func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T, projectID string)
 	randIndex := random.Random(1, clusterSize)
 
 	if randIndex > len(instanceIDs) {
-		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, ig.Region)
+		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, RegionUrlToRegion(ig.Region))
 	}
 
 	instanceID := instanceIDs[randIndex-1]
