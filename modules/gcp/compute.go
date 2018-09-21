@@ -157,7 +157,7 @@ func (c *Instance) GetZone(t *testing.T) string {
 
 // SetLabels adds the tags to the given Compute Instance.
 func (c *Instance) SetLabels(t *testing.T, labels map[string]string) {
-	err := c.SetLabelsE(t, c.projectID, labels)
+	err := c.SetLabelsE(t, labels)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,7 +254,7 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error) {
 
 // GetInstanceIds gets the IDs of Instances in the given Regional Instance Group.
 func (ig *RegionalInstanceGroup) GetInstanceIds(t *testing.T) []string {
-	ids, err := ig.GetInstanceIdsE(t, ig.projectID)
+	ids, err := ig.GetInstanceIdsE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
