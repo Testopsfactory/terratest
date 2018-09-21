@@ -32,8 +32,9 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	}
 
 	// Make sure the Packer build completes successfully
-	imageID := packer.BuildArtifact(t, packerOptions)
+	imageName := packer.BuildArtifact(t, packerOptions)
 
 	// Delete the Image after we're done
-	defer gcp.DeleteImage(t, projectID, imageID)
+	image := gcp.NewImage(t, projectID, imageName)
+	defer image.DeleteImage(t, projectID)
 }
