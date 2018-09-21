@@ -154,6 +154,14 @@
   revision = "0b12d6b5"
 
 [[projects]]
+  digest = "1:41b00533ad3d8b3f54b6a02fc093b211feeffb068a3148a7e7084cd7aeef18ec"
+  name = "github.com/magiconair/properties"
+  packages = ["assert"]
+  pruneopts = "UT"
+  revision = "c2353362d570a7bfa228149c62842019201cfb71"
+  version = "v1.8.0"
+
+[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
@@ -395,6 +403,7 @@
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/go-sql-driver/mysql",
     "github.com/google/uuid",
+    "github.com/magiconair/properties/assert",
     "github.com/pquerna/otp/totp",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
