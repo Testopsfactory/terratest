@@ -6,12 +6,10 @@ import (
 	"path"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/random"
-
-	"google.golang.org/api/compute/v1"
-
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/compute/v1"
 )
 
 // Corresponds to a GCP Compute Instance (https://cloud.google.com/compute/docs/instances/)
@@ -38,17 +36,18 @@ type RegionalInstanceGroup struct {
 	*compute.InstanceGroup
 }
 
-// FetchInstance creates a new instance of the (GCP Compute) Instance type
+// FetchInstance queries GCP to return an instance of the (GCP Compute) Instance type
 func FetchInstance(t *testing.T, projectID string, name string) *Instance {
 	logger.Logf(t, "Getting Compute Instance %s", name)
 
 	ctx := context.Background()
-
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	// If we want to fetch an Instance without knowing its Zone, we have to query GCP for all Instances in the project
+	// and match on name.
 	instanceAggregatedList, err := service.Instances.AggregatedList(projectID).Context(ctx).Do()
 	if err != nil {
 		t.Fatalf("Instances.AggregatedList(%s) got error: %v", projectID, err)
@@ -66,16 +65,16 @@ func FetchInstance(t *testing.T, projectID string, name string) *Instance {
 	return nil
 }
 
-// FetchImage creates a new instance of the (GCP Compute) Image type
+// FetchImage queries GCP to return a new instance of the (GCP Compute) Image type
 func FetchImage(t *testing.T, projectID string, name string) *Image {
 	logger.Logf(t, "Getting Image %s", name)
 
+	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ctx := context.Background()
 	req := service.Images.Get(projectID, name)
 	image, err := req.Context(ctx).Do()
 	if err != nil {
@@ -85,16 +84,16 @@ func FetchImage(t *testing.T, projectID string, name string) *Image {
 	return &Image{projectID, image}
 }
 
-// FetchRegionalInstanceGroup creates a new instance of the Regional Instance Group type
+// FetchRegionalInstanceGroup queries GCP to return a new instance of the Regional Instance Group type
 func FetchRegionalInstanceGroup(t *testing.T, projectID string, region string, name string) *RegionalInstanceGroup {
 	logger.Logf(t, "Getting Regional Instance Group %s", name)
 
+	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ctx := context.Background()
 	req := service.RegionInstanceGroups.Get(projectID, region, name)
 	instanceGroup, err := req.Context(ctx).Do()
 	if err != nil {
@@ -104,16 +103,16 @@ func FetchRegionalInstanceGroup(t *testing.T, projectID string, region string, n
 	return &RegionalInstanceGroup{projectID, instanceGroup}
 }
 
-// FetchZonalInstanceGroup creates a new instance of the Regional Instance Group type
+// FetchZonalInstanceGroup queries GCP to return a new instance of the Regional Instance Group type
 func FetchZonalInstanceGroup(t *testing.T, projectID string, zone string, name string) *ZonalInstanceGroup {
 	logger.Logf(t, "Getting Zonal Instance Group %s", name)
 
+	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ctx := context.Background()
 	req := service.InstanceGroups.Get(projectID, zone, name)
 	instanceGroup, err := req.Context(ctx).Do()
 	if err != nil {
@@ -168,7 +167,6 @@ func (c *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
 	logger.Logf(t, "Adding labels to instance %s in zone %s", c.Name, c.Zone)
 
 	ctx := context.Background()
-
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		return err
@@ -195,7 +193,6 @@ func (i *Image) DeleteImageE(t *testing.T) error {
 	logger.Logf(t, "Destroying Image %s", i.Name)
 
 	ctx := context.Background()
-
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		return err
@@ -222,7 +219,6 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error) {
 	logger.Logf(t, "Get instances for Zonal Instance Group %s", ig.Name)
 
 	ctx := context.Background()
-
 	service, err := NewComputeServiceE(t)
 	if err != nil {
 		return nil, err
@@ -309,7 +305,6 @@ func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
 // GetRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
 func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
 	instanceIDs := ig.GetInstanceIds(t)
-
 	clusterSize := int(ig.Size)
 	randIndex := random.Random(1, clusterSize)
 
@@ -337,7 +332,6 @@ func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
 // GetRandomInstanceE returns a randomly selected Instance from the Zonal Instance Group
 func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
 	instanceIDs := ig.GetInstanceIds(t)
-
 	clusterSize := int(ig.Size)
 	randIndex := random.Random(1, clusterSize)
 

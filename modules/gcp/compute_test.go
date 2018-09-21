@@ -109,9 +109,6 @@ func uniqueGcpInstanceName() string {
 }
 
 // Helper function to launch a Compute Instance.
-// Recommended defaults:
-// - machineType: "f1-micro"
-// - sourceImage: "family"
 func createComputeInstance(t *testing.T, projectID string, zone string, name string) {
 	t.Logf("Launching new Compute Instance %s\n", name)
 
@@ -183,3 +180,5 @@ func deleteComputeInstance(t *testing.T, projectID string, zone string, name str
 		t.Fatalf("Error deleting Compute Instance: %s", err)
 	}
 }
+
+// TODO: Add additional automated tests to cover remaining functions in compute.go
