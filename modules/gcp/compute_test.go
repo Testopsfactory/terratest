@@ -100,10 +100,10 @@ func TestGetAndSetLabels(t *testing.T) {
 }
 
 // Helper function that returns a random, valid name for GCP Compute Instances. Note that GCP requires Instance names to
-// use lowercase letters only
+// use lowercase letters only.
 func uniqueGcpInstanceName() string {
-	id := random.UniqueId()
-	instanceName := fmt.Sprintf("terratest-%s", strings.ToLower(id))
+	id := strings.ToLower(random.UniqueId())
+	instanceName := fmt.Sprintf("terratest-%s", id)
 
 	return instanceName
 }
@@ -114,6 +114,8 @@ func uniqueGcpInstanceName() string {
 // - sourceImage: "family"
 func createComputeInstance(t *testing.T, projectID string, zone string, name string) {
 	t.Logf("Launching new Compute Instance %s\n", name)
+
+	// This RegEx was pulled straight from the GCP API error messages that complained when it's not honored
 	validNameExp := `^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$`
 	regEx := regexp.MustCompile(validNameExp)
 

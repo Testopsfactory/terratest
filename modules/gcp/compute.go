@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/random"
+
 	"google.golang.org/api/compute/v1"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -23,9 +25,6 @@ type Image struct {
 	*compute.Image
 }
 
-// Zonal and Regional Instance Groups both use the same type of underlying InstanceGroup resource, but they use different
-// GCP API calls, so it makes sense to maintain separate types for each of them.
-
 // Corresponds to a GCP Zonal Instance Group (https://cloud.google.com/compute/docs/instance-groups/)
 type ZonalInstanceGroup struct {
 	*compute.InstanceGroup
@@ -36,17 +35,66 @@ type RegionalInstanceGroup struct {
 	*compute.InstanceGroup
 }
 
-// newInstance creates a new instance of the (GCP Compute) Instance type
-func newInstance(instance *compute.Instance) *Instance {
+// NewInstance creates a new instance of the (GCP Compute) Instance type
+func NewInstance(t *testing.T, instance *compute.Instance) *Instance {
 	return &Instance{instance}
 }
 
-// newImage creates a new instance of the (GCP Compute) Image type
-func newImage(name string) *Image {
-	image := &compute.Image{
-		Name: name,
+// NewImage creates a new instance of the (GCP Compute) Image type
+func NewImage(t *testing.T, projectID string, name string) *Image {
+	logger.Logf(t, "Getting Image %s", name)
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	ctx := context.Background()
+	req := service.Images.Get(projectID, name)
+	image, err := req.Context(ctx).Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	return &Image{image}
+}
+
+// NewRegionalInstanceGroup creates a new instance of the Regional Instance Group type
+func NewRegionalInstanceGroup(t *testing.T, projectID string, region string, name string) *RegionalInstanceGroup {
+	logger.Logf(t, "Getting Regional Instance Group %s", name)
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := context.Background()
+	req := service.RegionInstanceGroups.Get(projectID, region, name)
+	instanceGroup, err := req.Context(ctx).Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return &RegionalInstanceGroup{instanceGroup}
+}
+
+// NewZonalInstanceGroup creates a new instance of the Regional Instance Group type
+func NewZonalInstanceGroup(t *testing.T, projectID string, zone string, name string) *ZonalInstanceGroup {
+	logger.Logf(t, "Getting Zonal Instance Group %s", name)
+
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := context.Background()
+	req := service.InstanceGroups.Get(projectID, zone, name)
+	instanceGroup, err := req.Context(ctx).Do()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return &ZonalInstanceGroup{instanceGroup}
 }
 
 // GetInstance gets the given Instance in the given region.
@@ -78,7 +126,7 @@ func GetInstanceE(t *testing.T, projectID string, instanceName string) (*Instanc
 	for _, instanceList := range instanceAggregatedList.Items {
 		for _, instance := range instanceList.Instances {
 			if instanceName == instance.Name {
-				return newInstance(instance), nil
+				return NewInstance(instance), nil
 			}
 		}
 	}
@@ -145,9 +193,6 @@ func (c *Instance) SetLabelsE(t *testing.T, projectID string, labels map[string]
 	}
 
 	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: c.LabelFingerprint}
-	fmt.Printf("projectID = %v\n", projectID)
-	fmt.Printf("zone = %v\n", c.Zone)
-	fmt.Printf("name = %v\n", c.Name)
 	if _, err := service.Instances.SetLabels(projectID, c.GetZone(t), c.Name, &req).Context(ctx).Do(); err != nil {
 		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", c.Name, err)
 	}
@@ -263,6 +308,10 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T, projectID string)
 	}
 
 	return instanceIDs, nil
+}
+
+func (ig *RegionalInstanceGroup) GetRandomPublicIp(t *testing.T, projectID string) string {
+	randIndex := random.Random(1, ConsulClusterExampleDefaultNumServers)
 }
 
 // NewComputeService creates a new Compute service, which is used to make GCP API calls.
