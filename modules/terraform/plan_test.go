@@ -1,9 +1,10 @@
 package terraform
 
 import (
-	"terratest/modules/aws"
-	"terratest/modules/files"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/files"
 
 	"github.com/stretchr/testify/assert"
 )
