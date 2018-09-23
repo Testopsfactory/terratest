@@ -38,6 +38,16 @@ type RegionalInstanceGroup struct {
 
 // FetchInstance queries GCP to return an instance of the (GCP Compute) Instance type
 func FetchInstance(t *testing.T, projectID string, name string) *Instance {
+	instance, err := FetchInstanceE(t, projectID, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return instance
+}
+
+// FetchInstance queries GCP to return an instance of the (GCP Compute) Instance type
+func FetchInstanceE(t *testing.T, projectID string, name string) (*Instance, error) {
 	logger.Logf(t, "Getting Compute Instance %s", name)
 
 	ctx := context.Background()
@@ -50,76 +60,105 @@ func FetchInstance(t *testing.T, projectID string, name string) *Instance {
 	// and match on name.
 	instanceAggregatedList, err := service.Instances.AggregatedList(projectID).Context(ctx).Do()
 	if err != nil {
-		t.Fatalf("Instances.AggregatedList(%s) got error: %v", projectID, err)
+		return nil, fmt.Errorf("Instances.AggregatedList(%s) got error: %v", projectID, err)
 	}
 
 	for _, instanceList := range instanceAggregatedList.Items {
 		for _, instance := range instanceList.Instances {
 			if name == instance.Name {
-				return &Instance{projectID, instance}
+				return &Instance{projectID, instance}, nil
 			}
 		}
 	}
 
-	t.Fatalf("Compute Instance %s could not be found in project %s", name, projectID)
-	return nil
+	return nil, fmt.Errorf("Compute Instance %s could not be found in project %s", name, projectID)
 }
 
 // FetchImage queries GCP to return a new instance of the (GCP Compute) Image type
 func FetchImage(t *testing.T, projectID string, name string) *Image {
+	image, err := FetchImageE(t, projectID, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return image
+}
+
+// FetchImage queries GCP to return a new instance of the (GCP Compute) Image type
+func FetchImageE(t *testing.T, projectID string, name string) (*Image, error) {
 	logger.Logf(t, "Getting Image %s", name)
 
 	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	req := service.Images.Get(projectID, name)
 	image, err := req.Context(ctx).Do()
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	return &Image{projectID, image}
+	return &Image{projectID, image}, nil
 }
 
 // FetchRegionalInstanceGroup queries GCP to return a new instance of the Regional Instance Group type
 func FetchRegionalInstanceGroup(t *testing.T, projectID string, region string, name string) *RegionalInstanceGroup {
+	instanceGroup, err := FetchRegionalInstanceGroupE(t, projectID, region, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return instanceGroup
+}
+
+// FetchRegionalInstanceGroup queries GCP to return a new instance of the Regional Instance Group type
+func FetchRegionalInstanceGroupE(t *testing.T, projectID string, region string, name string) (*RegionalInstanceGroup, error) {
 	logger.Logf(t, "Getting Regional Instance Group %s", name)
 
 	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	req := service.RegionInstanceGroups.Get(projectID, region, name)
 	instanceGroup, err := req.Context(ctx).Do()
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	return &RegionalInstanceGroup{projectID, instanceGroup}
+	return &RegionalInstanceGroup{projectID, instanceGroup}, nil
 }
 
 // FetchZonalInstanceGroup queries GCP to return a new instance of the Regional Instance Group type
 func FetchZonalInstanceGroup(t *testing.T, projectID string, zone string, name string) *ZonalInstanceGroup {
+	instanceGroup, err := FetchZonalInstanceGroupE(t, projectID, zone, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return instanceGroup
+}
+
+// FetchZonalInstanceGroup queries GCP to return a new instance of the Regional Instance Group type
+func FetchZonalInstanceGroupE(t *testing.T, projectID string, zone string, name string) (*ZonalInstanceGroup, error) {
 	logger.Logf(t, "Getting Zonal Instance Group %s", name)
 
 	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
 	req := service.InstanceGroups.Get(projectID, zone, name)
 	instanceGroup, err := req.Context(ctx).Do()
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	return &ZonalInstanceGroup{projectID, instanceGroup}
+	return &ZonalInstanceGroup{projectID, instanceGroup}, nil
 }
 
 // GetPublicIP gets the public IP address of the given Compute Instance.
