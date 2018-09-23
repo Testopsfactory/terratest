@@ -162,8 +162,8 @@ func FetchZonalInstanceGroupE(t *testing.T, projectID string, zone string, name 
 }
 
 // GetPublicIP gets the public IP address of the given Compute Instance.
-func (c *Instance) GetPublicIp(t *testing.T) string {
-	ip, err := c.GetPublicIpE(t)
+func (i *Instance) GetPublicIp(t *testing.T) string {
+	ip, err := i.GetPublicIpE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,39 +171,39 @@ func (c *Instance) GetPublicIp(t *testing.T) string {
 }
 
 // GetPublicIpE gets the public IP address of the given Compute Instance.
-func (c *Instance) GetPublicIpE(t *testing.T) (string, error) {
+func (i *Instance) GetPublicIpE(t *testing.T) (string, error) {
 	// If there are no accessConfigs specified, then this instance will have no external internet access:
 	// https://cloud.google.com/compute/docs/reference/rest/v1/instances.
-	if len(c.NetworkInterfaces[0].AccessConfigs) == 0 {
-		return "", fmt.Errorf("Attempted to get public IP of Compute Instance %s, but that Compute Instance does not have a public IP address", c.Name)
+	if len(i.NetworkInterfaces[0].AccessConfigs) == 0 {
+		return "", fmt.Errorf("Attempted to get public IP of Compute Instance %s, but that Compute Instance does not have a public IP address", i.Name)
 	}
 
-	ip := c.NetworkInterfaces[0].AccessConfigs[0].NatIP
+	ip := i.NetworkInterfaces[0].AccessConfigs[0].NatIP
 
 	return ip, nil
 }
 
 // GetLabels returns all the tags for the given Compute Instance.
-func (c *Instance) GetLabels(t *testing.T) map[string]string {
-	return c.Labels
+func (i *Instance) GetLabels(t *testing.T) map[string]string {
+	return i.Labels
 }
 
 // GetZone returns the Zone in which the Compute Instance is located.
-func (c *Instance) GetZone(t *testing.T) string {
-	return ZoneUrlToZone(c.Zone)
+func (i *Instance) GetZone(t *testing.T) string {
+	return ZoneUrlToZone(i.Zone)
 }
 
 // SetLabels adds the tags to the given Compute Instance.
-func (c *Instance) SetLabels(t *testing.T, labels map[string]string) {
-	err := c.SetLabelsE(t, labels)
+func (i *Instance) SetLabels(t *testing.T, labels map[string]string) {
+	err := i.SetLabelsE(t, labels)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 // SetLabelsE adds the tags to the given Compute Instance.
-func (c *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
-	logger.Logf(t, "Adding labels to instance %s in zone %s", c.Name, c.Zone)
+func (i *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
+	logger.Logf(t, "Adding labels to instance %s in zone %s", i.Name, i.Zone)
 
 	ctx := context.Background()
 	service, err := NewComputeServiceE(t)
@@ -211,9 +211,9 @@ func (c *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
 		return err
 	}
 
-	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: c.LabelFingerprint}
-	if _, err := service.Instances.SetLabels(c.projectID, c.GetZone(t), c.Name, &req).Context(ctx).Do(); err != nil {
-		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", c.Name, err)
+	req := compute.InstancesSetLabelsRequest{Labels: labels, LabelFingerprint: i.LabelFingerprint}
+	if _, err := service.Instances.SetLabels(i.projectID, i.GetZone(t), i.Name, &req).Context(ctx).Do(); err != nil {
+		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", i.Name, err)
 	}
 
 	return err
