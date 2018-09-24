@@ -348,14 +348,17 @@ func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
 // GetRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
 func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
 	instanceIDs := ig.GetInstanceIds(t)
-	clusterSize := int(ig.Size)
-	randIndex := random.Random(1, clusterSize)
-
-	if randIndex > len(instanceIDs) {
+	if len(instanceIDs) == 0 {
 		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, ig.Region)
 	}
 
-	instanceID := instanceIDs[randIndex-1]
+	clusterSize := int(ig.Size)
+	if len(instanceIDs) != clusterSize {
+		return nil, fmt.Errorf("Expected Regional Instance Group %s in Region %s to have %d instances, but found %d", ig.Name, ig.Region, clusterSize, len(instanceIDs))
+	}
+
+	randIndex := random.Random(0, clusterSize-1)
+	instanceID := instanceIDs[randIndex]
 	instance := FetchInstance(t, ig.projectID, instanceID)
 
 	return instance, nil
