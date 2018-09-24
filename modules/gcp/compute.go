@@ -216,7 +216,7 @@ func (i *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
 		return fmt.Errorf("Instances.SetLabels(%s) got error: %v", i.Name, err)
 	}
 
-	return err
+	return nil
 }
 
 // DeleteImage deletes the given Compute Image.
@@ -241,7 +241,7 @@ func (i *Image) DeleteImageE(t *testing.T) error {
 		return fmt.Errorf("Images.Delete(%s) got error: %v", i.Name, err)
 	}
 
-	return err
+	return nil
 }
 
 // GetInstanceIds gets the IDs of Instances in the given Instance Group.
@@ -271,7 +271,8 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error) {
 	zone := ZoneUrlToZone(ig.Zone)
 
 	req := service.InstanceGroups.ListInstances(ig.projectID, zone, ig.Name, requestBody)
-	if err := req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
+
+	err = req.Pages(ctx, func(page *compute.InstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
 			// with Instance URLs and we need only the Instance ID for the next call. Use
@@ -280,7 +281,8 @@ func (ig *ZonalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error) {
 			instanceIDs = append(instanceIDs, instanceID)
 		}
 		return nil
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, fmt.Errorf("InstanceGroups.ListInstances(%s) got error: %v", ig.Name, err)
 	}
 
@@ -315,7 +317,8 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error)
 	region := RegionUrlToRegion(ig.Region)
 
 	req := service.RegionInstanceGroups.ListInstances(ig.projectID, region, ig.Name, requestBody)
-	if err := req.Pages(ctx, func(page *compute.RegionInstanceGroupsListInstances) error {
+
+	err = req.Pages(ctx, func(page *compute.RegionInstanceGroupsListInstances) error {
 		for _, instance := range page.Items {
 			// For some reason service.InstanceGroups.ListInstances returns us a collection
 			// with Instance URLs and we need only the Instance ID for the next call. Use
@@ -324,7 +327,8 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error)
 			instanceIDs = append(instanceIDs, instanceID)
 		}
 		return nil
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, fmt.Errorf("InstanceGroups.ListInstances(%s) got error: %v", ig.Name, err)
 	}
 

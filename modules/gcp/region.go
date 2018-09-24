@@ -167,12 +167,13 @@ func GetAllGcpRegionsE(t *testing.T, projectID string) ([]string, error) {
 	req := service.Regions.List(projectID)
 
 	regions := []string{}
-	if err := req.Pages(ctx, func(page *compute.RegionList) error {
+	err = req.Pages(ctx, func(page *compute.RegionList) error {
 		for _, region := range page.Items {
 			regions = append(regions, region.Name)
 		}
 		return err
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -202,12 +203,13 @@ func GetAllGcpZonesE(t *testing.T, projectID string) ([]string, error) {
 	req := service.Zones.List(projectID)
 
 	zones := []string{}
-	if err := req.Pages(ctx, func(page *compute.ZoneList) error {
+	err = req.Pages(ctx, func(page *compute.ZoneList) error {
 		for _, zone := range page.Items {
 			zones = append(zones, zone.Name)
 		}
 		return err
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
