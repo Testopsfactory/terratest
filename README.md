@@ -149,6 +149,12 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 
 
 
+## GoDoc
+
+You can find the GoDoc for Terratest here: https://godoc.org/github.com/gruntwork-io/terratest. This will let you see the methods and types within each package.
+
+
+
 
 ## Testing best practices
 
