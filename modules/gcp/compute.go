@@ -387,10 +387,6 @@ func getRandomInstanceE(t *testing.T, ig InstanceGroup, name string, region stri
 	return instance, nil
 }
 
-func getRand(t *testing.T) int {
-	return random.Random(0, 2)
-}
-
 // NewComputeService creates a new Compute service, which is used to make GCP API calls.
 func NewComputeService(t *testing.T) *compute.Service {
 	client, err := NewComputeServiceE(t)

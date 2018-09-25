@@ -14,13 +14,13 @@ func Random(min int, max int) int {
 
 // RandomInt picks a random element in the slice of ints.
 func RandomInt(elements []int) int {
-	index := Random(0, len(elements))
+	index := Random(0, len(elements)-1)
 	return elements[index]
 }
 
 // RandomString picks a random element in the slice of string.
 func RandomString(elements []string) string {
-	index := Random(0, len(elements))
+	index := Random(0, len(elements)-1)
 	return elements[index]
 }
 
