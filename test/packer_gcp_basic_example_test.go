@@ -12,10 +12,10 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	t.Parallel()
 
 	// Get the Project Id to use
-	projectID := gcp.GetGoogleProjectIDFromEnvVar()
+	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 
 	// Pick a random GCP zone to test in. This helps ensure your code works in all regions.
-	zone := gcp.GetRandomZone(t, nil, nil)
+	zone := gcp.GetRandomZone(t, projectID, nil, nil)
 
 	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
@@ -32,8 +32,9 @@ func TestPackerGCPBasicExample(t *testing.T) {
 	}
 
 	// Make sure the Packer build completes successfully
-	imageID := packer.BuildArtifact(t, packerOptions)
+	imageName := packer.BuildArtifact(t, packerOptions)
 
 	// Delete the Image after we're done
-	defer gcp.DeleteImage(t, projectID, imageID)
+	image := gcp.FetchImage(t, projectID, imageName)
+	defer image.DeleteImage(t)
 }

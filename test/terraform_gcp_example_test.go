@@ -17,7 +17,7 @@ func TestTerraformGcpExample(t *testing.T) {
 	t.Parallel()
 
 	// Get the Project Id to use
-	projectId := gcp.GetGoogleProjectIDFromEnvVar()
+	projectId := gcp.GetGoogleProjectIDFromEnvVar(t)
 
 	// Create all resources in the following zone
 	zone := "us-east1-b"
@@ -48,7 +48,7 @@ func TestTerraformGcpExample(t *testing.T) {
 
 	// Run `terraform output` to get the value of some of the output variables
 	bucketURL := terraform.Output(t, terraformOptions, "bucket_url")
-	instanceID := terraform.Output(t, terraformOptions, "instance_id")
+	instanceName := terraform.Output(t, terraformOptions, "instance_id")
 
 	// Verify that the new bucket url matches the expected url
 	expectedURL := fmt.Sprintf("gs://%s", expectedBucketName)
@@ -58,7 +58,8 @@ func TestTerraformGcpExample(t *testing.T) {
 	gcp.AssertStorageBucketExists(t, expectedBucketName)
 
 	// Add a tag to the Compute Instance
-	gcp.AddLabelsToInstance(t, projectId, zone, instanceID, map[string]string{"testing": "testing-tag-value2"})
+	instance := gcp.FetchInstance(t, projectId, instanceName)
+	instance.SetLabels(t, map[string]string{"testing": "testing-tag-value2"})
 
 	// Check for the labels within a retry loop as it can sometimes take a while for the
 	// changes to propagate.
@@ -66,13 +67,10 @@ func TestTerraformGcpExample(t *testing.T) {
 	timeBetweenRetries := 5 * time.Second
 	expectedText := "testing-tag-value2"
 
-	retry.DoWithRetry(t, fmt.Sprintf("Checking Instance %s for labels", instanceID), maxRetries, timeBetweenRetries, func() (string, error) {
+	retry.DoWithRetry(t, fmt.Sprintf("Checking Instance %s for labels", instanceName), maxRetries, timeBetweenRetries, func() (string, error) {
 		// Look up the tags for the given Instance ID
-		instanceLabels, err := gcp.GetLabelsForComputeInstanceE(t, projectId, zone, instanceID)
-
-		if err != nil {
-			return "", err
-		}
+		instance := gcp.FetchInstance(t, projectId, instanceName)
+		instanceLabels := instance.GetLabels(t)
 
 		testingTag, containsTestingTag := instanceLabels["testing"]
 		actualText := strings.TrimSpace(testingTag)

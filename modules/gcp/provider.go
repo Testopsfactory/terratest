@@ -1,6 +1,9 @@
 package gcp
 
-import "os"
+import (
+	"os"
+	"testing"
+)
 
 var credsEnvVars = []string{
 	"GOOGLE_CREDENTIALS",
@@ -24,25 +27,37 @@ var regionEnvVars = []string{
 }
 
 // GetGoogleCredentialsFromEnvVar returns the Credentials for use with testing.
-func GetGoogleCredentialsFromEnvVar() string {
-	return multiEnvSearch(credsEnvVars)
+func GetGoogleCredentialsFromEnvVar(t *testing.T) string {
+	return getFirstNonEmptyValOrEmptyString(t, credsEnvVars)
 }
 
 // GetGoogleProjectIDFromEnvVar returns the Project Id for use with testing.
-func GetGoogleProjectIDFromEnvVar() string {
-	return multiEnvSearch(projectEnvVars)
+func GetGoogleProjectIDFromEnvVar(t *testing.T) string {
+	return getFirstNonEmptyValOrFatal(t, projectEnvVars)
 }
 
 // GetGoogleRegionFromEnvVar returns the Region for use with testing.
-func GetGoogleRegionFromEnvVar() string {
-	return multiEnvSearch(regionEnvVars)
+func GetGoogleRegionFromEnvVar(t *testing.T) string {
+	return getFirstNonEmptyValOrFatal(t, regionEnvVars)
 }
 
-func multiEnvSearch(ks []string) string {
+// getFirstNonEmptyValOrFatal returns the first non-empty value from ks, or throws a fatal
+func getFirstNonEmptyValOrFatal(t *testing.T, ks []string) string {
+	v := getFirstNonEmptyValOrEmptyString(t, ks)
+	if v == "" {
+		t.Fatalf("All of the following env vars %v are empty. At least one must be non-empty.", ks)
+	}
+
+	return v
+}
+
+// getFirstNonEmptyValOrFatal returns the first non-empty value from ks, or returns the empty string
+func getFirstNonEmptyValOrEmptyString(t *testing.T, ks []string) string {
 	for _, k := range ks {
 		if v := os.Getenv(k); v != "" {
 			return v
 		}
 	}
+
 	return ""
 }
