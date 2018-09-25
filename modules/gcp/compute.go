@@ -36,6 +36,11 @@ type RegionalInstanceGroup struct {
 	*compute.InstanceGroup
 }
 
+type InstanceGroup interface {
+	GetInstanceIds(t *testing.T) []string
+	GetInstanceIdsE(t *testing.T) ([]string, error)
+}
+
 // FetchInstance queries GCP to return an instance of the (GCP Compute) Instance type
 func FetchInstance(t *testing.T, projectID string, name string) *Instance {
 	instance, err := FetchInstanceE(t, projectID, name)
@@ -335,9 +340,28 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error)
 	return instanceIDs, nil
 }
 
-// GetRandomInstance returns a randomly selected Instance from the Regional Instance Group
+// getRandomInstance returns a randomly selected Instance from the Regional Instance Group
+func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
+	return getRandomInstance(t, ig, ig.Name, ig.Region, ig.Size, ig.projectID)
+}
+
+// getRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
+func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
+	return getRandomInstanceE(t, ig, ig.Name, ig.Region, ig.Size, ig.projectID)
+}
+
+// getRandomInstance returns a randomly selected Instance from the Regional Instance Group
 func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
-	instance, err := ig.GetRandomInstanceE(t)
+	return getRandomInstance(t, ig, ig.Name, ig.Region, ig.Size, ig.projectID)
+}
+
+// getRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
+func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
+	return getRandomInstanceE(t, ig, ig.Name, ig.Region, ig.Size, ig.projectID)
+}
+
+func getRandomInstance(t *testing.T, ig InstanceGroup, name string, region string, size int64, projectID string) *Instance {
+	instance, err := getRandomInstanceE(t, ig, name, region, size, projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -345,50 +369,26 @@ func (ig *RegionalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
 	return instance
 }
 
-// GetRandomInstanceE returns a randomly selected Instance from the Regional Instance Group
-func (ig *RegionalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
+func getRandomInstanceE(t *testing.T, ig InstanceGroup, name string, region string, size int64, projectID string) (*Instance, error) {
 	instanceIDs := ig.GetInstanceIds(t)
 	if len(instanceIDs) == 0 {
-		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, ig.Region)
+		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", name, region)
 	}
 
-	clusterSize := int(ig.Size)
+	clusterSize := int(size)
 	if len(instanceIDs) != clusterSize {
-		return nil, fmt.Errorf("Expected Regional Instance Group %s in Region %s to have %d instances, but found %d", ig.Name, ig.Region, clusterSize, len(instanceIDs))
+		return nil, fmt.Errorf("Expected Regional Instance Group %s in Region %s to have %d instances, but found %d", name, region, clusterSize, len(instanceIDs))
 	}
 
 	randIndex := random.Random(0, clusterSize-1)
 	instanceID := instanceIDs[randIndex]
-	instance := FetchInstance(t, ig.projectID, instanceID)
+	instance := FetchInstance(t, projectID, instanceID)
 
 	return instance, nil
 }
 
-// TODO: Is there some way to avoid the total duplication of this function and the Regional Instance Group equivalent in Go?
-// GetRandomInstance returns a randomly selected Instance from the Zonal Instance Group
-func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
-	instance, err := ig.GetRandomInstanceE(t)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return instance
-}
-
-// GetRandomInstanceE returns a randomly selected Instance from the Zonal Instance Group
-func (ig *ZonalInstanceGroup) GetRandomInstanceE(t *testing.T) (*Instance, error) {
-	instanceIDs := ig.GetInstanceIds(t)
-	clusterSize := int(ig.Size)
-	randIndex := random.Random(1, clusterSize)
-
-	if randIndex > len(instanceIDs) {
-		return nil, fmt.Errorf("Could not find any instances in Regional Instance Group %s in Region %s", ig.Name, RegionUrlToRegion(ig.Region))
-	}
-
-	instanceID := instanceIDs[randIndex-1]
-	instance := FetchInstance(t, ig.projectID, instanceID)
-
-	return instance, nil
+func getRand(t *testing.T) int {
+	return random.Random(0, 2)
 }
 
 // NewComputeService creates a new Compute service, which is used to make GCP API calls.
