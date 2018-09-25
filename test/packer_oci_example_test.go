@@ -13,7 +13,7 @@ import (
 func TestPackerOciExample(t *testing.T) {
 	t.Parallel()
 
-	compartmentID := "ocid1.compartment.oc1..aaaaaaaa"
+	compartmentID := oci.GetCompartmentIDFromEnvVar()
 	baseImageID := oci.GetMostRecentImageID(t, compartmentID, "Canonical Ubuntu", "18.04")
 	availabilityDomain := oci.GetRandomAvailabilityDomain(t, compartmentID)
 
@@ -23,8 +23,8 @@ func TestPackerOciExample(t *testing.T) {
 
 		// Variables to pass to our Packer build using -var options
 		Vars: map[string]string{
-			"oci_base_image_ocid":     baseImageID,
 			"oci_compartment_ocid":    compartmentID,
+			"oci_base_image_ocid":     baseImageID,
 			"oci_availability_domain": availabilityDomain,
 			"oci_subnet_ocid":         "ocid1.subnet.oc1.phx.aaaaaaaa",
 			"oci_key_file":            fmt.Sprintf("%s/.oci/oci_api_key.pem", os.Getenv("HOME")),

@@ -13,6 +13,9 @@ import (
 	"github.com/oracle/oci-go-sdk/identity"
 )
 
+// You can set this environment variable to force Terratest to use a specific compartment.
+const compartmentIDOverrideEnvVarName = "TF_VAR_compartment_ocid"
+
 // You can set this environment variable to force Terratest to use a specific availability domain
 // rather than a random one. This is convenient when iterating locally.
 const availabilityDomainOverrideEnvVarName = "TF_VAR_AD"
@@ -73,6 +76,14 @@ func GetAllADsE(t *testing.T, compartmentID string) ([]string, error) {
 	}
 
 	return adNames(response.Items), nil
+}
+
+// GetCompartmentIDFromEnvVar returns the Compartment for use with testing.
+func GetCompartmentIDFromEnvVar() string {
+	if compartmentID := os.Getenv(compartmentIDOverrideEnvVarName); compartmentID != "" {
+		return compartmentID
+	}
+	return ""
 }
 
 func adNames(ads []identity.AvailabilityDomain) []string {
