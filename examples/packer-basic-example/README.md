@@ -42,6 +42,20 @@ Terratest. For slightly more complicated, real-world examples of Packer template
 
 
 
+## Running automated tests against this Packer template for the GCP builder
+
+1. Sign up for [GCP](https://cloud.google.com/).
+1. Configure your GCP credentials using one of the
+   [Authentication](https://www.packer.io/docs/builders/googlecompute.html#authentication) methods.
+1. Install [Packer](https://www.packer.io/) and make sure it's on your `PATH`.
+1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
+1. `cd test`
+1. `dep ensure`
+1. `go test -v -run TestPackerGCPBasicExample`
+
+
+
+
 ## Running automated tests against this Packer template for the OCI builder
 
 1. Sign up for [OCI](https://cloud.oracle.com/cloud-infrastructure).
