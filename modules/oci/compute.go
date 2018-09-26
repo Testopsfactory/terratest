@@ -29,7 +29,8 @@ func DeleteImageE(t *testing.T, ocid string) error {
 		return err
 	}
 
-	_, err = client.DeleteImage(context.Background(), core.DeleteImageRequest{ImageId: &ocid})
+	request := core.DeleteImageRequest{ImageId: &ocid}
+	_, err = client.DeleteImage(context.Background(), request)
 	return err
 }
 

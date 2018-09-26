@@ -13,14 +13,8 @@ import (
 	"github.com/oracle/oci-go-sdk/identity"
 )
 
-// You can set this environment variable to force Terratest to use a specific compartment.
-const compartmentIDOverrideEnvVarName = "TF_VAR_compartment_ocid"
-
-// You can set this environment variable to force Terratest to use a specific availability domain
-// rather than a random one. This is convenient when iterating locally.
-const availabilityDomainOverrideEnvVarName = "TF_VAR_AD"
-
-// TODO Guido: document this
+// GetRandomAvailabilityDomain gets a randomly chosen availability domain for given compartment.
+// The returned value can be overridden by of the environment variable TF_VAR_availability_domain.
 func GetRandomAvailabilityDomain(t *testing.T, compartmentID string) string {
 	ad, err := GetRandomAvailabilityDomainE(t, compartmentID)
 	if err != nil {
@@ -29,15 +23,16 @@ func GetRandomAvailabilityDomain(t *testing.T, compartmentID string) string {
 	return ad
 }
 
-// TODO Guido: document this
+// GetRandomAvailabilityDomainE gets a randomly chosen availability domain for given compartment.
+// The returned value can be overridden by of the environment variable TF_VAR_availability_domain.
 func GetRandomAvailabilityDomainE(t *testing.T, compartmentID string) (string, error) {
-	adFromEnvVar := os.Getenv(availabilityDomainOverrideEnvVarName)
+	adFromEnvVar := os.Getenv(availabilityDomainEnvVar)
 	if adFromEnvVar != "" {
-		logger.Logf(t, "Using availability domain %s from environment variable %s", adFromEnvVar, availabilityDomainOverrideEnvVarName)
+		logger.Logf(t, "Using availability domain %s from environment variable %s", adFromEnvVar, availabilityDomainEnvVar)
 		return adFromEnvVar, nil
 	}
 
-	allADs, err := GetAllADsE(t, compartmentID)
+	allADs, err := GetAllAvailabilityDomainsE(t, compartmentID)
 	if err != nil {
 		return "", err
 	}
@@ -48,17 +43,17 @@ func GetRandomAvailabilityDomainE(t *testing.T, compartmentID string) (string, e
 	return ad, nil
 }
 
-// TODO Guido: document this
-func GetAllADs(t *testing.T, compartmentID string) []string {
-	ads, err := GetAllADsE(t, compartmentID)
+// GetAllAvailabilityDomains gets the list of availability domains available in the given compartment.
+func GetAllAvailabilityDomains(t *testing.T, compartmentID string) []string {
+	ads, err := GetAllAvailabilityDomainsE(t, compartmentID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return ads
 }
 
-// TODO Guido: document this
-func GetAllADsE(t *testing.T, compartmentID string) ([]string, error) {
+// GetAllAvailabilityDomainsE gets the list of availability domains available in the given compartment.
+func GetAllAvailabilityDomainsE(t *testing.T, compartmentID string) ([]string, error) {
 	configProvider := common.DefaultConfigProvider()
 	client, err := identity.NewIdentityClientWithConfigurationProvider(configProvider)
 	if err != nil {
@@ -75,18 +70,10 @@ func GetAllADsE(t *testing.T, compartmentID string) ([]string, error) {
 		return nil, fmt.Errorf("No availability domains found in the %s compartment", compartmentID)
 	}
 
-	return adNames(response.Items), nil
+	return availabilityDomainsNames(response.Items), nil
 }
 
-// GetCompartmentIDFromEnvVar returns the Compartment for use with testing.
-func GetCompartmentIDFromEnvVar() string {
-	if compartmentID := os.Getenv(compartmentIDOverrideEnvVarName); compartmentID != "" {
-		return compartmentID
-	}
-	return ""
-}
-
-func adNames(ads []identity.AvailabilityDomain) []string {
+func availabilityDomainsNames(ads []identity.AvailabilityDomain) []string {
 	names := []string{}
 	for _, ad := range ads {
 		names = append(names, *ad.Name)

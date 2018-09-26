@@ -7,9 +7,8 @@
     "oci_availability_domain": "",
     "oci_base_image_ocid": "",
     "oci_compartment_ocid": "",
-    "oci_subnet_ocid": "",
-    "oci_key_file": "",
-    "oci_pass_phrase": ""
+    "oci_pass_phrase": "",
+    "oci_subnet_ocid": ""
   },
   "builders": [{
     "type": "amazon-ebs",
@@ -44,7 +43,6 @@
     "availability_domain": "{{user `oci_availability_domain`}}",
     "base_image_ocid": "{{user `oci_base_image_ocid`}}",
     "compartment_ocid": "{{user `oci_compartment_ocid`}}",
-    "key_file": "{{user `oci_key_file`}}",
     "pass_phrase": "{{user `oci_pass_phrase`}}",
     "shape": "VM.Standard2.1",
     "ssh_username": "ubuntu",
