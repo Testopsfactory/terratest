@@ -11,7 +11,7 @@ import (
 func TestPackerOciExample(t *testing.T) {
 	t.Parallel()
 
-	compartmentID := oci.GetCompartmentIDFromEnvVar()
+	compartmentID := oci.GetRootCompartmentID(t)
 	baseImageID := oci.GetMostRecentImageID(t, compartmentID, "Canonical Ubuntu", "18.04")
 	availabilityDomain := oci.GetRandomAvailabilityDomain(t, compartmentID)
 	subnetID := oci.GetRandomSubnetID(t, compartmentID, availabilityDomain)

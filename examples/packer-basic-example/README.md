@@ -61,13 +61,9 @@ Terratest. For slightly more complicated, real-world examples of Packer template
 1. Sign up for [OCI](https://cloud.oracle.com/cloud-infrastructure).
 1. Configure your OCI credentials via [CLI Configuration
    Information](https://docs.cloud.oracle.com/iaas/Content/API/Concepts/sdkconfig.htm).
-1. Create following [Packer-required](https://www.packer.io/docs/builders/oracle-oci.html#required)
-   resources in your tenancy:
-   1. [Compartment](https://docs.cloud.oracle.com/iaas/Content/GSG/Tasks/choosingcompartments.htm)
-   1. [VCN](https://docs.cloud.oracle.com/iaas/Content/GSG/Tasks/creatingnetwork.htm) and subnet
-1. Create following environment properties:
-   1. `TF_VAR_compartment_ocid` with the OCID of the previously created compartment.
-   1. `TF_VAR_pass_phrase` with the pass phrase for decrypting of the OCI [API signing
+1. Create [VCN](https://docs.cloud.oracle.com/iaas/Content/GSG/Tasks/creatingnetwork.htm) and subnet 
+   resources in your tenancy (a.k.a. a root compartment).
+1. (Optional) Create `TF_VAR_pass_phrase` environment property with the pass phrase for decrypting of the OCI [API signing
       key](https://docs.cloud.oracle.com/iaas/Content/API/Concepts/apisigningkey.htm) (can be omitted
       if the key is not protected).
 1. Install [Packer](https://www.packer.io/) and make sure it's on your `PATH`.
