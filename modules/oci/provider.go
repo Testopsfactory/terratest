@@ -17,24 +17,15 @@ const passPhraseEnvVar = "TF_VAR_pass_phrase"
 
 // GetCompartmentIDFromEnvVar returns the compartment OCID for use with testing.
 func GetCompartmentIDFromEnvVar() string {
-	if compartmentID := os.Getenv(compartmentIDEnvVar); compartmentID != "" {
-		return compartmentID
-	}
-	return ""
+	return os.Getenv(compartmentIDEnvVar)
 }
 
 // GetSubnetIDFromEnvVar returns the subnet OCID for use with testing.
 func GetSubnetIDFromEnvVar() string {
-	if subnetID := os.Getenv(subnetIDEnvVar); subnetID != "" {
-		return subnetID
-	}
-	return ""
+	return os.Getenv(subnetIDEnvVar)
 }
 
 // GetPassPhraseFromEnvVar returns the pass phrase for use with testing.
 func GetPassPhraseFromEnvVar() string {
-	if passPhrase := os.Getenv(passPhraseEnvVar); passPhrase != "" {
-		return passPhrase
-	}
-	return ""
+	return os.Getenv(passPhraseEnvVar)
 }
