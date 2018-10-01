@@ -3,6 +3,8 @@ package test
 import (
 	"testing"
 
+	"os"
+
 	"github.com/gruntwork-io/terratest/modules/oci"
 	"github.com/gruntwork-io/terratest/modules/packer"
 )
@@ -10,6 +12,12 @@ import (
 // An example of how to test the Packer template in examples/packer-basic-example using Terratest.
 func TestPackerOciExample(t *testing.T) {
 	t.Parallel()
+
+	// The Terratest CI environment does not yet have CI creds set up, so we skip these tests for now
+	// https://github.com/gruntwork-io/terratest/issues/160
+	if os.Getenv("SKIP_OCI_TESTS") != "" {
+		t.Skip("The SKIP_OCI_TESTS environment variable is set, so skipping OCI tests.")
+	}
 
 	compartmentID := oci.GetRootCompartmentID(t)
 	baseImageID := oci.GetMostRecentImageID(t, compartmentID, "Canonical Ubuntu", "18.04")
