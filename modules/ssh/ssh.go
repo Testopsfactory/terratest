@@ -14,10 +14,11 @@ import (
 
 	"path/filepath"
 
+	"strings"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
-	"strings"
 )
 
 // Host is a host on AWS.
@@ -32,11 +33,11 @@ type Host struct {
 }
 
 type ScpDownloadOptions struct {
-	FileNameFilter	string //bash style match string for files
-	MaxFileSizeMB		int //Don't grab any files > MaxFileSizeMB
-	RemoteDir 		string //Copy this directory on the remote machine
-	LocalDir   		string //Copy RemoteDir to this directory on the local machine
-	RemoteHost 		Host //Connection information for the remote machine
+	FileNameFilter string //bash style match string for files
+	MaxFileSizeMB  int    //Don't grab any files > MaxFileSizeMB
+	RemoteDir      string //Copy this directory on the remote machine
+	LocalDir       string //Copy RemoteDir to this directory on the local machine
+	RemoteHost     Host   //Connection information for the remote machine
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.

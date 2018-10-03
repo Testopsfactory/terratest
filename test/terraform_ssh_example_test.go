@@ -7,13 +7,14 @@ import (
 	"testing"
 	"time"
 
+	"io/ioutil"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
-	"io/ioutil"
 )
 
 // An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest. The test also
@@ -100,7 +101,6 @@ func TestTerraformScpExample(t *testing.T) {
 		testScpFromHost(t, terraformOptions, keyPair)
 	})
 
-
 	// Make sure we can SCP all files in a given remote dir from an EC2 instance to our local box
 	test_structure.RunTestStage(t, "validate_dir", func() {
 		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
@@ -165,7 +165,7 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err :=ssh.CheckSshCommandE(t, publicHost, fmt.Sprintf("mkdir -p %s && touch %s && touch %s && echo \"%s\" >> %s", remoteTempFolder, remoteTempFilePath, remoteTempFilePath2, randomData, remoteTempFilePath))
+		_, err := ssh.CheckSshCommandE(t, publicHost, fmt.Sprintf("mkdir -p %s && touch %s && touch %s && echo \"%s\" >> %s", remoteTempFolder, remoteTempFilePath, remoteTempFilePath2, randomData, remoteTempFilePath))
 
 		if err != nil {
 			return "", err
@@ -176,7 +176,7 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 
 	// clean up the remote folder as we want may want to run another test case
 	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err :=ssh.CheckSshCommandE(t,
+		_, err := ssh.CheckSshCommandE(t,
 			publicHost,
 			fmt.Sprintf("rm -rf %s", remoteTempFolder))
 
@@ -189,16 +189,16 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 
 	localDestDir := "/tmp/tempFolder"
 
-	var testcases = []struct{
-		options		ssh.ScpDownloadOptions
+	var testcases = []struct {
+		options       ssh.ScpDownloadOptions
 		expectedFiles int
-	} {
+	}{
 		{
-			ssh.ScpDownloadOptions{RemoteHost:publicHost, RemoteDir:remoteTempFolder, LocalDir:localDestDir},
+			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: localDestDir},
 			2,
 		},
 		{
-			ssh.ScpDownloadOptions{RemoteHost:publicHost, RemoteDir:remoteTempFolder, LocalDir:localDestDir, FileNameFilter:"*.baz"},
+			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: localDestDir, FileNameFilter: "*.baz"},
 			1,
 		},
 	}
@@ -251,7 +251,7 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 
 	// Verify that we can SSH to the Instance and run commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err :=ssh.CheckSshCommandE(t,
+		_, err := ssh.CheckSshCommandE(t,
 			publicHost,
 			fmt.Sprintf("mkdir -p %s && touch %s && echo \"%s\" >> %s && touch /tmp/testFolder/bar.baz", remoteTempFolder, remoteTempFilePath, randomData, remoteTempFilePath))
 
@@ -264,7 +264,7 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 
 	// clean up the remote folder as we want may want to run another test case
 	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err :=ssh.CheckSshCommandE(t,
+		_, err := ssh.CheckSshCommandE(t,
 			publicHost,
 			fmt.Sprintf("rm -rf %s", remoteTempFolder))
 
