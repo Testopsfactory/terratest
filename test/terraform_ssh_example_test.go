@@ -13,6 +13,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/gruntwork-io/terratest/modules/test-structure"
+	"io/ioutil"
 )
 
 // An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest. The test also
@@ -60,6 +61,56 @@ func TestTerraformSshExample(t *testing.T) {
 
 }
 
+func TestTerraformScpExample(t *testing.T) {
+	os.Setenv("SKIP_setup", "true")
+	//os.Setenv("SKIP_validate_file", "true")
+	//os.Setenv("SKIP_validate_dir", "true")
+	os.Setenv("SKIP_teardown", "true")
+
+	t.Parallel()
+
+	exampleFolder := "../examples/terraform-ssh-example"
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer test_structure.RunTestStage(t, "teardown", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+		terraform.Destroy(t, terraformOptions)
+
+		keyPair := test_structure.LoadEc2KeyPair(t, exampleFolder)
+		aws.DeleteEC2KeyPair(t, keyPair)
+	})
+
+	// Deploy the example
+	test_structure.RunTestStage(t, "setup", func() {
+		terraformOptions, keyPair := configureTerraformOptions(t, exampleFolder)
+
+		// Save the options and key pair so later test stages can use them
+		test_structure.SaveTerraformOptions(t, exampleFolder, terraformOptions)
+		test_structure.SaveEc2KeyPair(t, exampleFolder, keyPair)
+
+		// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+		terraform.InitAndApply(t, terraformOptions)
+	})
+
+	// Make sure we can SCP a file from an EC2 instance to our local box
+	test_structure.RunTestStage(t, "validate_file", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+		keyPair := test_structure.LoadEc2KeyPair(t, exampleFolder)
+
+		testScpFromHost(t, terraformOptions, keyPair)
+	})
+
+
+	// Make sure we can SCP all files in a given remote dir from an EC2 instance to our local box
+	test_structure.RunTestStage(t, "validate_dir", func() {
+		terraformOptions := test_structure.LoadTerraformOptions(t, exampleFolder)
+		keyPair := test_structure.LoadEc2KeyPair(t, exampleFolder)
+
+		testScpDirFromHost(t, terraformOptions, keyPair)
+	})
+
+}
+
 func configureTerraformOptions(t *testing.T, exampleFolder string) (*terraform.Options, *aws.Ec2Keypair) {
 	// A unique ID we can use to namespace resources so we don't clash with anything already in the AWS account or
 	// tests running in parallel
@@ -89,6 +140,164 @@ func configureTerraformOptions(t *testing.T, exampleFolder string) (*terraform.O
 	}
 
 	return terraformOptions, keyPair
+}
+
+func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+	// Run `terraform output` to get the value of an output variable
+	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
+
+	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
+	// as we know the Instance is running an Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: "ubuntu",
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
+	remoteTempFolder := "/tmp/testFolder"
+	remoteTempFilePath := fmt.Sprintf("%s/test.foo", remoteTempFolder)
+	remoteTempFilePath2 := fmt.Sprintf("%s/test.baz", remoteTempFolder)
+	randomData := random.UniqueId()
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		_, err :=ssh.CheckSshCommandE(t, publicHost, fmt.Sprintf("mkdir -p %s && touch %s && touch %s && echo \"%s\" >> %s", remoteTempFolder, remoteTempFilePath, remoteTempFilePath2, randomData, remoteTempFilePath))
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
+
+	// clean up the remote folder as we want may want to run another test case
+	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		_, err :=ssh.CheckSshCommandE(t,
+			publicHost,
+			fmt.Sprintf("rm -rf %s", remoteTempFolder))
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
+
+	localDestDir := "/tmp/tempFolder"
+
+	var testcases = []struct{
+		options		ssh.ScpDownloadOptions
+		expectedFiles int
+	} {
+		{
+			ssh.ScpDownloadOptions{RemoteHost:publicHost, RemoteDir:remoteTempFolder, LocalDir:localDestDir},
+			2,
+		},
+		{
+			ssh.ScpDownloadOptions{RemoteHost:publicHost, RemoteDir:remoteTempFolder, LocalDir:localDestDir, FileNameFilter:"*.baz"},
+			1,
+		},
+	}
+
+	for _, testCase := range testcases {
+		err := ssh.ScpDirFromE(t, testCase.options)
+
+		if err != nil {
+			t.Fatalf("Error copying from remote: %s", err.Error())
+		}
+
+		expectedNumFiles := testCase.expectedFiles
+
+		fileInfos, err := ioutil.ReadDir(localDestDir)
+
+		if err != nil {
+			t.Fatalf("Error reading from local dir: %s, due to: %s", localDestDir, err.Error())
+		}
+
+		actualNumFilesCopied := len(fileInfos)
+
+		if len(fileInfos) != expectedNumFiles {
+			t.Fatalf("Error: expected %d files to be copied. Only found %d", expectedNumFiles, actualNumFilesCopied)
+		}
+
+		// Clean up the temp file we created
+		os.RemoveAll(localDestDir)
+	}
+}
+
+func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
+	// Run `terraform output` to get the value of an output variable
+	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
+
+	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
+	// as we know the Instance is running an Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: "ubuntu",
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
+	remoteTempFolder := "/tmp/testFolder"
+	remoteTempFilePath := fmt.Sprintf("%s/test.out", remoteTempFolder)
+	randomData := random.UniqueId()
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		_, err :=ssh.CheckSshCommandE(t,
+			publicHost,
+			fmt.Sprintf("mkdir -p %s && touch %s && echo \"%s\" >> %s && touch /tmp/testFolder/bar.baz", remoteTempFolder, remoteTempFilePath, randomData, remoteTempFilePath))
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
+
+	// clean up the remote folder as we want may want to run another test case
+	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		_, err :=ssh.CheckSshCommandE(t,
+			publicHost,
+			fmt.Sprintf("rm -rf %s", remoteTempFolder))
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
+
+	localTempFileName := "/tmp/test.out"
+	localFile, err := os.Create(localTempFileName)
+
+	// Clean up the temp file we created
+	defer os.Remove(localTempFileName)
+
+	if err != nil {
+		t.Fatalf("Error: creating local temp file: %s", err.Error())
+	}
+
+	ssh.ScpFileFromE(t, publicHost, remoteTempFilePath, localFile)
+
+	buf, err := ioutil.ReadFile(localTempFileName)
+
+	if err != nil {
+		t.Fatalf("Error: Unable to read local file from disk: %s", err.Error())
+	}
+
+	localFileContents := string(buf)
+
+	if !strings.Contains(localFileContents, randomData) {
+		t.Fatalf("Error: unable to find %s in the local file.")
+	}
 }
 
 func testSSHToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {

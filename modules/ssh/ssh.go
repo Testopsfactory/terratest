@@ -17,6 +17,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
+	"strings"
 )
 
 // Host is a host on AWS.
@@ -28,6 +29,14 @@ type Host struct {
 	SshKeyPair       *KeyPair  // ssh key pair to use as authentication method (disabled by default)
 	SshAgent         bool      // enable authentication using your existing local SSH agent (disabled by default)
 	OverrideSshAgent *SshAgent // enable an in process `SshAgent` for connections to this host (disabled by default)
+}
+
+type ScpDownloadOptions struct {
+	FileNameFilter	string //bash style match string for files
+	MaxFileSizeMB		int //Don't grab any files > MaxFileSizeMB
+	RemoteDir 		string //Copy this directory on the remote machine
+	LocalDir   		string //Copy RemoteDir to this directory on the local machine
+	RemoteHost 		Host //Connection information for the remote machine
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
@@ -66,6 +75,85 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 
 	_, err = runSSHCommand(t, sshSession)
 	return err
+}
+
+// ScpFileFromE downloads the file from remotePath on the given host using SCP and returns an error if the process fails.
+func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *os.File) error {
+	authMethods, err := createAuthMethodsForHost(host)
+	if err != nil {
+		return err
+	}
+	dir, _ := filepath.Split(remotePath)
+
+	hostOptions := SshConnectionOptions{
+		Username:    host.SshUserName,
+		Address:     host.Hostname,
+		Port:        22,
+		Command:     "/usr/bin/scp -t " + dir,
+		AuthMethods: authMethods,
+	}
+
+	sshSession := &SshSession{
+		Options:  &hostOptions,
+		JumpHost: &JumpHostSession{},
+	}
+
+	defer sshSession.Cleanup(t)
+
+	err = copyFileFromRemote(t, sshSession, localDestination, remotePath)
+	return err
+}
+
+// ScpFileFromE downloads all the files from remotePath on the given host using SCP and returns an error if the process fails.
+func ScpDirFromE(t *testing.T, options ScpDownloadOptions) error {
+	authMethods, err := createAuthMethodsForHost(options.RemoteHost)
+	if err != nil {
+		return err
+	}
+	dir, _ := filepath.Split(options.RemoteDir)
+
+	hostOptions := SshConnectionOptions{
+		Username:    options.RemoteHost.SshUserName,
+		Address:     options.RemoteHost.Hostname,
+		Port:        22,
+		Command:     "/usr/bin/scp -t " + dir,
+		AuthMethods: authMethods,
+	}
+
+	sshSession := &SshSession{
+		Options:  &hostOptions,
+		JumpHost: &JumpHostSession{},
+	}
+
+	defer sshSession.Cleanup(t)
+
+	filesInDir, err := listFileInRemoteDir(t, sshSession, options)
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(options.LocalDir); os.IsNotExist(err) {
+		os.Mkdir(options.LocalDir, 0755)
+	}
+
+	for _, file := range filesInDir {
+		logger.Logf(t, "processing file: %s", file)
+		_, fileName := filepath.Split(file)
+
+		localFilePath := fmt.Sprintf("%s/%s", options.LocalDir, fileName)
+		localFile, err := os.Create(localFilePath)
+
+		if err != nil {
+			return err
+		}
+
+		//TODO: How should we handle this? stop at the first error?
+		//TODO: or keep going and accumulate errors into a list?
+		err = copyFileFromRemote(t, sshSession, localFile, dir)
+	}
+
+	return nil
 }
 
 // CheckSshConnection checks that you can connect via SSH to the given host and fail the test if the connection fails.
@@ -215,6 +303,66 @@ func FetchContentsOfFileE(t *testing.T, host Host, useSudo bool, filePath string
 	}
 
 	return CheckSshCommandE(t, host, command)
+}
+
+func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownloadOptions) ([]string, error) {
+	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
+
+	var result []string
+
+	if err := setUpSSHClient(sshSession); err != nil {
+		return result, err
+	}
+
+	if err := setUpSSHSession(sshSession); err != nil {
+		return result, err
+	}
+
+	findCommand := fmt.Sprintf("find %s -type f", options.RemoteDir)
+
+	if options.FileNameFilter != "" {
+		findCommand = fmt.Sprintf("%s -name %s", findCommand, options.FileNameFilter)
+	}
+
+	if options.MaxFileSizeMB != 0 {
+		findCommand = fmt.Sprintf("%s -size -%dM", findCommand, options.MaxFileSizeMB)
+	}
+
+	//r, err := sshSession.Session.Output("ls -p "+ remoteDir + " | grep -v /")
+	r, err := sshSession.Session.Output(findCommand)
+
+	if err != nil {
+		return result, err
+	}
+	defer sshSession.Session.Close()
+
+	resultString := string(r)
+	resultString = resultString[:len(resultString)-1]
+
+	result = append(result, strings.Split(resultString, "\n")...)
+	return result, nil
+}
+
+// Added based on code: https://github.com/bramvdbogaerde/go-scp/pull/6/files
+func copyFileFromRemote(t *testing.T, sshSession *SshSession, file *os.File, remotePath string) error {
+	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
+	if err := setUpSSHClient(sshSession); err != nil {
+		return err
+	}
+
+	if err := setUpSSHSession(sshSession); err != nil {
+		return err
+	}
+
+	r, err := sshSession.Session.Output("dd if=" + remotePath)
+	if err != nil {
+		fmt.Printf("error reading from remote stdout: %s", err)
+	}
+	defer sshSession.Session.Close()
+	//write to local file
+	_, err = file.Write(r)
+
+	return err
 }
 
 func runSSHCommand(t *testing.T, sshSession *SshSession) (string, error) {
