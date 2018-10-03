@@ -78,6 +78,15 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 	return err
 }
 
+// ScpFileFromE downloads the file from remotePath on the given host using SCP.
+func ScpFileFrom(t *testing.T, host Host, remotePath string, localDestination *os.File) {
+	err := ScpFileFromE(t, host, remotePath, localDestination)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // ScpFileFromE downloads the file from remotePath on the given host using SCP and returns an error if the process fails.
 func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *os.File) error {
 	authMethods, err := createAuthMethodsForHost(host)
@@ -103,6 +112,15 @@ func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *
 
 	err = copyFileFromRemote(t, sshSession, localDestination, remotePath)
 	return err
+}
+
+// ScpFileFromE downloads all the files from remotePath on the given host using SCP.
+func ScpDirFrom(t *testing.T, options ScpDownloadOptions) {
+	err := ScpDirFromE(t, options)
+
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 // ScpFileFromE downloads all the files from remotePath on the given host using SCP and returns an error if the process fails.
