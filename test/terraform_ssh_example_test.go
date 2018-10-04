@@ -24,7 +24,7 @@ import (
 func TestTerraformSshExample(t *testing.T) {
 	t.Parallel()
 
-	exampleFolder := "../examples/terraform-ssh-example"
+	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-ssh-example")
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer test_structure.RunTestStage(t, "teardown", func() {
@@ -65,7 +65,7 @@ func TestTerraformSshExample(t *testing.T) {
 func TestTerraformScpExample(t *testing.T) {
 	t.Parallel()
 
-	exampleFolder := "../examples/terraform-ssh-example"
+	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-ssh-example")
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer test_structure.RunTestStage(t, "teardown", func() {
