@@ -334,14 +334,6 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 
 	var result []string
 
-	if err := setUpSSHClient(sshSession); err != nil {
-		return result, err
-	}
-
-	if err := setUpSSHSession(sshSession); err != nil {
-		return result, err
-	}
-
 	findCommand := fmt.Sprintf("find %s -type f", options.RemoteDir)
 
 	if options.FileNameFilter != "" {
@@ -352,14 +344,7 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 		findCommand = fmt.Sprintf("%s -size -%dM", findCommand, options.MaxFileSizeMB)
 	}
 
-	r, err := sshSession.Session.Output(findCommand)
-
-	if err != nil {
-		return result, err
-	}
-	defer sshSession.Session.Close()
-
-	resultString := string(r)
+	resultString := CheckSshCommand(t, options.RemoteHost, findCommand)
 	// The last character returned is `\n` this results in an extra "" array
 	// member when we do the split below. Cut off the last character to avoid
 	// having to remove the blank entry in the array.
