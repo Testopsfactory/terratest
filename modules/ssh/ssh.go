@@ -14,6 +14,10 @@ import (
 
 	"path/filepath"
 
+	"strings"
+
+	"github.com/gruntwork-io/terratest/modules/customerrors"
+	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -28,6 +32,14 @@ type Host struct {
 	SshKeyPair       *KeyPair  // ssh key pair to use as authentication method (disabled by default)
 	SshAgent         bool      // enable authentication using your existing local SSH agent (disabled by default)
 	OverrideSshAgent *SshAgent // enable an in process `SshAgent` for connections to this host (disabled by default)
+}
+
+type ScpDownloadOptions struct {
+	FileNameFilter string //bash style match string for files
+	MaxFileSizeMB  int    //Don't grab any files > MaxFileSizeMB
+	RemoteDir      string //Copy this directory on the remote machine
+	LocalDir       string //Copy RemoteDir to this directory on the local machine
+	RemoteHost     Host   //Connection information for the remote machine
 }
 
 // ScpFileToE uploads the contents using SCP to the given host and fails the test if the connection fails.
@@ -66,6 +78,106 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 
 	_, err = runSSHCommand(t, sshSession)
 	return err
+}
+
+// ScpFileFromE downloads the file from remotePath on the given host using SCP.
+func ScpFileFrom(t *testing.T, host Host, remotePath string, localDestination *os.File) {
+	err := ScpFileFromE(t, host, remotePath, localDestination)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// ScpFileFromE downloads the file from remotePath on the given host using SCP and returns an error if the process fails.
+func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *os.File) error {
+	authMethods, err := createAuthMethodsForHost(host)
+
+	if err != nil {
+		return err
+	}
+
+	dir := filepath.Dir(remotePath)
+
+	hostOptions := SshConnectionOptions{
+		Username:    host.SshUserName,
+		Address:     host.Hostname,
+		Port:        22,
+		Command:     "/usr/bin/scp -t " + dir,
+		AuthMethods: authMethods,
+	}
+
+	sshSession := &SshSession{
+		Options:  &hostOptions,
+		JumpHost: &JumpHostSession{},
+	}
+
+	defer sshSession.Cleanup(t)
+
+	return copyFileFromRemote(t, sshSession, localDestination, remotePath)
+}
+
+// ScpFileFromE downloads all the files from remotePath on the given host using SCP.
+func ScpDirFrom(t *testing.T, options ScpDownloadOptions) {
+	err := ScpDirFromE(t, options)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// ScpFileFromE downloads all the files from remotePath on the given host using SCP and returns an error if the process fails.
+func ScpDirFromE(t *testing.T, options ScpDownloadOptions) error {
+	authMethods, err := createAuthMethodsForHost(options.RemoteHost)
+	if err != nil {
+		return err
+	}
+	dir, _ := filepath.Split(options.RemoteDir)
+
+	hostOptions := SshConnectionOptions{
+		Username:    options.RemoteHost.SshUserName,
+		Address:     options.RemoteHost.Hostname,
+		Port:        22,
+		Command:     "/usr/bin/scp -t " + dir,
+		AuthMethods: authMethods,
+	}
+
+	sshSession := &SshSession{
+		Options:  &hostOptions,
+		JumpHost: &JumpHostSession{},
+	}
+
+	defer sshSession.Cleanup(t)
+
+	filesInDir, err := listFileInRemoteDir(t, sshSession, options)
+
+	if err != nil {
+		return err
+	}
+
+	if !files.FileExists(options.LocalDir) {
+		os.Mkdir(options.LocalDir, 0755)
+	}
+
+	errorsOccurred := []error{}
+
+	for _, fullRemoteFilePath := range filesInDir {
+		fileName := filepath.Base(fullRemoteFilePath)
+
+		localFilePath := filepath.Join(options.LocalDir, fileName)
+		localFile, err := os.Create(localFilePath)
+
+		if err != nil {
+			return err
+		}
+
+		logger.Logf(t, "Copying remote file: %s to local path %s", fullRemoteFilePath, localFilePath)
+
+		err = copyFileFromRemote(t, sshSession, localFile, dir)
+		errorsOccurred = append(errorsOccurred, err)
+	}
+
+	return customerrors.NewMultiError(errorsOccurred...)
 }
 
 // CheckSshConnection checks that you can connect via SSH to the given host and fail the test if the connection fails.
@@ -215,6 +327,53 @@ func FetchContentsOfFileE(t *testing.T, host Host, useSudo bool, filePath string
 	}
 
 	return CheckSshCommandE(t, host, command)
+}
+
+func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownloadOptions) ([]string, error) {
+	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
+
+	var result []string
+
+	findCommand := fmt.Sprintf("find %s -type f", options.RemoteDir)
+
+	if options.FileNameFilter != "" {
+		findCommand = fmt.Sprintf("%s -name %s", findCommand, options.FileNameFilter)
+	}
+
+	if options.MaxFileSizeMB != 0 {
+		findCommand = fmt.Sprintf("%s -size -%dM", findCommand, options.MaxFileSizeMB)
+	}
+
+	resultString := CheckSshCommand(t, options.RemoteHost, findCommand)
+	// The last character returned is `\n` this results in an extra "" array
+	// member when we do the split below. Cut off the last character to avoid
+	// having to remove the blank entry in the array.
+	resultString = resultString[:len(resultString)-1]
+
+	result = append(result, strings.Split(resultString, "\n")...)
+	return result, nil
+}
+
+// Added based on code: https://github.com/bramvdbogaerde/go-scp/pull/6/files
+func copyFileFromRemote(t *testing.T, sshSession *SshSession, file *os.File, remotePath string) error {
+	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
+	if err := setUpSSHClient(sshSession); err != nil {
+		return err
+	}
+
+	if err := setUpSSHSession(sshSession); err != nil {
+		return err
+	}
+
+	r, err := sshSession.Session.Output("dd if=" + remotePath)
+	if err != nil {
+		fmt.Printf("error reading from remote stdout: %s", err)
+	}
+	defer sshSession.Session.Close()
+	//write to local file
+	_, err = file.Write(r)
+
+	return err
 }
 
 func runSSHCommand(t *testing.T, sshSession *SshSession) (string, error) {
