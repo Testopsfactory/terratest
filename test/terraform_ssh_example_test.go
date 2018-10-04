@@ -9,6 +9,8 @@ import (
 
 	"io/ioutil"
 
+	"path/filepath"
+
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
@@ -154,8 +156,8 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 	timeBetweenRetries := 5 * time.Second
 	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
 	remoteTempFolder := "/tmp/testFolder"
-	remoteTempFilePath := fmt.Sprintf("%s/test.foo", remoteTempFolder)
-	remoteTempFilePath2 := fmt.Sprintf("%s/test.baz", remoteTempFolder)
+	remoteTempFilePath := filepath.Join(remoteTempFolder, "test.foo")
+	remoteTempFilePath2 := filepath.Join(remoteTempFolder, "test.baz")
 	randomData := random.UniqueId()
 
 	// Verify that we can SSH to the Instance and run commands
@@ -241,7 +243,7 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 	timeBetweenRetries := 5 * time.Second
 	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
 	remoteTempFolder := "/tmp/testFolder"
-	remoteTempFilePath := fmt.Sprintf("%s/test.out", remoteTempFolder)
+	remoteTempFilePath := filepath.Join(remoteTempFolder, "test.out")
 	randomData := random.UniqueId()
 
 	// Verify that we can SSH to the Instance and run commands

@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/gruntwork-io/terratest/modules/customerrors"
+	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -91,10 +92,12 @@ func ScpFileFrom(t *testing.T, host Host, remotePath string, localDestination *o
 // ScpFileFromE downloads the file from remotePath on the given host using SCP and returns an error if the process fails.
 func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *os.File) error {
 	authMethods, err := createAuthMethodsForHost(host)
+
 	if err != nil {
 		return err
 	}
-	dir, _ := filepath.Split(remotePath)
+
+	dir := filepath.Dir(remotePath)
 
 	hostOptions := SshConnectionOptions{
 		Username:    host.SshUserName,
@@ -111,8 +114,7 @@ func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *
 
 	defer sshSession.Cleanup(t)
 
-	err = copyFileFromRemote(t, sshSession, localDestination, remotePath)
-	return err
+	return copyFileFromRemote(t, sshSession, localDestination, remotePath)
 }
 
 // ScpFileFromE downloads all the files from remotePath on the given host using SCP.
@@ -153,22 +155,23 @@ func ScpDirFromE(t *testing.T, options ScpDownloadOptions) error {
 		return err
 	}
 
-	if _, err := os.Stat(options.LocalDir); os.IsNotExist(err) {
+	if !files.FileExists(options.LocalDir) {
 		os.Mkdir(options.LocalDir, 0755)
 	}
 
 	errorsOccurred := []error{}
 
 	for _, fullRemoteFilePath := range filesInDir {
-		logger.Logf(t, "Copying remote file file: %s", fullRemoteFilePath)
-		_, fileName := filepath.Split(fullRemoteFilePath)
+		fileName := filepath.Base(fullRemoteFilePath)
 
-		localFilePath := fmt.Sprintf("%s/%s", options.LocalDir, fileName)
+		localFilePath := filepath.Join(options.LocalDir, fileName)
 		localFile, err := os.Create(localFilePath)
 
 		if err != nil {
 			return err
 		}
+
+		logger.Logf(t, "Copying remote file: %s to local path %s", fullRemoteFilePath, localFilePath)
 
 		err = copyFileFromRemote(t, sshSession, localFile, dir)
 		errorsOccurred = append(errorsOccurred, err)
@@ -357,6 +360,9 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 	defer sshSession.Session.Close()
 
 	resultString := string(r)
+	// The last character returned is `\n` this results in an extra "" array
+	// member when we do the split below. Cut off the last character to avoid
+	// having to remove the blank entry in the array.
 	resultString = resultString[:len(resultString)-1]
 
 	result = append(result, strings.Split(resultString, "\n")...)
