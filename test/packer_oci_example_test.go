@@ -15,8 +15,8 @@ func TestPackerOciExample(t *testing.T) {
 
 	// The Terratest CI environment does not yet have CI creds set up, so we skip these tests for now
 	// https://github.com/gruntwork-io/terratest/issues/160
-	if os.Getenv("SKIP_OCI_TESTS") != "" {
-		t.Skip("The SKIP_OCI_TESTS environment variable is set, so skipping OCI tests.")
+	if os.Getenv("CIRCLECI") != "" {
+		t.Skip("The build is running on CircleCI, so skipping OCI tests.")
 	}
 
 	compartmentID := oci.GetRootCompartmentID(t)
