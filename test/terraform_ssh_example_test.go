@@ -63,11 +63,6 @@ func TestTerraformSshExample(t *testing.T) {
 }
 
 func TestTerraformScpExample(t *testing.T) {
-	os.Setenv("SKIP_setup", "true")
-	//os.Setenv("SKIP_validate_file", "true")
-	//os.Setenv("SKIP_validate_dir", "true")
-	os.Setenv("SKIP_teardown", "true")
-
 	t.Parallel()
 
 	exampleFolder := "../examples/terraform-ssh-example"
@@ -296,7 +291,7 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 	localFileContents := string(buf)
 
 	if !strings.Contains(localFileContents, randomData) {
-		t.Fatalf("Error: unable to find %s in the local file.")
+		t.Fatalf("Error: unable to find %s in the local file. Local file's contents were: %s", randomData, localFileContents)
 	}
 }
 

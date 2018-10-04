@@ -16,6 +16,7 @@ import (
 
 	"strings"
 
+	"github.com/gruntwork-io/terratest/modules/customerrors"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -156,9 +157,11 @@ func ScpDirFromE(t *testing.T, options ScpDownloadOptions) error {
 		os.Mkdir(options.LocalDir, 0755)
 	}
 
-	for _, file := range filesInDir {
-		logger.Logf(t, "processing file: %s", file)
-		_, fileName := filepath.Split(file)
+	errorsOccurred := []error{}
+
+	for _, fullRemoteFilePath := range filesInDir {
+		logger.Logf(t, "Copying remote file file: %s", fullRemoteFilePath)
+		_, fileName := filepath.Split(fullRemoteFilePath)
 
 		localFilePath := fmt.Sprintf("%s/%s", options.LocalDir, fileName)
 		localFile, err := os.Create(localFilePath)
@@ -167,12 +170,11 @@ func ScpDirFromE(t *testing.T, options ScpDownloadOptions) error {
 			return err
 		}
 
-		//TODO: How should we handle this? stop at the first error?
-		//TODO: or keep going and accumulate errors into a list?
 		err = copyFileFromRemote(t, sshSession, localFile, dir)
+		errorsOccurred = append(errorsOccurred, err)
 	}
 
-	return nil
+	return customerrors.NewMultiError(errorsOccurred...)
 }
 
 // CheckSshConnection checks that you can connect via SSH to the given host and fail the test if the connection fails.
@@ -347,7 +349,6 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 		findCommand = fmt.Sprintf("%s -size -%dM", findCommand, options.MaxFileSizeMB)
 	}
 
-	//r, err := sshSession.Session.Output("ls -p "+ remoteDir + " | grep -v /")
 	r, err := sshSession.Session.Output(findCommand)
 
 	if err != nil {
