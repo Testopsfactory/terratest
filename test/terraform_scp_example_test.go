@@ -23,11 +23,11 @@ import (
 func TestTerraformScpExample(t *testing.T) {
 	t.Parallel()
 
-	//os.Setenv("SKIP_setup", "true")
-	//os.Setenv("SKIP_validate_file", "true")
-	//os.Setenv("SKIP_validate_dir", "true")
+	os.Setenv("SKIP_setup", "true")
+	os.Setenv("SKIP_validate_file", "true")
+	os.Setenv("SKIP_validate_dir", "true")
 	//os.Setenv("SKIP_validate_asg", "true")
-	//os.Setenv("SKIP_teardown", "true")
+	os.Setenv("SKIP_teardown", "true")
 
 	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-asg-scp-example")
 
@@ -118,44 +118,16 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 
 	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
 	// as we know the Instance is running an Ubuntu AMI that has such a user
+	sshUserName := "ubuntu"
 	publicHost := ssh.Host{
 		Hostname:    publicInstanceIP,
 		SshKeyPair:  keyPair.KeyPair,
-		SshUserName: "ubuntu",
+		SshUserName: sshUserName,
 	}
 
-	// It can take a minute or so for the Instance to boot up, so retry a few times
-	maxRetries := 30
-	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
-	remoteTempFolder := "/tmp/testFolder"
-	remoteTempFilePath := filepath.Join(remoteTempFolder, "test.foo")
-	remoteTempFilePath2 := filepath.Join(remoteTempFolder, "test.baz")
-	randomData := random.UniqueId()
-
-	// Verify that we can SSH to the Instance and run commands
-	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err := ssh.CheckSshCommandE(t, publicHost, fmt.Sprintf("mkdir -p %s && touch %s && touch %s && echo \"%s\" >> %s", remoteTempFolder, remoteTempFilePath, remoteTempFilePath2, randomData, remoteTempFilePath))
-
-		if err != nil {
-			return "", err
-		}
-
-		return "", nil
-	})
-
-	// clean up the remote folder as we want may want to run another test case
-	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err := ssh.CheckSshCommandE(t,
-			publicHost,
-			fmt.Sprintf("rm -rf %s", remoteTempFolder))
-
-		if err != nil {
-			return "", err
-		}
-
-		return "", nil
-	})
+	_, remoteTempFilePath := writeSampleDataToInstance(t, publicInstanceIP, sshUserName, keyPair)
+	remoteTempFolder := filepath.Dir(remoteTempFilePath)
+	defer cleanup(t, publicInstanceIP, sshUserName, keyPair, remoteTempFolder)
 
 	localDestDir := "/tmp/tempFolder"
 
@@ -208,45 +180,16 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 
 	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
 	// as we know the Instance is running an Ubuntu AMI that has such a user
+	sshUserName := "ubuntu"
 	publicHost := ssh.Host{
 		Hostname:    publicInstanceIP,
 		SshKeyPair:  keyPair.KeyPair,
-		SshUserName: "ubuntu",
+		SshUserName: sshUserName,
 	}
 
-	// It can take a minute or so for the Instance to boot up, so retry a few times
-	maxRetries := 30
-	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
-	remoteTempFolder := "/tmp/testFolder"
-	remoteTempFilePath := filepath.Join(remoteTempFolder, "test.out")
-	randomData := random.UniqueId()
-
-	// Verify that we can SSH to the Instance and run commands
-	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err := ssh.CheckSshCommandE(t,
-			publicHost,
-			fmt.Sprintf("mkdir -p %s && touch %s && echo \"%s\" >> %s && touch /tmp/testFolder/bar.baz", remoteTempFolder, remoteTempFilePath, randomData, remoteTempFilePath))
-
-		if err != nil {
-			return "", err
-		}
-
-		return "", nil
-	})
-
-	// clean up the remote folder as we want may want to run another test case
-	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		_, err := ssh.CheckSshCommandE(t,
-			publicHost,
-			fmt.Sprintf("rm -rf %s", remoteTempFolder))
-
-		if err != nil {
-			return "", err
-		}
-
-		return "", nil
-	})
+	randomData, remoteTempFilePath := writeSampleDataToInstance(t, publicInstanceIP, sshUserName, keyPair)
+	remoteTempFolder := filepath.Base(remoteTempFilePath)
+	defer cleanup(t, publicInstanceIP, sshUserName, keyPair, remoteTempFolder)
 
 	localTempFileName := "/tmp/test.out"
 	localFile, err := os.Create(localTempFileName)
@@ -282,25 +225,34 @@ func testScpFromAsg(t *testing.T, terraformOptions *terraform.Options, keyPair *
 
 	// This is where we'll store the logs from the remote server
 	localDestinationDirectory := filepath.Join(exampleFolder, "logs")
+	sshUserName := "ubuntu"
+
+	randomData, remoteTempFilePath := writeSampleDataToInstance(t, publicInstanceIP, sshUserName, keyPair)
+	remoteTempFolder, remoteTempFileName := filepath.Split(remoteTempFilePath)
+	defer cleanup(t, publicInstanceIP, sshUserName, keyPair, remoteTempFolder)
 
 	// This is where we will look for the downloaded syslog
-	localSyslogLocation := filepath.Join(localDestinationDirectory, publicInstanceIP, "log", "syslog")
+	localSyslogLocation := filepath.Join(localDestinationDirectory, publicInstanceIP, "testFolder", remoteTempFileName)
 
 	//Create a RemoteFileSpecification for our test ASG
 	//We will specify that we'd like to grab /var/log/syslog
 	//and store that locally.
 	spec := aws.RemoteFileSpecification{
-		SshUser:"ubuntu",
-		UseSudo:true,
-		KeyPair:keyPair,
-		AsgNames:[]string{asgName},
-		RemotePathToFileFilter:map[string][]string {
-			"/var/log" : {"syslog"},
+		SshUser:  sshUserName,
+		UseSudo:  true,
+		KeyPair:  keyPair,
+		AsgNames: []string{asgName},
+		RemotePathToFileFilter: map[string][]string{
+			remoteTempFolder: {remoteTempFileName},
 		},
 		LocalDestinationDir: localDestinationDirectory,
 	}
 
+	// Go and SCP the test file from EC2 instance
 	aws.FetchFilesFromAsgsE(t, awsRegion, spec)
+
+	// Clean up the temp file we created
+	defer os.RemoveAll(localDestinationDirectory)
 
 	//Read the locally copied syslog
 	buf, err := ioutil.ReadFile(localSyslogLocation)
@@ -311,5 +263,63 @@ func testScpFromAsg(t *testing.T, terraformOptions *terraform.Options, keyPair *
 
 	localFileContents := string(buf)
 
-	assert.NotEmpty(t, localFileContents, "Error: empty local copy of syslog!")
+	assert.Contains(t, localFileContents, randomData)
+}
+
+func writeSampleDataToInstance(t *testing.T, publicInstanceIP string, sshUserName string, keyPair *aws.Ec2Keypair) (string, string) {
+
+	// We're going to try to SSH to the instance IP, using the Key Pair we created earlier, and the user "ubuntu",
+	// as we know the Instance is running an Ubuntu AMI that has such a user
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: sshUserName,
+	}
+
+	// It can take a minute or so for the Instance to boot up, so retry a few times
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
+	remoteTempFolder := "/tmp/testFolder"
+	remoteTempFilePath := filepath.Join(remoteTempFolder, "test.foo")
+	remoteTempFilePath2 := filepath.Join(remoteTempFolder, "test.baz")
+	randomData := random.UniqueId()
+
+	// Verify that we can SSH to the Instance and run commands
+	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		_, err := ssh.CheckSshCommandE(t, publicHost, fmt.Sprintf("mkdir -p %s && touch %s && touch %s && echo \"%s\" >> %s", remoteTempFolder, remoteTempFilePath, remoteTempFilePath2, randomData, remoteTempFilePath))
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
+
+	return randomData, remoteTempFilePath
+}
+
+func cleanup(t *testing.T, publicInstanceIP string, sshUserName string, keyPair *aws.Ec2Keypair, folderToClean string) {
+	publicHost := ssh.Host{
+		Hostname:    publicInstanceIP,
+		SshKeyPair:  keyPair.KeyPair,
+		SshUserName: sshUserName,
+	}
+
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	description := fmt.Sprintf("SSH to public host %s", publicInstanceIP)
+
+	// clean up the remote folder as we want may want to run another test case
+	defer retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		_, err := ssh.CheckSshCommandE(t,
+			publicHost,
+			fmt.Sprintf("rm -rf %s", folderToClean))
+
+		if err != nil {
+			return "", err
+		}
+
+		return "", nil
+	})
 }

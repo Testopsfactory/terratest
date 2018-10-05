@@ -35,7 +35,7 @@ type Host struct {
 }
 
 type ScpDownloadOptions struct {
-	FileNameFilters []string //bash style match string for files
+	FileNameFilters []string //File names to match. May include bash-style wildcards. E.g., *.log.
 	MaxFileSizeMB   int      //Don't grab any files > MaxFileSizeMB
 	RemoteDir       string   //Copy this directory on the remote machine
 	LocalDir        string   //Copy RemoteDir to this directory on the local machine
