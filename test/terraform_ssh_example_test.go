@@ -195,13 +195,13 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 			2,
 		},
 		{
-			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: localDestDir, FileNameFilter: "*.baz"},
+			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: localDestDir, FileNameFilters: []string{"*.baz"}},
 			1,
 		},
 	}
 
 	for _, testCase := range testcases {
-		err := ssh.ScpDirFromE(t, testCase.options)
+		err := ssh.ScpDirFromE(t, testCase.options, false)
 
 		if err != nil {
 			t.Fatalf("Error copying from remote: %s", err.Error())
@@ -282,7 +282,7 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 		t.Fatalf("Error: creating local temp file: %s", err.Error())
 	}
 
-	ssh.ScpFileFromE(t, publicHost, remoteTempFilePath, localFile)
+	ssh.ScpFileFromE(t, publicHost, remoteTempFilePath, localFile, false)
 
 	buf, err := ioutil.ReadFile(localTempFileName)
 
