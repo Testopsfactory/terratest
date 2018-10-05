@@ -11,7 +11,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/ssh"
 )
 
-//TODO: Rename this - i'm not sure this is a good name.
 type RemoteFileSpecification struct {
 	AsgNames               []string            //ASGs where our instances will be
 	RemotePathToFileFilter map[string][]string // Select files matching VALUE in directory KEY on remote host
@@ -194,51 +193,44 @@ func FetchFilesFromInstanceE(t *testing.T, awsRegion string, sshUserName string,
 	return ssh.ScpDirFromE(t, scpOptions, useSudo)
 }
 
-// FetchContentsOfFilesFromAsgE looks up the EC2 Instances in the given ASG, looks up the public IPs of those EC2
-// Instances,, connects to each Instance via SSH using the given username and Key Pair, downloads the files
-// matching filenameFilters at the given remoteDirectory (using sudo if useSudo is true), and stores the files locally
-// at localDirectory/<publicip>/<remoteFolderName>
-func FetchFilesFromAsg(t *testing.T, awsRegion string, sshUserName string, keyPair *Ec2Keypair, asgName string, useSudo bool, remoteDirectory string, localDirectory string, filenameFilters []string) {
-	err := FetchFilesFromAsgE(t, awsRegion, sshUserName, keyPair, asgName, useSudo, remoteDirectory, localDirectory, filenameFilters)
+// FetchFilesFromAsgsE looks up the EC2 Instances in all the ASGs given in the RemoteFileSpecification,
+// looks up the public IPs of those EC2 Instances, connects to each Instance via SSH using the given
+// username and Key Pair, downloads the files matching filenameFilters at the given
+// remoteDirectory (using sudo if useSudo is true), and stores the files locally at
+// localDirectory/<publicip>/<remoteFolderName>
+func FetchFilesFromAsgs(t *testing.T, awsRegion string, spec RemoteFileSpecification) {
+	err := FetchFilesFromAsgsE(t, awsRegion, spec)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-// FetchContentsOfFilesFromAsgE looks up the EC2 Instances in the given ASG, looks up the public IPs of those EC2
-// Instances,, connects to each Instance via SSH using the given username and Key Pair, downloads the files
-// matching filenameFilters at the given remoteDirectory (using sudo if useSudo is true), and stores the files locally
-// at localDirectory/<publicip>/<remoteFolderName>
-func FetchFilesFromAsgE(t *testing.T, awsRegion string, sshUserName string, keyPair *Ec2Keypair, asgName string, useSudo bool, remoteDirectory string, localDirectory string, filenameFilters []string) error {
-	instanceIDs, err := GetInstanceIdsForAsgE(t, asgName, awsRegion)
-	if err != nil {
-		return err
-	}
-
-	errorsOccurred := []error{}
-
-	for _, instanceID := range instanceIDs {
-		err = FetchFilesFromInstanceE(t, awsRegion, sshUserName, keyPair, instanceID, useSudo, remoteDirectory, localDirectory, filenameFilters)
-
-		if err != nil {
-			errorsOccurred = append(errorsOccurred, err)
-		}
-	}
-
-	return customerrors.NewMultiError(errorsOccurred...)
-}
-
-// TODO: Rename this!FetchFilesFromAllAsgsE looks up the EC2 Instances in the given ASG, looks up the public IPs of those EC2
-// Instances,, connects to each Instance via SSH using the given username and Key Pair, downloads the files
-// matching filenameFilters at the given remoteDirectory (using sudo if useSudo is true), and stores the files locally
-// at localDirectory/<publicip>/<remoteFolderName>
-func FetchFilesFromAllAsgsE(t *testing.T, awsRegion string, spec RemoteFileSpecification) error {
+// FetchFilesFromAsgsE looks up the EC2 Instances in all the ASGs given in the RemoteFileSpecification,
+// looks up the public IPs of those EC2 Instances, connects to each Instance via SSH using the given
+// username and Key Pair, downloads the files matching filenameFilters at the given
+// remoteDirectory (using sudo if useSudo is true), and stores the files locally at
+// localDirectory/<publicip>/<remoteFolderName>
+func FetchFilesFromAsgsE(t *testing.T, awsRegion string, spec RemoteFileSpecification) error {
 	errorsOccurred := []error{}
 
 	for _, curAsg := range spec.AsgNames {
 		for curRemoteDir, fileFilters := range spec.RemotePathToFileFilter {
-			err := FetchFilesFromAsgE(t, awsRegion, spec.SshUser, spec.KeyPair, curAsg, spec.UseSudo, curRemoteDir, spec.LocalDestinationDir, fileFilters)
+
+			instanceIDs, err := GetInstanceIdsForAsgE(t, curAsg, awsRegion)
+			if err != nil {
+				return err
+			}
+
+			errorsOccurred := []error{}
+
+			for _, instanceID := range instanceIDs {
+				err = FetchFilesFromInstanceE(t, awsRegion, spec.SshUser, spec.KeyPair, instanceID, spec.UseSudo, curRemoteDir, spec.LocalDestinationDir, fileFilters)
+
+				if err != nil {
+					errorsOccurred = append(errorsOccurred, err)
+				}
+			}
 
 			if err != nil {
 				errorsOccurred = append(errorsOccurred, err)
