@@ -13,11 +13,11 @@ import (
 
 type RemoteFileSpecification struct {
 	AsgNames               []string            //ASGs where our instances will be
-	RemotePathToFileFilter map[string][]string // Select files matching VALUE in directory KEY on remote host
+	RemotePathToFileFilter map[string][]string //A map of the files to fetch, where the keys are directories on the remote host and the values are filters for what files to fetch from the directory. The filters support bash-style wildcards.
 	UseSudo                bool
 	SshUser                string
 	KeyPair                *Ec2Keypair
-	LocalDestinationDir    string //path where to store downloaded artifacts locally
+	LocalDestinationDir    string //base path where to store downloaded artifacts locally. The final path of each resource will include the ip of the host and the name of the immediate parent folder.
 }
 
 // FetchContentsOfFileFromInstance looks up the public IP address of the EC2 Instance with the given ID, connects to

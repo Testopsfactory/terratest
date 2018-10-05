@@ -23,11 +23,11 @@ import (
 func TestTerraformScpExample(t *testing.T) {
 	t.Parallel()
 
-	os.Setenv("SKIP_setup", "true")
-	os.Setenv("SKIP_validate_file", "true")
-	os.Setenv("SKIP_validate_dir", "true")
+	//os.Setenv("SKIP_setup", "true")
+	//os.Setenv("SKIP_validate_file", "true")
+	//os.Setenv("SKIP_validate_dir", "true")
 	//os.Setenv("SKIP_validate_asg", "true")
-	os.Setenv("SKIP_teardown", "true")
+	//os.Setenv("SKIP_teardown", "true")
 
 	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-asg-scp-example")
 

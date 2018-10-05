@@ -37,7 +37,7 @@ type Host struct {
 type ScpDownloadOptions struct {
 	FileNameFilters []string //File names to match. May include bash-style wildcards. E.g., *.log.
 	MaxFileSizeMB   int      //Don't grab any files > MaxFileSizeMB
-	RemoteDir       string   //Copy this directory on the remote machine
+	RemoteDir       string   //Copy from this directory on the remote machine
 	LocalDir        string   //Copy RemoteDir to this directory on the local machine
 	RemoteHost      Host     //Connection information for the remote machine
 }
@@ -335,33 +335,35 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 	logger.Logf(t, "Running command %s on %s@%s", sshSession.Options.Command, sshSession.Options.Username, sshSession.Options.Address)
 
 	var result []string
-
-	findCommand := fmt.Sprintf("find %s -type f", options.RemoteDir)
+	var findCommandArgs []string
 
 	if useSudo {
-		findCommand = fmt.Sprintf("sudo %s", findCommand)
+		findCommandArgs = append(findCommandArgs, "sudo")
 	}
 
-	filtersLength := len(options.FileNameFilters)
-	if nil != options.FileNameFilters && filtersLength > 0 {
+	findCommandArgs = append(findCommandArgs, "find", options.RemoteDir)
+	findCommandArgs = append(findCommandArgs, "-type", "f")
 
-		findCommand = fmt.Sprintf("%s \\(", findCommand)
+	filtersLength := len(options.FileNameFilters)
+	if options.FileNameFilters != nil && filtersLength > 0 {
+
+		findCommandArgs = append(findCommandArgs, "\\(")
 		for i, curFilter := range options.FileNameFilters {
-			findCommand = fmt.Sprintf("%s -name %s", findCommand, curFilter)
+			findCommandArgs = append(findCommandArgs, "-name", curFilter)
 
 			// only add the or flag if we're not the last element
 			if filtersLength-i > 1 {
-				findCommand = fmt.Sprintf("%s -o", findCommand)
+				findCommandArgs = append(findCommandArgs, "-o")
 			}
 		}
-		findCommand = fmt.Sprintf("%s \\)", findCommand)
+		findCommandArgs = append(findCommandArgs, "\\)")
 	}
 
 	if options.MaxFileSizeMB != 0 {
-		findCommand = fmt.Sprintf("%s -size -%dM", findCommand, options.MaxFileSizeMB)
+		findCommandArgs = append(findCommandArgs, "-size", fmt.Sprintf("-%dM", options.MaxFileSizeMB))
 	}
 
-	resultString, err := CheckSshCommandE(t, options.RemoteHost, findCommand)
+	resultString, err := CheckSshCommandE(t, options.RemoteHost, strings.Join(findCommandArgs, " "))
 
 	if err != nil {
 		return result, err
