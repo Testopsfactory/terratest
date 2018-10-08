@@ -112,6 +112,10 @@ Next, head over to the [test folder](/test) to see how you can use Terraform to 
     the Terraform GCP Example and verify you get the expected outputs.
 1.  [terraform_remote_exec_example_test.go](/test/terraform_remote_exec_example_test.go): Use Terratest to run 
     `terraform apply` and then remotely provision the instance while using a custom SSH agent managed by Terratest
+1.  [terraform_scp_example_test.go](/test/terraform_scp_example_test.go): Use Terratest to simplify copying resources
+    like config files and logs from deployed EC2 Instances. This is especially useful for getting a snapshot of the
+    state of a deployment when a test fails.
+    
 
 Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure
 modules:
