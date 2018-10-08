@@ -4,7 +4,7 @@ This folder contains a simple Terraform module that deploys resources in [AWS](h
 how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an ASG with one instance.
 The EC2 Instance allows SSH requests on the port specified by the `ssh_port` variable. 
 
-Check out [test/terraform_ssh_example_test.go](/test/terraform_ssh_example_test.go) to see how you can write
+Check out [test/terraform_scp_example_test.go](/test/terraform_scp_example_test.go) to see how you can write
 automated tests for this module.
 
 Note that the example in this module is still fairly simplified, as the EC2 Instance doesn't do a whole lot! For a more
@@ -40,4 +40,4 @@ it should be free, but you are completely responsible for all AWS charges.
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -run TestTerraformSshExample`
+1. `go test -v -run TestTerraformScpExample`

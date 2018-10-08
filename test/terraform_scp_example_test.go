@@ -23,12 +23,6 @@ import (
 func TestTerraformScpExample(t *testing.T) {
 	t.Parallel()
 
-	//os.Setenv("SKIP_setup", "true")
-	//os.Setenv("SKIP_validate_file", "true")
-	//os.Setenv("SKIP_validate_dir", "true")
-	//os.Setenv("SKIP_validate_asg", "true")
-	//os.Setenv("SKIP_teardown", "true")
-
 	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-asg-scp-example")
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
@@ -132,42 +126,51 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 	localDestDir := "/tmp/tempFolder"
 
 	var testcases = []struct {
+		name          string
 		options       ssh.ScpDownloadOptions
 		expectedFiles int
 	}{
 		{
-			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: localDestDir},
+			"GrabAllFiles",
+			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: filepath.Join(localDestDir, random.UniqueId())},
 			2,
 		},
 		{
-			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: localDestDir, FileNameFilters: []string{"*.baz"}},
+			"GrabFilesWithFilter",
+			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: filepath.Join(localDestDir, random.UniqueId()), FileNameFilters: []string{"*.baz"}},
 			1,
 		},
 	}
 
 	for _, testCase := range testcases {
-		err := ssh.ScpDirFromE(t, testCase.options, false)
+		// The following is necessary to make sure testCase's values don't
+		// get updated due to concurrency within the scope of t.Run(..) below
+		testCase := testCase
 
-		if err != nil {
-			t.Fatalf("Error copying from remote: %s", err.Error())
-		}
+		t.Run(testCase.name, func(t *testing.T) {
+			err := ssh.ScpDirFromE(t, testCase.options, false)
 
-		expectedNumFiles := testCase.expectedFiles
+			if err != nil {
+				t.Fatalf("Error copying from remote: %s", err.Error())
+			}
 
-		fileInfos, err := ioutil.ReadDir(localDestDir)
+			expectedNumFiles := testCase.expectedFiles
 
-		if err != nil {
-			t.Fatalf("Error reading from local dir: %s, due to: %s", localDestDir, err.Error())
-		}
+			fileInfos, err := ioutil.ReadDir(testCase.options.LocalDir)
 
-		actualNumFilesCopied := len(fileInfos)
+			if err != nil {
+				t.Fatalf("Error reading from local dir: %s, due to: %s", testCase.options.LocalDir, err.Error())
+			}
 
-		if len(fileInfos) != expectedNumFiles {
-			t.Fatalf("Error: expected %d files to be copied. Only found %d", expectedNumFiles, actualNumFilesCopied)
-		}
+			actualNumFilesCopied := len(fileInfos)
 
-		// Clean up the temp file we created
-		os.RemoveAll(localDestDir)
+			if len(fileInfos) != expectedNumFiles {
+				t.Fatalf("Error: expected %d files to be copied. Only found %d", expectedNumFiles, actualNumFilesCopied)
+			}
+
+			// Clean up the temp file we created
+			os.RemoveAll(testCase.options.LocalDir)
+		})
 	}
 }
 

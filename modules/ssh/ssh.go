@@ -80,7 +80,7 @@ func ScpFileToE(t *testing.T, host Host, mode os.FileMode, remotePath, contents 
 	return err
 }
 
-// ScpFileFromE downloads the file from remotePath on the given host using SCP.
+// ScpFileFrom downloads the file from remotePath on the given host using SCP.
 func ScpFileFrom(t *testing.T, host Host, remotePath string, localDestination *os.File, useSudo bool) {
 	err := ScpFileFromE(t, host, remotePath, localDestination, useSudo)
 
@@ -117,7 +117,7 @@ func ScpFileFromE(t *testing.T, host Host, remotePath string, localDestination *
 	return copyFileFromRemote(t, sshSession, localDestination, remotePath, useSudo)
 }
 
-// ScpFileFromE downloads all the files from remotePath on the given host using SCP.
+// ScpDirFrom downloads all the files from remotePath on the given host using SCP.
 func ScpDirFrom(t *testing.T, options ScpDownloadOptions, useSudo bool) {
 	err := ScpDirFromE(t, options, useSudo)
 
@@ -126,7 +126,7 @@ func ScpDirFrom(t *testing.T, options ScpDownloadOptions, useSudo bool) {
 	}
 }
 
-// ScpFileFromE downloads all the files from remotePath on the given host using SCP
+// ScpDirFromE downloads all the files from remotePath on the given host using SCP
 // and returns an error if the process fails. NOTE: only files within remotePath will
 // be downloaded. This function will not recursively download subdirectories or follow
 // symlinks.
@@ -158,7 +158,11 @@ func ScpDirFromE(t *testing.T, options ScpDownloadOptions, useSudo bool) error {
 	}
 
 	if !files.FileExists(options.LocalDir) {
-		os.Mkdir(options.LocalDir, 0755)
+		err := os.MkdirAll(options.LocalDir, 0755)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	errorsOccurred := []error{}

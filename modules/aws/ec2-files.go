@@ -160,7 +160,7 @@ func FetchFilesFromInstance(t *testing.T, awsRegion string, sshUserName string, 
 	}
 }
 
-// FetchFilesFromInstance looks up the EC2 Instances in the given ASG, looks up the public IPs of those EC2
+// FetchFilesFromInstanceE looks up the EC2 Instances in the given ASG, looks up the public IPs of those EC2
 // Instances, connects to each Instance via SSH using the given username and Key Pair, downloads the files
 // matching filenameFilters at the given remoteDirectory (using sudo if useSudo is true), and stores the files locally
 // at localDirectory/<publicip>/<remoteFolderName>
@@ -193,7 +193,7 @@ func FetchFilesFromInstanceE(t *testing.T, awsRegion string, sshUserName string,
 	return ssh.ScpDirFromE(t, scpOptions, useSudo)
 }
 
-// FetchFilesFromAsgsE looks up the EC2 Instances in all the ASGs given in the RemoteFileSpecification,
+// FetchFilesFromAsgs looks up the EC2 Instances in all the ASGs given in the RemoteFileSpecification,
 // looks up the public IPs of those EC2 Instances, connects to each Instance via SSH using the given
 // username and Key Pair, downloads the files matching filenameFilters at the given
 // remoteDirectory (using sudo if useSudo is true), and stores the files locally at
