@@ -15,6 +15,58 @@ complicated, real-world, end-to-end example of a Terraform module and web server
 money. The resources are all part of the [AWS Free Tier](https://aws.amazon.com/free/), so if you haven't used that up,
 it should be free, but you are completely responsible for all AWS charges.
 
+## Overview 
+
+When a test fails, it is often important to be able to quickly get to logs and config files from your deployed apps and services. Currently, getting at this information is a bit of a pain. Often times, it would be necessary to "catch it in the act". Usually this would require running tests and then "pausing"/not tearing down the infrastructure, ssh-ing to individual instances and then viewing the logs/config files that way. This in not very convenient and gets even more tricky when trying to get the same results for tests being executed by your CI server.
+
+You can use terratest to help with this task by specifying `RemoteFileSpecification` structs that describe which files you want to copy from your instances:
+
+```go
+logstashSpec := aws.RemoteFileSpecification{
+	SshUser:sshUserName,
+	UseSudo:true,
+	KeyPair:keyPair,
+	LocalDestinationDir:filepath.Join("/tmp", "logs", t.Name(), "logstash"),
+	AsgNames: strings.Split(strings.Replace(terraform.OutputRequired(t, terraformOptions, "logstash_server_asg_names"), "\n", "", -1), ","),
+	RemotePathToFileFilter: map[string][]string {
+		"/var/log/logstash":{"*"},
+		"/etc/logstash/conf.d" : {"*"},
+	},
+}
+```
+
+Once you've described what files you want, grabbing them from ASGs is simple with:
+```go
+aws.FetchFilesFromAllAsgsE(t, awsRegion, logstashSpec)
+```
+
+or directly from EC2 instances with:
+```go
+aws.FetchFilesFromInstance(t, awsRegion, sshUserName, keyPair, appServerInstanceId, true, appServerConfig, filepath.Join("/tmp", "logs", t.Name(), "app_server"), []string{"*.yml", "caFile", "*.key", "*.pem"})
+```
+
+Finally, to put all of this together, in your go test you could do something like:
+
+```go
+defer test_structure.RunTestStage(t, "grab_logs", func() {
+	if t.Failed() {
+		takeElkMultiClusterLogSnapshot(t, examplesDir, awsRegion, "ubuntu")
+	}
+})
+```
+
+The code above will run at the very end of your test and grab a snapshot of all of the log descriptors you've defined specifically when your tests fail. We usually like to defer the logging snapshot right before we defer the terraform teardown. This way, if our tests fail, we are able to grab a snapshot of all the relevant logs and config files across our whole deployment!
+
+You can even take this a step further and pair this with your CI's artifact storage mechanism to have all of your logs and config files attached to your broken CI build when tests failed. For example, with CircleCI, you could do something like:
+
+```yml
+      - store_artifacts:
+          path: /tmp/logs
+```
+
+Now, to get at your logs when your tests fail, you will just be able to click the links right in your CI.
+
+![logs](https://user-images.githubusercontent.com/34349331/46639252-086e0a00-cb33-11e8-8dd2-9be73ca2af56.gif)
 
 ## Running this module manually
 
