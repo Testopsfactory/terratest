@@ -50,8 +50,8 @@ func OutputRequiredE(t *testing.T, options *Options, key string) (string, error)
 	return out, nil
 }
 
-// OutputList calls terraform output for the given variable and return its value as a list.
-// If the output is a single value, then it returns a list with just one item.
+// OutputList calls terraform output for the given variable and returns its value as a list.
+// If the output value is not a list type, then it fails the test.
 func OutputList(t *testing.T, options *Options, key string) []string {
 	out, err := OutputListE(t, options, key)
 	if err != nil {
@@ -60,8 +60,8 @@ func OutputList(t *testing.T, options *Options, key string) []string {
 	return out
 }
 
-// OutputListE calls terraform output for the given variable and return its value as a list.
-// If the output is a single value, then it returns a list with just one item.
+// OutputListE calls terraform output for the given variable and returns its value as a list.
+// If the output value is not a list type, then it returns an error.
 func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 	out, err := RunTerraformCommandE(t, options, "output", "-no-color", "-json", key)
 	if err != nil {
@@ -70,20 +70,23 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 
 	outputMap := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
-		t.Fatalf("Failed to parse JSON for value %s: %v", out, err)
+		return nil, err
 	}
 
-	value := outputMap["value"]
+	value, containsValue := outputMap["value"]
+	if !containsValue {
+		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
+	}
+
 	var list []string
 	switch t := value.(type) {
 	case []interface{}:
 		list = make([]string, len(t))
 		for i, item := range t {
-			list[i] = item.(string)
+			list[i] = fmt.Sprintf("%v", item)
 		}
 	case interface{}:
-		list = make([]string, 1)
-		list[0] = t.(string)
+		return nil, fmt.Errorf("Output value %q is not a list", value)
 	}
 
 	return list, nil

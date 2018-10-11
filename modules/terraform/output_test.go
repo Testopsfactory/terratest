@@ -24,13 +24,15 @@ func TestOutputList(t *testing.T) {
 
 	expectedLen := 4
 	expectedItem := "John Coltrane"
+	expectedArray := []string{"John Coltrane", "Tommy Flanagan", "Paul Chambers", "Art Taylor"}
 
 	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
 	assert.Contains(t, out, expectedItem, "Output should contain %q item", expectedItem)
 	assert.Equal(t, out[0], expectedItem, "First item should be %q, got %q", expectedItem, out[0])
+	assert.Equal(t, out, expectedArray, "Array %q should match %q", expectedArray, out)
 }
 
-func TestOutputNotList(t *testing.T) {
+func TestOutputNotListError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-list", t.Name())
@@ -43,11 +45,7 @@ func TestOutputNotList(t *testing.T) {
 	}
 
 	InitAndApply(t, options)
-	out := OutputList(t, options, "not_a_list")
+	_, err = OutputListE(t, options, "not_a_list")
 
-	expectedLen := 1
-	expectedItem := "This is not a list."
-
-	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
-	assert.Equal(t, out[0], expectedItem, "First item should be %q, got %q", expectedItem, out[0])
+	assert.Error(t, err)
 }
