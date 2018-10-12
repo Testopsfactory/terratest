@@ -81,8 +81,8 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 	list := []string{}
 	switch t := value.(type) {
 	case []interface{}:
-		for i, item := range t {
-			list[i] = fmt.Sprintf("%v", item)
+		for _, item := range t {
+			list = append(list, fmt.Sprintf("%v", item))
 		}
 	default:
 		return nil, fmt.Errorf("Output value %q is not a list", value)
