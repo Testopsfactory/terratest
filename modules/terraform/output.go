@@ -78,14 +78,13 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
 	}
 
-	var list []string
+	list := []string{}
 	switch t := value.(type) {
 	case []interface{}:
-		list = make([]string, len(t))
 		for i, item := range t {
 			list[i] = fmt.Sprintf("%v", item)
 		}
-	case interface{}:
+	default:
 		return nil, fmt.Errorf("Output value %q is not a list", value)
 	}
 
