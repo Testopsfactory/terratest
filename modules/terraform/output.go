@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -47,6 +48,47 @@ func OutputRequiredE(t *testing.T, options *Options, key string) (string, error)
 	}
 
 	return out, nil
+}
+
+// OutputList calls terraform output for the given variable and returns its value as a list.
+// If the output value is not a list type, then it fails the test.
+func OutputList(t *testing.T, options *Options, key string) []string {
+	out, err := OutputListE(t, options, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// OutputListE calls terraform output for the given variable and returns its value as a list.
+// If the output value is not a list type, then it returns an error.
+func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
+	out, err := RunTerraformCommandE(t, options, "output", "-no-color", "-json", key)
+	if err != nil {
+		return nil, err
+	}
+
+	outputMap := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
+		return nil, err
+	}
+
+	value, containsValue := outputMap["value"]
+	if !containsValue {
+		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
+	}
+
+	list := []string{}
+	switch t := value.(type) {
+	case []interface{}:
+		for i, item := range t {
+			list[i] = fmt.Sprintf("%v", item)
+		}
+	default:
+		return nil, fmt.Errorf("Output value %q is not a list", value)
+	}
+
+	return list, nil
 }
 
 // EmptyOutput is an error that occurs when an output is empty.
