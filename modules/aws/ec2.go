@@ -221,6 +221,68 @@ func TerminateInstanceE(t *testing.T, region string, instanceID string) error {
 	return err
 }
 
+// GetAmiPubliclyAccessible returns whether the AMI is publicly accessible or not
+func GetAmiPubliclyAccessible(t *testing.T, awsRegion string, amiID string) bool {
+	output, err := GetAmiPubliclyAccessibleE(t, awsRegion, amiID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return output
+}
+
+// GetAmiPubliclyAccessibleE returns whether the AMI is publicly accessible or not
+func GetAmiPubliclyAccessibleE(t *testing.T, awsRegion string, amiID string) (bool, error) {
+	launchPermissions, err := GetLaunchPermissionsForAmiE(t, awsRegion, amiID)
+	if err != nil {
+		return false, err
+	}
+	for _, launchPermission := range launchPermissions {
+		if aws.StringValue(launchPermission.Group) == "all" {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// GetAccountsWithLaunchPermissionsForAmi returns list of accounts that the AMI is shared with
+func GetAccountsWithLaunchPermissionsForAmi(t *testing.T, awsRegion string, amiID string) []string {
+	output, err := GetAccountsWithLaunchPermissionsForAmiE(t, awsRegion, amiID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return output
+}
+
+// GetAccountsWithLaunchPermissionsForAmiE returns list of accounts that the AMI is shared with
+func GetAccountsWithLaunchPermissionsForAmiE(t *testing.T, awsRegion string, amiID string) ([]string, error) {
+	accountIDs := []string{}
+	launchPermissions, err := GetLaunchPermissionsForAmiE(t, awsRegion, amiID)
+	if err != nil {
+		return accountIDs, err
+	}
+	for _, launchPermission := range launchPermissions {
+		if aws.StringValue(launchPermission.UserId) != "" {
+			accountIDs = append(accountIDs, aws.StringValue(launchPermission.UserId))
+		}
+	}
+	return accountIDs, nil
+}
+
+// GetLaunchPermissionsForAmiE returns launchPermissions as configured in AWS
+func GetLaunchPermissionsForAmiE(t *testing.T, awsRegion string, amiID string) ([]*ec2.LaunchPermission, error) {
+	client := NewEc2Client(t, awsRegion)
+	input := &ec2.DescribeImageAttributeInput{
+		Attribute: aws.String("launchPermission"),
+		ImageId:   aws.String(amiID),
+	}
+
+	output, err := client.DescribeImageAttribute(input)
+	if err != nil {
+		return []*ec2.LaunchPermission{}, err
+	}
+	return output.LaunchPermissions, nil
+}
+
 // NewEc2Client creates an EC2 client.
 func NewEc2Client(t *testing.T, region string) *ec2.EC2 {
 	client, err := NewEc2ClientE(t, region)
