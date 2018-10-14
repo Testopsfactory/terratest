@@ -1,10 +1,9 @@
 package test
 
 import (
-	"testing"
-
 	terratest_aws "terratest/modules/aws"
 	"terratest/modules/packer"
+	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
