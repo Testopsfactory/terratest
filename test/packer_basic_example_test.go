@@ -1,7 +1,7 @@
 package test
 
 import (
-	terratest_aws "terratest/modules/aws"
+	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"terratest/modules/packer"
 	"testing"
 
