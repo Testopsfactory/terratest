@@ -1,12 +1,12 @@
 package test
 
 import (
-	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"terratest/modules/packer"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/stretchr/testify/assert"
 )
 
