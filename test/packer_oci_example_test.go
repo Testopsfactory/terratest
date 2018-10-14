@@ -1,9 +1,8 @@
 package test
 
 import (
-	"testing"
-
 	"os"
+	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/oci"
 	"github.com/gruntwork-io/terratest/modules/packer"

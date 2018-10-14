@@ -1,10 +1,9 @@
 package aws
 
 import (
-	"testing"
-
 	"os"
 	"path/filepath"
+	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/customerrors"
 	"github.com/gruntwork-io/terratest/modules/files"

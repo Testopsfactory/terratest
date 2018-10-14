@@ -2,12 +2,11 @@
 package aws
 
 import (
-	"strings"
-	"testing"
-
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
+	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"

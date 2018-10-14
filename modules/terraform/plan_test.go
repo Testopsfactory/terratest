@@ -5,7 +5,6 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/files"
-
 	"github.com/stretchr/testify/assert"
 )
 

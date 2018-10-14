@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // GetAddressOfRdsInstance gets the address of the given RDS Instance in the given region.

@@ -3,18 +3,15 @@ package ssh
 
 import (
 	"errors"
-	"net"
-	"testing"
-	"time"
-
 	"fmt"
 	"io"
+	"net"
 	"os"
-	"strconv"
-
 	"path/filepath"
-
+	"strconv"
 	"strings"
+	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/customerrors"
 	"github.com/gruntwork-io/terratest/modules/files"

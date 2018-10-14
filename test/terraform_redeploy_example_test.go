@@ -2,10 +2,9 @@ package test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
-
-	"strings"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/http-helper"

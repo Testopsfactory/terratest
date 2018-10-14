@@ -1,9 +1,8 @@
 package aws
 
 import (
-	"strings"
-
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
