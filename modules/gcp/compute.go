@@ -291,6 +291,7 @@ func (i *Instance) AddSshKey(t *testing.T, username string, publicKey string) {
 func (i *Instance) AddSshKeyE(t *testing.T, username string, publicKey string) error {
 	logger.Logf(t, "Adding SSH Key to Compute Instance %s for username %s\n", i.Name, username)
 
+	// We represent the key in the format required per GCP docs (https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys)
 	publicKeyFormatted := strings.TrimSpace(publicKey)
 	sshKeyFormatted := fmt.Sprintf("%s:%s %s", username, publicKeyFormatted, username)
 

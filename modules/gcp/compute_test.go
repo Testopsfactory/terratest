@@ -135,6 +135,8 @@ func TestGetAndSetMetadata(t *testing.T) {
 			}
 		}
 
+		fmt.Printf("Metadata to write: %+v\nMetadata from read: %+v\n", metadataToWrite, metadataFromRead)
+
 		return "", fmt.Errorf("Metadata that was written was not found in metadata that was read. Retrying.\n")
 	})
 }
