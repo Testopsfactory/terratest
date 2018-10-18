@@ -307,7 +307,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:43867bae2f0dac0e62e6fb220f7e56dba3edba4f605bbe9f0b59e01fc3d13bc6"
+  digest = "1:a124d2ef8b444eee0f0bf419136052570947651dd738cf220b1cd1cea669ddc6"
   name = "google.golang.org/api"
   packages = [
     "compute/v1",

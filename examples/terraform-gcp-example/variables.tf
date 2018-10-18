@@ -6,8 +6,10 @@
 # GOOGLE_CREDENTIALS
 # or
 # GOOGLE_APPLICATION_CREDENTIALS
-# and
-# GOOGLE_CLOUD_PROJECT
+
+variable "gcp_project_id" {
+  description = "The ID of the GCP project in which these resources will be created."
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # REQUIRED PARAMETERS

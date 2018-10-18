@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
-	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/magiconair/properties/assert"
 	"google.golang.org/api/compute/v1"
 )
@@ -23,7 +20,7 @@ const DEFAULT_IMAGE_FAMILY_NAME = "family/ubuntu-1804-lts"
 func TestGetPublicIpOfInstance(t *testing.T) {
 	t.Parallel()
 
-	instanceName := uniqueGcpInstanceName()
+	instanceName := UniqueGcpInstanceName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	zone := GetRandomZone(t, projectID, nil, nil)
 
@@ -69,7 +66,7 @@ func TestZoneUrlToZone(t *testing.T) {
 func TestGetAndSetLabels(t *testing.T) {
 	t.Parallel()
 
-	instanceName := uniqueGcpInstanceName()
+	instanceName := UniqueGcpInstanceName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	zone := GetRandomZone(t, projectID, nil, nil)
 
@@ -105,7 +102,7 @@ func TestGetAndSetMetadata(t *testing.T) {
 	t.Parallel()
 
 	projectID := GetGoogleProjectIDFromEnvVar(t)
-	instanceName := uniqueGcpInstanceName()
+	instanceName := UniqueGcpInstanceName()
 	zone := GetRandomZone(t, projectID, nil, nil)
 
 	// Create a new Compute Instance
@@ -139,75 +136,6 @@ func TestGetAndSetMetadata(t *testing.T) {
 
 		return "", fmt.Errorf("Metadata that was written was not found in metadata that was read. Retrying.\n")
 	})
-}
-
-// Create a Compute Instance, and attempt to SSH in and run a command.
-func TestSshAccessToComputeInstance(t *testing.T) {
-	t.Parallel()
-
-	projectID := GetGoogleProjectIDFromEnvVar(t)
-	instanceName := uniqueGcpInstanceName()
-	zone := GetRandomZone(t, projectID, nil, nil)
-
-	// Create the Compute Instance
-	createComputeInstance(t, projectID, zone, instanceName)
-	defer deleteComputeInstance(t, projectID, zone, instanceName)
-
-	// Get the public IP
-	var instance *Instance
-	var publicIp string
-
-	maxRetries := 10
-	sleepBetweenRetries := 3 * time.Second
-
-	retry.DoWithRetry(t, "Attempting to get public IP address", maxRetries, sleepBetweenRetries, func() (string, error) {
-		instance = FetchInstance(t, projectID, instanceName)
-
-		publicIp = instance.GetPublicIp(t)
-		if publicIp == "" {
-			return "", fmt.Errorf("Public IP address was blank")
-		}
-
-		return "", nil
-	})
-
-	// Attempt to SSH and execute the command
-	sampleText := "Hello World"
-	sshUsername := "terratest"
-
-	keyPair := ssh.GenerateRSAKeyPair(t, 2048)
-	instance.AddSshKey(t, sshUsername, keyPair.PublicKey)
-
-	host := ssh.Host{
-		Hostname:    publicIp,
-		SshKeyPair:  keyPair,
-		SshUserName: sshUsername,
-	}
-
-	maxRetries = 20
-	sleepBetweenRetries = 3 * time.Second
-
-	retry.DoWithRetry(t, "Attempting to SSH", maxRetries, sleepBetweenRetries, func() (string, error) {
-		output, err := ssh.CheckSshCommandE(t, host, fmt.Sprintf("echo '%s'", sampleText))
-		if err != nil {
-			return "", err
-		}
-
-		if strings.TrimSpace(sampleText) != strings.TrimSpace(output) {
-			return "", fmt.Errorf("Expected: %s. Got: %s\n", sampleText, output)
-		}
-
-		return "", nil
-	})
-}
-
-// Helper function that returns a random, valid name for GCP Compute Instances. Note that GCP requires Instance names to
-// use lowercase letters only.
-func uniqueGcpInstanceName() string {
-	id := strings.ToLower(random.UniqueId())
-	instanceName := fmt.Sprintf("terratest-%s", id)
-
-	return instanceName
 }
 
 // Helper function to launch a Compute Instance.
