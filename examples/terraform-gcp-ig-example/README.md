@@ -1,20 +1,19 @@
-# Terraform GCP Example
+# Terraform GCP Managed Instance Group Example
 
-This folder contains a simple Terraform module that deploys resources in [GCP](https://cloud.google.com/) to demonstrate
-how you can use Terratest to write automated tests for your GCP Terraform code. This module deploys a [Compute
-Instance](https://cloud.google.com/compute/) and gives that Instance a `Name` with the value specified in the
-`instance_name` variable. It also creates a Cloud Storage Bucket using the `bucket_name` and `bucket_location` variables.
+This folder contains a simple Terraform configuration that deploys resources in [GCP](https://cloud.google.com/) to demonstrate
+how you can use Terratest to write automated tests for your GCP Terraform code. This module deploys an [Instance Group](
+https://cloud.google.com/compute/docs/instance-groups/).
 
-Check out [test/terraform_gcp_example_test.go](/test/terraform_gcp_example_test.go) to see how you can write
+Check out [test/terraform_gcp_ig_example_test.go](/test/terraform_gcp_ig_example_test.go) to see how you can write
 automated tests for this module.
 
-Note that the Compute Instance in this module doesn't actually do anything; it just runs a Vanilla Ubuntu 16.04 Image for
-demonstration purposes. For slightly more complicated, real-world examples of Terraform modules, see
+Note that the Instance Group in this module doesn't actually do anything; it just runs a cluster of vanilla Ubuntu 16.04
+Images for demonstration purposes. For slightly more complicated, real-world examples of Terraform modules, see
 [terraform-http-example](/examples/terraform-http-example) and [terraform-ssh-example](/examples/terraform-ssh-example).
 
 **WARNING**: This module and the automated tests for it deploy real resources into your GCP account which can cost you
-money. The resources are all part of the [GCP Free Tier](https://cloud.google.com/free/), so if you haven't used that up,
-it should be free, but you are completely responsible for all GCP charges.
+money. By launching multiple Instances as part of an Instance Group, these resources may go beyond the [GCP Free Tier](
+https://cloud.google.com/free/). Naturally, you are completely responsible for all GCP charges.
 
 ## Running this module manually
 
@@ -37,4 +36,4 @@ it should be free, but you are completely responsible for all GCP charges.
 1. Set `GOOGLE_CLOUD_PROJECT` environment variable to your project name.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -run TestTerraformGcpExample`
+1. `go test -v -run TestTerraformGcpInstanceGroupExample`

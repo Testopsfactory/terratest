@@ -11,11 +11,14 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTerraformGcpExample(t *testing.T) {
 	t.Parallel()
+
+	exampleDir := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-gcp-example")
 
 	// Get the Project Id to use
 	projectId := gcp.GetGoogleProjectIDFromEnvVar(t)
@@ -31,7 +34,7 @@ func TestTerraformGcpExample(t *testing.T) {
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../examples/terraform-gcp-example",
+		TerraformDir: exampleDir,
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
@@ -92,6 +95,8 @@ func TestTerraformGcpExample(t *testing.T) {
 func TestSshAccessToComputeInstance(t *testing.T) {
 	t.Parallel()
 
+	exampleDir := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-gcp-example")
+
 	// Setup values for our Terraform apply
 	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 	randomValidGcpName := gcp.RandomValidGcpName()
@@ -99,7 +104,7 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../examples/terraform-gcp-example",
+		TerraformDir: exampleDir,
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
