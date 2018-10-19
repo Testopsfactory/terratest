@@ -138,7 +138,9 @@ func TestGetAndSetMetadata(t *testing.T) {
 	})
 }
 
-// Helper function to launch a Compute Instance.
+// Helper function to launch a Compute Instance. This function is useful for quickly iterating on automated tests. But
+// if you're writing a test that resembles real-world code that Terratest users may write, you should create a Compute
+// Instance using a Terraform apply, similar to the tests in /test.
 func createComputeInstance(t *testing.T, projectID string, zone string, name string) {
 	t.Logf("Launching new Compute Instance %s\n", name)
 
