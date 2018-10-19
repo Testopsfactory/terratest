@@ -423,27 +423,27 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error)
 	return instanceIDs, nil
 }
 
-// Return a collection of Instance structs from the given Instance Groups
+// Return a collection of Instance structs from the given Instance Group
 func (ig *ZonalInstanceGroup) GetInstances(t *testing.T, projectId string) []*Instance {
 	return getInstances(t, ig, projectId)
 }
 
-// Return a collection of Instance structs from the given Instance Groups
+// Return a collection of Instance structs from the given Instance Group
 func (ig *ZonalInstanceGroup) GetInstancesE(t *testing.T, projectId string) ([]*Instance, error) {
 	return getInstancesE(t, ig, projectId)
 }
 
-// Return a collection of Instance structs from the given Instance Groups
+// Return a collection of Instance structs from the given Instance Group
 func (ig *RegionalInstanceGroup) GetInstances(t *testing.T, projectId string) []*Instance {
 	return getInstances(t, ig, projectId)
 }
 
-// Return a collection of Instance structs from the given Instance Groups
+// Return a collection of Instance structs from the given Instance Group
 func (ig *RegionalInstanceGroup) GetInstancesE(t *testing.T, projectId string) ([]*Instance, error) {
 	return getInstancesE(t, ig, projectId)
 }
 
-// getInstancesE returns a collection of Instance structs from the given Instance Groups
+// getInstancesE returns a collection of Instance structs from the given Instance Group
 func getInstances(t *testing.T, ig InstanceGroup, projectId string) []*Instance {
 	instances, err := getInstancesE(t, ig, projectId)
 	if err != nil {
@@ -453,7 +453,7 @@ func getInstances(t *testing.T, ig InstanceGroup, projectId string) []*Instance 
 	return instances
 }
 
-// getInstancesE returns a collection of Instance structs from the given Instance Groups
+// getInstancesE returns a collection of Instance structs from the given Instance Group
 func getInstancesE(t *testing.T, ig InstanceGroup, projectId string) ([]*Instance, error) {
 	instanceIds, err := ig.GetInstanceIdsE(t)
 	if err != nil {

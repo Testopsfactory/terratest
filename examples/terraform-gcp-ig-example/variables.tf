@@ -17,7 +17,7 @@ variable "gcp_project_id" {
 }
 
 variable "gcp_region" {
-  description = "The region in which all GCP resources will be created. "
+  description = "The region in which all GCP resources will be created."
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -36,6 +36,6 @@ variable "cluster_size" {
 }
 
 variable "machine_type" {
-  description = "The Machine Type to use for the Cloud Instance."
+  description = "The Machine Type to use for the Compute Instances."
   default     = "f1-micro"
 }
