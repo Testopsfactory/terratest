@@ -9,6 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/gcp"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -34,9 +35,10 @@ func TestTerraformGcpExample(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"zone":          zone,
-			"instance_name": expectedInstanceName,
-			"bucket_name":   expectedBucketName,
+			"gcp_project_id": projectId,
+			"zone":           zone,
+			"instance_name":  expectedInstanceName,
+			"bucket_name":    expectedBucketName,
 		},
 	}
 
@@ -80,6 +82,69 @@ func TestTerraformGcpExample(t *testing.T) {
 
 		if actualText != expectedText {
 			return "", fmt.Errorf("Expeced GetLabelsForComputeInstanceE to return '%s' but got '%s'", expectedText, actualText)
+		}
+
+		return "", nil
+	})
+}
+
+// Create a Compute Instance, and attempt to SSH in and run a command.
+func TestSshAccessToComputeInstance(t *testing.T) {
+	t.Parallel()
+
+	// Setup values for our Terraform apply
+	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
+	randomValidGcpName := gcp.RandomValidGcpName()
+	zone := gcp.GetRandomZone(t, projectID, nil, nil)
+
+	terraformOptions := &terraform.Options{
+		// The path to where our Terraform code is located
+		TerraformDir: "../examples/terraform-gcp-example",
+
+		// Variables to pass to our Terraform code using -var options
+		Vars: map[string]interface{}{
+			"gcp_project_id": projectID,
+			"instance_name":  randomValidGcpName,
+			"bucket_name":    randomValidGcpName,
+			"zone":           zone,
+		},
+	}
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.InitAndApply(t, terraformOptions)
+
+	// Run `terraform output` to get the value of an output variable
+	publicIp := terraform.Output(t, terraformOptions, "public_ip")
+
+	// Attempt to SSH and execute the command
+	instance := gcp.FetchInstance(t, projectID, randomValidGcpName)
+
+	sampleText := "Hello World"
+	sshUsername := "terratest"
+
+	keyPair := ssh.GenerateRSAKeyPair(t, 2048)
+	instance.AddSshKey(t, sshUsername, keyPair.PublicKey)
+
+	host := ssh.Host{
+		Hostname:    publicIp,
+		SshKeyPair:  keyPair,
+		SshUserName: sshUsername,
+	}
+
+	maxRetries := 20
+	sleepBetweenRetries := 3 * time.Second
+
+	retry.DoWithRetry(t, "Attempting to SSH", maxRetries, sleepBetweenRetries, func() (string, error) {
+		output, err := ssh.CheckSshCommandE(t, host, fmt.Sprintf("echo '%s'", sampleText))
+		if err != nil {
+			return "", err
+		}
+
+		if strings.TrimSpace(sampleText) != strings.TrimSpace(output) {
+			return "", fmt.Errorf("Expected: %s. Got: %s\n", sampleText, output)
 		}
 
 		return "", nil

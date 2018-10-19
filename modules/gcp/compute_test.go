@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/magiconair/properties/assert"
 	"google.golang.org/api/compute/v1"
@@ -22,7 +20,7 @@ const DEFAULT_IMAGE_FAMILY_NAME = "family/ubuntu-1804-lts"
 func TestGetPublicIpOfInstance(t *testing.T) {
 	t.Parallel()
 
-	instanceName := uniqueGcpInstanceName()
+	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	zone := GetRandomZone(t, projectID, nil, nil)
 
@@ -68,7 +66,7 @@ func TestZoneUrlToZone(t *testing.T) {
 func TestGetAndSetLabels(t *testing.T) {
 	t.Parallel()
 
-	instanceName := uniqueGcpInstanceName()
+	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	zone := GetRandomZone(t, projectID, nil, nil)
 
@@ -99,16 +97,50 @@ func TestGetAndSetLabels(t *testing.T) {
 	})
 }
 
-// Helper function that returns a random, valid name for GCP Compute Instances. Note that GCP requires Instance names to
-// use lowercase letters only.
-func uniqueGcpInstanceName() string {
-	id := strings.ToLower(random.UniqueId())
-	instanceName := fmt.Sprintf("terratest-%s", id)
+// Set custom metadata on a Compute Instance, and then verify it was set as expected
+func TestGetAndSetMetadata(t *testing.T) {
+	t.Parallel()
 
-	return instanceName
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+	instanceName := RandomValidGcpName()
+	zone := GetRandomZone(t, projectID, nil, nil)
+
+	// Create a new Compute Instance
+	createComputeInstance(t, projectID, zone, instanceName)
+	defer deleteComputeInstance(t, projectID, zone, instanceName)
+
+	// Set the metadata
+	instance := FetchInstance(t, projectID, instanceName)
+
+	metadataToWrite := map[string]string{
+		"foo": "bar",
+	}
+	instance.SetMetadata(t, metadataToWrite)
+
+	// Now attempt to read the metadata we just set
+	maxRetries := 10
+	sleepBetweenRetries := 3 * time.Second
+
+	retry.DoWithRetry(t, "Read newly set metadata", maxRetries, sleepBetweenRetries, func() (string, error) {
+		instance := FetchInstance(t, projectID, instanceName)
+		metadataFromRead := instance.GetMetadata(t)
+		for _, metadataItem := range metadataFromRead {
+			for key, val := range metadataToWrite {
+				if metadataItem.Key == key && *metadataItem.Value == val {
+					return "", nil
+				}
+			}
+		}
+
+		fmt.Printf("Metadata to write: %+v\nMetadata from read: %+v\n", metadataToWrite, metadataFromRead)
+
+		return "", fmt.Errorf("Metadata that was written was not found in metadata that was read. Retrying.\n")
+	})
 }
 
-// Helper function to launch a Compute Instance.
+// Helper function to launch a Compute Instance. This function is useful for quickly iterating on automated tests. But
+// if you're writing a test that resembles real-world code that Terratest users may write, you should create a Compute
+// Instance using a Terraform apply, similar to the tests in /test.
 func createComputeInstance(t *testing.T, projectID string, zone string, name string) {
 	t.Logf("Launching new Compute Instance %s\n", name)
 

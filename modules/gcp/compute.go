@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -224,6 +225,88 @@ func (i *Instance) SetLabelsE(t *testing.T, labels map[string]string) error {
 	return nil
 }
 
+// GetMetadata gets the given Compute Instance's metadata
+func (i *Instance) GetMetadata(t *testing.T) []*compute.MetadataItems {
+	return i.Metadata.Items
+}
+
+// SetMetadata sets the given Compute Instance's metadata
+func (i *Instance) SetMetadata(t *testing.T, metadata map[string]string) {
+	err := i.SetMetadataE(t, metadata)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// SetLabelsE adds the given metadata map to the existing metadata of the given Compute Instance.
+func (i *Instance) SetMetadataE(t *testing.T, metadata map[string]string) error {
+	logger.Logf(t, "Adding metadata to instance %s in zone %s", i.Name, i.Zone)
+
+	ctx := context.Background()
+	service, err := NewInstancesServiceE(t)
+	if err != nil {
+		return err
+	}
+
+	metadataItems := newMetadata(t, i.Metadata, metadata)
+	req := service.SetMetadata(i.projectID, i.GetZone(t), i.Name, metadataItems)
+	if _, err := req.Context(ctx).Do(); err != nil {
+		return fmt.Errorf("Instances.SetMetadata(%s) got error: %v", i.Name, err)
+	}
+
+	return nil
+}
+
+// newMetadata takes in a Compute Instance's existing metadata plus a new set of key-value pairs and returns an updated
+// metadata object.
+func newMetadata(t *testing.T, oldMetadata *compute.Metadata, kvs map[string]string) *compute.Metadata {
+	items := []*compute.MetadataItems{}
+
+	for key, val := range kvs {
+		item := &compute.MetadataItems{
+			Key:   key,
+			Value: &val,
+		}
+
+		items = append(oldMetadata.Items, item)
+	}
+
+	newMetadata := &compute.Metadata{
+		Fingerprint: oldMetadata.Fingerprint,
+		Items:       items,
+	}
+
+	return newMetadata
+}
+
+// Add the given public SSH key to the Compute Instance. Users can SSH in with the given username.
+func (i *Instance) AddSshKey(t *testing.T, username string, publicKey string) {
+	err := i.AddSshKeyE(t, username, publicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Add the given public SSH key to the Compute Instance. Users can SSH in with the given username.
+func (i *Instance) AddSshKeyE(t *testing.T, username string, publicKey string) error {
+	logger.Logf(t, "Adding SSH Key to Compute Instance %s for username %s\n", i.Name, username)
+
+	// We represent the key in the format required per GCP docs (https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys)
+	publicKeyFormatted := strings.TrimSpace(publicKey)
+	sshKeyFormatted := fmt.Sprintf("%s:%s %s", username, publicKeyFormatted, username)
+
+	metadata := map[string]string{
+		"ssh-keys": sshKeyFormatted,
+	}
+
+	err := i.SetMetadataE(t, metadata)
+	if err != nil {
+		return fmt.Errorf("Failed to add SSH key to Compute Instance: %s", err)
+	}
+
+	return nil
+}
+
 // DeleteImage deletes the given Compute Image.
 func (i *Image) DeleteImage(t *testing.T) {
 	err := i.DeleteImageE(t)
@@ -387,7 +470,7 @@ func getRandomInstanceE(t *testing.T, ig InstanceGroup, name string, region stri
 	return instance, nil
 }
 
-// NewComputeService creates a new Compute service, which is used to make GCP API calls.
+// NewComputeService creates a new Compute service, which is used to make GCE API calls.
 func NewComputeService(t *testing.T) *compute.Service {
 	client, err := NewComputeServiceE(t)
 	if err != nil {
@@ -396,7 +479,7 @@ func NewComputeService(t *testing.T) *compute.Service {
 	return client
 }
 
-// NewComputeServiceE creates a new Compute service, which is used to make GCP API calls.
+// NewComputeServiceE creates a new Compute service, which is used to make GCE API calls.
 func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	ctx := context.Background()
 
@@ -411,4 +494,31 @@ func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	}
 
 	return service, nil
+}
+
+// NewInstancesService creates a new InstancesService service, which is used to make a subset of GCE API calls.
+func NewInstancesService(t *testing.T) *compute.InstancesService {
+	client, err := NewInstancesServiceE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return client
+}
+
+// NewInstancesServiceE creates a new InstancesService service, which is used to make a subset of GCE API calls.
+func NewInstancesServiceE(t *testing.T) (*compute.InstancesService, error) {
+	service, err := NewComputeServiceE(t)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get new Instances Service\n")
+	}
+
+	return service.Instances, nil
+}
+
+// Return a random, valid name for GCP resources. Many resources in GCP requires lowercase letters only.
+func RandomValidGcpName() string {
+	id := strings.ToLower(random.UniqueId())
+	instanceName := fmt.Sprintf("terratest-%s", id)
+
+	return instanceName
 }
