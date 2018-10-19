@@ -8,10 +8,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/gcp"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 	t.Parallel()
+
+	exampleDir := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-gcp-ig-example")
 
 	// Setup values for our Terraform apply
 	projectId := gcp.GetGoogleProjectIDFromEnvVar(t)
@@ -21,7 +24,7 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code instances located
-		TerraformDir: "../examples/terraform-gcp-ig-example",
+		TerraformDir: exampleDir,
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
