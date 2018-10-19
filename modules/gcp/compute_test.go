@@ -20,7 +20,7 @@ const DEFAULT_IMAGE_FAMILY_NAME = "family/ubuntu-1804-lts"
 func TestGetPublicIpOfInstance(t *testing.T) {
 	t.Parallel()
 
-	instanceName := UniqueGcpInstanceName()
+	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	zone := GetRandomZone(t, projectID, nil, nil)
 
@@ -66,7 +66,7 @@ func TestZoneUrlToZone(t *testing.T) {
 func TestGetAndSetLabels(t *testing.T) {
 	t.Parallel()
 
-	instanceName := UniqueGcpInstanceName()
+	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	zone := GetRandomZone(t, projectID, nil, nil)
 
@@ -102,7 +102,7 @@ func TestGetAndSetMetadata(t *testing.T) {
 	t.Parallel()
 
 	projectID := GetGoogleProjectIDFromEnvVar(t)
-	instanceName := UniqueGcpInstanceName()
+	instanceName := RandomValidGcpName()
 	zone := GetRandomZone(t, projectID, nil, nil)
 
 	// Create a new Compute Instance

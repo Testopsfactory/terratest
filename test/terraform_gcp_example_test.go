@@ -94,7 +94,7 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 
 	// Setup values for our Terraform apply
 	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
-	instanceName := gcp.UniqueGcpInstanceName()
+	randomValidGcpName := gcp.RandomValidGcpName()
 	zone := gcp.GetRandomZone(t, projectID, nil, nil)
 
 	terraformOptions := &terraform.Options{
@@ -104,7 +104,8 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
 			"gcp_project_id": projectID,
-			"instance_name":  instanceName,
+			"instance_name":  randomValidGcpName,
+			"bucket_name":    randomValidGcpName,
 			"zone":           zone,
 		},
 	}
@@ -119,7 +120,7 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 	publicIp := terraform.Output(t, terraformOptions, "public_ip")
 
 	// Attempt to SSH and execute the command
-	instance := gcp.FetchInstance(t, projectID, instanceName)
+	instance := gcp.FetchInstance(t, projectID, randomValidGcpName)
 
 	sampleText := "Hello World"
 	sshUsername := "terratest"

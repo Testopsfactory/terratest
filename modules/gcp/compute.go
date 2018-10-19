@@ -515,8 +515,8 @@ func NewInstancesServiceE(t *testing.T) (*compute.InstancesService, error) {
 	return service.Instances, nil
 }
 
-// Return a random, valid name for GCP Compute Instances. Note that GCP requires Instance names to use lowercase letters only.
-func UniqueGcpInstanceName() string {
+// Return a random, valid name for GCP resources. Many resources in GCP requires lowercase letters only.
+func RandomValidGcpName() string {
 	id := strings.ToLower(random.UniqueId())
 	instanceName := fmt.Sprintf("terratest-%s", id)
 
