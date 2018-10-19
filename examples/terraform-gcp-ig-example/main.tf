@@ -6,11 +6,11 @@
 # Create a Regional Managed Instance Group
 resource "google_compute_region_instance_group_manager" "example" {
   project = "${var.gcp_project_id}"
-  region = "${var.gcp_region}"
+  region  = "${var.gcp_region}"
 
-  name = "${var.cluster_name}-ig"
+  name               = "${var.cluster_name}-ig"
   base_instance_name = "${var.cluster_name}"
-  instance_template = "${google_compute_instance_template.example.self_link}"
+  instance_template  = "${google_compute_instance_template.example.self_link}"
 
   target_size = "${var.cluster_size}"
 }
@@ -19,23 +19,24 @@ resource "google_compute_region_instance_group_manager" "example" {
 resource "google_compute_instance_template" "example" {
   project = "${var.gcp_project_id}"
 
-  name_prefix = "${var.cluster_name}"
+  name_prefix  = "${var.cluster_name}"
   machine_type = "${var.machine_type}"
 
   scheduling {
-    automatic_restart = true
+    automatic_restart   = true
     on_host_maintenance = "MIGRATE"
-    preemptible = false
+    preemptible         = false
   }
 
   disk {
-    boot = true
-    auto_delete = true
+    boot         = true
+    auto_delete  = true
     source_image = "ubuntu-os-cloud/ubuntu-1604-lts"
   }
 
   network_interface {
     network = "default"
+
     # The presence of this property assigns a public IP address to each Compute Instance. We intentionally leave it
     # blank so that an external IP address is selected automatically.
     access_config {}

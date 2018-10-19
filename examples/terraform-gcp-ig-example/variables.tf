@@ -27,12 +27,12 @@ variable "gcp_region" {
 
 variable "cluster_name" {
   description = "The unique identifier for the resources created by this Terraform configuration."
-  default = "terratest-example"
+  default     = "terratest-example"
 }
 
 variable "cluster_size" {
   description = "The number of Compute Instances to run in the Managed Instance Group."
-  default = 3
+  default     = 3
 }
 
 variable "machine_type" {
