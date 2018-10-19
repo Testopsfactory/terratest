@@ -149,4 +149,13 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 
 		return "", nil
 	})
+
+	// This test was repeatedly failing with the following error during the Terraform destroy portion of the test:
+	//
+	// * google_compute_instance.example (destroy): 1 error(s) occurred:
+	// * google_compute_instance.example: The resource 'projects/terratest-214610/zones/us-east1-b/instances/terratest-gcp-example-tx6omj' was not found
+	//
+	// I suspect the problem was that Terraform was attempting to destroy the Compute Instance too soon after creating it,
+	// so put a cowardly, arbitrary sleep to mitigate.
+	time.Sleep(45 * time.Second)
 }

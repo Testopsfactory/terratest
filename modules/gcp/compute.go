@@ -424,8 +424,28 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error)
 }
 
 // Return a collection of Instance structs from the given Instance Groups
+func (ig *ZonalInstanceGroup) GetInstances(t *testing.T, projectId string) []*Instance {
+	return getInstances(t, ig, projectId)
+}
+
+// Return a collection of Instance structs from the given Instance Groups
+func (ig *ZonalInstanceGroup) GetInstancesE(t *testing.T, projectId string) ([]*Instance, error) {
+	return getInstancesE(t, ig, projectId)
+}
+
+// Return a collection of Instance structs from the given Instance Groups
 func (ig *RegionalInstanceGroup) GetInstances(t *testing.T, projectId string) []*Instance {
-	instances, err := ig.GetInstancesE(t, projectId)
+	return getInstances(t, ig, projectId)
+}
+
+// Return a collection of Instance structs from the given Instance Groups
+func (ig *RegionalInstanceGroup) GetInstancesE(t *testing.T, projectId string) ([]*Instance, error) {
+	return getInstancesE(t, ig, projectId)
+}
+
+// getInstancesE returns a collection of Instance structs from the given Instance Groups
+func getInstances(t *testing.T, ig InstanceGroup, projectId string) []*Instance {
+	instances, err := getInstancesE(t, ig, projectId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -433,8 +453,8 @@ func (ig *RegionalInstanceGroup) GetInstances(t *testing.T, projectId string) []
 	return instances
 }
 
-// Return a collection of Instance structs from the given Instance Groups
-func (ig *RegionalInstanceGroup) GetInstancesE(t *testing.T, projectId string) ([]*Instance, error) {
+// getInstancesE returns a collection of Instance structs from the given Instance Groups
+func getInstancesE(t *testing.T, ig InstanceGroup, projectId string) ([]*Instance, error) {
 	instanceIds, err := ig.GetInstanceIdsE(t)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get Instance Group IDs: %s", err)
@@ -454,9 +474,29 @@ func (ig *RegionalInstanceGroup) GetInstancesE(t *testing.T, projectId string) (
 	return instances, nil
 }
 
-// Return a slice of the public IPs from the given Instance Group
+// GetPublicIps returns a slice of the public IPs from the given Instance Group
+func (ig *ZonalInstanceGroup) GetPublicIps(t *testing.T, projectId string) []string {
+	return getPublicIps(t, ig, projectId)
+}
+
+// GetPublicIpsE returns a slice of the public IPs from the given Instance Group
+func (ig *ZonalInstanceGroup) GetPublicIpsE(t *testing.T, projectId string) ([]string, error) {
+	return getPublicIpsE(t, ig, projectId)
+}
+
+// GetPublicIps returns a slice of the public IPs from the given Instance Group
 func (ig *RegionalInstanceGroup) GetPublicIps(t *testing.T, projectId string) []string {
-	ips, err := ig.GetPublicIpsE(t, projectId)
+	return getPublicIps(t, ig, projectId)
+}
+
+// GetPublicIpsE returns a slice of the public IPs from the given Instance Group
+func (ig *RegionalInstanceGroup) GetPublicIpsE(t *testing.T, projectId string) ([]string, error) {
+	return getPublicIpsE(t, ig, projectId)
+}
+
+// getPublicIps a slice of the public IPs from the given Instance Group
+func getPublicIps(t *testing.T, ig InstanceGroup, projectId string) []string {
+	ips, err := getPublicIpsE(t, ig, projectId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -464,9 +504,9 @@ func (ig *RegionalInstanceGroup) GetPublicIps(t *testing.T, projectId string) []
 	return ips
 }
 
-// Return a slice of the public IPs from the given Instance Group
-func (ig *RegionalInstanceGroup) GetPublicIpsE(t *testing.T, projectId string) ([]string, error) {
-	instances, err := ig.GetInstancesE(t, projectId)
+// getPublicIpsE a slice of the public IPs from the given Instance Group
+func getPublicIpsE(t *testing.T, ig InstanceGroup, projectId string) ([]string, error) {
+	instances, err := getInstancesE(t, ig, projectId)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get Compute Instances from Instance Group: %s", err)
 	}
