@@ -34,6 +34,8 @@ func BuildArtifactsE(t *testing.T, artifactNameToOptions map[string]*Options) (m
 	errorsOccurred := []error{}
 
 	for artifactName, curOptions := range artifactNameToOptions {
+		// The following is necessary to make sure testCase's values don't
+		// get updated due to concurrency within the scope of t.Run(..) below
 		artifactName := artifactName
 		curOptions := curOptions
 		go func() {

@@ -54,13 +54,12 @@ func TestPackerBasicExample(t *testing.T) {
 
 func TestPackerMultipleConcurrentAmis(t *testing.T) {
 	t.Parallel()
-	i := 0
 
 	// Build a map of 3 randomId <-> packer.Options, in 3 random AWS Regions
 	// then build all of these AMIs in parallel and make sure that there are
 	// no errors.
 	var identifierToOptions = map[string]*packer.Options{}
-	for i < 3 {
+	for i := 0; i < 3; i++ {
 		// Pick a random AWS region to test in. This helps ensure your code works in all regions.
 		awsRegion := terratest_aws.GetRandomRegion(t, nil, nil)
 
@@ -70,7 +69,8 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 
 			// Variables to pass to our Packer build using -var options
 			Vars: map[string]string{
-				"aws_region": awsRegion,
+				"aws_region":    awsRegion,
+				"ami_base_name": random.UniqueId(),
 			},
 
 			// Only build the AWS AMI
@@ -78,8 +78,6 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 		}
 
 		identifierToOptions[random.UniqueId()] = packerOptions
-
-		i += 1
 	}
 
 	resultMap, err := packer.BuildArtifactsE(t, identifierToOptions)
