@@ -12,7 +12,7 @@
   },
   "builders": [{
     "type": "amazon-ebs",
-    "ami_name": "terratest-packer-example-{{isotime | clean_ami_name}}",
+    "ami_name": "terratest-packer-example-{{user `aws_region`}}-{{isotime | clean_ami_name}}",
     "ami_description": "An example of how to create a custom AMI on top of Ubuntu",
     "instance_type": "t2.micro",
     "region": "{{user `aws_region`}}",

@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sync"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/customerrors"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
 )
@@ -17,6 +19,38 @@ type Options struct {
 	Vars     map[string]string // The custom vars to pass when running the build command
 	Only     string            // If specified, only run the build of this name
 	Env      map[string]string // Custom environment variables to set when running Packer
+}
+
+// BuildArtifactsE can take a map of identifierName <-> Options and then parallelize
+// the packer builds. Once all the packer builds have completed a map of identifierName <-> generated identifier
+// is returned. If any artifact fails to build, the errors are accumulated and returned
+// as a MultiError. The identifierName can be anything you want, it is only used so that you can
+// know which generated artifact is which.
+func BuildArtifactsE(t *testing.T, artifactNameToOptions map[string]*Options) (map[string]string, error) {
+	var waitForArtifacts sync.WaitGroup
+	waitForArtifacts.Add(len(artifactNameToOptions))
+
+	var artifactNameToArtifactId = map[string]string{}
+	errorsOccurred := []error{}
+
+	for artifactName, curOptions := range artifactNameToOptions {
+		artifactName := artifactName
+		curOptions := curOptions
+		go func() {
+			defer waitForArtifacts.Done()
+			artifactId, err := BuildArtifactE(t, curOptions)
+
+			if err != nil {
+				errorsOccurred = append(errorsOccurred, err)
+			} else {
+				artifactNameToArtifactId[artifactName] = artifactId
+			}
+		}()
+	}
+
+	waitForArtifacts.Wait()
+
+	return artifactNameToArtifactId, customerrors.NewMultiError(errorsOccurred...)
 }
 
 // BuildArtifact builds the given Packer template and return the generated Artifact ID.
