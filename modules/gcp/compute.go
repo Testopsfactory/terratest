@@ -423,6 +423,64 @@ func (ig *RegionalInstanceGroup) GetInstanceIdsE(t *testing.T) ([]string, error)
 	return instanceIDs, nil
 }
 
+// Return a collection of Instance structs from the given Instance Groups
+func (ig *RegionalInstanceGroup) GetInstances(t *testing.T, projectId string) []*Instance {
+	instances, err := ig.GetInstancesE(t, projectId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return instances
+}
+
+// Return a collection of Instance structs from the given Instance Groups
+func (ig *RegionalInstanceGroup) GetInstancesE(t *testing.T, projectId string) ([]*Instance, error) {
+	instanceIds, err := ig.GetInstanceIdsE(t)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get Instance Group IDs: %s", err)
+	}
+
+	var instances []*Instance
+
+	for _, instanceId := range instanceIds {
+		instance, err := FetchInstanceE(t, projectId, instanceId)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get Instance: %s", err)
+		}
+
+		instances = append(instances, instance)
+	}
+
+	return instances, nil
+}
+
+// Return a slice of the public IPs from the given Instance Group
+func (ig *RegionalInstanceGroup) GetPublicIps(t *testing.T, projectId string) []string {
+	ips, err := ig.GetPublicIpsE(t, projectId)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return ips
+}
+
+// Return a slice of the public IPs from the given Instance Group
+func (ig *RegionalInstanceGroup) GetPublicIpsE(t *testing.T, projectId string) ([]string, error) {
+	instances, err := ig.GetInstancesE(t, projectId)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get Compute Instances from Instance Group: %s", err)
+	}
+
+	var ips []string
+
+	for _, instance := range instances {
+		ip := instance.GetPublicIp(t)
+		ips = append(ips, ip)
+	}
+
+	return ips, nil
+}
+
 // getRandomInstance returns a randomly selected Instance from the Regional Instance Group
 func (ig *ZonalInstanceGroup) GetRandomInstance(t *testing.T) *Instance {
 	return getRandomInstance(t, ig, ig.Name, ig.Region, ig.Size, ig.projectID)
