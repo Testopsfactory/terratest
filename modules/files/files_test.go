@@ -52,6 +52,38 @@ func TestCopyFolderContentsWithHiddenFilesFilter(t *testing.T) {
 	assertDirectoriesEqual(t, expectedDir, tmpDir)
 }
 
+func TestCopyFolderContentsWithSymLinks(t *testing.T) {
+	t.Parallel()
+
+	originalDir := filepath.Join(copyFolderContentsFixtureRoot, "symlinks")
+	expectedDir := filepath.Join(copyFolderContentsFixtureRoot, "symlinks")
+	tmpDir, err := ioutil.TempDir("", "TestCopyFolderContentsWithFilter")
+	assert.NoError(t, err)
+
+	err = CopyFolderContentsWithFilter(originalDir, tmpDir, func(path string) bool {
+		return !PathContainsHiddenFileOrFolder(path)
+	})
+	assert.NoError(t, err)
+
+	assertDirectoriesEqual(t, expectedDir, tmpDir)
+}
+
+func TestCopyFolderContentsWithBrokenSymLinks(t *testing.T) {
+	t.Parallel()
+
+	originalDir := filepath.Join(copyFolderContentsFixtureRoot, "symlinks-broken")
+	expectedDir := filepath.Join(copyFolderContentsFixtureRoot, "symlinks-broken")
+	tmpDir, err := ioutil.TempDir("", "TestCopyFolderContentsWithFilter")
+	assert.NoError(t, err)
+
+	err = CopyFolderContentsWithFilter(originalDir, tmpDir, func(path string) bool {
+		return !PathContainsHiddenFileOrFolder(path)
+	})
+	assert.NoError(t, err)
+
+	assertDirectoriesEqual(t, expectedDir, tmpDir)
+}
+
 func TestCopyTerraformFolderToTemp(t *testing.T) {
 	t.Parallel()
 
