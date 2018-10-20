@@ -78,6 +78,11 @@ func CopyFolderContentsWithFilter(source string, destination string, filter func
 			if err := CopyFolderContentsWithFilter(src, dest, filter); err != nil {
 				return err
 			}
+
+		} else if isSymLink(file) {
+			if err := copySymLink(src, dest); err != nil {
+				return err
+			}
 		} else {
 			if err := CopyFile(src, dest); err != nil {
 				return err
@@ -123,4 +128,24 @@ func WriteFileWithSamePermissions(source string, destination string, contents []
 	}
 
 	return ioutil.WriteFile(destination, contents, fileInfo.Mode())
+}
+
+// isSymLink returns true if the given file is a symbolic link
+func isSymLink(file os.FileInfo) bool {
+	return file.Mode()&os.ModeSymlink != 0
+}
+
+// copySymLink copies the source symbolic link to the given destinationPath. This creates a new symbolic link in the destinationPath.
+func copySymLink(source string, destination string) error {
+	symlinkPath, err := os.Readlink(source)
+	if err != nil {
+		return err
+	}
+
+	err = os.Symlink(symlinkPath, destination)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
