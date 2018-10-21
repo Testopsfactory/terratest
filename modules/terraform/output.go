@@ -91,6 +91,47 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 	return list, nil
 }
 
+// OutputMap calls terraform output for the given variable and returns its value as a map.
+// If the output value is not a map type, then it fails the test.
+func OutputMap(t *testing.T, options *Options, key string) map[string]string {
+	out, err := OutputMapE(t, options, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+// OutputMapE calls terraform output for the given variable and returns its value as a map.
+// If the output value is not a map type, then it returns an error.
+func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, error) {
+	out, err := RunTerraformCommandE(t, options, "output", "-no-color", "-json", key)
+	if err != nil {
+		return nil, err
+	}
+
+	outputMap := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
+		return nil, err
+	}
+
+	value, containsValue := outputMap["value"]
+	if !containsValue {
+		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
+	}
+
+	valueMap, ok := value.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Output value %q is not a map", value)
+	}
+
+	resultMap := make(map[string]string)
+	for k, v := range valueMap {
+		resultMap[k] = fmt.Sprintf("%v", v)
+	}
+
+	return resultMap, nil
+}
+
 // EmptyOutput is an error that occurs when an output is empty.
 type EmptyOutput string
 

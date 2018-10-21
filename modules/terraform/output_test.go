@@ -49,3 +49,50 @@ func TestOutputNotListError(t *testing.T) {
 
 	assert.Error(t, err)
 }
+
+func TestOutputMap(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+	out := OutputMap(t, options, "mogwai")
+
+	t.Log(out)
+
+	expectedLen := 4
+	expectedMap := map[string]string{
+		"guitar_1": "Stuart Braithwaite",
+		"guitar_2": "Barry Burns",
+		"bass":     "Dominic Aitchison",
+		"drums":    "Martin Bulloch",
+	}
+
+	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	assert.Equal(t, expectedMap, out, "Map %q should match %q", expectedMap, out)
+}
+
+func TestOutputNotMapError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+	_, err = OutputMapE(t, options, "not_a_map")
+
+	assert.Error(t, err)
+}
