@@ -98,6 +98,8 @@ func TestIsEmpty(t *testing.T) {
 // Test that removeDedentedTestResultMarkers remove items that are dedented from the current level, assuming the stack
 // is ordered by indent level.
 func TestRemoveDedentedTestResultMarkers(t *testing.T) {
+	t.Parallel()
+
 	originalMarkers := createTestStack()
 	newMarkers := originalMarkers.removeDedentedTestResultMarkers(2)
 	assert.Equal(t, len(newMarkers), 1)
@@ -106,6 +108,8 @@ func TestRemoveDedentedTestResultMarkers(t *testing.T) {
 
 // Test that removeDedentedTestResultMarkers handles empty stack.
 func TestRemoveDedentedTestResultMarkersEmpty(t *testing.T) {
+	t.Parallel()
+
 	originalMarkers := TestResultMarkerStack{}
 	newMarkers := originalMarkers.removeDedentedTestResultMarkers(2)
 	assert.Equal(t, len(newMarkers), 0)
@@ -113,6 +117,8 @@ func TestRemoveDedentedTestResultMarkersEmpty(t *testing.T) {
 
 // Test that removeDedentedTestResultMarkers handles removing everything
 func TestRemoveDedentedTestResultMarkersAll(t *testing.T) {
+	t.Parallel()
+
 	originalMarkers := TestResultMarkerStack{}
 	newMarkers := originalMarkers.removeDedentedTestResultMarkers(-1)
 	assert.Equal(t, len(newMarkers), 0)
