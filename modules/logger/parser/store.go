@@ -5,70 +5,76 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/gruntwork-cli/errors"
+	"github.com/gruntwork-io/gruntwork-cli/files"
 	junitformatter "github.com/jstemmer/go-junit-report/formatter"
 	junitparser "github.com/jstemmer/go-junit-report/parser"
 	"github.com/sirupsen/logrus"
 )
 
 type LogWriter struct {
-	// Represents an open channel to a test writer for given test indexed by name
-	lookup    map[string]chan string
+	// Represents an open file to a log corresponding to a test (key = test name)
+	lookup    map[string]*os.File
 	outputDir string
 }
 
-// LogWriter.getOrCreateChannel will get the corresponding channel to a log writer for the provided test name, or create
-// a new channel and spawn the corresponding log writer.
-func (logWriter LogWriter) getOrCreateChannel(logger *logrus.Logger, testName string) chan<- string {
-	writerChan, hasKey := logWriter.lookup[testName]
-	if !hasKey {
-		writerChan = make(chan string)
-		logWriter.lookup[testName] = writerChan
-		go collectLogs(logger, logWriter.outputDir, testName, writerChan)
+// LogWriter.getOrCreateFile will get the corresponding file to a log for the provided test name, or create a new file.
+func (logWriter LogWriter) getOrCreateFile(logger *logrus.Logger, testName string) (*os.File, error) {
+	file, hasKey := logWriter.lookup[testName]
+	if hasKey {
+		return file, nil
 	}
-	return writerChan
+
+	filename := filepath.Join(logWriter.outputDir, testName+".log")
+	file, err := createLogFile(logger, filename)
+	if err != nil {
+		return nil, errors.WithStackTrace(err)
+	}
+	logWriter.lookup[testName] = file
+	return file, nil
 }
 
 // LogWriter.closeChannels closes all the channels in the lookup dictionary
-func (logWriter LogWriter) closeChannels(logger *logrus.Logger) {
-	logger.Infof("Closing all the channels in log writer")
-	for _, channel := range logWriter.lookup {
-		close(channel)
+func (logWriter LogWriter) closeFiles(logger *logrus.Logger) {
+	logger.Infof("Closing all the files in log writer")
+	for testName, file := range logWriter.lookup {
+		err := file.Close()
+		if err != nil {
+			logger.Errorf("Error closing log file for test %s: %s", testName, err)
+		}
 	}
 }
 
-// collectLogs will read data off of a channel and write to a log file named as outputDir/testName
-// Note that this will drain the channel when we encounter errors, to ensure the upstream functions don't crash.
-func collectLogs(logger *logrus.Logger, outputDir string, testName string, writerChan <-chan string) {
-	logger.Infof("Spawned log writer for test %s", testName)
-	filename := filepath.Join(outputDir, testName+".log")
-	logger.Infof("Storing logs for test %s to %s", testName, filename)
+// writeLog will write the provided text to the corresponding log file for the provided test.
+func (logWriter LogWriter) writeLog(logger *logrus.Logger, testName string, text string) error {
+	file, err := logWriter.getOrCreateFile(logger, testName)
+	if err != nil {
+		logger.Errorf("Error retrieving log for test: %s", testName)
+		return errors.WithStackTrace(err)
+	}
+	_, err = file.WriteString(text + "\n")
+	if err != nil {
+		logger.Errorf("Error (%s) writing log entry: %s", err, text)
+		return errors.WithStackTrace(err)
+	}
+	file.Sync()
+	return nil
+}
 
+// createLogFile will create and return the open file handle for the file at provided filename, creating all directories
+// in the process.
+func createLogFile(logger *logrus.Logger, filename string) (*os.File, error) {
+	// We extract and create the directory for interpolated filename, to handle nested tests where testname contains '/'
 	dirName := filepath.Dir(filename)
 	err := ensureDirectoryExists(logger, dirName)
 	if err != nil {
-		logger.Errorf("Error making directory for test %s", testName)
-		// Since we don't have a file, simply drain the channel for this log
-		drain(writerChan)
-		return
+		return nil, errors.WithStackTrace(err)
 	}
-
-	f, err := os.Create(filename)
+	file, err := os.Create(filename)
 	if err != nil {
-		logger.Errorf("Error making log file for test %s", testName)
-		// Since we don't have a file, simply drain the channel for this log
-		drain(writerChan)
-		return
+		return nil, errors.WithStackTrace(err)
 	}
-	defer f.Close()
-
-	for data := range writerChan {
-		_, err := f.WriteString(data + "\n")
-		if err != nil {
-			logger.Errorf("Error (%s) writing log entry: %s", err, data)
-		}
-	}
-	logger.Infof("Channel closed for log writer of test %s", testName)
+	return file, nil
 }
 
 // ensureDirectoryExists will only attempt to create the directory if it does not exist
@@ -81,14 +87,9 @@ func ensureDirectoryExists(logger *logrus.Logger, dirName string) error {
 	err := os.MkdirAll(dirName, os.ModePerm)
 	if err != nil {
 		logger.Errorf("Error making directory %s: %s", dirName, err)
+		return errors.WithStackTrace(err)
 	}
-	return err
-}
-
-// drain simply drains the channel until closed
-func drain(channel <-chan string) {
-	for _ = range channel {
-	}
+	return nil
 }
 
 // storeJunitReport takes a parsed Junit report and stores it as report.xml in the output directory

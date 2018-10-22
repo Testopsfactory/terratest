@@ -4,6 +4,7 @@ package parser
 import (
 	"bufio"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -14,19 +15,19 @@ import (
 
 // SpawnParsers will spawn the log parser and junit report parsers off of a single reader.
 func SpawnParsers(logger *logrus.Logger, reader io.Reader, outputDir string) {
-	pr, pw := io.Pipe()
-	tee := io.TeeReader(reader, pw)
+	forked_reader, forked_writer := io.Pipe()
+	teed_reader := io.TeeReader(reader, forked_writer)
 	var waitForParsers sync.WaitGroup
 	waitForParsers.Add(2)
 	go func() {
 		// close pipe writer, because this section drains the tee reader indicating reader is done draining
-		defer pw.Close()
+		defer forked_writer.Close()
 		defer waitForParsers.Done()
-		parseAndStoreTestOutput(logger, tee, outputDir)
+		parseAndStoreTestOutput(logger, teed_reader, outputDir)
 	}()
 	go func() {
 		defer waitForParsers.Done()
-		report, err := junitparser.Parse(pr, "")
+		report, err := junitparser.Parse(forked_reader, "")
 		if err == nil {
 			storeJunitReport(logger, outputDir, report)
 		} else {
@@ -92,12 +93,6 @@ func isPanicLine(text string) bool {
 	return regexPanic.MatchString(text)
 }
 
-// writeLog will find the corresponding log collector for the test from the LogWriter and emit the log to that channel.
-func writeLog(logger *logrus.Logger, logWriter *LogWriter, testName string, log string) {
-	writerChan := logWriter.getOrCreateChannel(logger, testName)
-	writerChan <- log
-}
-
 // parseAndStoreTestOutput will take test log entries from terratest and aggregate the output by test. Takes advantage
 // of the fact that terratest logs are prefixed by the test name. This will store the broken out logs into files under
 // the outputDir, named by test name.
@@ -109,10 +104,10 @@ func parseAndStoreTestOutput(
 	outputDir string,
 ) {
 	logWriter := LogWriter{
-		lookup:    make(map[string]chan string),
+		lookup:    make(map[string]*os.File),
 		outputDir: outputDir,
 	}
-	defer logWriter.closeChannels(logger)
+	defer logWriter.closeFiles(logger)
 
 	// Track some state that persists across lines
 	testResultMarkers := TestResultMarkerStack{}
@@ -130,10 +125,10 @@ func parseAndStoreTestOutput(
 
 		// Handle each possible category of test lines
 		if isSummaryLine(data) {
-			writeLog(logger, &logWriter, "summary", data)
+			logWriter.writeLog(logger, "summary", data)
 		} else if isStatusLine(data) {
 			testName := getTestNameFromStatusLine(data)
-			writeLog(logger, &logWriter, testName, data)
+			logWriter.writeLog(logger, testName, data)
 		} else if strings.HasPrefix(data, "Test") {
 			// Heuristic: `go test` will only execute test functions named `Test.*`, so we assume any line prefixed
 			// with `Test` is a test output for a named test. Also assume that test output will be space delimeted and
@@ -141,22 +136,22 @@ func parseAndStoreTestOutput(
 			// This must be modified when `logger.DoLog` changes.
 			vals := strings.Split(data, " ")
 			testName := vals[0]
-			writeLog(logger, &logWriter, testName, data)
+			logWriter.writeLog(logger, testName, data)
 			previousTestName = testName
 		} else if isIndented && previousTestName != "summary" {
 			// In a test result block, so collect the line into all the test results we have seen so far.
 			// Note that previousTestName would only be set to summary if we saw a panic line.
 			for _, marker := range testResultMarkers {
-				writeLog(logger, &logWriter, marker.TestName, data)
+				logWriter.writeLog(logger, marker.TestName, data)
 			}
 		} else if isPanicLine(data) {
 			// When panic, we want all subsequent nonstandard test lines to roll up to the summary
 			previousTestName = "summary"
-			writeLog(logger, &logWriter, "summary", data)
+			logWriter.writeLog(logger, "summary", data)
 		} else if previousTestName != "" {
 			// Base case: roll up to the previous test line, if it exists.
 			// Handles case where terratest log has entries with newlines in them.
-			writeLog(logger, &logWriter, previousTestName, data)
+			logWriter.writeLog(logger, previousTestName, data)
 		} else if !isResultLine(data) {
 			// Result Lines are handled below
 			logger.Warnf("Found test line that does not match known cases: %s", data)
@@ -168,8 +163,8 @@ func parseAndStoreTestOutput(
 		// hence this special block.
 		if isResultLine(data) {
 			testName := getTestNameFromResultLine(data)
-			writeLog(logger, &logWriter, testName, data)
-			writeLog(logger, &logWriter, "summary", data)
+			logWriter.writeLog(logger, testName, data)
+			logWriter.writeLog(logger, "summary", data)
 
 			marker := TestResultMarker{
 				TestName:    testName,

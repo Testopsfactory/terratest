@@ -4,11 +4,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sync"
 	"testing"
-	"time"
 
-	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/gruntwork-cli/files"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +14,7 @@ import (
 func createLogWriter(t *testing.T) LogWriter {
 	dir := getTempDir(t)
 	logWriter := LogWriter{
-		lookup:    make(map[string]chan string),
+		lookup:    make(map[string]*os.File),
 		outputDir: dir,
 	}
 	return logWriter
@@ -47,66 +45,63 @@ func TestEnsureDirectoryExistsHandlesExistingDirectory(t *testing.T) {
 	assert.True(t, files.IsDir(dir))
 }
 
-func TestGetOrCreateChannelCreatesNewChannel(t *testing.T) {
+func TestGetOrCreateFileCreatesNewFile(t *testing.T) {
 	t.Parallel()
 
 	logWriter := createLogWriter(t)
 	defer os.RemoveAll(logWriter.outputDir)
 
 	logger := NewTestLogger(t)
-	channel := logWriter.getOrCreateChannel(logger, "TestGetOrCreateChannelCreatesNewChannel")
-	defer close(channel)
-	assert.NotNil(t, channel)
-}
-
-func TestGetOrCreateChannelReturnsExistingChannel(t *testing.T) {
-	t.Parallel()
-
-	logWriter := createLogWriter(t)
-	defer os.RemoveAll(logWriter.outputDir)
-
-	testName := t.Name()
-	logger := NewTestLogger(t)
-	var writeOnlyChannel chan<- string
-	channel := make(chan string)
-	writeOnlyChannel = channel
-	defer close(channel)
-	logWriter.lookup[testName] = channel
-	lookupChannel := logWriter.getOrCreateChannel(logger, testName)
-	assert.Equal(t, lookupChannel, writeOnlyChannel)
-}
-
-func TestLogCollectorCreatesAndWritesToFile(t *testing.T) {
-	t.Parallel()
-
-	testName := t.Name()
-	dir := getTempDir(t)
-	defer os.RemoveAll(dir)
-
-	logger := NewTestLogger(t)
-	channel := make(chan string)
-
-	var waitForCollector sync.WaitGroup
-	waitForCollector.Add(1)
-	go func() {
-		defer waitForCollector.Done()
-		collectLogs(logger, dir, testName, channel)
-	}()
-
-	randomString := random.UniqueId()
-	channel <- randomString
-	close(channel)
-
-	// give time for logcollector to finish
-	time.Sleep(1 * time.Second)
-
-	logFileName := filepath.Join(dir, testName+".log")
-	content, err := ioutil.ReadFile(logFileName)
+	testFileName := filepath.Join(logWriter.outputDir, t.Name()+".log")
+	assert.False(t, files.FileExists(testFileName))
+	file, err := logWriter.getOrCreateFile(logger, t.Name())
+	defer file.Close()
 	assert.Nil(t, err)
-	assert.Equal(t, string(content), randomString+"\n")
+	assert.NotNil(t, file)
+	assert.True(t, files.FileExists(testFileName))
 }
 
-func TestGetOrCreateChannelSpawnsLogCollectorOnCreate(t *testing.T) {
+func TestGetOrCreateFileCreatesNewFileIfTestNameHasDir(t *testing.T) {
+	t.Parallel()
+
+	logWriter := createLogWriter(t)
+	defer os.RemoveAll(logWriter.outputDir)
+
+	logger := NewTestLogger(t)
+	dirName := filepath.Join(logWriter.outputDir, "TestMain")
+	testFileName := filepath.Join(dirName, t.Name()+".log")
+	assert.False(t, files.IsDir(dirName))
+	assert.False(t, files.FileExists(testFileName))
+	file, err := logWriter.getOrCreateFile(logger, filepath.Join("TestMain", t.Name()))
+	defer file.Close()
+	assert.Nil(t, err)
+	assert.NotNil(t, file)
+	assert.True(t, files.IsDir(dirName))
+	assert.True(t, files.FileExists(testFileName))
+}
+
+func TestGetOrCreateChannelReturnsExistingFileHandle(t *testing.T) {
+	t.Parallel()
+
+	logWriter := createLogWriter(t)
+	defer os.RemoveAll(logWriter.outputDir)
+
+	testName := t.Name()
+	logger := NewTestLogger(t)
+	testFileName := filepath.Join(logWriter.outputDir, t.Name())
+	file, err := os.Create(testFileName)
+	if err != nil {
+		t.Fatalf("error creating test file %s", testFileName)
+	}
+	defer file.Close()
+
+	logWriter.lookup[testName] = file
+	lookupFile, err := logWriter.getOrCreateFile(logger, testName)
+	assert.Nil(t, err)
+	assert.Equal(t, lookupFile, file)
+}
+
+func TestCloseFilesClosesAll(t *testing.T) {
 	t.Parallel()
 
 	logWriter := createLogWriter(t)
@@ -114,46 +109,82 @@ func TestGetOrCreateChannelSpawnsLogCollectorOnCreate(t *testing.T) {
 
 	logger := NewTestLogger(t)
 	testName := t.Name()
-	channel := logWriter.getOrCreateChannel(logger, testName)
-	assert.NotNil(t, channel)
-
-	randomString := random.UniqueId()
-	channel <- randomString
-	close(channel)
-
-	// give time for logcollector to finish
-	time.Sleep(1 * time.Second)
-
-	logFileName := filepath.Join(logWriter.outputDir, testName+".log")
-	content, err := ioutil.ReadFile(logFileName)
-	assert.Nil(t, err)
-	assert.Equal(t, string(content), randomString+"\n")
-}
-
-func TestCloseChannelsClosesAll(t *testing.T) {
-	t.Parallel()
-
-	logWriter := createLogWriter(t)
-	defer os.RemoveAll(logWriter.outputDir)
-
-	testName := t.Name()
+	testFileName := filepath.Join(logWriter.outputDir, testName)
+	testFile, err := os.Create(testFileName)
+	if err != nil {
+		t.Fatalf("error creating test file %s", testFileName)
+	}
 	alternativeTestName := t.Name() + "Alternative"
-	logger := NewTestLogger(t)
-	channel1 := make(chan string)
-	channel2 := make(chan string)
-	logWriter.lookup[testName] = channel1
-	logWriter.lookup[alternativeTestName] = channel2
+	alternativeTestFileName := filepath.Join(logWriter.outputDir, alternativeTestName)
+	alternativeTestFile, err := os.Create(alternativeTestFileName)
+	if err != nil {
+		t.Fatalf("error creating test file %s", alternativeTestFileName)
+	}
+	logWriter.lookup[testName] = testFile
+	logWriter.lookup[alternativeTestName] = alternativeTestFile
 
-	var waitForClosedChannels sync.WaitGroup
-	waitForClosedChannels.Add(2)
-	go func() {
-		<-channel1
-		waitForClosedChannels.Done()
-	}()
-	go func() {
-		<-channel2
-		waitForClosedChannels.Done()
-	}()
-	logWriter.closeChannels(logger)
-	waitForClosedChannels.Wait()
+	logWriter.closeFiles(logger)
+	err = testFile.Close()
+	assert.Contains(t, err.Error(), os.ErrClosed.Error())
+	err = alternativeTestFile.Close()
+	assert.Contains(t, err.Error(), os.ErrClosed.Error())
+}
+
+func TestWriteLogWritesToCorrectLogFile(t *testing.T) {
+	t.Parallel()
+
+	logWriter := createLogWriter(t)
+	defer os.RemoveAll(logWriter.outputDir)
+
+	logger := NewTestLogger(t)
+	testName := t.Name()
+	testFileName := filepath.Join(logWriter.outputDir, testName)
+	testFile, err := os.Create(testFileName)
+	if err != nil {
+		t.Fatalf("error creating test file %s", testFileName)
+	}
+	defer testFile.Close()
+	alternativeTestName := t.Name() + "Alternative"
+	alternativeTestFileName := filepath.Join(logWriter.outputDir, alternativeTestName)
+	alternativeTestFile, err := os.Create(alternativeTestFileName)
+	if err != nil {
+		t.Fatalf("error creating test file %s", alternativeTestFileName)
+	}
+	defer alternativeTestFile.Close()
+	logWriter.lookup[testName] = testFile
+	logWriter.lookup[alternativeTestName] = alternativeTestFile
+
+	randomString := random.UniqueId()
+	err = logWriter.writeLog(logger, testName, randomString)
+	assert.Nil(t, err)
+	alternativeRandomString := random.UniqueId()
+	err = logWriter.writeLog(logger, alternativeTestName, alternativeRandomString)
+	assert.Nil(t, err)
+
+	buf, err := ioutil.ReadFile(testFileName)
+	assert.Nil(t, err)
+	assert.Equal(t, string(buf), randomString+"\n")
+	buf, err = ioutil.ReadFile(alternativeTestFileName)
+	assert.Nil(t, err)
+	assert.Equal(t, string(buf), alternativeRandomString+"\n")
+}
+
+func TestWriteLogCreatesLogFileIfNotExists(t *testing.T) {
+	t.Parallel()
+
+	logWriter := createLogWriter(t)
+	defer os.RemoveAll(logWriter.outputDir)
+
+	logger := NewTestLogger(t)
+	testName := t.Name()
+	testFileName := filepath.Join(logWriter.outputDir, testName+".log")
+
+	randomString := random.UniqueId()
+	err := logWriter.writeLog(logger, testName, randomString)
+	assert.Nil(t, err)
+
+	assert.True(t, files.FileExists(testFileName))
+	buf, err := ioutil.ReadFile(testFileName)
+	assert.Nil(t, err)
+	assert.Equal(t, string(buf), randomString+"\n")
 }
