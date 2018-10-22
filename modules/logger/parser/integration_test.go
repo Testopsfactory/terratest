@@ -19,6 +19,8 @@ func DirectoryEqual(t *testing.T, dirA string, dirB string) bool {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// We use diff here instead of using something in go for simplicity of comparing directories and file contents
+	// recursively
 	cmd := shell.Command{
 		Command: "diff",
 		Args:    []string{"-arq", dirAAbs, dirBAbs},
