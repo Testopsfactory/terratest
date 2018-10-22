@@ -21,6 +21,20 @@ type Options struct {
 	Env      map[string]string // Custom environment variables to set when running Packer
 }
 
+// BuildArtifacts can take a map of identifierName <-> Options and then parallelize
+// the packer builds. Once all the packer builds have completed a map of identifierName <-> generated identifier
+// is returned. The identifierName can be anything you want, it is only used so that you can
+// know which generated artifact is which.
+func BuildArtifacts(t *testing.T, artifactNameToOptions map[string]*Options) map[string]string {
+	result, err := BuildArtifactsE(t, artifactNameToOptions)
+
+	if err != nil {
+		t.Fatalf("Error building artifacts: %s", err.Error())
+	}
+
+	return result
+}
+
 // BuildArtifactsE can take a map of identifierName <-> Options and then parallelize
 // the packer builds. Once all the packer builds have completed a map of identifierName <-> generated identifier
 // is returned. If any artifact fails to build, the errors are accumulated and returned

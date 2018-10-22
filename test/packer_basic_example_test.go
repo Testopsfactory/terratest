@@ -80,11 +80,7 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 		identifierToOptions[random.UniqueId()] = packerOptions
 	}
 
-	resultMap, err := packer.BuildArtifactsE(t, identifierToOptions)
-
-	if err != nil {
-		t.Fatalf("Unexpected errors encounterd while building AMI: %s", err.Error())
-	}
+	resultMap := packer.BuildArtifacts(t, identifierToOptions)
 
 	// Clean up the AMIs after we're done
 	for key, amiId := range resultMap {
