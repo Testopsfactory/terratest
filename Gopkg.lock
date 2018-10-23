@@ -155,9 +155,14 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:7a2038e82ef5ec83fe1d0a500e899a0615820c673f91dac56790afd0800cc1b7"
+  digest = "1:e24c5712cccd9f91eff50319d11de1d05dac716100c58914090de27b532625e3"
   name = "github.com/gruntwork-io/gruntwork-cli"
-  packages = ["errors"]
+  packages = [
+    "entrypoint",
+    "errors",
+    "files",
+    "logging",
+  ]
   pruneopts = "UT"
   revision = "a97261317cd3f02ac76dda7b2f163a9169cf9c0a"
   version = "v0.2.0"
@@ -195,6 +200,17 @@
   pruneopts = "UT"
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:36aebe90a13cf9128280ac834399b8bebf83685283c78df279d61c46bb2a8d83"
+  name = "github.com/mattn/go-zglob"
+  packages = [
+    ".",
+    "fastwalk",
+  ]
+  pruneopts = "UT"
+  revision = "2ea3427bfa539cca900ca2768d8663ecc8a708c1"
 
 [[projects]]
   digest = "1:c8d00f8d5b900f252da7f4a2cf618043bd1c833333d210281e21a69121cc87d0"
@@ -470,7 +486,10 @@
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/go-sql-driver/mysql",
     "github.com/google/uuid",
+    "github.com/gruntwork-io/gruntwork-cli/entrypoint",
     "github.com/gruntwork-io/gruntwork-cli/errors",
+    "github.com/gruntwork-io/gruntwork-cli/files",
+    "github.com/gruntwork-io/gruntwork-cli/logging",
     "github.com/jstemmer/go-junit-report/formatter",
     "github.com/jstemmer/go-junit-report/parser",
     "github.com/magiconair/properties/assert",
@@ -481,6 +500,7 @@
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
+    "github.com/urfave/cli",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",
     "golang.org/x/net/context",
