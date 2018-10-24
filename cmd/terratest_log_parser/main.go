@@ -35,29 +35,44 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/gruntwork-io/gruntwork-cli/entrypoint"
+	"github.com/gruntwork-io/gruntwork-cli/errors"
 	"github.com/gruntwork-io/gruntwork-cli/logging"
 	"github.com/gruntwork-io/terratest/modules/logger/parser"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 var logger = logging.GetLogger("terratest_log_parser")
 
-const CUSTOM_USAGE_TEXT = `Usage: terratest_log_parser [--testlog] [--outputdir] [--help]
+const CUSTOM_USAGE_TEXT = `Usage: terratest_log_parser [--help] [--log-level=info] [--testlog=LOG_INPUT] [--outputdir=OUTPUT_DIR]
 
-A tool for parsing parallel terratest output to produce a test summary and to
-break out the interleaved logs by test for better debuggability.
+A tool for parsing parallel terratest output to produce a test summary and to break out the interleaved logs by test for better debuggability.
+
+Options:
+   --log-level LEVEL  Set the log level to LEVEL. Must be one of: [panic fatal error warning info debug]
+                      (default: "info")
+   --testlog value    Path to file containing test log. If unset will use stdin.
+   --outputdir value  Path to directory to output test output to. If unset will use the current directory.
+                      (default: "/Users/yoriy/go/src/github.com/gruntwork-io/terratest/cmd/terratest_log_parser/out")
+   --help, -h         show help
 `
 
 func run(cliContext *cli.Context) error {
 	filename := cliContext.String("testlog")
 	outputDir := cliContext.String("outputdir")
+	logLevel := cliContext.String("log-level")
+	level, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		return errors.WithStackTrace(err)
+	}
+	logger.SetLevel(level)
 
 	var file *os.File
-	var err error
 	if filename != "" {
 		logger.Infof("reading from file")
 		file, err = os.Open(filename)
@@ -82,6 +97,7 @@ func run(cliContext *cli.Context) error {
 func main() {
 	app := entrypoint.NewApp()
 	cli.AppHelpTemplate = CUSTOM_USAGE_TEXT
+	entrypoint.HelpTextLineWidth = 120
 
 	app.Name = "terratest_log_parser"
 	app.Author = "Gruntwork <www.gruntwork.io>"
@@ -104,7 +120,13 @@ func main() {
 		Value: defaultOutputDir,
 		Usage: "Path to directory to output test output to. If unset will use the current directory.",
 	}
+	logLevelFlag := cli.StringFlag{
+		Name:  "log-level",
+		Value: logrus.InfoLevel.String(),
+		Usage: fmt.Sprintf("Set the log level to `LEVEL`. Must be one of: %v", logrus.AllLevels),
+	}
 	app.Flags = []cli.Flag{
+		logLevelFlag,
 		logInputFlag,
 		outputDirFlag,
 	}
