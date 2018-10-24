@@ -45,7 +45,7 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectId, region, instance_group_name)
 
 	// Validate that GetInstances() returns a non-zero number of Instances
-	maxRetries := 20
+	maxRetries := 40
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Attempting to fetch Instances from Instance Group", maxRetries, sleepBetweenRetries, func() (string, error) {

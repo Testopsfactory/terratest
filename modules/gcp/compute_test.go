@@ -83,7 +83,7 @@ func TestGetAndSetLabels(t *testing.T) {
 	instance.SetLabels(t, labelsToWrite)
 
 	// Now attempt to read the labels we just set.
-	maxRetries := 10
+	maxRetries := 30
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Read newly set labels", maxRetries, sleepBetweenRetries, func() (string, error) {
@@ -118,7 +118,7 @@ func TestGetAndSetMetadata(t *testing.T) {
 	instance.SetMetadata(t, metadataToWrite)
 
 	// Now attempt to read the metadata we just set
-	maxRetries := 10
+	maxRetries := 30
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Read newly set metadata", maxRetries, sleepBetweenRetries, func() (string, error) {
