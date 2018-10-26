@@ -1,6 +1,7 @@
 # Terratest
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/gruntwork-io/terratest)](https://goreportcard.com/report/github.com/gruntwork-io/terratest)
+[![GoDoc](https://godoc.org/github.com/gruntwork-io/terratest?status.svg)](https://godoc.org/github.com/gruntwork-io/terratest)
 
 Terratest is a Go library that makes it easier to write automated tests for your infrastructure code. It provides a
 variety of helper functions and patterns for common infrastructure testing tasks, including:
