@@ -22,7 +22,7 @@ func TestGetPublicIpOfInstance(t *testing.T) {
 
 	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
-	zone := GetRandomZone(t, projectID, nil, nil)
+	zone := GetRandomZone(t, projectID, nil, nil, nil)
 
 	createComputeInstance(t, projectID, zone, instanceName)
 	defer deleteComputeInstance(t, projectID, zone, instanceName)
@@ -68,7 +68,7 @@ func TestGetAndSetLabels(t *testing.T) {
 
 	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
-	zone := GetRandomZone(t, projectID, nil, nil)
+	zone := GetRandomZone(t, projectID, nil, nil, nil)
 
 	createComputeInstance(t, projectID, zone, instanceName)
 	defer deleteComputeInstance(t, projectID, zone, instanceName)
@@ -103,7 +103,7 @@ func TestGetAndSetMetadata(t *testing.T) {
 
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	instanceName := RandomValidGcpName()
-	zone := GetRandomZone(t, projectID, nil, nil)
+	zone := GetRandomZone(t, projectID, nil, nil, nil)
 
 	// Create a new Compute Instance
 	createComputeInstance(t, projectID, zone, instanceName)

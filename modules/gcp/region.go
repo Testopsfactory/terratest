@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -71,8 +72,8 @@ func GetRandomRegionE(t *testing.T, projectID string, approvedRegions []string, 
 // GetRandomZone gets a randomly chosen GCP Zone. If approvedRegions is not empty, this will be a Zone from the approvedZones
 // list; otherwise, this method will fetch the latest list of Zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned Region is not in the forbiddenZones list.
-func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string) string {
-	zone, err := GetRandomZoneE(t, projectID, approvedZones, forbiddenZones)
+func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string, forbiddenRegions []string) string {
+	zone, err := GetRandomZoneE(t, projectID, approvedZones, forbiddenZones, forbiddenRegions)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +83,7 @@ func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbi
 // GetRandomZoneE gets a randomly chosen GCP Zone. If approvedRegions is not empty, this will be a Zone from the approvedZones
 // list; otherwise, this method will fetch the latest list of Zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned Region is not in the forbiddenZones list.
-func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string) (string, error) {
+func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string, forbiddenRegions []string) (string, error) {
 	zoneFromEnvVar := os.Getenv(zoneOverrideEnvVarName)
 	if zoneFromEnvVar != "" {
 		logger.Logf(t, "Using GCP Zone %s from environment variable %s", zoneFromEnvVar, zoneOverrideEnvVarName)
@@ -100,10 +101,19 @@ func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forb
 	}
 
 	zonesToPickFrom = collections.ListSubtract(zonesToPickFrom, forbiddenZones)
-	zone := random.RandomString(zonesToPickFrom)
 
-	logger.Logf(t, "Using Zone %s", zone)
-	return zone, nil
+	zone := ""
+	maxAttempts := 1000
+
+	for i := 0; i < maxAttempts; i++ {
+		zone = random.RandomString(zonesToPickFrom)
+		if !isInRegions(zone, forbiddenRegions) {
+			logger.Logf(t, "Using Zone %s", zone)
+			return zone, nil
+		}
+	}
+
+	return "", fmt.Errorf("Could not find a valid zone in %v given that the zone cannot be in %v or in regions %v", zonesToPickFrom, forbiddenZones, forbiddenRegions)
 }
 
 // GetRandomZoneForRegion gets a randomly chosen GCP Zone in the given Region.
@@ -230,4 +240,20 @@ func ZoneUrlToZone(zoneUrl string) string {
 func RegionUrlToRegion(zoneUrl string) string {
 	tokens := strings.Split(zoneUrl, "/")
 	return tokens[len(tokens)-1]
+}
+
+// Returns true if the given zone is in any of the given regions
+func isInRegions(zone string, regions []string) bool {
+	for _, region := range regions {
+		if isInRegion(zone, region) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Returns true if the given zone is in the given region
+func isInRegion(zone string, region string) bool {
+	return strings.Contains(zone, region)
 }
