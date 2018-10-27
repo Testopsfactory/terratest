@@ -9,7 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
-	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/compute/v1"
 )
 
 // You can set this environment variable to force Terratest to use a specific Region rather than a random one. This is
@@ -71,8 +71,8 @@ func GetRandomRegionE(t *testing.T, projectID string, approvedRegions []string, 
 // GetRandomZone gets a randomly chosen GCP Zone. If approvedRegions is not empty, this will be a Zone from the approvedZones
 // list; otherwise, this method will fetch the latest list of Zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned Region is not in the forbiddenZones list.
-func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string) string {
-	zone, err := GetRandomZoneE(t, projectID, approvedZones, forbiddenZones)
+func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string, forbiddenRegions []string) string {
+	zone, err := GetRandomZoneE(t, projectID, approvedZones, forbiddenZones, forbiddenRegions)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func GetRandomZone(t *testing.T, projectID string, approvedZones []string, forbi
 // GetRandomZoneE gets a randomly chosen GCP Zone. If approvedRegions is not empty, this will be a Zone from the approvedZones
 // list; otherwise, this method will fetch the latest list of Zones from the GCP APIs and pick one of those. If
 // forbiddenZones is not empty, this method will make sure the returned Region is not in the forbiddenZones list.
-func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string) (string, error) {
+func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forbiddenZones []string, forbiddenRegions []string) (string, error) {
 	zoneFromEnvVar := os.Getenv(zoneOverrideEnvVarName)
 	if zoneFromEnvVar != "" {
 		logger.Logf(t, "Using GCP Zone %s from environment variable %s", zoneFromEnvVar, zoneOverrideEnvVarName)
@@ -100,9 +100,16 @@ func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forb
 	}
 
 	zonesToPickFrom = collections.ListSubtract(zonesToPickFrom, forbiddenZones)
-	zone := random.RandomString(zonesToPickFrom)
 
-	logger.Logf(t, "Using Zone %s", zone)
+	var zonesToPickFromFiltered []string
+	for _, zone := range zonesToPickFrom {
+		if !isInRegions(zone, forbiddenRegions) {
+			zonesToPickFromFiltered = append(zonesToPickFromFiltered, zone)
+		}
+	}
+
+	zone := random.RandomString(zonesToPickFromFiltered)
+
 	return zone, nil
 }
 
@@ -230,4 +237,20 @@ func ZoneUrlToZone(zoneUrl string) string {
 func RegionUrlToRegion(zoneUrl string) string {
 	tokens := strings.Split(zoneUrl, "/")
 	return tokens[len(tokens)-1]
+}
+
+// Returns true if the given zone is in any of the given regions
+func isInRegions(zone string, regions []string) bool {
+	for _, region := range regions {
+		if isInRegion(zone, region) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Returns true if the given zone is in the given region
+func isInRegion(zone string, region string) bool {
+	return strings.Contains(zone, region)
 }

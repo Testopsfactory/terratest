@@ -22,7 +22,7 @@ func TestGetPublicIpOfInstance(t *testing.T) {
 
 	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
-	zone := GetRandomZone(t, projectID, nil, nil)
+	zone := GetRandomZone(t, projectID, nil, nil, nil)
 
 	createComputeInstance(t, projectID, zone, instanceName)
 	defer deleteComputeInstance(t, projectID, zone, instanceName)
@@ -68,7 +68,9 @@ func TestGetAndSetLabels(t *testing.T) {
 
 	instanceName := RandomValidGcpName()
 	projectID := GetGoogleProjectIDFromEnvVar(t)
-	zone := GetRandomZone(t, projectID, nil, nil)
+
+	// On October 22, 2018, GCP launched the asia-east2 region, which promptly failed all our tests, so blacklist asia-east2.
+	zone := GetRandomZone(t, projectID, nil, nil, []string{"asia-east2"})
 
 	createComputeInstance(t, projectID, zone, instanceName)
 	defer deleteComputeInstance(t, projectID, zone, instanceName)
@@ -83,7 +85,7 @@ func TestGetAndSetLabels(t *testing.T) {
 	instance.SetLabels(t, labelsToWrite)
 
 	// Now attempt to read the labels we just set.
-	maxRetries := 10
+	maxRetries := 30
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Read newly set labels", maxRetries, sleepBetweenRetries, func() (string, error) {
@@ -103,7 +105,9 @@ func TestGetAndSetMetadata(t *testing.T) {
 
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 	instanceName := RandomValidGcpName()
-	zone := GetRandomZone(t, projectID, nil, nil)
+
+	// On October 22, 2018, GCP launched the asia-east2 region, which promptly failed all our tests, so blacklist asia-east2.
+	zone := GetRandomZone(t, projectID, nil, nil, []string{"asia-east2"})
 
 	// Create a new Compute Instance
 	createComputeInstance(t, projectID, zone, instanceName)
@@ -118,7 +122,7 @@ func TestGetAndSetMetadata(t *testing.T) {
 	instance.SetMetadata(t, metadataToWrite)
 
 	// Now attempt to read the metadata we just set
-	maxRetries := 10
+	maxRetries := 30
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Read newly set metadata", maxRetries, sleepBetweenRetries, func() (string, error) {

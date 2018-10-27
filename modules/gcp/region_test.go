@@ -21,7 +21,7 @@ func TestGetRandomZone(t *testing.T) {
 
 	projectID := GetGoogleProjectIDFromEnvVar(t)
 
-	randomZone := GetRandomZone(t, projectID, nil, nil)
+	randomZone := GetRandomZone(t, projectID, nil, nil, nil)
 	assertLooksLikeZoneName(t, randomZone)
 }
 
@@ -48,8 +48,25 @@ func TestGetRandomZoneExcludesForbiddenZones(t *testing.T) {
 	forbiddenZones := []string{"us-east1-a", "europe-west1-a", "europe-west2-a", "europe-west2-c"}
 
 	for i := 0; i < 1000; i++ {
-		randomZone := GetRandomZone(t, projectID, approvedZones, forbiddenZones)
+		randomZone := GetRandomZone(t, projectID, approvedZones, forbiddenZones, nil)
 		assert.NotContains(t, forbiddenZones, randomZone)
+	}
+}
+
+func TestGetRandomZoneExcludesForbiddenRegions(t *testing.T) {
+	t.Parallel()
+
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
+	approvedZones := []string{"us-east1-b", "us-east1-c", "us-east1-d", "us-east4-a", "us-east4-b", "us-east4-c", "us-west2-a", "us-west2-b", "us-west2-c", "us-central1-f", "europe-west2-b"}
+	forbiddenRegions := []string{"europe-west2"}
+
+	for i := 0; i < 1000; i++ {
+		randomZone := GetRandomZone(t, projectID, approvedZones, nil, forbiddenRegions)
+
+		for _, forbiddenRegion := range forbiddenRegions {
+			assert.True(t, !isInRegion(randomZone, forbiddenRegion), "Expected that selected zone %s would not be in region %s, but it is.", randomZone, forbiddenRegion)
+		}
 	}
 }
 
@@ -99,6 +116,45 @@ func TestGetRandomZoneForRegion(t *testing.T) {
 		}
 
 		assert.True(t, strings.Contains(zone, region), "Expected zone %s to be in region %s", zone, region)
+	}
+}
+
+func TestGetInRegion(t *testing.T) {
+	t.Parallel()
+
+	testData := []struct {
+		zone     string
+		region   string
+		expected bool
+	}{
+		{"us-west2a", "us-west2", true},
+		{"us-west2b", "us-west2", true},
+		{"us-west2a", "us-east1", false},
+	}
+
+	for _, td := range testData {
+		actual := isInRegion(td.zone, td.region)
+		assert.Equal(t, td.expected, actual, "Expected %t for isInRegion(%s, %s) but got %t", td.expected, td.zone, td.region, actual)
+	}
+}
+
+func TestGetInRegions(t *testing.T) {
+	t.Parallel()
+
+	testData := []struct {
+		zone     string
+		regions  []string
+		expected bool
+	}{
+		{"us-west2a", []string{"us-west2", "us-east1"}, true},
+		{"us-west2b", []string{"us-west2", "us-east1"}, true},
+		{"us-west2a", []string{"us-west2", "us-east1"}, true},
+		{"us-west2a", []string{"us-east1", "europe-west1"}, false},
+	}
+
+	for _, td := range testData {
+		actual := isInRegions(td.zone, td.regions)
+		assert.Equal(t, td.expected, actual, "Expected %t for isInRegions(%s, %v) but got %t", td.expected, td.zone, td.regions, actual)
 	}
 }
 

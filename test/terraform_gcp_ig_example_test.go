@@ -18,7 +18,10 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 
 	// Setup values for our Terraform apply
 	projectId := gcp.GetGoogleProjectIDFromEnvVar(t)
-	region := gcp.GetRandomRegion(t, projectId, nil, nil)
+
+	// On October 22, 2018, GCP launched the asia-east2 region, which promptly failed all our tests, so blacklist asia-east2.
+	region := gcp.GetRandomRegion(t, projectId, nil, []string{"asia-east2"})
+
 	randomValidGcpName := gcp.RandomValidGcpName()
 	cluster_size := 3
 
@@ -45,7 +48,7 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectId, region, instance_group_name)
 
 	// Validate that GetInstances() returns a non-zero number of Instances
-	maxRetries := 20
+	maxRetries := 40
 	sleepBetweenRetries := 3 * time.Second
 
 	retry.DoWithRetry(t, "Attempting to fetch Instances from Instance Group", maxRetries, sleepBetweenRetries, func() (string, error) {

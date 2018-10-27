@@ -100,7 +100,7 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 	// Setup values for our Terraform apply
 	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 	randomValidGcpName := gcp.RandomValidGcpName()
-	zone := gcp.GetRandomZone(t, projectID, nil, nil)
+	zone := gcp.GetRandomZone(t, projectID, nil, nil, nil)
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
