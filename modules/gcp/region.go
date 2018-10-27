@@ -2,7 +2,6 @@ package gcp
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -10,7 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
-	compute "google.golang.org/api/compute/v1"
+	"google.golang.org/api/compute/v1"
 )
 
 // You can set this environment variable to force Terratest to use a specific Region rather than a random one. This is
@@ -102,18 +101,16 @@ func GetRandomZoneE(t *testing.T, projectID string, approvedZones []string, forb
 
 	zonesToPickFrom = collections.ListSubtract(zonesToPickFrom, forbiddenZones)
 
-	zone := ""
-	maxAttempts := 1000
-
-	for i := 0; i < maxAttempts; i++ {
-		zone = random.RandomString(zonesToPickFrom)
+	var zonesToPickFromFiltered []string
+	for _, zone := range zonesToPickFrom {
 		if !isInRegions(zone, forbiddenRegions) {
-			logger.Logf(t, "Using Zone %s", zone)
-			return zone, nil
+			zonesToPickFromFiltered = append(zonesToPickFromFiltered, zone)
 		}
 	}
 
-	return "", fmt.Errorf("Could not find a valid zone in %v given that the zone cannot be in %v or in regions %v", zonesToPickFrom, forbiddenZones, forbiddenRegions)
+	zone := random.RandomString(zonesToPickFromFiltered)
+
+	return zone, nil
 }
 
 // GetRandomZoneForRegion gets a randomly chosen GCP Zone in the given Region.

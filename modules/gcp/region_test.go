@@ -53,6 +53,23 @@ func TestGetRandomZoneExcludesForbiddenZones(t *testing.T) {
 	}
 }
 
+func TestGetRandomZoneExcludesForbiddenRegions(t *testing.T) {
+	t.Parallel()
+
+	projectID := GetGoogleProjectIDFromEnvVar(t)
+
+	approvedZones := []string{"us-east1-b", "us-east1-c", "us-east1-d", "us-east4-a", "us-east4-b", "us-east4-c", "us-west2-a", "us-west2-b", "us-west2-c", "us-central1-f", "europe-west2-b"}
+	forbiddenRegions := []string{"europe-west2"}
+
+	for i := 0; i < 1000; i++ {
+		randomZone := GetRandomZone(t, projectID, approvedZones, nil, forbiddenRegions)
+
+		for _, forbiddenRegion := range forbiddenRegions {
+			assert.True(t, !isInRegion(randomZone, forbiddenRegion), "Expected that selected zone %s would not be in region %s, but it is.", randomZone, forbiddenRegion)
+		}
+	}
+}
+
 func TestGetAllGcpRegions(t *testing.T) {
 	t.Parallel()
 
