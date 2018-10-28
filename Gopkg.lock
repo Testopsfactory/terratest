@@ -100,6 +100,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:d0557c61d3acd22f04f7b6b675b847381034b229b7dce10b1d31bfa0d7f30017"
+  name = "github.com/go-errors/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d98b870cc4e05f1545532a80e9909be8216095b6"
+
+[[projects]]
   digest = "1:5abd6a22805b1919f6a6bca0ae58b13cef1f3412812f38569978f43ef02743d4"
   name = "github.com/go-ini/ini"
   packages = ["."]
@@ -147,11 +155,43 @@
   version = "v2.0.0"
 
 [[projects]]
+  digest = "1:e24c5712cccd9f91eff50319d11de1d05dac716100c58914090de27b532625e3"
+  name = "github.com/gruntwork-io/gruntwork-cli"
+  packages = [
+    "entrypoint",
+    "errors",
+    "files",
+    "logging",
+  ]
+  pruneopts = "UT"
+  revision = "a97261317cd3f02ac76dda7b2f163a9169cf9c0a"
+  version = "v0.2.0"
+
+[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   pruneopts = "UT"
   revision = "0b12d6b5"
+
+[[projects]]
+  branch = "master"
+  digest = "1:9a1fa01d7a3c5d5d9142a6181faa5641d693bc4994c7302864ae4bca9c0cd4ea"
+  name = "github.com/jstemmer/go-junit-report"
+  packages = [
+    "formatter",
+    "parser",
+  ]
+  pruneopts = "UT"
+  revision = "385fac0ced9acaae6dc5b39144194008ded00697"
+
+[[projects]]
+  digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:41b00533ad3d8b3f54b6a02fc093b211feeffb068a3148a7e7084cd7aeef18ec"
@@ -160,6 +200,17 @@
   pruneopts = "UT"
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:36aebe90a13cf9128280ac834399b8bebf83685283c78df279d61c46bb2a8d83"
+  name = "github.com/mattn/go-zglob"
+  packages = [
+    ".",
+    "fastwalk",
+  ]
+  pruneopts = "UT"
+  revision = "2ea3427bfa539cca900ca2768d8663ecc8a708c1"
 
 [[projects]]
   digest = "1:c8d00f8d5b900f252da7f4a2cf618043bd1c833333d210281e21a69121cc87d0"
@@ -194,6 +245,14 @@
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:3f53e9e4dfbb664cd62940c9c4b65a2171c66acd0b7621a1a6b8e78513525a52"
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ad15b42461921f1fb3529b058c6786c6a45d5162"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:c40d65817cdd41fac9aa7af8bed56927bb2d6d47e4fea566a74880f5c2b1c41e"
   name = "github.com/stretchr/testify"
   packages = [
@@ -203,6 +262,14 @@
   pruneopts = "UT"
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
+
+[[projects]]
+  digest = "1:b24d38b282bacf9791408a080f606370efa3d364e4b5fd9ba0f7b87786d3b679"
+  name = "github.com/urfave/cli"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [[projects]]
   digest = "1:ac5cb21cbe4f095b6e5f1ae5102a85dfd598d39b5ad0d64df3d41ee046586f30"
@@ -228,7 +295,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5bfe7889c6059903d067d47a0a66f07a0851f47fd38f0ba5c77f402fb3d46a2d"
+  digest = "1:967a731dd27fec4dbd18c48b6ff7802be75ad37c35228c3f1d5d10049ed1c753"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
@@ -239,6 +306,7 @@
     "poly1305",
     "ssh",
     "ssh/agent",
+    "ssh/terminal",
   ]
   pruneopts = "UT"
   revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
@@ -276,9 +344,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:824ea4aea5f0f50d4e4e139e4a3d7528f70b388dd9162c8ce310eb04581a7d84"
+  digest = "1:e10551220bea6da5274318545537df1012268056be6484b83a3338328050cde0"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows",
+  ]
   pruneopts = "UT"
   revision = "ee1b12c67af419cf5a9be3bdbeea7fc1c5f32f11"
 
@@ -415,13 +486,21 @@
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/go-sql-driver/mysql",
     "github.com/google/uuid",
+    "github.com/gruntwork-io/gruntwork-cli/entrypoint",
+    "github.com/gruntwork-io/gruntwork-cli/errors",
+    "github.com/gruntwork-io/gruntwork-cli/files",
+    "github.com/gruntwork-io/gruntwork-cli/logging",
+    "github.com/jstemmer/go-junit-report/formatter",
+    "github.com/jstemmer/go-junit-report/parser",
     "github.com/magiconair/properties/assert",
     "github.com/oracle/oci-go-sdk/common",
     "github.com/oracle/oci-go-sdk/core",
     "github.com/oracle/oci-go-sdk/identity",
     "github.com/pquerna/otp/totp",
+    "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
+    "github.com/urfave/cli",
     "golang.org/x/crypto/ssh",
     "golang.org/x/crypto/ssh/agent",
     "golang.org/x/net/context",

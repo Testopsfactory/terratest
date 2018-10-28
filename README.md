@@ -144,6 +144,7 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 | **git**            | Functions for working with Git. Examples: get the name of the current Git branch.                                                                                                                                                                                                                    |
 | **http-helper**    | Functions for making HTTP requests. Examples: make an HTTP request to a URL and check the status code and body contain the expected values, run a simple HTTP server locally.                                                                                                                        |
 | **logger**         | A replacement for Go's `t.Log` and `t.Logf` that writes the logs to `stdout` immediately, rather than buffering them until the very end of the test. This makes debugging and iterating easier.                                                                                                      |
+| **logger/parser**  | Includes functions for parsing out interleaved go test output and piecing out the individual test logs. Used by the [terratest_log_parser](/cmd/terratest_log_parser) command.                                                                                                                       |
 | **packer**         | Functions for working with Packer. Examples: run a Packer build and return the ID of the artifact that was created.                                                                                                                                                                                  |
 | **random**         | Functions for generating random data. Examples: generate a unique ID that can be used to namespace resources so multiple tests running in parallel don't clash.                                                                                                                                      |
 | **retry**          | Functions for retrying actions. Examples: retry a function up to a maximum number of retries, retry a function until a stop function is called, wait up to a certain timeout for a function to complete. These are especially useful when working with distributed systems and eventual consistency. |
@@ -151,6 +152,15 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 | **ssh**            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`.                                                                                                                                                                                         |
 | **terraform**      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`.                                                                                                                                                                                        |
 | **test_structure** | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable.                                                                                                                     |
+
+Terratest also ships with utility commands that can be used to help with debugging test failures in CI environments.
+Here is an overview of commands in Terratest's [cmd folder](/cmd) that are shipped with each release:
+
+| Command                  | Description                                                                                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **terratest_log_parser** | Parses test output from the `go test` command and breaks out the interleaved logs into logs for each test. Integrate with your CI environment to help debug failing tests. |
+
+
 
 
 
@@ -178,6 +188,7 @@ we'll outline some best practices to minimize the downsides of this sort of test
 1.  [Namespacing](#namespacing)
 1.  [Cleanup](#cleanup)
 1.  [Timeouts and logging](#timeouts-and-logging)
+1.  [Debugging interleaved test output](#debugging-interleaved-test-output)
 1.  [Avoid test caching](#avoid-test-caching)
 1.  [Error handling](#error-handling)
 1.  [Iterating locally using Docker](#iterating-locally-using-docker)
@@ -284,6 +295,43 @@ difficulties with CI servers and debugging. The workaround is to tell Go to test
 ```bash
 go test -timeout 30m -p 1 ./...
 ```
+
+
+### Debugging interleaved test output
+
+If you log using Terratest's `logger` package, you may notice that all the test outputs are interleaved from the
+parallel execution. This may make it difficult to debug failures, as it can be tedious to sift through the logs to find
+the relevant entries for a failing test, let alone find the test that failed.
+
+Therefore, Terratest ships with a utility binary `terratest_log_parser` that can be used to break out the logs.
+
+To use the utility, you simply give it the log output from a `go test` run and a desired output directory:
+
+```bash
+go test -timeout 30m | tee test_output.log
+terratest_log_parser -testlog test_ouptut.log -outputdir test_output
+```
+
+This will:
+
+- Create a file `TEST_NAME.log` for each test it finds from the test output containing the logs corresponding to that
+  test.
+- Create a `summary.log` file containing the test result lines for each test.
+- Create a `report.xml` file containing a Junit XML file of the test summary (so it can be integrated in your CI).
+
+The output can be integrated in your CI engine to further enhance the debugging experience. See Terratest's own
+[circleci configuration](/.circleci/config.yml) for an example of how to integrate the utility with CircleCI. This
+provides for each build:
+
+- A test summary view showing you which tests failed:
+
+[CircleCI test summary](/_docs/images/circleci-test-summary.png)
+
+- A snapshot of all the logs broken out by test:
+
+[CircleCI logs](/_docs/images/circleci-logs.png)
+
+You can download the compiled versions of the utility for your platform from the [Releases page](https://github.com/gruntwork-io/terratest/releases).
 
 
 ### Avoid test caching
