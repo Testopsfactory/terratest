@@ -15,19 +15,19 @@ import (
 
 // SpawnParsers will spawn the log parser and junit report parsers off of a single reader.
 func SpawnParsers(logger *logrus.Logger, reader io.Reader, outputDir string) {
-	forked_reader, forked_writer := io.Pipe()
-	teed_reader := io.TeeReader(reader, forked_writer)
+	forkedReader, forkedWriter := io.Pipe()
+	teedReader := io.TeeReader(reader, forkedWriter)
 	var waitForParsers sync.WaitGroup
 	waitForParsers.Add(2)
 	go func() {
 		// close pipe writer, because this section drains the tee reader indicating reader is done draining
-		defer forked_writer.Close()
+		defer forkedWriter.Close()
 		defer waitForParsers.Done()
-		parseAndStoreTestOutput(logger, teed_reader, outputDir)
+		parseAndStoreTestOutput(logger, teedReader, outputDir)
 	}()
 	go func() {
 		defer waitForParsers.Done()
-		report, err := junitparser.Parse(forked_reader, "")
+		report, err := junitparser.Parse(forkedReader, "")
 		if err == nil {
 			storeJunitReport(logger, outputDir, report)
 		} else {
