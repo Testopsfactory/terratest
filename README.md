@@ -325,11 +325,11 @@ provides for each build:
 
 - A test summary view showing you which tests failed:
 
-[CircleCI test summary](/_docs/images/circleci-test-summary.png)
+![CircleCI test summary](/_docs/images/circleci-test-summary.png)
 
 - A snapshot of all the logs broken out by test:
 
-[CircleCI logs](/_docs/images/circleci-logs.png)
+![CircleCI logs](/_docs/images/circleci-logs.png)
 
 You can download the compiled versions of the utility for your platform from the [Releases page](https://github.com/gruntwork-io/terratest/releases).
 
