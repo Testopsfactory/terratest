@@ -58,7 +58,6 @@ Options:
                       (default: "info")
    --testlog value    Path to file containing test log. If unset will use stdin.
    --outputdir value  Path to directory to output test output to. If unset will use the current directory.
-                      (default: "/Users/yoriy/go/src/github.com/gruntwork-io/terratest/cmd/terratest_log_parser/out")
    --help, -h         show help
 `
 

@@ -100,7 +100,8 @@ func TestSshAccessToComputeInstance(t *testing.T) {
 	// Setup values for our Terraform apply
 	projectID := gcp.GetGoogleProjectIDFromEnvVar(t)
 	randomValidGcpName := gcp.RandomValidGcpName()
-	zone := gcp.GetRandomZone(t, projectID, nil, nil, nil)
+	// On October 22, 2018, GCP launched the asia-east2 region, which promptly failed all our tests, so blacklist asia-east2.
+	zone := gcp.GetRandomZone(t, projectID, nil, nil, []string{"asia-east2"})
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located

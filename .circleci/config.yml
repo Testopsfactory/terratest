@@ -58,7 +58,7 @@ jobs:
           paths: cmd/bin
 
       - run:
-          command: ./cmd/bin/terratest_log_parser_linux_amd64 -testlog /tmp/logs/test_output.log -outputdir /tmp/logs
+          command: ./cmd/bin/terratest_log_parser_linux_amd64 --testlog /tmp/logs/test_output.log --outputdir /tmp/logs
           when: always
 
       # Store test result and log artifacts for browsing purposes
@@ -72,6 +72,9 @@ jobs:
     machine: true
     steps:
       - checkout
+      - attach_workspace:
+          at: .
+      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
       - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
       - run: upload-github-release-assets cmd/bin/*
 
