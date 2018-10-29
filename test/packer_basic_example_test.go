@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -70,7 +71,7 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 			// Variables to pass to our Packer build using -var options
 			Vars: map[string]string{
 				"aws_region":    awsRegion,
-				"ami_base_name": random.UniqueId(),
+				"ami_base_name": fmt.Sprintf("%s-terratest-packer", random.UniqueId()),
 			},
 
 			// Only build the AWS AMI
