@@ -1,12 +1,14 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	terratest_aws "github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/packer"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,6 +51,43 @@ func TestPackerBasicExample(t *testing.T) {
 	MakeAmiPublic(t, amiID, ec2Client)
 	amiIsPublic := terratest_aws.GetAmiPubliclyAccessible(t, awsRegion, amiID)
 	assert.True(t, amiIsPublic)
+}
+
+func TestPackerMultipleConcurrentAmis(t *testing.T) {
+	t.Parallel()
+
+	// Build a map of 3 randomId <-> packer.Options, in 3 random AWS Regions
+	// then build all of these AMIs in parallel and make sure that there are
+	// no errors.
+	var identifierToOptions = map[string]*packer.Options{}
+	for i := 0; i < 3; i++ {
+		// Pick a random AWS region to test in. This helps ensure your code works in all regions.
+		awsRegion := terratest_aws.GetRandomRegion(t, nil, nil)
+
+		packerOptions := &packer.Options{
+			// The path to where the Packer template is located
+			Template: "../examples/packer-basic-example/build.json",
+
+			// Variables to pass to our Packer build using -var options
+			Vars: map[string]string{
+				"aws_region":    awsRegion,
+				"ami_base_name": fmt.Sprintf("%s-terratest-packer", random.UniqueId()),
+			},
+
+			// Only build the AWS AMI
+			Only: "amazon-ebs",
+		}
+
+		identifierToOptions[random.UniqueId()] = packerOptions
+	}
+
+	resultMap := packer.BuildArtifacts(t, identifierToOptions)
+
+	// Clean up the AMIs after we're done
+	for key, amiId := range resultMap {
+		awsRegion := identifierToOptions[key].Vars["aws_region"]
+		terratest_aws.DeleteAmiAndAllSnapshots(t, awsRegion, amiId)
+	}
 }
 
 func ShareAmi(t *testing.T, amiID string, accountID string, ec2Client *ec2.EC2) {
