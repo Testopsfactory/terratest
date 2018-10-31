@@ -350,8 +350,8 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 
 		findCommandArgs = append(findCommandArgs, "\\(")
 		for i, curFilter := range options.FileNameFilters {
-			// due to inconsistent bash behavior we need to wrap the wildcard if it
-			// is just on its own.
+			// due to inconsistent bash behavior we need to wrap the
+			// filter in single quotes
 			curFilter = fmt.Sprintf("'%s'", curFilter)
 			findCommandArgs = append(findCommandArgs, "-name", curFilter)
 
