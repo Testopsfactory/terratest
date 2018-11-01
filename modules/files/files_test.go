@@ -74,6 +74,19 @@ func TestCopyFolderContentsWithSymLinks(t *testing.T) {
 func TestCopyFolderContentsWithBrokenSymLinks(t *testing.T) {
 	t.Parallel()
 
+	// Creating broken symlink
+	pathToFile := filepath.Join(copyFolderContentsFixtureRoot, "symlinks-broken/nonexistent-folder/bar.txt")
+	pathToSymlink := filepath.Join(copyFolderContentsFixtureRoot, "symlinks-broken/bar.txt")
+	defer func() {
+		if err := os.Remove(pathToSymlink); err != nil {
+			t.Fatal(fmt.Errorf("Failed to remove link: %+v", err))
+		}
+	}()
+	if err := os.Symlink(pathToFile, pathToSymlink); err != nil {
+		t.Fatal(fmt.Errorf("Failed to create broken link for test: %+v", err))
+	}
+
+	// Test copying folder
 	originalDir := filepath.Join(copyFolderContentsFixtureRoot, "symlinks-broken")
 	tmpDir, err := ioutil.TempDir("", "TestCopyFolderContentsWithFilter")
 	assert.NoError(t, err)
