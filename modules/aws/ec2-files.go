@@ -218,21 +218,15 @@ func FetchFilesFromAsgsE(t *testing.T, awsRegion string, spec RemoteFileSpecific
 
 			instanceIDs, err := GetInstanceIdsForAsgE(t, curAsg, awsRegion)
 			if err != nil {
-				return err
-			}
-
-			errorsOccurred := []error{}
-
-			for _, instanceID := range instanceIDs {
-				err = FetchFilesFromInstanceE(t, awsRegion, spec.SshUser, spec.KeyPair, instanceID, spec.UseSudo, curRemoteDir, spec.LocalDestinationDir, fileFilters)
-
-				if err != nil {
-					errorsOccurred = append(errorsOccurred, err)
-				}
-			}
-
-			if err != nil {
 				errorsOccurred = append(errorsOccurred, err)
+			} else {
+				for _, instanceID := range instanceIDs {
+					err = FetchFilesFromInstanceE(t, awsRegion, spec.SshUser, spec.KeyPair, instanceID, spec.UseSudo, curRemoteDir, spec.LocalDestinationDir, fileFilters)
+
+					if err != nil {
+						errorsOccurred = append(errorsOccurred, err)
+					}
+				}
 			}
 		}
 	}

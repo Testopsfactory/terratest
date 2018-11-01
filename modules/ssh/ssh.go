@@ -350,6 +350,9 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 
 		findCommandArgs = append(findCommandArgs, "\\(")
 		for i, curFilter := range options.FileNameFilters {
+			// due to inconsistent bash behavior we need to wrap the
+			// filter in single quotes
+			curFilter = fmt.Sprintf("'%s'", curFilter)
 			findCommandArgs = append(findCommandArgs, "-name", curFilter)
 
 			// only add the or flag if we're not the last element
@@ -364,7 +367,8 @@ func listFileInRemoteDir(t *testing.T, sshSession *SshSession, options ScpDownlo
 		findCommandArgs = append(findCommandArgs, "-size", fmt.Sprintf("-%dM", options.MaxFileSizeMB))
 	}
 
-	resultString, err := CheckSshCommandE(t, options.RemoteHost, strings.Join(findCommandArgs, " "))
+	finalCommandString := strings.Join(findCommandArgs, " ")
+	resultString, err := CheckSshCommandE(t, options.RemoteHost, finalCommandString)
 
 	if err != nil {
 		return result, err

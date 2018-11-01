@@ -134,6 +134,11 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 			2,
 		},
 		{
+			"GrabAllFilesExplicit",
+			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: filepath.Join(localDestDir, random.UniqueId()), FileNameFilters: []string{"*"}},
+			2,
+		},
+		{
 			"GrabFilesWithFilter",
 			ssh.ScpDownloadOptions{RemoteHost: publicHost, RemoteDir: remoteTempFolder, LocalDir: filepath.Join(localDestDir, random.UniqueId()), FileNameFilters: []string{"*.baz"}},
 			1,
