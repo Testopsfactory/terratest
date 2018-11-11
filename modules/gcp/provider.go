@@ -1,8 +1,9 @@
 package gcp
 
 import (
-	"os"
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/environment"
 )
 
 var credsEnvVars = []string{
@@ -28,36 +29,15 @@ var regionEnvVars = []string{
 
 // GetGoogleCredentialsFromEnvVar returns the Credentials for use with testing.
 func GetGoogleCredentialsFromEnvVar(t *testing.T) string {
-	return getFirstNonEmptyValOrEmptyString(t, credsEnvVars)
+	return environment.GetFirstNonEmptyEnvVarOrEmptyString(t, credsEnvVars)
 }
 
 // GetGoogleProjectIDFromEnvVar returns the Project Id for use with testing.
 func GetGoogleProjectIDFromEnvVar(t *testing.T) string {
-	return getFirstNonEmptyValOrFatal(t, projectEnvVars)
+	return environment.GetFirstNonEmptyEnvVarOrFatal(t, projectEnvVars)
 }
 
 // GetGoogleRegionFromEnvVar returns the Region for use with testing.
 func GetGoogleRegionFromEnvVar(t *testing.T) string {
-	return getFirstNonEmptyValOrFatal(t, regionEnvVars)
-}
-
-// getFirstNonEmptyValOrFatal returns the first non-empty value from ks, or throws a fatal
-func getFirstNonEmptyValOrFatal(t *testing.T, ks []string) string {
-	v := getFirstNonEmptyValOrEmptyString(t, ks)
-	if v == "" {
-		t.Fatalf("All of the following env vars %v are empty. At least one must be non-empty.", ks)
-	}
-
-	return v
-}
-
-// getFirstNonEmptyValOrFatal returns the first non-empty value from ks, or returns the empty string
-func getFirstNonEmptyValOrEmptyString(t *testing.T, ks []string) string {
-	for _, k := range ks {
-		if v := os.Getenv(k); v != "" {
-			return v
-		}
-	}
-
-	return ""
+	return environment.GetFirstNonEmptyEnvVarOrFatal(t, regionEnvVars)
 }

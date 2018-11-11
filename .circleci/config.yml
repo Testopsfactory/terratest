@@ -4,6 +4,16 @@ jobs:
     # We need to run Docker Compose with volumes, which isn't supported by CircleCI's Docker executor, so we have to use
     # the machine executor instead.
     machine: true
+    environment:
+      TERRAFORM_VERSION: 0.11.8
+      GRUNTWORK_INSTALLER_VERSION: v0.0.21
+      K8S_VERSION: v1.10.0  # Same as EKS
+      KUBECONFIG: /home/circleci/.kube/config
+      MINIKUBE_VERSION: v0.28.2  # See https://github.com/kubernetes/minikube/issues/2704
+      MINIKUBE_WANTUPDATENOTIFICATION: "false"
+      MINIKUBE_WANTREPORTERRORPROMPT: "false"
+      MINIKUBE_HOME: /home/circleci
+      CHANGE_MINIKUBE_NONE_USER: "true"
     steps:
       - checkout
 
@@ -21,9 +31,45 @@ jobs:
             - v1-dep-{{ checksum "Gopkg.lock" }}
 
       # Use the Gruntwork Installer to install the gruntwork-module-circleci-helpers
-      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
+      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version ${GRUNTWORK_INSTALLER_VERSION}
       - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
-      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --terraform-version 0.11.8
+      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --terraform-version ${TERRAFORM_VERSION}
+
+      # Install and setup minikube
+      # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
+      - run:
+          name: install kubectl
+          command: |
+            curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            sudo mv kubectl /usr/local/bin/
+            mkdir -p ${HOME}/.kube
+            touch ${HOME}/.kube/config
+      - run:
+          name: install minikube
+          command: |
+            curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
+            chmod +x minikube
+            sudo mv minikube /usr/local/bin/
+      - run:
+          name: start minikube and wait for it
+          command: |
+            # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
+            # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
+            # systemd.
+            sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube
+            # this for loop waits until kubectl can access the api server that Minikube has created
+            $(
+              for i in {1..150}; do # timeout for 5 minutes
+                kubectl get po &> /dev/null
+                if [ $? -ne 1 ]; then
+                  break
+                fi
+                sleep 2
+              done
+              true
+            )
+
       - save_cache:
           key: v1-external-dep
           paths:
