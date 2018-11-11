@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -16,14 +17,11 @@ func TestDeleteConfigContext(t *testing.T) {
 	path := storeConfigToTempFile(t, BASIC_CONFIG_WITH_EXTRA_CONTEXT)
 	defer os.Remove(path)
 
-	if err := DeleteConfigContextWithPathE(t, path, "extra_minikube"); err != nil {
-		t.Fatal(err)
-	}
+	err := DeleteConfigContextWithPathE(t, path, "extra_minikube")
+	require.NoError(t, err)
 
 	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	storedConfig := string(data)
 	assert.Equal(t, storedConfig, BASIC_CONFIG)
 }
@@ -34,14 +32,11 @@ func TestDeleteConfigContextWithAnotherContextRemaining(t *testing.T) {
 	path := storeConfigToTempFile(t, BASIC_CONFIG_WITH_EXTRA_CONTEXT_NO_GARBAGE)
 	defer os.Remove(path)
 
-	if err := DeleteConfigContextWithPathE(t, path, "extra_minikube"); err != nil {
-		t.Fatal(err)
-	}
+	err := DeleteConfigContextWithPathE(t, path, "extra_minikube")
+	require.NoError(t, err)
 
 	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	storedConfig := string(data)
 	assert.Equal(t, storedConfig, EXPECTED_CONFIG_AFTER_EXTRA_MINIKUBE_DELETED_NO_GARBAGE)
 }
@@ -82,17 +77,12 @@ func removeOrphanedClusterAndAuthInfoConfigTestFunc(t *testing.T, inputConfig st
 
 	config := LoadConfigFromPath(path)
 	rawConfig, err := config.RawConfig()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	RemoveOrphanedClusterAndAuthInfoConfig(&rawConfig)
-	if err := clientcmd.ModifyConfig(config.ConfigAccess(), rawConfig, false); err != nil {
-		t.Fatal(err)
-	}
+	err = clientcmd.ModifyConfig(config.ConfigAccess(), rawConfig, false)
+	require.NoError(t, err)
 	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	storedConfig := string(data)
 	assert.Equal(t, storedConfig, expectedOutputConfig)
 }
@@ -100,14 +90,11 @@ func removeOrphanedClusterAndAuthInfoConfigTestFunc(t *testing.T, inputConfig st
 func storeConfigToTempFile(t *testing.T, configData string) string {
 	escapedTestName := url.PathEscape(t.Name())
 	tmpfile, err := ioutil.TempFile("", escapedTestName)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	defer tmpfile.Close()
 
-	if _, err := tmpfile.WriteString(configData); err != nil {
-		t.Fatal(err)
-	}
+	_, err = tmpfile.WriteString(configData)
+	require.NoError(t, err)
 	return tmpfile.Name()
 }
 

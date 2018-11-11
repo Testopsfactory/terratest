@@ -85,26 +85,43 @@ func WaitUntilAllNodesReady(t *testing.T, retries int, sleepBetweenRetries time.
 // WaitUntilAllNodesReadyE continuously polls the Kubernetes cluster until all nodes in the cluster reach the ready
 // state, or runs out of retries.
 func WaitUntilAllNodesReadyE(t *testing.T, retries int, sleepBetweenRetries time.Duration) error {
-	_, err := retry.DoWithRetryE(
+	message, err := retry.DoWithRetryE(
 		t,
 		"Wait for all Kube Nodes to be ready",
 		retries,
 		sleepBetweenRetries,
 		func() (string, error) {
-			nodes, err := GetNodesE(t)
+			_, err := AreAllNodesReadyE(t)
 			if err != nil {
 				return "", err
 			}
-			if len(nodes) == 0 {
-				return "", errors.New("No nodes available")
-			}
-			for _, node := range nodes {
-				if !IsNodeReady(node) {
-					return "", errors.New("Not all nodes ready")
-				}
-			}
-			return "", nil
+			return "All nodes ready", nil
 		},
 	)
+	logger.Logf(t, message)
 	return err
+}
+
+// AreAllNodesReady checks if all nodes are ready in the Kubernetes cluster targeted by the current config context
+func AreAllNodesReady(t *testing.T) bool {
+	nodesReady, _ := AreAllNodesReadyE(t)
+	return nodesReady
+}
+
+// AreAllNodesReadyE checks if all nodes are ready in the Kubernetes cluster targeted by the current config context. If
+// false, returns an error indicating the reason.
+func AreAllNodesReadyE(t *testing.T) (bool, error) {
+	nodes, err := GetNodesE(t)
+	if err != nil {
+		return false, err
+	}
+	if len(nodes) == 0 {
+		return false, errors.New("No nodes available")
+	}
+	for _, node := range nodes {
+		if !IsNodeReady(node) {
+			return false, errors.New("Not all nodes ready")
+		}
+	}
+	return true, nil
 }

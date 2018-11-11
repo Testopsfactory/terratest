@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// These tests can not run in parallel, since they manipulate env vars
 var envvarList = []string{
 	"TERRATEST_TEST_ENVIRONMENT",
 	"TERRATESTTESTENVIRONMENT",
@@ -15,6 +14,8 @@ var envvarList = []string{
 }
 
 func TestGetFirstNonEmptyEnvVarOrEmptyStringChecksInOrder(t *testing.T) {
+	// These tests can not run in parallel, since they manipulate env vars
+	// DO NOT ADD THIS: t.Parallel()
 
 	os.Setenv("TERRATESTTESTENVIRONMENT", "test")
 	os.Setenv("TERRATESTENVIRONMENT", "circleCI")
@@ -25,6 +26,9 @@ func TestGetFirstNonEmptyEnvVarOrEmptyStringChecksInOrder(t *testing.T) {
 }
 
 func TestGetFirstNonEmptyEnvVarOrEmptyStringReturnsEmpty(t *testing.T) {
+	// These tests can not run in parallel, since they manipulate env vars
+	// DO NOT ADD THIS: t.Parallel()
+
 	value := GetFirstNonEmptyEnvVarOrEmptyString(t, envvarList)
 	assert.Equal(t, value, "")
 }

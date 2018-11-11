@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Tests that:
@@ -15,7 +16,7 @@ func TestGetNodes(t *testing.T) {
 
 	// Assumes local kubernetes (minikube or docker-for-desktop kube), where there is only one node
 	nodes := GetNodes(t)
-	assert.Equal(t, len(nodes), 1)
+	require.Equal(t, len(nodes), 1)
 
 	node := nodes[0]
 	// Make sure node name is not blank, indicating an uninitialized Node object
@@ -30,7 +31,7 @@ func TestGetReadyNodes(t *testing.T) {
 
 	// Assumes local kubernetes (minikube or docker-for-desktop kube), where there is only one node
 	nodes := GetReadyNodes(t)
-	assert.Equal(t, len(nodes), 1)
+	require.Equal(t, len(nodes), 1)
 
 	node := nodes[0]
 	// Make sure node name is not blank, indicating an uninitialized Node object

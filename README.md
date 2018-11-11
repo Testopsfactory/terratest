@@ -11,6 +11,8 @@ variety of helper functions and patterns for common infrastructure testing tasks
 - Testing Docker images
 - Executing commands on servers over SSH
 - Working with AWS APIs
+- Working with GCP APIs
+- Working with Kubernetes APIs
 - Making HTTP requests
 - Running shell commands
 - And much more

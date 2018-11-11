@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"errors"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -56,7 +57,9 @@ func DeleteConfigContextWithPathE(t *testing.T, kubeConfigPath string, contextNa
 
 	// If the removing context is the current context, be sure to set a new one
 	if contextName == rawConfig.CurrentContext {
-		setNewContext(&rawConfig)
+		if err := setNewContext(&rawConfig); err != nil {
+			return err
+		}
 	}
 
 	// Finally, clean up orphaned clusters and authinfos and then save config
@@ -75,14 +78,19 @@ func DeleteConfigContextWithPathE(t *testing.T, kubeConfigPath string, contextNa
 
 // setNewContext will pick the alphebetically first available context from the list of contexts in the config to use as
 // the new current context
-func setNewContext(config *api.Config) {
+func setNewContext(config *api.Config) error {
 	// Sort contextNames and pick the first one
 	var contextNames []string
 	for name := range config.Contexts {
 		contextNames = append(contextNames, name)
 	}
 	sort.Strings(contextNames)
-	config.CurrentContext = contextNames[0]
+	if len(contextNames) > 0 {
+		config.CurrentContext = contextNames[0]
+	} else {
+		return errors.New("There are no available contexts remaining")
+	}
+	return nil
 }
 
 // RemoveOrphanedClusterAndAuthInfoConfig will remove all configurations related to clusters and users that have no
@@ -90,8 +98,7 @@ func setNewContext(config *api.Config) {
 func RemoveOrphanedClusterAndAuthInfoConfig(config *api.Config) {
 	newAuthInfos := map[string]*api.AuthInfo{}
 	newClusters := map[string]*api.Cluster{}
-	for contextName := range config.Contexts {
-		context := config.Contexts[contextName]
+	for _, context := range config.Contexts {
 		newClusters[context.Cluster] = config.Clusters[context.Cluster]
 		newAuthInfos[context.AuthInfo] = config.AuthInfos[context.AuthInfo]
 	}
