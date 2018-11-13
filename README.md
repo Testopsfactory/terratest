@@ -77,6 +77,36 @@ go get github.com/gruntwork-io/terratest/modules/terraform
 ```
 
 
+### Installing the utility binaries
+
+Terratest also ships utility binaries that you can use to improve the debugging experience (see [Debugging interleaved
+test output](#debugging-interleaved-test-output). The compiled binaries are shipped separately from the library in the [Releases page](https://github.com/gruntwork-io/terratest/releases).
+
+To install a binary, download the version that matches your platform and place it somewhere on your `PATH`. For example
+to install version 0.13.13 of `terratest_log_parser`:
+
+```bash
+# This example assumes a linux 64bit machine
+# Use curl to download the binary
+curl -o terratest_log_parser https://github.com/gruntwork-io/terratest/releases/download/v0.13.13/terratest_log_parser_linux_amd64
+# Make the downloaded binary executable
+chmod +x terratest_log_parser
+# Finally, we place the downloaded binary to a place in the PATH
+sudo mv terratest_log_parser /usr/local/bin
+```
+
+Alternatively, you can use [the gruntwork-installer](https://github.com/gruntwork-io/gruntwork-installer), which will do
+the above steps and automatically select the right binary for your platform:
+
+```bash
+gruntwork-install --binary-name 'terratest_log_parser' --repo 'https://github.com/gruntwork-io/terratest' --tag 'v0.13.13'
+```
+
+The following binaries are currently available with `terratest`:
+
+| Command                  | Description                                                                                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **terratest_log_parser** | Parses test output from the `go test` command and breaks out the interleaved logs into logs for each test. Integrate with your CI environment to help debug failing tests. |
 
 
 ## Examples
@@ -157,15 +187,6 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 | **ssh**            | Functions to SSH to servers. Examples: SSH to a server, execute a command, and return `stdout` and `stderr`.                                                                                                                                                                                         |
 | **terraform**      | Functions for working with Terraform. Examples: run `terraform init`, `terraform apply`, `terraform destroy`.                                                                                                                                                                                        |
 | **test_structure** | Functions for structuring your tests to speed up local iteration. Examples: break up your tests into stages so that any stage can be skipped by setting an environment variable.                                                                                                                     |
-
-Terratest also ships with utility commands that can be used to help with debugging test failures in CI environments.
-Here is an overview of commands in Terratest's [cmd folder](/cmd) that are shipped with each release:
-
-| Command                  | Description                                                                                                                                                                |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **terratest_log_parser** | Parses test output from the `go test` command and breaks out the interleaved logs into logs for each test. Integrate with your CI environment to help debug failing tests. |
-
-
 
 
 
@@ -304,6 +325,9 @@ go test -timeout 30m -p 1 ./...
 
 ### Debugging interleaved test output
 
+**Note**: The `terratest_log_parser` requires an explicit installation. See [Installing the utility
+binaries](#installing-the-utility-binaries) for installation instructions.
+
 If you log using Terratest's `logger` package, you may notice that all the test outputs are interleaved from the
 parallel execution. This may make it difficult to debug failures, as it can be tedious to sift through the logs to find
 the relevant entries for a failing test, let alone find the test that failed.
@@ -335,8 +359,6 @@ provides for each build:
 - A snapshot of all the logs broken out by test:
 
 ![CircleCI logs](/_docs/images/circleci-logs.png)
-
-You can download the compiled versions of the utility for your platform from the [Releases page](https://github.com/gruntwork-io/terratest/releases).
 
 
 ### Avoid test caching
