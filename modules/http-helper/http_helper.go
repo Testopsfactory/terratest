@@ -4,7 +4,6 @@ package http_helper
 import (
 	"crypto/tls"
 	"fmt"
-	// TODO Guido: remove this import
 	"io"
 	"io/ioutil"
 	"net/http"
