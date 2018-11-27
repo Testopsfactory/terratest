@@ -433,7 +433,7 @@ func runSSHCommand(t *testing.T, sshSession *SshSession) (string, error) {
 
 	bytes, err := sshSession.Session.CombinedOutput(sshSession.Options.Command)
 	if err != nil {
-		return "", err
+		return string(bytes), err
 	}
 
 	return string(bytes), nil
