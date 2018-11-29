@@ -6,3 +6,7 @@
 data "template_file" "example" {
   template = "${var.example}"
 }
+
+data "template_file" "example2" {
+  template = "${var.example2}"
+}

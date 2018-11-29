@@ -13,6 +13,7 @@ func TestTerraformBasicExample(t *testing.T) {
 
 	expectedText := "foo"
 
+        // TODO create the terraform varfile from test
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../examples/terraform-basic-example",
@@ -21,9 +22,13 @@ func TestTerraformBasicExample(t *testing.T) {
 		Vars: map[string]interface{}{
 			"example": expectedText,
 		},
+                VarFiles: []string{
+                    "varfile.tfvars"
+                }
 
 		NoColor: true,
 	}
+        z
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)
@@ -36,4 +41,10 @@ func TestTerraformBasicExample(t *testing.T) {
 
 	// Verify we're getting back the variable we expect
 	assert.Equal(t, expectedText, actualText)
+
+        // Test for the second variable which comes from the var file
+        actualText = terraform.Output(t, terraformOptions, "example")
+        assert.Equal(t, "example2", actualText)
+
 }
+
