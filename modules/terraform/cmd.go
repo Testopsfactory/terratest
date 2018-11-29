@@ -22,7 +22,7 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	}
 
 	for _, target = range options.Targets {
-		arg = append(args, fmt.Sprintf("%s=%s","-target", varFile))
+		arg = append(args, fmt.Sprintf("%s=%s","-target", target))
 	}
 
 	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
