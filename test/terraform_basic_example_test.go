@@ -28,7 +28,7 @@ func TestTerraformBasicExample(t *testing.T) {
 
 		NoColor: true,
 	}
-        z
+        
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)
