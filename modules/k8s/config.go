@@ -110,7 +110,7 @@ func RemoveOrphanedClusterAndAuthInfoConfig(config *api.Config) {
 func GetKubeConfigPathE(t *testing.T) (string, error) {
 	kubeConfigPath := environment.GetFirstNonEmptyEnvVarOrEmptyString(t, []string{"KUBECONFIG"})
 	if kubeConfigPath == "" {
-		configPath, err := kubeConfigPathFromHomeDirE()
+		configPath, err := KubeConfigPathFromHomeDirE()
 		if err != nil {
 			return "", err
 		}
@@ -119,9 +119,9 @@ func GetKubeConfigPathE(t *testing.T) (string, error) {
 	return kubeConfigPath, nil
 }
 
-// kubeConfigPathFromHomeDirE returns a string to the default Kubernetes config path in the home directory. This will
+// KubeConfigPathFromHomeDirE returns a string to the default Kubernetes config path in the home directory. This will
 // error if the home directory can not be determined.
-func kubeConfigPathFromHomeDirE() (string, error) {
+func KubeConfigPathFromHomeDirE() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
 		return "", err
