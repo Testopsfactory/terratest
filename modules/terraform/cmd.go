@@ -17,6 +17,10 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 		args = append(args, "-no-color")
 	}
 
+	for _, varFile = range options.VarFiles {
+		arg = append(args, fmt.Sprintf("%s=%s","-var-file", varFile))
+	}
+
 	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
 	if options.SshAgent != nil {
 		// Initialize EnvVars, if it hasn't been set yet
