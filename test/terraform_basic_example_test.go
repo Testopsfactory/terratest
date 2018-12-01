@@ -39,7 +39,7 @@ func TestTerraformBasicExample(t *testing.T) {
 	assert.Equal(t, expectedText, actualText)
 
 	// Test for the second variable which comes from the var file
-	actualText = terraform.Output(t, terraformOptions, "example")
-	assert.Equal(t, "example2", actualText)
+	actualText = terraform.Output(t, terraformOptions, "example2")
+	assert.Equal(t, "test", actualText)
 
 }
