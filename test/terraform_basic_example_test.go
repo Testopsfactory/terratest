@@ -21,7 +21,7 @@ func TestTerraformBasicExample(t *testing.T) {
 		Vars: map[string]interface{}{
 			"example": expectedText,
 		},
-		VarFiles: []string{"../examples/terraform-basic-example/varfile.tfvars"},
+		VarFiles: []string{"varfile.tfvars"},
 
 		NoColor: true,
 	}
