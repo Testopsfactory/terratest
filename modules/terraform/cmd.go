@@ -16,15 +16,6 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	if options.NoColor && !collections.ListContains(args, "-no-color") {
 		args = append(args, "-no-color")
 	}
-
-	for _, varFile := range options.VarFiles {
-		args = append(args, fmt.Sprintf("%s=%s", "-var-file", varFile))
-	}
-
-	for _, target := range options.Targets {
-		args = append(args, fmt.Sprintf("%s=%s", "-target", target))
-	}
-
 	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
 	if options.SshAgent != nil {
 		// Initialize EnvVars, if it hasn't been set yet
