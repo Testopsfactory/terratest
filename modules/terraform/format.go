@@ -10,6 +10,7 @@ import (
 // format the Terraform CLI expects (-var k.Vars, options.VarFiles,ey=value and or -var-file=path).
 func FormatArgs(options *Options, args ...string) []string {
 	var terraformArgs []string
+	terraformArgs = append(terraformArgs, args...)
 	terraformArgs = append(terraformArgs, FormatTerraformVarsAsArgs(options.Vars)...)
 	terraformArgs = append(terraformArgs, FormatTerraformArgs("-var-file", options.VarFiles)...)
 	terraformArgs = append(terraformArgs, FormatTerraformArgs("-target", options.Targets)...)
@@ -22,11 +23,11 @@ func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
 	return formatTerraformArgs(vars, "-var")
 }
 
-// FormatTerraformArgs will format multiple args with the arg name (e.g. arg-file=a arg-file =b)
+// FormatTerraformArgs will format multiple args with the arg name (e.g. arg-file a arg-file b)
 func FormatTerraformArgs(argName string, args []string) []string {
 	argsList := []string{}
 	for _, varFile := range args {
-		argsList = append(argsList, fmt.Sprintf("%s=%s", argName, varFile))
+		argsList = append(argsList, argName, varFile)
 	}
 	return argsList
 }
