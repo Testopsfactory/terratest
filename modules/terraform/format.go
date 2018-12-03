@@ -7,10 +7,13 @@ import (
 )
 
 // FormatArgs converts the inputs to a format palatable to terraform. This includes converting the given vars to the
-// format the Terraform CLI expects (-var key=value and or -var-file=path).
-func FormatArgs(customVars map[string]interface{}, varFiles []string, args ...string) []string {
-	varsAndFileArgs := append(FormatTerraformVarsAsArgs(customVars), FormatTerraformVarFilesAsArgs(varFiles)...)
-	return append(args, varsAndFileArgs...)
+// format the Terraform CLI expects (-var k.Vars, options.VarFiles,ey=value and or -var-file=path).
+func FormatArgs(options *Options, args ...string) []string {
+	var terraformArgs []string
+	terraformArgs = append(terraformArgs, FormatTerraformVarsAsArgs(options.Vars)...)
+	terraformArgs = append(terraformArgs, FormatTerraformArgs("-var-file", options.VarFiles)...)
+	terraformArgs = append(terraformArgs, FormatTerraformArgs("-target", options.Targets)...)
+	return terraformArgs
 }
 
 // FormatTerraformVarsAsArgs formats the given variables as command-line args for Terraform (e.g. of the format
@@ -19,13 +22,13 @@ func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
 	return formatTerraformArgs(vars, "-var")
 }
 
-// FormatTerraformVarFilesAsArgs will format the var file paths as -var-file=path
-func FormatTerraformVarFilesAsArgs(varFiles []string) []string {
-	var args []string
-	for _, varFile := range varFiles {
-		args = append(args, fmt.Sprintf("%s=%s", "-var-file", varFile))
+// FormatTerraformArgs will format multiple args with the arg name (e.g. arg-file=a arg-file =b)
+func FormatTerraformArgs(argName string, args []string) []string {
+	argsList := []string{}
+	for _, varFile := range args {
+		argsList = append(argsList, fmt.Sprintf("%s=%s", argName, varFile))
 	}
-	return args
+	return argsList
 }
 
 // FormatTerraformBackendConfigAsArgs formats the given variables as backend config args for Terraform (e.g. of the
