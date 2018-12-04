@@ -23,11 +23,12 @@ func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
 	return formatTerraformArgs(vars, "-var")
 }
 
-// FormatTerraformArgs will format multiple args with the arg name (e.g. arg-file a arg-file b)
+// FormatTerraformArgs will format multiple args with the arg name (e.g. "-var-file", []string{"foo.tfvars", "bar.tfvars"})
+// returns "-var-file foo.tfvars -var-file bar.tfvars"
 func FormatTerraformArgs(argName string, args []string) []string {
 	argsList := []string{}
-	for _, varFile := range args {
-		argsList = append(argsList, argName, varFile)
+	for _, argValue := range args {
+		argsList = append(argsList, argName, argValue)
 	}
 	return argsList
 }
