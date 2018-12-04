@@ -25,9 +25,6 @@ func TestTerraformBasicExample(t *testing.T) {
 		Vars: map[string]interface{}{
 			"example": expectedText,
 		},
-		// Only create the example1 file
-		Targets: []string{"local_file.example"},
-
 		// Use the var files
 		VarFiles: []string{"varfile.tfvars"},
 
@@ -50,9 +47,8 @@ func TestTerraformBasicExample(t *testing.T) {
 	actualText = terraform.Output(t, terraformOptions, "example2")
 	assert.Equal(t, "test", actualText)
 
-	// Test resources: the target specifies only the local_file.example resource
-	//only the file  example.txt should be created, and example2.txt should NOT
+	// Test to see if the local_file resources were created
 	assert.True(t, files.FileExists(filepath.Join(terraformDir, "example.txt")))
-	assert.False(t, files.FileExists(filepath.Join(terraformDir, "example2.txt")))
+	assert.True(t, files.FileExists(filepath.Join(terraformDir, "example2.txt")))
 
 }
