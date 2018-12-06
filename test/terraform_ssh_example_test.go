@@ -12,7 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/test-structure"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 // An example of how to test the Terraform module in examples/terraform-ssh-example using Terratest. The test also

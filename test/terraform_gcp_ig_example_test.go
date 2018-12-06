@@ -8,7 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/gcp"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/gruntwork-io/terratest/modules/test-structure"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 )
 
 func TestTerraformGcpInstanceGroupExample(t *testing.T) {
