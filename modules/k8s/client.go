@@ -4,15 +4,14 @@ import (
 	"testing"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
 // GetKubernetesClientFromFileE returns a Kubernetes API client given the kubernetes config file path.
-func GetKubernetesClientFromFileE(kubeConfigPath string) (*kubernetes.Clientset, error) {
+func GetKubernetesClientFromFileE(kubeConfigPath string, contextName string) (*kubernetes.Clientset, error) {
 	// Load API config (instead of more low level ClientConfig)
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	config, err := LoadApiClientConfig(kubeConfigPath, contextName)
 	if err != nil {
 		return nil, err
 	}
@@ -33,5 +32,5 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 	}
 
 	logger.Logf(t, "Configuring kubectl using config file %s", kubeConfigPath)
-	return GetKubernetesClientFromFileE(kubeConfigPath)
+	return GetKubernetesClientFromFileE(kubeConfigPath, "")
 }
