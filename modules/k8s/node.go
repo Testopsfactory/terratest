@@ -9,6 +9,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 // GetNodes queries Kubernetes for information about the worker nodes registered to the cluster. If anything goes wrong,
@@ -28,7 +29,12 @@ func GetNodesE(t *testing.T) ([]corev1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	return GetNodesByClientE(clientset)
+}
 
+// GetNodesByClientE queries Kubernetes for information about the worker nodes registered to the cluster, given a
+// clientset.
+func GetNodesByClientE(clientset *kubernetes.Clientset) ([]corev1.Node, error) {
 	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
