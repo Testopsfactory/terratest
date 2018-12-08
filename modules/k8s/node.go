@@ -29,13 +29,13 @@ func GetNodesE(t *testing.T) ([]corev1.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return GetNodesByClientE(clientset)
+	return GetNodesByClientE(clientset, metav1.ListOptions{})
 }
 
 // GetNodesByClientE queries Kubernetes for information about the worker nodes registered to the cluster, given a
 // clientset.
-func GetNodesByClientE(clientset *kubernetes.Clientset) ([]corev1.Node, error) {
-	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+func GetNodesByClientE(clientset *kubernetes.Clientset, options metav1.ListOptions) ([]corev1.Node, error) {
+	nodes, err := clientset.CoreV1().Nodes().List(options)
 	if err != nil {
 		return nil, err
 	}
