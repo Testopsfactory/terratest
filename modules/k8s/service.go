@@ -76,14 +76,21 @@ func IsServiceAvailable(service *corev1.Service) bool {
 
 // GetServiceEndpoint will return the service access point. If the service endpoint is not ready, will fail the test
 // immediately.
-func GetServiceEndpoint(t *testing.T, clientset *kubernetes.Clientset, service *corev1.Service, servicePort int) string {
-	endpoint, err := GetServiceEndpointE(clientset, service, servicePort)
+func GetServiceEndpoint(t *testing.T, service *corev1.Service, servicePort int) string {
+	clientset, err := GetKubernetesClientE(t)
+	require.NoError(t, err)
+	endpoint, err := GetServiceEndpointFromClientE(clientset, service, servicePort)
 	require.NoError(t, err)
 	return endpoint
 }
 
-// GetServiceEndpointE will return the service access point
-func GetServiceEndpointE(clientset *kubernetes.Clientset, service *corev1.Service, servicePort int) (string, error) {
+// GetServiceEndpointFromClientE will return the service access point using the following logic:
+// - For ClusterIP service type, return the URL that maps to ClusterIP and Service Port
+// - For NodePort service type, identify the public IP of the node (if it exists, otherwise return the bound hostname),
+//   and the assigned node port for the provided service port, and return the URL that maps to node ip and node port.
+// - For LoadBalancer service type, return the publicly accessible hostname of the load balancer.
+// - All other service types are not supported.
+func GetServiceEndpointFromClientE(clientset *kubernetes.Clientset, service *corev1.Service, servicePort int) (string, error) {
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
 		// ClusterIP service type will map directly to service port
