@@ -58,8 +58,16 @@ func TestGetServiceEndpointEReturnsAccessibleEndpointForNodePort(t *testing.T) {
 
 	service := GetService(t, uniqueID, "nginx-service")
 	endpoint := GetServiceEndpoint(t, service, 80)
-	statusCode, _ := http_helper.HttpGet(t, fmt.Sprintf("http://%s", endpoint))
-	require.Equal(t, statusCode, 200)
+	// Test up to 5 minutes
+	http_helper.HttpGetWithRetryWithCustomValidation(
+		t,
+		fmt.Sprintf("http://%s", endpoint),
+		30,
+		10*time.Second,
+		func(statusCode int, body string) bool {
+			return statusCode == 200
+		},
+	)
 }
 
 const EXAMPLE_DEPLOYMENT_YAML_TEMPLATE = `---
