@@ -1,7 +1,12 @@
 package k8s
 
 import (
+	"io/ioutil"
+	"net/url"
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/shell"
 )
@@ -37,4 +42,60 @@ func RunKubectlAndGetOutputE(t *testing.T, options *KubectlOptions, args ...stri
 		Env:     options.Env,
 	}
 	return shell.RunCommandAndGetOutputE(t, command)
+}
+
+// KubectlDeleteFromString will take in a kubernetes resource config as a string and delete it on the cluster specified
+// by the provided kubectl options.
+func KubectlDeleteFromString(t *testing.T, options *KubectlOptions, configData string) {
+	require.NoError(t, KubectlDeleteFromStringE(t, options, configData))
+}
+
+// KubectlDeleteFromStringE will take in a kubernetes resource config as a string and delete it on the cluster specified
+// by the provided kubectl options. If it fails, this will return the error.
+func KubectlDeleteFromStringE(t *testing.T, options *KubectlOptions, configData string) error {
+	tmpfile, err := StoreConfigToTempFileE(t, configData)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile)
+	return RunKubectlE(t, options, "delete", "-f", tmpfile)
+}
+
+// KubectlApplyFromString will take in a kubernetes resource config as a string and apply it on the cluster specified
+// by the provided kubectl options.
+func KubectlApplyFromString(t *testing.T, options *KubectlOptions, configData string) {
+	require.NoError(t, KubectlApplyFromStringE(t, options, configData))
+}
+
+// KubectlApplyFromStringE will take in a kubernetes resource config as a string and apply it on the cluster specified
+// by the provided kubectl options. If it fails, this will return the error.
+func KubectlApplyFromStringE(t *testing.T, options *KubectlOptions, configData string) error {
+	tmpfile, err := StoreConfigToTempFileE(t, configData)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmpfile)
+	return RunKubectlE(t, options, "apply", "-f", tmpfile)
+}
+
+// StoreConfigToTempFile will store the provided config data to a temporary file created on the os and return the
+// filename.
+func StoreConfigToTempFile(t *testing.T, configData string) string {
+	out, err := StoreConfigToTempFileE(t, configData)
+	require.NoError(t, err)
+	return out
+}
+
+// StoreConfigToTempFileE will store the provided config data to a temporary file created on the os and return the
+// filename, or error.
+func StoreConfigToTempFileE(t *testing.T, configData string) (string, error) {
+	escapedTestName := url.PathEscape(t.Name())
+	tmpfile, err := ioutil.TempFile("", escapedTestName)
+	if err != nil {
+		return "", err
+	}
+	defer tmpfile.Close()
+
+	_, err = tmpfile.WriteString(configData)
+	return tmpfile.Name(), err
 }

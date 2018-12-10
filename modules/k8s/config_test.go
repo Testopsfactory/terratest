@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"io/ioutil"
-	"net/url"
 	"os"
 	"testing"
 
@@ -14,7 +13,7 @@ import (
 func TestDeleteConfigContext(t *testing.T) {
 	t.Parallel()
 
-	path := storeConfigToTempFile(t, BASIC_CONFIG_WITH_EXTRA_CONTEXT)
+	path := StoreConfigToTempFile(t, BASIC_CONFIG_WITH_EXTRA_CONTEXT)
 	defer os.Remove(path)
 
 	err := DeleteConfigContextWithPathE(t, path, "extra_minikube")
@@ -29,7 +28,7 @@ func TestDeleteConfigContext(t *testing.T) {
 func TestDeleteConfigContextWithAnotherContextRemaining(t *testing.T) {
 	t.Parallel()
 
-	path := storeConfigToTempFile(t, BASIC_CONFIG_WITH_EXTRA_CONTEXT_NO_GARBAGE)
+	path := StoreConfigToTempFile(t, BASIC_CONFIG_WITH_EXTRA_CONTEXT_NO_GARBAGE)
 	defer os.Remove(path)
 
 	err := DeleteConfigContextWithPathE(t, path, "extra_minikube")
@@ -72,7 +71,7 @@ func TestRemoveOrphanedClusterAndAuthInfoConfig(t *testing.T) {
 }
 
 func removeOrphanedClusterAndAuthInfoConfigTestFunc(t *testing.T, inputConfig string, expectedOutputConfig string) {
-	path := storeConfigToTempFile(t, inputConfig)
+	path := StoreConfigToTempFile(t, inputConfig)
 	defer os.Remove(path)
 
 	config := LoadConfigFromPath(path)
@@ -85,17 +84,6 @@ func removeOrphanedClusterAndAuthInfoConfigTestFunc(t *testing.T, inputConfig st
 	require.NoError(t, err)
 	storedConfig := string(data)
 	assert.Equal(t, storedConfig, expectedOutputConfig)
-}
-
-func storeConfigToTempFile(t *testing.T, configData string) string {
-	escapedTestName := url.PathEscape(t.Name())
-	tmpfile, err := ioutil.TempFile("", escapedTestName)
-	require.NoError(t, err)
-	defer tmpfile.Close()
-
-	_, err = tmpfile.WriteString(configData)
-	require.NoError(t, err)
-	return tmpfile.Name()
 }
 
 // Various example configs used in testing the config manipulation functions
