@@ -15,14 +15,14 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 
-	logger.Logf(t, "Configuring kubectl using config file %s", kubeConfigPath)
-	return GetKubernetesClientFromFileE(kubeConfigPath, "")
+	return GetKubernetesClientFromFileE(t, kubeConfigPath, "")
 }
 
 // GetKubernetesClientFromFileE returns a Kubernetes API client given the kubernetes config file path.
-func GetKubernetesClientFromFileE(kubeConfigPath string, contextName string) (*kubernetes.Clientset, error) {
+func GetKubernetesClientFromFileE(t *testing.T, kubeConfigPath string, contextName string) (*kubernetes.Clientset, error) {
+	logger.Logf(t, "Configuring kubectl using config file %s with context %s", kubeConfigPath, contextName)
 	// Load API config (instead of more low level ClientConfig)
-	config, err := LoadApiClientConfig(kubeConfigPath, contextName)
+	config, err := LoadApiClientConfigE(kubeConfigPath, contextName)
 	if err != nil {
 		return nil, err
 	}

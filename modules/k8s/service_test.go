@@ -15,9 +15,7 @@ import (
 func TestGetServiceFromClientEReturnsErrorForNonExistantService(t *testing.T) {
 	t.Parallel()
 
-	clientset, err := GetKubernetesClientE(t)
-	require.NoError(t, err)
-	_, err = GetServiceFromClientE(clientset, "default", "nginx-service")
+	_, err := GetServiceE(t, "default", "nginx-service")
 	require.Error(t, err)
 }
 

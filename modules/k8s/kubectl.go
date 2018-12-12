@@ -13,10 +13,7 @@ import (
 
 // RunKubectl will call kubectl using the provided options and args, failing the test on error.
 func RunKubectl(t *testing.T, options *KubectlOptions, args ...string) {
-	err := RunKubectlE(t, options, args...)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, RunKubectlE(t, options, args...))
 }
 
 // RunKubectlE will call kubectl using the provided options and args.

@@ -26,7 +26,7 @@ func LoadConfigFromPath(path string) clientcmd.ClientConfig {
 
 // LoadApiClientConfig will load a ClientConfig object from a file path that points to a location on disk containing a
 // kubectl config, with the requested context loaded.
-func LoadApiClientConfig(path string, context string) (*restclient.Config, error) {
+func LoadApiClientConfigE(path string, context string) (*restclient.Config, error) {
 	overrides := clientcmd.ConfigOverrides{}
 	if context != "" {
 		overrides.CurrentContext = context

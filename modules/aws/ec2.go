@@ -46,11 +46,6 @@ func GetPublicIpsOfEc2Instances(t *testing.T, instanceIDs []string, awsRegion st
 // GetPublicIpsOfEc2InstancesE gets the public IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
 func GetPublicIpsOfEc2InstancesE(t *testing.T, instanceIDs []string, awsRegion string) (map[string]string, error) {
 	ec2Client := NewEc2Client(t, awsRegion)
-	return GetPublicIpsOfEc2InstancesFromClientE(ec2Client, instanceIDs, awsRegion)
-}
-
-// GetPublicIpsOfEc2InstancesFromClientE is the same as GetPublicIpsOfEc2InstancesE, but can be used outside of tests
-func GetPublicIpsOfEc2InstancesFromClientE(ec2Client *ec2.EC2, instanceIDs []string, awsRegion string) (map[string]string, error) {
 	input := ec2.DescribeInstancesInput{InstanceIds: aws.StringSlice(instanceIDs)}
 	output, err := ec2Client.DescribeInstances(&input)
 	if err != nil {
