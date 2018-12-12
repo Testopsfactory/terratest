@@ -44,8 +44,13 @@ var stableRegions = []string{
 // those that have been around for at least 1 year.
 // Note that regions in the approvedRegions list that are not considered stable are ignored.
 func GetRandomStableRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string) string {
-	regionsToPickFrom := collections.ListIntersection(stableRegions, approvedRegions)
-	regionsToPickFrom = collections.ListSubtract(regionsToPickFrom, forbiddenRegions)
+	regionsToPickFrom := stableRegions
+	if len(approvedRegions) > 0 {
+		regionsToPickFrom = collections.ListIntersection(regionsToPickFrom, approvedRegions)
+	}
+	if len(forbiddenRegions) > 0 {
+		regionsToPickFrom = collections.ListSubtract(regionsToPickFrom, forbiddenRegions)
+	}
 	return GetRandomRegion(t, regionsToPickFrom, nil)
 }
 
