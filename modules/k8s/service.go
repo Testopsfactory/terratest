@@ -15,6 +15,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
@@ -150,8 +151,8 @@ func pickRandomNode(clientset *kubernetes.Clientset) (corev1.Node, error) {
 	if len(nodes) == 0 {
 		return corev1.Node{}, NewKubernetesError("There are no nodes in the cluster")
 	}
-	// TODO: randomly pick one
-	return nodes[0], nil
+	index := random.Random(0, len(nodes)-1)
+	return nodes[index], nil
 }
 
 // Given a node, return the ip address, preferring the external IP
