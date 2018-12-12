@@ -59,3 +59,31 @@ func TestSubtract(t *testing.T) {
 		})
 	}
 }
+
+func TestIntersection(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		description string
+		list1       []string
+		list2       []string
+		expected    []string
+	}{
+		{"empty list, empty list", []string{}, []string{}, []string{}},
+		{"empty list, non-empty list", []string{}, []string{"foo"}, []string{}},
+		{"non-empty list, empty list", []string{"foo"}, []string{}, []string{}},
+		{"list with 1 item, list with no matches", []string{"foo"}, []string{"bar"}, []string{}},
+		{"list with 1 item, list with 1 match", []string{"foo"}, []string{"foo"}, []string{"foo"}},
+		{"list with 1 item, list with multiple matches and non-matches", []string{"foo"}, []string{"foo", "bar", "foo"}, []string{"foo"}},
+		{"list with multiple items, list with no matches", []string{"foo", "bar", "baz"}, []string{"abc", "def"}, []string{}},
+		{"list with multiple items, list with 1 match", []string{"foo", "bar", "baz"}, []string{"abc", "foo", "def"}, []string{"foo"}},
+		{"list with multiple items, list with multiple matches", []string{"foo", "bar", "baz", "foo", "bar", "baz"}, []string{"abc", "foo", "baz"}, []string{"foo", "baz"}},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.description, func(t *testing.T) {
+			actual := ListIntersection(testCase.list1, testCase.list2)
+			assert.Equal(t, testCase.expected, actual)
+		})
+	}
+}

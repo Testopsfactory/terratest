@@ -124,8 +124,10 @@ such as:
 1.  [Terraform Packer Example](/examples/terraform-packer-example): A more complicated example that shows how to use
     Packer to build an AMI with a web server installed and deploy that AMI in AWS using Terraform.
 1.  [Terraform GCP Example](/examples/terraform-gcp-example): A simple Terraform configuration that creates a GCP Compute Instance and Storage Bucket.
-1.  [Terraform remote-exec Example](/examples/terraform-remote-exec-example): A terraform configuration that creates and 
+1.  [Terraform remote-exec Example](/examples/terraform-remote-exec-example): A terraform configuration that creates and
     AWS instance and then uses `remote-exec` to provision it.
+1.  [Basic Kubernetes Example](/examples/kubernetes-basic-example): A minimal Kubernetes resource that deploys an
+    addressable nginx instance.
 
 Next, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
 
@@ -148,6 +150,9 @@ Next, head over to the [test folder](/test) to see how you can use Terraform to 
 1.  [terraform_scp_example_test.go](/test/terraform_scp_example_test.go): Use Terratest to simplify copying resources
     like config files and logs from deployed EC2 Instances. This is especially useful for getting a snapshot of the
     state of a deployment when a test fails.
+1.  [kubernetes_basic_example_test.go](/test/kubernetes_basic_example_test.go): Use Terratest to run `kubectl apply`
+    apply a Kubernetes resource file, verify resources are created using the Kubernetes API, and then run `kubectl
+    delete` to delete the resources at the end of the test.
     
 
 Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure

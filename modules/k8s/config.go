@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	homedir "github.com/mitchellh/go-homedir"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
@@ -21,6 +22,19 @@ func LoadConfigFromPath(path string) clientcmd.ClientConfig {
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: path},
 		&clientcmd.ConfigOverrides{})
 	return config
+}
+
+// LoadApiClientConfig will load a ClientConfig object from a file path that points to a location on disk containing a
+// kubectl config, with the requested context loaded.
+func LoadApiClientConfigE(configPath string, contextName string) (*restclient.Config, error) {
+	overrides := clientcmd.ConfigOverrides{}
+	if contextName != "" {
+		overrides.CurrentContext = contextName
+	}
+	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: configPath},
+		&overrides)
+	return config.ClientConfig()
 }
 
 // DeleteConfigContextE will remove the context specified at the provided name, and remove any clusters and authinfos

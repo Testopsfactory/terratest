@@ -14,7 +14,7 @@ import (
 func TestSqsQueueMethods(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 	uniqueID := random.UniqueId()
 	namePrefix := fmt.Sprintf("sqs-queue-test-%s", uniqueID)
 

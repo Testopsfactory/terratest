@@ -28,7 +28,9 @@ func RunDummyServer(t *testing.T, text string) (net.Listener, int) {
 func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 	port := getNextPort()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Create new serve mux so that multiple handlers can be created
+	server := http.NewServeMux()
+	server.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, text)
 	})
 
@@ -39,7 +41,7 @@ func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 		return nil, 0, fmt.Errorf("error listening: %s", err)
 	}
 
-	go http.Serve(listener, nil)
+	go http.Serve(listener, server)
 
 	return listener, port, err
 }

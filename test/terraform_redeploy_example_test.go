@@ -29,7 +29,7 @@ func TestTerraformRedeployExample(t *testing.T) {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.GetRandomRegion(t, nil, nil)
+	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
 
 	// The folder where we have our Terraform code
 	workingDir := "../examples/terraform-redeploy-example"
