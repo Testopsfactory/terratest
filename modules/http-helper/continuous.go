@@ -29,8 +29,12 @@ func ContinuouslyCheckUrl(
 				statusCode, body, err := HttpGetE(t, url)
 				logger.Logf(t, "Got response %d and err %v from URL at %s", statusCode, err, url)
 				if err != nil {
+					// We use Errorf instead of Fatalf here because Fatalf is not goroutine safe, while Errorf is. Refer
+					// to the docs on `T`: https://godoc.org/testing#T
 					t.Errorf("Failed to make HTTP request to the URL at %s: %s\n", url, err.Error())
 				} else if statusCode != 200 {
+					// We use Errorf instead of Fatalf here because Fatalf is not goroutine safe, while Errorf is. Refer
+					// to the docs on `T`: https://godoc.org/testing#T
 					t.Errorf("Got a non-200 response (%d) from the URL at %s, which means there was downtime! Response body: %s", statusCode, url, body)
 				}
 			}
