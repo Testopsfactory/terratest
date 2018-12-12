@@ -36,7 +36,7 @@ func TestContinuouslyCheck(t *testing.T) {
 	wg := ContinuouslyCheckUrl(t, url, stopChecking, 1*time.Second)
 	defer func() {
 		stopChecking <- true
-		wg.Done()
+		wg.Wait()
 		shutDownServer(t, listener)
 	}()
 	time.Sleep(5 * time.Second)
