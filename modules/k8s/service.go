@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +25,7 @@ func GetService(t *testing.T, namespace string, serviceName string) *corev1.Serv
 	return service
 }
 
-// GetServiceFromClientE returns a Kubernetes service resource in the provided namespace with the given name.
+// GetServiceE returns a Kubernetes service resource in the provided namespace with the given name.
 func GetServiceE(t *testing.T, namespace string, serviceName string) (*corev1.Service, error) {
 	clientset, err := GetKubernetesClientE(t)
 	if err != nil {
@@ -176,12 +175,6 @@ func findAwsNodeHostnameE(t *testing.T, node corev1.Node, awsIDUri *url.URL) (st
 	// Availability Zone name is known to be region code + 1 letter
 	// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
 	region := availabilityZone[:len(availabilityZone)-1]
-
-	sess, err := aws.NewAuthenticatedSession(region)
-	if err != nil {
-		return "", err
-	}
-	ec2Client := ec2.New(sess)
 
 	ipMap, err := aws.GetPublicIpsOfEc2InstancesE(t, []string{instanceID}, region)
 	if err != nil {

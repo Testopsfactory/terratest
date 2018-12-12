@@ -12,14 +12,14 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
-func TestGetServiceFromClientEReturnsErrorForNonExistantService(t *testing.T) {
+func TestGetServiceEReturnsErrorForNonExistantService(t *testing.T) {
 	t.Parallel()
 
 	_, err := GetServiceE(t, "default", "nginx-service")
 	require.Error(t, err)
 }
 
-func TestGetServiceFromClientEReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
+func TestGetServiceEReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 	t.Parallel()
 
 	uniqueID := strings.ToLower(random.UniqueId())
