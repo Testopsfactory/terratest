@@ -14,7 +14,7 @@ import (
 func TestCreateAndDeleteSnsTopic(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 	uniqueID := random.UniqueId()
 	name := fmt.Sprintf("test-sns-topic-%s", uniqueID)
 

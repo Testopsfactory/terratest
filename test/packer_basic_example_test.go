@@ -17,7 +17,7 @@ func TestPackerBasicExample(t *testing.T) {
 	t.Parallel()
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := terratest_aws.GetRandomRegion(t, nil, nil)
+	awsRegion := terratest_aws.GetRandomStableRegion(t, nil, nil)
 
 	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
@@ -62,7 +62,7 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 	var identifierToOptions = map[string]*packer.Options{}
 	for i := 0; i < 3; i++ {
 		// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-		awsRegion := terratest_aws.GetRandomRegion(t, nil, nil)
+		awsRegion := terratest_aws.GetRandomStableRegion(t, nil, nil)
 
 		packerOptions := &packer.Options{
 			// The path to where the Packer template is located

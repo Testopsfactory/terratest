@@ -46,7 +46,7 @@ func TestTerraformPackerExample(t *testing.T) {
 	// Build the AMI for the web app
 	test_structure.RunTestStage(t, "build_ami", func() {
 		// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-		awsRegion := aws.GetRandomRegion(t, nil, nil)
+		awsRegion := aws.GetRandomStableRegion(t, nil, nil)
 		test_structure.SaveString(t, workingDir, "awsRegion", awsRegion)
 		buildAMI(t, awsRegion, workingDir)
 	})

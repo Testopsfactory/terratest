@@ -45,7 +45,7 @@ func assertLooksLikeRegionName(t *testing.T, regionName string) {
 func TestGetAvailabilityZones(t *testing.T) {
 	t.Parallel()
 
-	randomRegion := GetRandomRegion(t, nil, nil)
+	randomRegion := GetRandomStableRegion(t, nil, nil)
 	azs := GetAvailabilityZones(t, randomRegion)
 
 	// Every AWS account has access to different AZs, so he best we can do is make sure we get at least one back

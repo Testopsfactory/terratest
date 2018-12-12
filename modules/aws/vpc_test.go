@@ -9,7 +9,7 @@ import (
 func TestGetDefaultVpc(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 	vpc := GetDefaultVpc(t, region)
 
 	assert.NotEmpty(t, vpc.Name)

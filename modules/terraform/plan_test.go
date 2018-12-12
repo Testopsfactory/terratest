@@ -14,7 +14,7 @@ func TestPlanWithNoChanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	awsRegion := aws.GetRandomRegion(t, nil, nil)
+	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
 	options := &Options{
 		TerraformDir: testFolder,
 
@@ -32,7 +32,7 @@ func TestPlanWithChanges(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	awsRegion := aws.GetRandomRegion(t, nil, nil)
+	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
 	options := &Options{
 		TerraformDir: testFolder,
 

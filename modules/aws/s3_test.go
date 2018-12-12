@@ -19,7 +19,7 @@ import (
 func TestCreateAndDestroyS3Bucket(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 	id := random.UniqueId()
 	logger.Logf(t, "Random values selected. Region = %s, Id = %s\n", region, id)
 
@@ -32,7 +32,7 @@ func TestCreateAndDestroyS3Bucket(t *testing.T) {
 func TestAssertS3BucketExistsNoFalseNegative(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 	s3BucketName := "gruntwork-terratest-" + strings.ToLower(random.UniqueId())
 	logger.Logf(t, "Random values selected. Region = %s, s3BucketName = %s\n", region, s3BucketName)
 
@@ -45,7 +45,7 @@ func TestAssertS3BucketExistsNoFalseNegative(t *testing.T) {
 func TestAssertS3BucketExistsNoFalsePositive(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 	s3BucketName := "gruntwork-terratest-" + strings.ToLower(random.UniqueId())
 	logger.Logf(t, "Random values selected. Region = %s, s3BucketName = %s\n", region, s3BucketName)
 
@@ -61,7 +61,7 @@ func TestAssertS3BucketExistsNoFalsePositive(t *testing.T) {
 func TestEmptyS3Bucket(t *testing.T) {
 	t.Parallel()
 
-	// region := GetRandomRegion(t, nil, nil)
+	// region := GetRandomStableRegion(t, nil, nil)
 	region := "us-east-1"
 	id := random.UniqueId()
 	logger.Logf(t, "Random values selected. Region = %s, Id = %s\n", region, id)
@@ -82,7 +82,7 @@ func TestEmptyS3Bucket(t *testing.T) {
 func TestEmptyS3BucketVersioned(t *testing.T) {
 	t.Parallel()
 
-	region := GetRandomRegion(t, nil, nil)
+	region := GetRandomStableRegion(t, nil, nil)
 
 	id := random.UniqueId()
 	logger.Logf(t, "Random values selected. Region = %s, Id = %s\n", region, id)
