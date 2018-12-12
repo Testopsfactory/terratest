@@ -15,14 +15,26 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 
-	return GetKubernetesClientFromFileE(t, kubeConfigPath, "")
+	options := NewKubectlOptions("", kubeConfigPath)
+	return GetKubernetesClientFromOptionsE(t, options)
 }
 
-// GetKubernetesClientFromFileE returns a Kubernetes API client given the kubernetes config file path.
-func GetKubernetesClientFromFileE(t *testing.T, kubeConfigPath string, contextName string) (*kubernetes.Clientset, error) {
-	logger.Logf(t, "Configuring kubectl using config file %s with context %s", kubeConfigPath, contextName)
+// GetKubernetesClientFromOptionsE returns a Kubernetes API client given a configured KubectlOptions object.
+func GetKubernetesClientFromOptionsE(t *testing.T, options *KubectlOptions) (*kubernetes.Clientset, error) {
+	var err error
+
+	// We have to give an actual configpath for LoadApiClientConfigE to work
+	kubeConfigPath := options.ConfigPath
+	if kubeConfigPath == "" {
+		kubeConfigPath, err = GetKubeConfigPathE(t)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	logger.Logf(t, "Configuring kubectl using config file %s with context %s", kubeConfigPath, options.ContextName)
 	// Load API config (instead of more low level ClientConfig)
-	config, err := LoadApiClientConfigE(kubeConfigPath, contextName)
+	config, err := LoadApiClientConfigE(kubeConfigPath, options.ContextName)
 	if err != nil {
 		return nil, err
 	}

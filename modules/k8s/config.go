@@ -26,13 +26,13 @@ func LoadConfigFromPath(path string) clientcmd.ClientConfig {
 
 // LoadApiClientConfig will load a ClientConfig object from a file path that points to a location on disk containing a
 // kubectl config, with the requested context loaded.
-func LoadApiClientConfigE(path string, context string) (*restclient.Config, error) {
+func LoadApiClientConfigE(configPath string, contextName string) (*restclient.Config, error) {
 	overrides := clientcmd.ConfigOverrides{}
-	if context != "" {
-		overrides.CurrentContext = context
+	if contextName != "" {
+		overrides.CurrentContext = contextName
 	}
 	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: path},
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: configPath},
 		&overrides)
 	return config.ClientConfig()
 }

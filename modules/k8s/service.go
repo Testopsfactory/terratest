@@ -19,23 +19,23 @@ import (
 
 // GetService returns a Kubernetes service resource in the provided namespace with the given name. This will
 // fail the test if there is an error.
-func GetService(t *testing.T, namespace string, serviceName string) *corev1.Service {
-	service, err := GetServiceE(t, namespace, serviceName)
+func GetService(t *testing.T, options *KubectlOptions, serviceName string) *corev1.Service {
+	service, err := GetServiceE(t, options, serviceName)
 	require.NoError(t, err)
 	return service
 }
 
 // GetServiceE returns a Kubernetes service resource in the provided namespace with the given name.
-func GetServiceE(t *testing.T, namespace string, serviceName string) (*corev1.Service, error) {
-	clientset, err := GetKubernetesClientE(t)
+func GetServiceE(t *testing.T, options *KubectlOptions, serviceName string) (*corev1.Service, error) {
+	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
 	}
-	return clientset.CoreV1().Services(namespace).Get(serviceName, metav1.GetOptions{})
+	return clientset.CoreV1().Services(options.Namespace).Get(serviceName, metav1.GetOptions{})
 }
 
 // WaitUntilServiceAvailable waits until the service endpoint is ready to accept traffic.
-func WaitUntilServiceAvailable(t *testing.T, namespace string, serviceName string, retries int, sleepBetweenRetries time.Duration) {
+func WaitUntilServiceAvailable(t *testing.T, options *KubectlOptions, serviceName string, retries int, sleepBetweenRetries time.Duration) {
 	statusMsg := fmt.Sprintf("Wait for service %s to be provisioned.", serviceName)
 	message := retry.DoWithRetry(
 		t,
@@ -43,7 +43,7 @@ func WaitUntilServiceAvailable(t *testing.T, namespace string, serviceName strin
 		retries,
 		sleepBetweenRetries,
 		func() (string, error) {
-			service, err := GetServiceE(t, namespace, serviceName)
+			service, err := GetServiceE(t, options, serviceName)
 			if err != nil {
 				return "", err
 			}

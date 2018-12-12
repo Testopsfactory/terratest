@@ -32,6 +32,9 @@ func RunKubectlAndGetOutputE(t *testing.T, options *KubectlOptions, args ...stri
 	if options.ConfigPath != "" {
 		cmdArgs = append(cmdArgs, "--kubeconfig", options.ConfigPath)
 	}
+	if options.Namespace != "" {
+		cmdArgs = append(cmdArgs, "--namespace", options.Namespace)
+	}
 	cmdArgs = append(cmdArgs, args...)
 	command := shell.Command{
 		Command: "kubectl",
@@ -39,6 +42,17 @@ func RunKubectlAndGetOutputE(t *testing.T, options *KubectlOptions, args ...stri
 		Env:     options.Env,
 	}
 	return shell.RunCommandAndGetOutputE(t, command)
+}
+
+// KubectlDelete will take in a file path and delete it from the cluster targeted by KubectlOptions. If there are any
+// errors, fail the test immediately.
+func KubectlDelete(t *testing.T, options *KubectlOptions, configPath string) {
+	require.NoError(t, KubectlDeleteE(t, options, configPath))
+}
+
+// KubectlDeleteE will take in a file path and delete it from the cluster targeted by KubectlOptions.
+func KubectlDeleteE(t *testing.T, options *KubectlOptions, configPath string) error {
+	return RunKubectlE(t, options, "delete", "-f", configPath)
 }
 
 // KubectlDeleteFromString will take in a kubernetes resource config as a string and delete it on the cluster specified
@@ -55,7 +69,18 @@ func KubectlDeleteFromStringE(t *testing.T, options *KubectlOptions, configData 
 		return err
 	}
 	defer os.Remove(tmpfile)
-	return RunKubectlE(t, options, "delete", "-f", tmpfile)
+	return KubectlDeleteE(t, options, tmpfile)
+}
+
+// KubectlApply will take in a file path and apply it to the cluster targeted by KubectlOptions. If there are any
+// errors, fail the test immediately.
+func KubectlApply(t *testing.T, options *KubectlOptions, configPath string) {
+	require.NoError(t, KubectlApplyE(t, options, configPath))
+}
+
+// KubectlApplyE will take in a file path and apply it to the cluster targeted by KubectlOptions.
+func KubectlApplyE(t *testing.T, options *KubectlOptions, configPath string) error {
+	return RunKubectlE(t, options, "apply", "-f", configPath)
 }
 
 // KubectlApplyFromString will take in a kubernetes resource config as a string and apply it on the cluster specified
@@ -72,7 +97,7 @@ func KubectlApplyFromStringE(t *testing.T, options *KubectlOptions, configData s
 		return err
 	}
 	defer os.Remove(tmpfile)
-	return RunKubectlE(t, options, "apply", "-f", tmpfile)
+	return KubectlApplyE(t, options, tmpfile)
 }
 
 // StoreConfigToTempFile will store the provided config data to a temporary file created on the os and return the

@@ -4,6 +4,7 @@ package k8s
 type KubectlOptions struct {
 	ContextName string
 	ConfigPath  string
+	Namespace   string
 	Env         map[string]string
 }
 

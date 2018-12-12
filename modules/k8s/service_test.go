@@ -15,7 +15,8 @@ import (
 func TestGetServiceEReturnsErrorForNonExistantService(t *testing.T) {
 	t.Parallel()
 
-	_, err := GetServiceE(t, "default", "nginx-service")
+	options := NewKubectlOptions("", "")
+	_, err := GetServiceE(t, options, "nginx-service")
 	require.Error(t, err)
 }
 
@@ -24,11 +25,12 @@ func TestGetServiceEReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 
 	uniqueID := strings.ToLower(random.UniqueId())
 	options := NewKubectlOptions("", "")
+	options.Namespace = uniqueID
 	configData := fmt.Sprintf(EXAMPLE_DEPLOYMENT_YAML_TEMPLATE, uniqueID, uniqueID, uniqueID)
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
 
-	service := GetService(t, uniqueID, "nginx-service")
+	service := GetService(t, options, "nginx-service")
 	require.Equal(t, service.Name, "nginx-service")
 	require.Equal(t, service.Namespace, uniqueID)
 }
@@ -38,11 +40,12 @@ func TestWaitUntilServiceAvailableReturnsSuccessfullyOnNodePortType(t *testing.T
 
 	uniqueID := strings.ToLower(random.UniqueId())
 	options := NewKubectlOptions("", "")
+	options.Namespace = uniqueID
 	configData := fmt.Sprintf(EXAMPLE_DEPLOYMENT_YAML_TEMPLATE, uniqueID, uniqueID, uniqueID)
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
 
-	WaitUntilServiceAvailable(t, uniqueID, "nginx-service", 10, 1*time.Second)
+	WaitUntilServiceAvailable(t, options, "nginx-service", 10, 1*time.Second)
 }
 
 func TestGetServiceEndpointEReturnsAccessibleEndpointForNodePort(t *testing.T) {
@@ -50,11 +53,12 @@ func TestGetServiceEndpointEReturnsAccessibleEndpointForNodePort(t *testing.T) {
 
 	uniqueID := strings.ToLower(random.UniqueId())
 	options := NewKubectlOptions("", "")
+	options.Namespace = uniqueID
 	configData := fmt.Sprintf(EXAMPLE_DEPLOYMENT_YAML_TEMPLATE, uniqueID, uniqueID, uniqueID)
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
 
-	service := GetService(t, uniqueID, "nginx-service")
+	service := GetService(t, options, "nginx-service")
 	endpoint := GetServiceEndpoint(t, service, 80)
 	// Test up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
