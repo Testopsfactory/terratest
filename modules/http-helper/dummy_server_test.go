@@ -33,10 +33,18 @@ func TestContinuouslyCheck(t *testing.T) {
 	listener, port := RunDummyServer(t, text)
 
 	url := fmt.Sprintf("http://localhost:%d", port)
-	wg := ContinuouslyCheckUrl(t, url, stopChecking, 1*time.Second)
+	wg, responses := ContinuouslyCheckUrl(t, url, stopChecking, 1*time.Second)
 	defer func() {
 		stopChecking <- true
+		counts := 0
+		for response := range responses {
+			counts++
+			assert.Equal(t, response.StatusCode, 200)
+			assert.Equal(t, response.Body, text)
+		}
 		wg.Wait()
+		// Make sure we made at least one call
+		assert.NotEqual(t, counts, 0)
 		shutDownServer(t, listener)
 	}()
 	time.Sleep(5 * time.Second)
