@@ -1,6 +1,7 @@
 package http_helper
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -8,8 +9,17 @@ import (
 )
 
 // Continuously check the given URL every 1 second until the stopChecking channel receives a signal to stop.
-func ContinuouslyCheckUrl(t *testing.T, url string, stopChecking <-chan bool, sleepBetweenChecks time.Duration) {
+// This function will return a sync.WaitGroup that can be used to wait for the checking to stop.
+func ContinuouslyCheckUrl(
+	t *testing.T,
+	url string,
+	stopChecking <-chan bool,
+	sleepBetweenChecks time.Duration,
+) *sync.WaitGroup {
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
 			select {
 			case <-stopChecking:
@@ -19,11 +29,12 @@ func ContinuouslyCheckUrl(t *testing.T, url string, stopChecking <-chan bool, sl
 				statusCode, body, err := HttpGetE(t, url)
 				logger.Logf(t, "Got response %d and err %v from URL at %s", statusCode, err, url)
 				if err != nil {
-					t.Fatalf("Failed to make HTTP request to the URL at %s: %s\n", url, err.Error())
+					t.Errorf("Failed to make HTTP request to the URL at %s: %s\n", url, err.Error())
 				} else if statusCode != 200 {
-					t.Fatalf("Got a non-200 response (%d) from the URL at %s, which means there was downtime! Response body: %s", statusCode, url, body)
+					t.Errorf("Got a non-200 response (%d) from the URL at %s, which means there was downtime! Response body: %s", statusCode, url, body)
 				}
 			}
 		}
 	}()
+	return &wg
 }
