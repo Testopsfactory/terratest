@@ -112,12 +112,15 @@ func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadClose
 func readData(t *testing.T, scanner *bufio.Scanner, wg *sync.WaitGroup, mutex *sync.Mutex, allOutput *[]string) {
 	defer wg.Done()
 	for scanner.Scan() {
-		text := scanner.Text()
-		logger.Log(t, text)
-		mutex.Lock()
-		*allOutput = append(*allOutput, text)
-		mutex.Unlock()
+		logTextAndAppendToOutput(t, mutex, scanner.Text(), allOutput)
 	}
+}
+
+func logTextAndAppendToOutput(t *testing.T, mutex *sync.Mutex, text string, allOutput *[]string) {
+	defer mutex.Unlock()
+	logger.Log(t, text)
+	mutex.Lock()
+	*allOutput = append(*allOutput, text)
 }
 
 // GetExitCodeForRunCommandError tries to read the exit code for the error object returned from running a shell command. This is a bit tricky to do

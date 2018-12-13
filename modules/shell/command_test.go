@@ -28,7 +28,7 @@ func TestRunCommandAndGetOutputOrder(t *testing.T) {
 	stdoutText := "Hello, World"
 	expectedText := "Hello, Error\nHello, World"
 	pythonCode := fmt.Sprintf(
-		"from __future__ import print_function; import sys; print('%s', file=sys.stderr, flush=True); print('%s', file=sys.stdout, flush=True)",
+		"from __future__ import print_function; import sys; print('%s', file=sys.stderr); sys.stderr.flush(); print('%s', file=sys.stdout); sys.stdout.flush()",
 		stderrText,
 		stdoutText,
 	)
