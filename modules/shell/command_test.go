@@ -64,14 +64,14 @@ func TestRunCommandAndGetOutputConcurrency(t *testing.T) {
 
 	bashCode := fmt.Sprintf(`
 echo_stderr(){
-	sleep .$[ ( $RANDOM %% 10 ) + 1 ]s
+	sleep .0$[ ( $RANDOM %% 10 ) + 1 ]s
 	(>&2 echo "%s")
 }
 echo_stdout(){
-	sleep .$[ ( $RANDOM %% 10 ) + 1 ]s
+	sleep .0$[ ( $RANDOM %% 10 ) + 1 ]s
 	echo "%s"
 }
-for i in {1..5}
+for i in {1..500}
 do
 	echo_stderr &
 	echo_stdout &
@@ -89,6 +89,6 @@ wait
 	out := RunCommandAndGetOutput(t, cmd)
 	stdoutReg := regexp.MustCompile(uniqueStdout)
 	stderrReg := regexp.MustCompile(uniqueStderr)
-	assert.Equal(t, len(stdoutReg.FindAllString(out, -1)), 5)
-	assert.Equal(t, len(stderrReg.FindAllString(out, -1)), 5)
+	assert.Equal(t, len(stdoutReg.FindAllString(out, -1)), 500)
+	assert.Equal(t, len(stderrReg.FindAllString(out, -1)), 500)
 }
