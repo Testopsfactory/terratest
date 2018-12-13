@@ -29,15 +29,27 @@ func TestRunCommandAndGetOutputOrder(t *testing.T) {
 
 	stderrText := "Hello, Error"
 	stdoutText := "Hello, World"
-	expectedText := "Hello, Error\nHello, World"
-	pythonCode := fmt.Sprintf(
-		"from __future__ import print_function; import sys, time; print('%s', file=sys.stderr); sys.stderr.flush(); time.sleep(1); print('%s', file=sys.stdout); sys.stdout.flush()",
+	expectedText := "Hello, Error\nHello, World\nHello, Error\nHello, World\nHello, Error\nHello, Error"
+	bashCode := fmt.Sprintf(`
+echo_stderr(){
+	(>&2 echo "%s")
+}
+echo_stdout(){
+	echo "%s"
+}
+echo_stderr
+echo_stdout
+echo_stderr
+echo_stdout
+echo_stderr
+echo_stderr
+`,
 		stderrText,
 		stdoutText,
 	)
 	cmd := Command{
-		Command: "python",
-		Args:    []string{"-c", pythonCode},
+		Command: "bash",
+		Args:    []string{"-c", bashCode},
 	}
 
 	out := RunCommandAndGetOutput(t, cmd)
