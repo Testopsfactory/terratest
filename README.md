@@ -129,7 +129,7 @@ such as:
 1.  [Basic Kubernetes Example](/examples/kubernetes-basic-example): A minimal Kubernetes resource that deploys an
     addressable nginx instance.
 
-Next, head over to the [test folder](/test) to see how you can use Terraform to test each of these examples:
+Next, head over to the [test folder](/test) to see how you can use Terratest to test each of these examples:
 
 1.  [terraform_basic_example_test.go](/test/terraform_basic_example_test.go): Use Terratest to run `terraform apply` on
     the Basic Terraform Example and verify you get the expected outputs.
