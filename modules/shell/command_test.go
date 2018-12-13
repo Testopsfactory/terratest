@@ -24,11 +24,11 @@ func TestRunCommandAndGetOutput(t *testing.T) {
 func TestRunCommandAndGetOutputOrder(t *testing.T) {
 	t.Parallel()
 
-	stdoutText := "Hello, Error"
-	stderrText := "Hello, World"
+	stderrText := "Hello, Error"
+	stdoutText := "Hello, World"
 	expectedText := "Hello, Error\nHello, World"
 	pythonCode := fmt.Sprintf(
-		"from __future__ import print_function; import sys; print('%s', file=sys.stderr); print('%s', file=sys.stdout)",
+		"from __future__ import print_function; import sys; print('%s', file=sys.stderr, flush=True); print('%s', file=sys.stdout, flush=True)",
 		stderrText,
 		stdoutText,
 	)
