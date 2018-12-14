@@ -152,7 +152,9 @@ func testSSHToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyP
 func testSSHToPrivateHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
-	privateInstanceIP := terraform.Output(t, terraformOptions, "private_instance_ip")
+
+	// Get IP of private instance from AWS helper function instead of Terraform output
+	privateInstanceIP := aws.GetPrivateIpOfEc2Instance(t, terraform.Output(t, terraformOptions, "private_instance_id"), terraformOptions.Vars["aws_region"].(string))
 
 	// We're going to try to SSH to the private instance using the public instance as a jump host. For both instances,
 	// we are using the Key Pair we created earlier, and the user "ubuntu", as we know the Instances are running an

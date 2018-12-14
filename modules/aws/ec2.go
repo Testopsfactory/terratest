@@ -9,6 +9,60 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
+// GetPrivateIpOfEc2Instance gets the private IP address of the given EC2 Instance in the given region.
+func GetPrivateIpOfEc2Instance(t *testing.T, instanceID string, awsRegion string) string {
+	ip, err := GetPrivateIpOfEc2InstanceE(t, instanceID, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ip
+}
+
+// GetPrivateIpOfEc2InstanceE gets the private IP address of the given EC2 Instance in the given region.
+func GetPrivateIpOfEc2InstanceE(t *testing.T, instanceID string, awsRegion string) (string, error) {
+	ips, err := GetPrivateIpsOfEc2InstancesE(t, []string{instanceID}, awsRegion)
+	if err != nil {
+		return "", err
+	}
+
+	ip, containsIP := ips[instanceID]
+
+	if !containsIP {
+		return "", IpForEc2InstanceNotFound{InstanceId: instanceID, AwsRegion: awsRegion}
+	}
+
+	return ip, nil
+}
+
+// GetPrivateIpsOfEc2Instances gets the private IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
+func GetPrivateIpsOfEc2Instances(t *testing.T, instanceIDs []string, awsRegion string) map[string]string {
+	ips, err := GetPrivateIpsOfEc2InstancesE(t, instanceIDs, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ips
+}
+
+// GetPrivateIpsOfEc2InstancesE gets the private IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
+func GetPrivateIpsOfEc2InstancesE(t *testing.T, instanceIDs []string, awsRegion string) (map[string]string, error) {
+	ec2Client := NewEc2Client(t, awsRegion)
+	input := ec2.DescribeInstancesInput{InstanceIds: aws.StringSlice(instanceIDs)}
+	output, err := ec2Client.DescribeInstances(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	ips := map[string]string{}
+
+	for _, reserveration := range output.Reservations {
+		for _, instance := range reserveration.Instances {
+			ips[aws.StringValue(instance.InstanceId)] = aws.StringValue(instance.PrivateIpAddress)
+		}
+	}
+
+	return ips, nil
+}
+
 // GetPublicIpOfEc2Instance gets the public IP address of the given EC2 Instance in the given region.
 func GetPublicIpOfEc2Instance(t *testing.T, instanceID string, awsRegion string) string {
 	ip, err := GetPublicIpOfEc2InstanceE(t, instanceID, awsRegion)
