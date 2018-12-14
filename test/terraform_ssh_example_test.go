@@ -173,7 +173,7 @@ func testSSHToPrivateHost(t *testing.T, terraformOptions *terraform.Options, key
 	// It can take a minute or so for the Instance to boot up, so retry a few times
 	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH to private host %s via public host %s", publicInstanceIP, privateInstanceIP)
+	description := fmt.Sprintf("SSH to private host %s via public host %s", privateInstanceIP, publicInstanceIP)
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
@@ -307,7 +307,7 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	// It can take a minute or so for the Instance to boot up, so retry a few times
 	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH with Agent to private host %s via public host %s", publicInstanceIP, privateInstanceIP)
+	description := fmt.Sprintf("SSH with Agent to private host %s via public host %s", privateInstanceIP, publicInstanceIP)
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
