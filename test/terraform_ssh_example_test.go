@@ -152,7 +152,11 @@ func testSSHToPublicHost(t *testing.T, terraformOptions *terraform.Options, keyP
 func testSSHToPrivateHost(t *testing.T, terraformOptions *terraform.Options, keyPair *aws.Ec2Keypair) {
 	// Run `terraform output` to get the value of an output variable
 	publicInstanceIP := terraform.Output(t, terraformOptions, "public_instance_ip")
-	privateInstanceIP := terraform.Output(t, terraformOptions, "private_instance_ip")
+
+	// Get IP of private instance from AWS helper function instead of Terraform output
+	privateInstanceID := terraform.Output(t, terraformOptions, "private_instance_id")
+	deployedAWSRegion := terraformOptions.Vars["aws_region"].(string)
+	privateInstanceIP := aws.GetPrivateIpOfEc2Instance(t, privateInstanceID, deployedAWSRegion)
 
 	// We're going to try to SSH to the private instance using the public instance as a jump host. For both instances,
 	// we are using the Key Pair we created earlier, and the user "ubuntu", as we know the Instances are running an
@@ -171,7 +175,7 @@ func testSSHToPrivateHost(t *testing.T, terraformOptions *terraform.Options, key
 	// It can take a minute or so for the Instance to boot up, so retry a few times
 	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH to private host %s via public host %s", publicInstanceIP, privateInstanceIP)
+	description := fmt.Sprintf("SSH to private host %s via public host %s", privateInstanceIP, publicInstanceIP)
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
@@ -305,7 +309,7 @@ func testSSHAgentToPrivateHost(t *testing.T, terraformOptions *terraform.Options
 	// It can take a minute or so for the Instance to boot up, so retry a few times
 	maxRetries := 30
 	timeBetweenRetries := 5 * time.Second
-	description := fmt.Sprintf("SSH with Agent to private host %s via public host %s", publicInstanceIP, privateInstanceIP)
+	description := fmt.Sprintf("SSH with Agent to private host %s via public host %s", privateInstanceIP, publicInstanceIP)
 
 	// Run a simple echo command on the server
 	expectedText := "Hello, World"
