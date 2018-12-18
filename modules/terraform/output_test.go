@@ -117,23 +117,29 @@ func TestOutputsForKeys(t *testing.T) {
 	expectedLen := 3
 	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
 
+	//String value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
 	assert.True(t, ok, "data type wrong")
-	assert.Equal(t, expectedString, str, "String %q should String %q", expectedString, str)
+	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
+	//List value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
 	expectedListItem := "Sirius"
-	assert.Len(t, outputInterfaceList, expectedListLen, "output map should contain %d items", expectedListLen)
-	assert.Equal(t, expectedListItem, outputInterfaceList[0].(string), "Item %q should item %q", expectedListItem, outputInterfaceList[0].(string))
+	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
+	assert.Equal(t, expectedListItem, outputInterfaceList[0].(string), "List Item %q should match %q",
+		expectedListItem, outputInterfaceList[0].(string))
 
+	//Map value
 	outputInterfaceMap, ok := out["magnitudes"].(map[string]interface{})
 	expectedMapLen := 3
 	expectedMapItem := -1.46
-	assert.Len(t, outputInterfaceMap, expectedMapLen, "output map should contain %d items", expectedMapLen)
-	assert.Equal(t, expectedMapItem, outputInterfaceMap["Sirius"].(float64), "Item %q should item %q", expectedMapItem, outputInterfaceMap["Sirius"].(float64))
+	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain %d items", expectedMapLen)
+	assert.Equal(t, expectedMapItem, outputInterfaceMap["Sirius"].(float64), "Map Item %q should match %q",
+		expectedMapItem, outputInterfaceMap["Sirius"].(float64))
 
+	//Key not in the parameter list
 	outputNotPresentMap, ok := out["constellations"].(map[string]interface{})
 	assert.False(t, ok)
 	assert.Nil(t, outputNotPresentMap)
@@ -157,22 +163,27 @@ func TestOutputsAll(t *testing.T) {
 	expectedLen := 4
 	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
 
+	//String Value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
 	assert.True(t, ok, "data type wrong")
-	assert.Equal(t, expectedString, str, "Map %q should match %q", expectedString, str)
+	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
+	//List Value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
 	expectedListItem := "Betelgeuse"
-	assert.Len(t, outputInterfaceList, expectedListLen, "output list should contain %d items", expectedListLen)
-	assert.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should list item %q", expectedListItem, outputInterfaceList[0].(string))
+	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
+	assert.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
+		expectedListItem, outputInterfaceList[0].(string))
 
+	//Map Value
 	expectedMapLen := 4
 	outputInterfaceMap, ok := out["constellations"].(map[string]interface{})
 	expectedMapItem := "Aldebaran"
-	assert.Len(t, outputInterfaceMap, expectedMapLen, "output map should contain 4 items")
-	assert.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map %q should match %q", expectedMapItem, outputInterfaceMap["Taurus"].(string))
+	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
+	assert.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
+		expectedMapItem, outputInterfaceMap["Taurus"].(string))
 }
 
 func TestOutputsForKeysError(t *testing.T) {
@@ -189,8 +200,7 @@ func TestOutputsForKeysError(t *testing.T) {
 
 	InitAndApply(t, options)
 
-	_, err = OutputsForKeysE(t, options, []string{"random_key"})
+	_, err = OutputForKeysE(t, options, []string{"random_key"})
 
 	assert.Error(t, err)
 }
-

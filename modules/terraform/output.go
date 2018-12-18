@@ -131,19 +131,19 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 	return resultMap, nil
 }
 
-// OutputsForKeysE calls terraform output for the given variable list and returns values as a map.
+// OutputForKeysE calls terraform output for the given key list and returns values as a map.
 // If keys not found in the output, fails the test
 func OutputForKeys(t *testing.T, options *Options, keys []string) map[string]interface{} {
-	out, err := OutputsForKeysE(t, options, keys)
+	out, err := OutputForKeysE(t, options, keys)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return out
 }
 
-// OutputsForKeysE calls terraform output for the given variable list and returns values as a map.
+// OutputForKeysE calls terraform output for the given key list and returns values as a map.
 // The returned values are of type interface{} and need to be type casted as necessary. Refer to output_test.go
-func OutputsForKeysE(t *testing.T, options *Options, keys []string) (map[string]interface{}, error) {
+func OutputForKeysE(t *testing.T, options *Options, keys []string) (map[string]interface{}, error) {
 	out, err := RunTerraformCommandE(t, options, "output", "-no-color", "-json")
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func OutputsForKeysE(t *testing.T, options *Options, keys []string) (map[string]
 	return resultMap, nil
 }
 
-// OutputsForKeysE calls terraform output for the given variable list and returns values as a map.
+// OutputAll calls terraform output returns all values as a map.
 // If there is error fetching the output, fails the test
 func OutputAll(t *testing.T, options *Options) map[string]interface{} {
 	out, err := OutputAllE(t, options)
@@ -185,7 +185,7 @@ func OutputAll(t *testing.T, options *Options) map[string]interface{} {
 
 // OutputListE calls terraform output and returns all the outputs as a map
 func OutputAllE(t *testing.T, options *Options) (map[string]interface{}, error) {
-	return OutputsForKeysE(t, options, nil)
+	return OutputForKeysE(t, options, nil)
 }
 
 // EmptyOutput is an error that occurs when an output is empty.
