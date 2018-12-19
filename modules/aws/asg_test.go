@@ -23,12 +23,13 @@ func TestGetCapacityInfoForAsg(t *testing.T) {
 
 	defer deleteAutoScalingGroup(t, asgName, region)
 	createTestAutoScalingGroup(t, asgName, region, 2)
+	WaitForCapacity(t, asgName, region, 40, 15*time.Second)
 
 	capacityInfo := GetCapacityInfoForAsg(t, asgName, region)
-	assert.Equal(t, capacityInfo.DesiredCapacity, 2)
-	assert.Equal(t, capacityInfo.CurrentCapacity, 2)
-	assert.Equal(t, capacityInfo.MinCapacity, 1)
-	assert.Equal(t, capacityInfo.MaxCapacity, 3)
+	assert.Equal(t, capacityInfo.DesiredCapacity, int64(2))
+	assert.Equal(t, capacityInfo.CurrentCapacity, int64(2))
+	assert.Equal(t, capacityInfo.MinCapacity, int64(1))
+	assert.Equal(t, capacityInfo.MaxCapacity, int64(3))
 }
 
 func TestGetInstanceIdsForAsg(t *testing.T) {
@@ -40,6 +41,7 @@ func TestGetInstanceIdsForAsg(t *testing.T) {
 
 	defer deleteAutoScalingGroup(t, asgName, region)
 	createTestAutoScalingGroup(t, asgName, region, 1)
+	WaitForCapacity(t, asgName, region, 40, 15*time.Second)
 
 	instanceIds := GetInstanceIdsForAsg(t, asgName, region)
 	assert.Equal(t, len(instanceIds), 1)
