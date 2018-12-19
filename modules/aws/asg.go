@@ -41,7 +41,7 @@ func GetCapacityInfoForAsgE(t *testing.T, asgName string, awsRegion string) (Asg
 	}
 	groups := output.AutoScalingGroups
 	if len(groups) == 0 {
-		return AsgCapacityInfo{}, NewNotFoundError("ASG", asgName)
+		return AsgCapacityInfo{}, NewNotFoundError("ASG", asgName, awsRegion)
 	}
 	capacityInfo := AsgCapacityInfo{
 		MinCapacity:     *groups[0].MinSize,

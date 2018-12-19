@@ -28,7 +28,7 @@ func GetPrivateIpOfEc2InstanceE(t *testing.T, instanceID string, awsRegion strin
 	ip, containsIP := ips[instanceID]
 
 	if !containsIP {
-		return "", IpForEc2InstanceNotFound{InstanceId: instanceID, AwsRegion: awsRegion}
+		return "", IpForEc2InstanceNotFound{InstanceId: instanceID, AwsRegion: awsRegion, Type: "private"}
 	}
 
 	return ip, nil
@@ -63,6 +63,63 @@ func GetPrivateIpsOfEc2InstancesE(t *testing.T, instanceIDs []string, awsRegion 
 	return ips, nil
 }
 
+// GetPrivateHostnameOfEc2Instance gets the private IP address of the given EC2 Instance in the given region.
+func GetPrivateHostnameOfEc2Instance(t *testing.T, instanceID string, awsRegion string) string {
+	ip, err := GetPrivateHostnameOfEc2InstanceE(t, instanceID, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ip
+}
+
+// GetPrivateHostnameOfEc2InstanceE gets the private IP address of the given EC2 Instance in the given region.
+func GetPrivateHostnameOfEc2InstanceE(t *testing.T, instanceID string, awsRegion string) (string, error) {
+	hostnames, err := GetPrivateHostnamesOfEc2InstancesE(t, []string{instanceID}, awsRegion)
+	if err != nil {
+		return "", err
+	}
+
+	hostname, containsHostname := hostnames[instanceID]
+
+	if !containsHostname {
+		return "", HostnameForEc2InstanceNotFound{InstanceId: instanceID, AwsRegion: awsRegion, Type: "private"}
+	}
+
+	return hostname, nil
+}
+
+// GetPrivateHostnamesOfEc2Instances gets the private IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
+func GetPrivateHostnamesOfEc2Instances(t *testing.T, instanceIDs []string, awsRegion string) map[string]string {
+	ips, err := GetPrivateHostnamesOfEc2InstancesE(t, instanceIDs, awsRegion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ips
+}
+
+// GetPrivateHostnamesOfEc2InstancesE gets the private IP address of the given EC2 Instance in the given region. Returns a map of instance ID to IP address.
+func GetPrivateHostnamesOfEc2InstancesE(t *testing.T, instanceIDs []string, awsRegion string) (map[string]string, error) {
+	ec2Client, err := NewEc2ClientE(t, awsRegion)
+	if err != nil {
+		return nil, err
+	}
+	input := ec2.DescribeInstancesInput{InstanceIds: aws.StringSlice(instanceIDs)}
+	output, err := ec2Client.DescribeInstances(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	hostnames := map[string]string{}
+
+	for _, reserveration := range output.Reservations {
+		for _, instance := range reserveration.Instances {
+			hostnames[aws.StringValue(instance.InstanceId)] = aws.StringValue(instance.PrivateDnsName)
+		}
+	}
+
+	return hostnames, nil
+}
+
 // GetPublicIpOfEc2Instance gets the public IP address of the given EC2 Instance in the given region.
 func GetPublicIpOfEc2Instance(t *testing.T, instanceID string, awsRegion string) string {
 	ip, err := GetPublicIpOfEc2InstanceE(t, instanceID, awsRegion)
@@ -82,7 +139,7 @@ func GetPublicIpOfEc2InstanceE(t *testing.T, instanceID string, awsRegion string
 	ip, containsIP := ips[instanceID]
 
 	if !containsIP {
-		return "", IpForEc2InstanceNotFound{InstanceId: instanceID, AwsRegion: awsRegion}
+		return "", IpForEc2InstanceNotFound{InstanceId: instanceID, AwsRegion: awsRegion, Type: "public"}
 	}
 
 	return ip, nil
@@ -353,14 +410,4 @@ func NewEc2ClientE(t *testing.T, region string) (*ec2.EC2, error) {
 	}
 
 	return ec2.New(sess), nil
-}
-
-// IpForEc2InstanceNotFound is an error that occurs when the IP for an EC2 instance is not found.
-type IpForEc2InstanceNotFound struct {
-	InstanceId string
-	AwsRegion  string
-}
-
-func (err IpForEc2InstanceNotFound) Error() string {
-	return fmt.Sprintf("Could not find a public IP address for EC2 Instance %s in %s", err.InstanceId, err.AwsRegion)
 }
