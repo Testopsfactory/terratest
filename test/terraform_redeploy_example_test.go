@@ -28,11 +28,15 @@ import (
 func TestTerraformRedeployExample(t *testing.T) {
 	t.Parallel()
 
-	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
-
 	// The folder where we have our Terraform code
 	workingDir := "../examples/terraform-redeploy-example"
+
+	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
+	test_structure.RunTestStage(t, "pick_region", func() {
+		awsRegion := aws.GetRandomStableRegion(t, nil, nil)
+		// Save the region, so that we reuse the same region when we skip stages
+		test_structure.SaveString(t, workingDir, "region", awsRegion)
+	})
 
 	// At the end of the test, clean up all the resources we created
 	defer test_structure.RunTestStage(t, "teardown", func() {
@@ -43,18 +47,21 @@ func TestTerraformRedeployExample(t *testing.T) {
 	// At the end of the test, fetch the logs from each Instance. This can be useful for
 	// debugging issues without having to manually SSH to the server.
 	defer test_structure.RunTestStage(t, "logs", func() {
+		awsRegion := test_structure.LoadString(t, workingDir, "region")
 		fetchSyslogForAsg(t, awsRegion, workingDir)
 		fetchFilesFromAsg(t, awsRegion, workingDir)
 	})
 
 	// Deploy the web app
 	test_structure.RunTestStage(t, "deploy_initial", func() {
+		awsRegion := test_structure.LoadString(t, workingDir, "region")
 		initialDeploy(t, awsRegion, workingDir)
 	})
 
 	// Validate that the ASG deployed and is responding to HTTP requests
 	test_structure.RunTestStage(t, "validate_initial", func() {
-		validateAsgRunningWebServer(t, workingDir)
+		awsRegion := test_structure.LoadString(t, workingDir, "region")
+		validateAsgRunningWebServer(t, awsRegion, workingDir)
 	})
 
 	// Validate that we can deploy a change to the ASG with zero downtime
@@ -101,21 +108,28 @@ func initialDeploy(t *testing.T, awsRegion string, workingDir string) {
 }
 
 // Validate the ASG has been deployed and is working
-func validateAsgRunningWebServer(t *testing.T, workingDir string) {
+func validateAsgRunningWebServer(t *testing.T, awsRegion string, workingDir string) {
 	// Load the Terraform Options saved by the earlier deploy_terraform stage
 	terraformOptions := test_structure.LoadTerraformOptions(t, workingDir)
 
 	// Run `terraform output` to get the value of an output variable
 	url := terraform.Output(t, terraformOptions, "url")
+	asgName := terraform.OutputRequired(t, terraformOptions, "asg_name")
+
+	// Wait and verify the ASG is scaled to the desired capacity. It can take a few minutes for the ASG to boot up, so
+	// retry a few times.
+	maxRetries := 30
+	timeBetweenRetries := 5 * time.Second
+	aws.WaitForCapacity(t, asgName, awsRegion, maxRetries, timeBetweenRetries)
+	capacityInfo := aws.GetCapacityInfoForAsg(t, asgName, awsRegion)
+	assert.Equal(t, capacityInfo.DesiredCapacity, int64(3))
+	assert.Equal(t, capacityInfo.CurrentCapacity, int64(3))
 
 	// Figure out what text the ASG should return for each request
 	expectedText, _ := terraformOptions.Vars["instance_text"].(string)
 
-	// It can take a few minutes for the ASG and ALB to boot up, so retry a few times
-	maxRetries := 30
-	timeBetweenRetries := 5 * time.Second
-
 	// Verify that we get back a 200 OK with the expectedText
+	// It can take a few minutes for the ALB to boot up, so retry a few times
 	http_helper.HttpGetWithRetry(t, url, 200, expectedText, maxRetries, timeBetweenRetries)
 }
 
