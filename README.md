@@ -581,7 +581,7 @@ To run a specific test in a specific folder:
 
 ```bash
 cd "<FOLDER_PATH>"
-go test -timeout30m -run "<TEST_NAME>"
+go test -timeout 30m -run "<TEST_NAME>"
 ```
 
 
