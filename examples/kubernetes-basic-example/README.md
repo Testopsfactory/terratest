@@ -6,8 +6,8 @@ automated tests for Kubernetes.
 This resource file deploys an nginx container as a single pod deployment with a node port service attached to it.
 
 See the corresponding terratest code for an example of how to test this resource config:
-- [kubernetes_basic_example_test.go](../test/kubernetes_basic_example_test.go) for the most basic verification
-- [kubernetes_basic_example_service_check_test.go](../test/kubernetes_basic_example_service_check_test.go) for a more
+- [kubernetes_basic_example_test.go](../../test/kubernetes_basic_example_test.go) for the most basic verification
+- [kubernetes_basic_example_service_check_test.go](../../test/kubernetes_basic_example_service_check_test.go) for a more
   advanced version of checking the service.
 
 
