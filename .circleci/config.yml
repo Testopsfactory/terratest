@@ -6,6 +6,7 @@ jobs:
     machine: true
     environment:
       TERRAFORM_VERSION: 0.11.8
+      TERRAGRUNT_VERSION: NONE
       GRUNTWORK_INSTALLER_VERSION: v0.0.21
       K8S_VERSION: v1.10.0  # Same as EKS
       KUBECONFIG: /home/circleci/.kube/config
@@ -33,7 +34,7 @@ jobs:
       # Use the Gruntwork Installer to install the gruntwork-module-circleci-helpers
       - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version ${GRUNTWORK_INSTALLER_VERSION}
       - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
-      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --terraform-version ${TERRAFORM_VERSION}
+      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --terraform-version ${TERRAFORM_VERSION} --terragrunt-version ${TERRAGRUNT_VERSION}
 
       # Install and setup minikube
       # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
