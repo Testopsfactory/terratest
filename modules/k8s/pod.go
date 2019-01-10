@@ -30,10 +30,17 @@ func GetPodE(t *testing.T, options *KubectlOptions, podName string) (*corev1.Pod
 	return clientset.CoreV1().Pods(options.Namespace).Get(podName, metav1.GetOptions{})
 }
 
-// WaitUntilPodAvailable waits until the pod is running.
+// WaitUntilPodAvailable waits until the pod is running, retrying the check for the specified amount of times, sleeping
+// for the provided duration between each try. This will fail the test if there is an error or if the check times out.
 func WaitUntilPodAvailable(t *testing.T, options *KubectlOptions, podName string, retries int, sleepBetweenRetries time.Duration) {
+	require.NoError(t, WaitUntilPodAvailableE(t, options, podName, retries, sleepBetweenRetries))
+}
+
+// WaitUntilPodAvailableE waits until the pod is running, retrying the check for the specified amount of times, sleeping
+// for the provided duration between each try.
+func WaitUntilPodAvailableE(t *testing.T, options *KubectlOptions, podName string, retries int, sleepBetweenRetries time.Duration) error {
 	statusMsg := fmt.Sprintf("Wait for pod %s to be provisioned.", podName)
-	message := retry.DoWithRetry(
+	message, err := retry.DoWithRetryE(
 		t,
 		statusMsg,
 		retries,
@@ -49,7 +56,12 @@ func WaitUntilPodAvailable(t *testing.T, options *KubectlOptions, podName string
 			return "Pod is now available", nil
 		},
 	)
+	if err != nil {
+		logger.Logf(t, "Timedout waiting for Pod to be provisioned: %s", err)
+		return err
+	}
 	logger.Logf(t, message)
+	return nil
 }
 
 // IsPodAvailable returns true if the pod is running.

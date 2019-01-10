@@ -44,7 +44,7 @@ func TestWaitUntilPodAvailableReturnsSuccessfully(t *testing.T) {
 	defer KubectlDeleteFromString(t, options, configData)
 	KubectlApplyFromString(t, options, configData)
 
-	WaitUntilPodAvailable(t, options, "nginx-pod", 10, 1*time.Second)
+	WaitUntilPodAvailable(t, options, "nginx-pod", 60, 1*time.Second)
 }
 
 const EXAMPLE_POD_YAML_TEMPLATE = `---
