@@ -6,6 +6,19 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// PodNotAvailable is returned when a Kubernetes service is not yet available to accept traffic.
+type PodNotAvailable struct {
+	pod *corev1.Pod
+}
+
+func (err PodNotAvailable) Error() string {
+	return fmt.Sprintf("Pod %s is not available", err.pod.Name)
+}
+
+func NewPodNotAvailableError(pod *corev1.Pod) PodNotAvailable {
+	return PodNotAvailable{pod}
+}
+
 // ServiceNotAvailable is returned when a Kubernetes service is not yet available to accept traffic.
 type ServiceNotAvailable struct {
 	service *corev1.Service
