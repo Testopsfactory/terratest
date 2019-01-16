@@ -58,9 +58,6 @@ func SkipStageEnvVarSet() bool {
 //       // Copy the terraform folder to a temp folder
 //       tempTestFolder := test_structure.CopyTerraformFolderToTemp(t, rootFolder, terraformFolderRelativeToRoot)
 //
-//       // Log temp folder so we can see it
-//       logger.Logf(t, "Temp test folder: %s", tempTestFolder)
-//
 //       // Make sure to use the temp test folder in the terraform options
 //       terraformOptions := &terraform.Options{
 //       		TerraformDir: tempTestFolder,
@@ -80,7 +77,12 @@ func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, terraformModuleF
 		t.Fatal(err)
 	}
 
-	return filepath.Join(tmpRootFolder, terraformModuleFolder)
+	tmpTestFolder := filepath.Join(tmpRootFolder, terraformModuleFolder)
+
+	// Log temp folder so we can see it
+	logger.Logf(t, "Copied terraform folder %s to %s", filepath.Join(rootFolder, terraformModuleFolder), tmpTestFolder)
+
+	return tmpTestFolder
 }
 
 func cleanName(originalName string) string {
