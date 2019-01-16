@@ -39,19 +39,40 @@ func SkipStageEnvVarSet() bool {
 	return false
 }
 
-// CopyTerraformFolderToTemp copies the given root folder to a randomly-named temp folder and return the path to the given examples folder within
-// the new temp root folder. This is useful when running multiple tests in parallel against the same set of Terraform
-// files to ensure the tests don't overwrite each other's .terraform working directory and terraform.tfstate files. To
-// ensure relative paths work, we copy over the entire root folder to a temp folder, and then return the path within
-// that temp folder to the given example dir, which is where the actual test will be running.
+// CopyTerraformFolderToTemp copies the given root folder to a randomly-named temp folder and return the path to the
+// given terraform modules folder within the new temp root folder. This is useful when running multiple tests in
+// parallel against the same set of Terraform files to ensure the tests don't overwrite each other's .terraform working
+// directory and terraform.tfstate files. To ensure relative paths work, we copy over the entire root folder to a temp
+// folder, and then return the path within that temp folder to the given terraform module dir, which is where the actual
+// test will be running.
+// For example, suppose you had the target terraform folder you want to test in "/examples/terraform-aws-example"
+// relative to the repo root. If your tests reside in the "/test" relative to the root, then you will use this as
+// follows:
+//
+//       // Root folder where terraform files should be (relative to the test folder)
+//       rootFolder := ".."
+//
+//       // Relative path to terraform module being tested from the root folder
+//       terraformFolderRelativeToRoot := "examples/terraform-aws-example"
+//
+//       // Copy the terraform folder to a temp folder
+//       tempTestFolder := test_structure.CopyTerraformFolderToTemp(t, rootFolder, terraformFolderRelativeToRoot)
+//
+//       // Log temp folder so we can see it
+//       logger.Logf(t, "Temp test folder: %s", tempTestFolder)
+//
+//       // Make sure to use the temp test folder in the terraform options
+//       terraformOptions := &terraform.Options{
+//       		TerraformDir: tempTestFolder,
+//       }
 //
 // Note that if any of the SKIP_<stage> environment variables is set, we assume this is a test in the local dev where
-// there are no other concurrent tests running and we want to be able to cache test data between test stages, so in
-// that case, we do NOT copy anything to a temp folder, and return the path to the original examples folder instead.
-func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, examplesFolder string) string {
+// there are no other concurrent tests running and we want to be able to cache test data between test stages, so in that
+// case, we do NOT copy anything to a temp folder, and return the path to the original terraform module folder instead.
+func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, terraformModuleFolder string) string {
 	if SkipStageEnvVarSet() {
 		logger.Logf(t, "A SKIP_XXX environment variable is set. Using original examples folder rather than a temp folder so we can cache data between stages for faster local testing.")
-		return filepath.Join(rootFolder, examplesFolder)
+		return filepath.Join(rootFolder, terraformModuleFolder)
 	}
 
 	tmpRootFolder, err := files.CopyTerraformFolderToTemp(rootFolder, cleanName(t.Name()))
@@ -59,7 +80,7 @@ func CopyTerraformFolderToTemp(t *testing.T, rootFolder string, examplesFolder s
 		t.Fatal(err)
 	}
 
-	return filepath.Join(tmpRootFolder, examplesFolder)
+	return filepath.Join(tmpRootFolder, terraformModuleFolder)
 }
 
 func cleanName(originalName string) string {
