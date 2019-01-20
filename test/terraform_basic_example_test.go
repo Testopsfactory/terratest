@@ -1,10 +1,7 @@
 package test
 
 import (
-	"path/filepath"
 	"testing"
-
-	"github.com/gruntwork-io/terratest/modules/files"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -25,8 +22,6 @@ func TestTerraformBasicExample(t *testing.T) {
 		Vars: map[string]interface{}{
 			"example": expectedText,
 		},
-		// Use the var files
-		VarFiles: []string{"varfile.tfvars"},
 
 		NoColor: true,
 	}
@@ -42,13 +37,34 @@ func TestTerraformBasicExample(t *testing.T) {
 
 	// Verify we're getting back the variable we expect
 	assert.Equal(t, expectedText, actualText)
+}
 
-	// Test for the second variable which comes from the var file
-	actualText = terraform.Output(t, terraformOptions, "example2")
-	assert.Equal(t, "test", actualText)
+// An example of using -var-file argument in a test
+func TestTerraformVarFilesExample(t *testing.T) {
+	t.Parallel()
+	terraformDir := "../examples/terraform-basic-example"
 
-	// Test to see if the local_file resources were created
-	assert.True(t, files.FileExists(filepath.Join(terraformDir, "example.txt")))
-	assert.True(t, files.FileExists(filepath.Join(terraformDir, "example2.txt")))
+	expectedText := "test"
 
+	terraformOptions := &terraform.Options{
+		// The path to where our Terraform code is located
+		TerraformDir: terraformDir,
+
+		// Use the var files
+		VarFiles: []string{"varfile.tfvars"},
+
+		NoColor: true,
+	}
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.InitAndApply(t, terraformOptions)
+
+	// Test for the variable which comes from the var file
+	actualText := terraform.Output(t, terraformOptions, "example2")
+
+	// Verify we're getting the expected value from the file
+	assert.Equal(t, expectedText, actualText)
 }
