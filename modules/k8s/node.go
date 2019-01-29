@@ -9,6 +9,9 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// The following line loads the gcp plugin which is required to authenticate against GKE clusters.
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
 // GetNodes queries Kubernetes for information about the worker nodes registered to the cluster. If anything goes wrong,
