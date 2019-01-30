@@ -6,9 +6,40 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	authv1 "k8s.io/api/authorization/v1"
 
 	"github.com/gruntwork-io/terratest/modules/random"
 )
+
+func TestCreateServiceAccountWithAuthTokenCreatesAServiceAccountThatCanBeAuthed(t *testing.T) {
+	t.Parallel()
+
+	// make a copy of kubeconfig to namespace it
+	tmpConfigPath := CopyHomeKubeConfigToTemp(t)
+	options := NewKubectlOptions("", tmpConfigPath)
+
+	// Create a new namespace to work in
+	namespaceName := strings.ToLower(random.UniqueId())
+	CreateNamespace(t, options, namespaceName)
+	defer DeleteNamespace(t, options, namespaceName)
+	options.Namespace = namespaceName
+
+	// Create service account
+	serviceAccountName := strings.ToLower(random.UniqueId())
+	token := CreateServiceAccountWithAuthToken(t, options, serviceAccountName)
+	require.NoError(t, AddConfigContextForServiceAccountE(t, options, serviceAccountName, serviceAccountName, token))
+
+	// Now validate auth as service account. This is a bit tricky because we don't have an API endpoint in k8s that
+	// tells you who you are, so we will rely on the self subject access review and see if we have access to the
+	// kube-system namespace.
+	serviceAccountOptions := NewKubectlOptions(serviceAccountName, tmpConfigPath)
+	action := authv1.ResourceAttributes{
+		Namespace: "kube-system",
+		Verb:      "list",
+		Resource:  "pod",
+	}
+	require.False(t, CanIDo(t, serviceAccountOptions, action))
+}
 
 func TestGetServiceAccountEReturnsErrorForNonExistantServiceAccount(t *testing.T) {
 	t.Parallel()

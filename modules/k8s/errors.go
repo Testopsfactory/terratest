@@ -6,6 +6,15 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// ServiceAccountTokenNotAvailable is returned when a Kubernetes ServiceAccount does not have a token provisioned yet.
+type ServiceAccountTokenNotAvailable struct {
+	Name string
+}
+
+func (err ServiceAccountTokenNotAvailable) Error() string {
+	return fmt.Sprintf("ServiceAccount %s does not have a token yet.", err.Name)
+}
+
 // PodNotAvailable is returned when a Kubernetes service is not yet available to accept traffic.
 type PodNotAvailable struct {
 	pod *corev1.Pod
