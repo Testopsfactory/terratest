@@ -129,6 +129,8 @@ such as:
     AWS instance and then uses `remote-exec` to provision it.
 1.  [Basic Kubernetes Example](/examples/kubernetes-basic-example): A minimal Kubernetes resource that deploys an
     addressable nginx instance.
+1.  [Kubernetes RBAC Example](/examples/kubernetes-rbac-example): A Kubernetes resource config that creates a Namespace
+    with a ServiceAccount that has admin permissions within the Namespace, but not outside.
 
 Next, head over to the [test folder](/test) to see how you can use Terratest to test each of these examples:
 
@@ -152,8 +154,13 @@ Next, head over to the [test folder](/test) to see how you can use Terratest to 
     like config files and logs from deployed EC2 Instances. This is especially useful for getting a snapshot of the
     state of a deployment when a test fails.
 1.  [kubernetes_basic_example_test.go](/test/kubernetes_basic_example_test.go): Use Terratest to run `kubectl apply`
-    apply a Kubernetes resource file, verify resources are created using the Kubernetes API, and then run `kubectl
+    to apply a Kubernetes resource file, verify resources are created using the Kubernetes API, and then run `kubectl
     delete` to delete the resources at the end of the test.
+1.  [kubernetes_rbac_example_test.go](/test/kubernetes_rbac_example_test.go): Use Terratest to run `kubectl apply` to
+    apply a Kubernetes resource file, retrieve auth tokens to authenticate as the created ServiceAccount, update the
+    kubeconfig file with the authentication token and add a new context to auth as the ServiceAccount, verify auth as
+    the ServiceAccount by checking what resources you have access to, and finally run `kubectl delete` to delete the
+    resources at the end of the test.
     
 
 Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure
