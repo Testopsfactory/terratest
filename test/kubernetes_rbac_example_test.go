@@ -54,6 +54,12 @@ func TestKubernetesRBACExample(t *testing.T) {
 	// At this point all requests made with serviceAccountKubectlOptions will be auth'd as that ServiceAccount. So let's
 	// verify that! We will check:
 	// - we can't access the kube-system namespace
+	adminListPodAction := authv1.ResourceAttributes{
+		Namespace: "kube-system",
+		Verb:      "list",
+		Resource:  "pod",
+	}
+	require.False(t, k8s.CanIDo(t, serviceAccountKubectlOptions, adminListPodAction))
 	// - we can access the namespace the service account is in
 	namespaceListPodAction := authv1.ResourceAttributes{
 		Namespace: namespaceName,
@@ -61,10 +67,4 @@ func TestKubernetesRBACExample(t *testing.T) {
 		Resource:  "pod",
 	}
 	require.True(t, k8s.CanIDo(t, serviceAccountKubectlOptions, namespaceListPodAction))
-	adminListPodAction := authv1.ResourceAttributes{
-		Namespace: "kube-system",
-		Verb:      "list",
-		Resource:  "pod",
-	}
-	require.False(t, k8s.CanIDo(t, serviceAccountKubectlOptions, adminListPodAction))
 }
