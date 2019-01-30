@@ -7,8 +7,8 @@ import (
 	authv1 "k8s.io/api/authorization/v1"
 )
 
-// NOTE: See service_account_test.go:TestCreateServiceAccountWithAuthTokenCreatesAServiceAccountThatCanBeAuthed for the
-// deny case, as the current authed user is assumed to be a super user and so there is nothing they can't do.
+// NOTE: See service_account_test.go:TestGetServiceAccountWithAuthTokenGetsTokenThatCanBeUsedForAuth for the deny case,
+// as the current authed user is assumed to be a super user and so there is nothing they can't do.
 
 func TestCanIDoReturnsTrueForAllowedAction(t *testing.T) {
 	t.Parallel()
