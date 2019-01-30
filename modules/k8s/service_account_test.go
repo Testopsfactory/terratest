@@ -11,7 +11,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
-func TestCreateServiceAccountWithAuthTokenCreatesAServiceAccountThatCanBeAuthed(t *testing.T) {
+func TestGetServiceAccountWithAuthTokenGetsTokenThatCanBeUsedForAuth(t *testing.T) {
 	t.Parallel()
 
 	// make a copy of kubeconfig to namespace it
@@ -26,7 +26,8 @@ func TestCreateServiceAccountWithAuthTokenCreatesAServiceAccountThatCanBeAuthed(
 
 	// Create service account
 	serviceAccountName := strings.ToLower(random.UniqueId())
-	token := CreateServiceAccountWithAuthToken(t, options, serviceAccountName)
+	CreateServiceAccount(t, options, serviceAccountName)
+	token := GetServiceAccountAuthToken(t, options, serviceAccountName)
 	require.NoError(t, AddConfigContextForServiceAccountE(t, options, serviceAccountName, serviceAccountName, token))
 
 	// Now validate auth as service account. This is a bit tricky because we don't have an API endpoint in k8s that

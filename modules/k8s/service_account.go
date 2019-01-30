@@ -58,23 +58,17 @@ func CreateServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccount
 	return err
 }
 
-// CreateServiceAccountWithAuthToken will create a new ServiceAccount resource in the configured namespace and generate
-// an auth token that can be used to configure Kubectl to login as that service account. This will fail the test if
-// there is an error.
-func CreateServiceAccountWithAuthToken(t *testing.T, kubectlOptions *KubectlOptions, name string) string {
-	token, err := CreateServiceAccountWithAuthTokenE(t, kubectlOptions, name)
+// GetServiceAccountWithAuthTokenE will retrieve the ServiceAccount token from the cluster so it can be used to
+// authenticate requests as that ServiceAccount. This will fail the test if there is an error.
+func GetServiceAccountAuthToken(t *testing.T, kubectlOptions *KubectlOptions, serviceAccountName string) string {
+	token, err := GetServiceAccountAuthTokenE(t, kubectlOptions, serviceAccountName)
 	require.NoError(t, err)
 	return token
 }
 
-// CreateServiceAccountWithAuthTokenE will create a new ServiceAccount resource in the configured namespace and generate
-// an auth token that can be used to configure Kubectl to login as that service account.
-func CreateServiceAccountWithAuthTokenE(t *testing.T, kubectlOptions *KubectlOptions, name string) (string, error) {
-	// Create a new service account that we will use for auth.
-	if err := CreateServiceAccountE(t, kubectlOptions, name); err != nil {
-		return "", err
-	}
-
+// GetServiceAccountWithAuthTokenE will retrieve the ServiceAccount token from the cluster so it can be used to
+// authenticate requests as that ServiceAccount.
+func GetServiceAccountAuthTokenE(t *testing.T, kubectlOptions *KubectlOptions, serviceAccountName string) (string, error) {
 	// Wait for the TokenController to provision a ServiceAccount token
 	msg, err := retry.DoWithRetryE(
 		t,
@@ -83,7 +77,7 @@ func CreateServiceAccountWithAuthTokenE(t *testing.T, kubectlOptions *KubectlOpt
 		10*time.Second,
 		func() (string, error) {
 			logger.Logf(t, "Checking if service account has secret")
-			serviceAccount := GetServiceAccount(t, kubectlOptions, name)
+			serviceAccount := GetServiceAccount(t, kubectlOptions, serviceAccountName)
 			if len(serviceAccount.Secrets) == 0 {
 				msg := "No secrets on the service account yet"
 				logger.Logf(t, msg)
@@ -98,12 +92,12 @@ func CreateServiceAccountWithAuthTokenE(t *testing.T, kubectlOptions *KubectlOpt
 	logger.Logf(t, msg)
 
 	// Then get the service account token
-	serviceAccount, err := GetServiceAccountE(t, kubectlOptions, name)
+	serviceAccount, err := GetServiceAccountE(t, kubectlOptions, serviceAccountName)
 	if err != nil {
 		return "", err
 	}
 	if len(serviceAccount.Secrets) != 1 {
-		return "", errors.WithStackTrace(ServiceAccountTokenNotAvailable{name})
+		return "", errors.WithStackTrace(ServiceAccountTokenNotAvailable{serviceAccountName})
 	}
 	secret := GetSecret(t, kubectlOptions, serviceAccount.Secrets[0].Name)
 	return string(secret.Data["token"]), nil
