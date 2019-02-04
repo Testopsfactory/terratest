@@ -23,7 +23,7 @@ func DirectoryEqual(t *testing.T, dirA string, dirB string) bool {
 	// recursively
 	cmd := shell.Command{
 		Command: "diff",
-		Args:    []string{"-arq", dirAAbs, dirBAbs},
+		Args:    []string{"-ar", dirAAbs, dirBAbs},
 	}
 	err = shell.RunCommandE(t, cmd)
 	exitCode, err := shell.GetExitCodeForRunCommandError(err)

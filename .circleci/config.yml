@@ -1,22 +1,131 @@
+defaults: &defaults
+  machine: true
+  environment:
+    GRUNTWORK_INSTALLER_VERSION: v0.0.21
+    MODULE_CI_VERSION: v0.13.3
+    TERRAFORM_VERSION: 0.11.11
+    TERRAGRUNT_VERSION: NONE
+    PACKER_VERSION: 1.3.3
+    GOLANG_VERSION: 1.11
+    K8S_VERSION: v1.10.0  # Same as EKS
+    HELM_VERSION: v2.12.2
+    KUBECONFIG: /home/circleci/.kube/config
+    MINIKUBE_VERSION: v0.28.2  # See https://github.com/kubernetes/minikube/issues/2704
+    MINIKUBE_WANTUPDATENOTIFICATION: "false"
+    MINIKUBE_WANTREPORTERRORPROMPT: "false"
+    MINIKUBE_HOME: /home/circleci
+    CHANGE_MINIKUBE_NONE_USER: "true"
+
+
+# Install and setup minikube
+# https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
+setup_minikube: &setup_minikube
+  name: install helm, kubectl and minikube
+  working_directory: /tmp
+  command: |
+    # install kubectl
+    curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+    chmod +x kubectl
+    sudo mv kubectl /usr/local/bin/
+    mkdir -p ${HOME}/.kube
+    touch ${HOME}/.kube/config
+
+    # install helm
+    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
+    tar -xvf helm.tar.gz
+    chmod +x linux-amd64/helm
+    sudo mv linux-amd64/helm /usr/local/bin/
+
+    # Install minikube
+    curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
+    chmod +x minikube
+    sudo mv minikube /usr/local/bin/
+
+    # start minikube and wait for it
+    # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
+    # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
+    # systemd.
+    sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube --extra-config=apiserver.Authorization.Mode=RBAC
+    # this for loop waits until kubectl can access the api server that Minikube has created
+    $(
+      for i in {1..150}; do # timeout for 5 minutes
+        kubectl get po &> /dev/null
+        if [ $? -ne 1 ]; then
+          break
+        fi
+        sleep 2
+      done
+      true
+    )
+
+
+install_gruntwork_utils: &install_gruntwork_utils
+  name: install gruntwork utils
+  command: |
+    curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
+    gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
+    configure-environment-for-gruntwork-module \
+      --circle-ci-2-machine-executor \
+      --terraform-version ${TERRAFORM_VERSION} \
+      --terragrunt-version ${TERRAGRUNT_VERSION} \
+      --packer-version ${PACKER_VERSION} \
+      --use-go-dep \
+      --go-version ${GOLANG_VERSION} \
+      --go-src-path ./ 
+
+
 version: 2
 jobs:
-  build:
-    # We need to run Docker Compose with volumes, which isn't supported by CircleCI's Docker executor, so we have to use
-    # the machine executor instead.
-    machine: true
-    environment:
-      TERRAFORM_VERSION: 0.11.8
-      TERRAGRUNT_VERSION: NONE
-      GRUNTWORK_INSTALLER_VERSION: v0.0.21
-      K8S_VERSION: v1.10.0  # Same as EKS
-      KUBECONFIG: /home/circleci/.kube/config
-      MINIKUBE_VERSION: v0.28.2  # See https://github.com/kubernetes/minikube/issues/2704
-      MINIKUBE_WANTUPDATENOTIFICATION: "false"
-      MINIKUBE_WANTREPORTERRORPROMPT: "false"
-      MINIKUBE_HOME: /home/circleci
-      CHANGE_MINIKUBE_NONE_USER: "true"
+  setup:
+    <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys:
+          - dep-{{ checksum "Gopkg.lock" }}
+
+      # Install gruntwork utilities
+      - run:
+          <<: *install_gruntwork_utils
+
+      - save_cache:
+          key: dep-{{ checksum "Gopkg.lock" }}
+          paths:
+          - ./vendor
+
+      # Run pre-commit hooks and fail the build if any hook finds required changes.
+      - run: go get golang.org/x/tools/cmd/goimports
+      - run: pip install pre-commit==1.11.2
+      - run: pre-commit install
+      - run: pre-commit run --all-files
+
+      # Build any binaries that need to be built
+      # We always want to build the binaries, because we will use the terratest_log_parser to parse out the test output
+      # during a failure.
+      - run: 
+          command: |
+            cd ~/.go_workspace/src/github.com/gruntwork-io/terratest
+            GO_ENABLED=0 build-go-binaries \
+              --circle-ci-2 \
+              --app-name terratest_log_parser \
+              --src-path ./cmd/terratest_log_parser \
+              --dest-path ./cmd/bin \
+              --ld-flags "-X main.VERSION=$CIRCLE_TAG -extldflags '-static'"
+          when: always
+
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - project
+              
+  test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
 
       # The weird way you have to set PATH in Circle 2.0
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
@@ -25,84 +134,49 @@ jobs:
       - run: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
       - run: echo 'export GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcloud-service-key.json' >> $BASH_ENV
 
-      # Install Gruntwork and HashiCorp dependencies
-      - restore_cache:
-          keys:
-            - v1-external-dep
-            - v1-dep-{{ checksum "Gopkg.lock" }}
-
-      # Use the Gruntwork Installer to install the gruntwork-module-circleci-helpers
-      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version ${GRUNTWORK_INSTALLER_VERSION}
-      - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
-      - run: configure-environment-for-gruntwork-module --circle-ci-2-machine-executor --go-src-path . --use-go-dep --terraform-version ${TERRAFORM_VERSION} --terragrunt-version ${TERRAGRUNT_VERSION}
-
-      # Install and setup minikube
-      # https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
-      - run:
-          name: install kubectl
-          command: |
-            curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
-            chmod +x kubectl
-            sudo mv kubectl /usr/local/bin/
-            mkdir -p ${HOME}/.kube
-            touch ${HOME}/.kube/config
-      - run:
-          name: install minikube
-          command: |
-            curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
-            chmod +x minikube
-            sudo mv minikube /usr/local/bin/
-      - run:
-          name: start minikube and wait for it
-          command: |
-            # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
-            # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
-            # systemd.
-            sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube --extra-config=apiserver.Authorization.Mode=RBAC
-            # this for loop waits until kubectl can access the api server that Minikube has created
-            $(
-              for i in {1..150}; do # timeout for 5 minutes
-                kubectl get po &> /dev/null
-                if [ $? -ne 1 ]; then
-                  break
-                fi
-                sleep 2
-              done
-              true
-            )
-
-      - save_cache:
-          key: v1-external-dep
-          paths:
-            - $HOME/terraform
-            - $HOME/packer
-      - save_cache:
-          key: v1-dep-{{ checksum "Gopkg.lock" }}
-          paths:
-            - $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/test/vendor
-
-      # Run pre-commit hooks and fail the build if any hook finds required changes.
-      - run: go get golang.org/x/tools/cmd/goimports
-      - run: pip install pre-commit==1.11.2
-      - run: pre-commit install
-      - run: pre-commit run --all-files
-
       # Run the tests. Note that we set the "-p 1" flag to tell Go to run tests in each package sequentially. Without
       # this, Go buffers all log output until all packages are done, which with slower running tests can cause CircleCI
       # to kill the build after more than 10 minutes without log output.
+      # NOTE: because this doesn't build with the kubernetes tag, it will not run the kubernetes tests. See
+      # kubernetes_test build steps. 
       - run: mkdir -p /tmp/logs
       - run: run-go-tests --packages "-p 1 ./..." | tee /tmp/logs/test_output.log
 
-      # Build any binaries that need to be built
-      # We always want to build the binaries, because we will use the terratest_log_parser to parse out the test output
-      # during a failure.
-      - run: 
-          command: GO_ENABLED=0 build-go-binaries --circle-ci-2 --app-name terratest_log_parser --src-path ../.go_workspace/src/github.com/gruntwork-io/terratest/cmd/terratest_log_parser --dest-path ./cmd/bin --ld-flags "-X main.VERSION=$CIRCLE_TAG -extldflags '-static'"
+      - run:
+          command: ./cmd/bin/terratest_log_parser_linux_amd64 --testlog /tmp/logs/test_output.log --outputdir /tmp/logs
           when: always
 
-      - persist_to_workspace:
-          root: .
-          paths: cmd/bin
+      # Store test result and log artifacts for browsing purposes
+      - store_artifacts:
+          path: /tmp/logs
+      - store_test_results:
+          path: /tmp/logs
+
+
+  kubernetes_test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
+
+      # The weird way you have to set PATH in Circle 2.0
+      - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
+
+      - run:
+          <<: *setup_minikube
+
+      # Run the Kubernetes tests. These tests are run because the kubernetes build tag is included, and we explicitly
+      # select the kubernetes tests
+      - run:
+          command: |
+            mkdir -p /tmp/logs
+            # Run the unit tests first, then the integration tests. They are separate because the integration tests
+            # require additional filtering.
+            run-go-tests --packages "-tags kubernetes ./modules/k8s" | tee /tmp/logs/test_output.log
+            run-go-tests --packages "-tags kubernetes -run TestKubernetes ./test" | tee -a /tmp/logs/test_output.log
 
       - run:
           command: ./cmd/bin/terratest_log_parser_linux_amd64 --testlog /tmp/logs/test_output.log --outputdir /tmp/logs
@@ -130,14 +204,29 @@ workflows:
   version: 2
   build-and-test:
     jobs:
-      - build:
+      - setup:
+          filters:
+            tags:
+              only: /^v.*/
+
+      - test:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /^v.*/
+
+      - kubernetes_test:
+          requires:
+            - setup
           filters:
             tags:
               only: /^v.*/
 
       - deploy:
           requires:
-            - build
+            - test
+            - kubernetes_test
           filters:
             tags:
               only: /^v.*/
