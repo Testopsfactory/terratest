@@ -26,7 +26,7 @@
   version = "v0.6.0"
 
 [[projects]]
-  digest = "1:64d3361d91812fe08e323158379fa8d66d48d9ef6b9a2a6800aef78f95f80ea0"
+  digest = "1:0702d9e517405bc4eb634e3c7cf909b1da212bb5ce3cb633d1358bd2a7853d82"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -65,7 +65,6 @@
     "service/autoscaling",
     "service/cloudwatchlogs",
     "service/ec2",
-    "service/elb",
     "service/iam",
     "service/kms",
     "service/rds",
@@ -703,7 +702,7 @@
 
 [[projects]]
   branch = "release-9.0"
-  digest = "1:51fd9ac9f2be10d79f5af101a7a1d758ef283fdb028a0d11198754bd3d4a6020"
+  digest = "1:bac06e69e8c8387d68053aa71f4e96dd8b8afef54135b55f17ff9ccec84fc74e"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -745,8 +744,10 @@
     "pkg/apis/clientauthentication/v1beta1",
     "pkg/version",
     "plugin/pkg/client/auth/exec",
+    "plugin/pkg/client/auth/gcp",
     "rest",
     "rest/watch",
+    "third_party/forked/golang/template",
     "tools/auth",
     "tools/clientcmd",
     "tools/clientcmd/api",
@@ -760,6 +761,7 @@
     "util/flowcontrol",
     "util/homedir",
     "util/integer",
+    "util/jsonpath",
   ]
   pruneopts = "UT"
   revision = "13596e875accbd333e0b5bd5fd9462185acd9958"
@@ -777,7 +779,6 @@
     "github.com/aws/aws-sdk-go/service/autoscaling",
     "github.com/aws/aws-sdk-go/service/cloudwatchlogs",
     "github.com/aws/aws-sdk-go/service/ec2",
-    "github.com/aws/aws-sdk-go/service/elb",
     "github.com/aws/aws-sdk-go/service/iam",
     "github.com/aws/aws-sdk-go/service/kms",
     "github.com/aws/aws-sdk-go/service/rds",
@@ -813,6 +814,7 @@
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/client-go/tools/clientcmd/api",

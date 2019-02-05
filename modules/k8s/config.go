@@ -2,16 +2,20 @@ package k8s
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"testing"
 
+	gwErrors "github.com/gruntwork-io/gruntwork-cli/errors"
 	homedir "github.com/mitchellh/go-homedir"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/gruntwork-io/terratest/modules/environment"
+	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
 
@@ -142,4 +146,38 @@ func KubeConfigPathFromHomeDirE() (string, error) {
 	}
 	configPath := filepath.Join(home, ".kube", "config")
 	return configPath, err
+}
+
+// CopyHomeKubeConfigToTemp will copy the kubeconfig in the home directory to a temp file. This will fail the test if
+// there are any errors.
+func CopyHomeKubeConfigToTemp(t *testing.T) string {
+	path, err := CopyHomeKubeConfigToTempE(t)
+	if err != nil {
+		if path != "" {
+			os.Remove(path)
+		}
+		t.Fatal(err)
+	}
+	return path
+}
+
+// CopyHomeKubeConfigToTemp will copy the kubeconfig in the home directory to a temp file.
+func CopyHomeKubeConfigToTempE(t *testing.T) (string, error) {
+	configPath, err := KubeConfigPathFromHomeDirE()
+	if err != nil {
+		return "", err
+	}
+	tmpConfig, err := ioutil.TempFile("", "")
+	if err != nil {
+		return "", gwErrors.WithStackTrace(err)
+	}
+	defer tmpConfig.Close()
+	err = files.CopyFile(configPath, tmpConfig.Name())
+	return tmpConfig.Name(), err
+}
+
+// UpsertConfigContext will update or insert a new context to the provided config, binding the provided cluster to the
+// provided user.
+func UpsertConfigContext(config *api.Config, contextName string, clusterName string, userName string) {
+	config.Contexts[contextName] = &api.Context{Cluster: clusterName, AuthInfo: userName}
 }
