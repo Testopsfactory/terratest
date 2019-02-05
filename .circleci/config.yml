@@ -194,7 +194,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: .
+          at: /home/circleci
       - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
       - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
       - run: upload-github-release-assets cmd/bin/*
