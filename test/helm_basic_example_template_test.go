@@ -7,11 +7,12 @@
 package test
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
+	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/gruntwork-io/terratest/modules/helm"
@@ -54,8 +55,11 @@ func TestHelmBasicExampleTemplateRenderedDeployment(t *testing.T) {
 
 	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
 	// ensure the Deployment resource is rendered correctly.
+	// NOTE: the client-go library can only decode json, so we will first convert the yaml to json
+	jsonData, err := yaml.YAMLToJSON([]byte(output))
+	require.NoError(t, err)
 	var deployment appsv1.Deployment
-	require.NoError(t, yaml.Unmarshal([]byte(output), &deployment))
+	require.NoError(t, json.Unmarshal(jsonData, &deployment))
 
 	// Finally, we verify the deployment pod template spec is set to the expected container image value
 	expectedContainerImage := "nginx:1.15.8"
