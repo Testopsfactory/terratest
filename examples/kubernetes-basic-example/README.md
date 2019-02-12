@@ -36,5 +36,5 @@ See the corresponding terratest code for an example of how to test this resource
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -run TestKubernetesBasicExample`
+1. `go test -v -tags kubernetes -run TestKubernetesBasicExample`
 1. You can also run `TestKubernetesBasicExampleServiceCheck`

@@ -14,6 +14,7 @@ variety of helper functions and patterns for common infrastructure testing tasks
 - Working with AWS APIs
 - Working with GCP APIs
 - Working with Kubernetes APIs
+- Testing Helm Charts
 - Making HTTP requests
 - Running shell commands
 - And much more
@@ -131,6 +132,8 @@ such as:
     addressable nginx instance.
 1.  [Kubernetes RBAC Example](/examples/kubernetes-rbac-example): A Kubernetes resource config that creates a Namespace
     with a ServiceAccount that has admin permissions within the Namespace, but not outside.
+1.  [Basic Helm Chart Example](/examples/helm-basic-example): A minimal helm chart that deploys a `Deployment` resource
+    for the provided container image.
 
 Next, head over to the [test folder](/test) to see how you can use Terratest to test each of these examples:
 
@@ -161,7 +164,9 @@ Next, head over to the [test folder](/test) to see how you can use Terratest to 
     kubeconfig file with the authentication token and add a new context to auth as the ServiceAccount, verify auth as
     the ServiceAccount by checking what resources you have access to, and finally run `kubectl delete` to delete the
     resources at the end of the test.
-    
+1.  [helm_basic_example_template_test.go](/test/helm_basic_example_template_test.go): Use Terratest to run `helm
+    template` to test template rendering logic.
+
 
 Finally, to see some real-world examples of Terratest in action, check out some of our open source infrastructure
 modules:

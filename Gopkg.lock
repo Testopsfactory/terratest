@@ -221,9 +221,10 @@
   revision = "c63ab54fda8f77302f8d414e19933f2b6026a089"
 
 [[projects]]
-  digest = "1:e24c5712cccd9f91eff50319d11de1d05dac716100c58914090de27b532625e3"
+  digest = "1:b1f24f9034de945fc3244e360fa682176384267fef58b22fe77d8c58bc6ae812"
   name = "github.com/gruntwork-io/gruntwork-cli"
   packages = [
+    "collections",
     "entrypoint",
     "errors",
     "files",
@@ -789,6 +790,7 @@
     "github.com/aws/aws-sdk-go/service/sts",
     "github.com/go-sql-driver/mysql",
     "github.com/google/uuid",
+    "github.com/gruntwork-io/gruntwork-cli/collections",
     "github.com/gruntwork-io/gruntwork-cli/entrypoint",
     "github.com/gruntwork-io/gruntwork-cli/errors",
     "github.com/gruntwork-io/gruntwork-cli/files",
@@ -811,6 +813,9 @@
     "golang.org/x/oauth2/google",
     "google.golang.org/api/compute/v1",
     "google.golang.org/api/iterator",
+    "gopkg.in/yaml.v2",
+    "k8s.io/api/apps/v1",
+    "k8s.io/api/authorization/v1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/client-go/kubernetes",
