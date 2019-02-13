@@ -49,7 +49,7 @@ func TestFormatSetValuesAsArgs(t *testing.T) {
 
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, FormatSetValuesAsArgs(testCase.setValues), testCase.expected)
+			assert.Equal(t, formatSetValuesAsArgs(testCase.setValues), testCase.expected)
 		})
 	}
 }
@@ -97,7 +97,7 @@ func TestFormatSetFilesAsArgs(t *testing.T) {
 
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, FormatSetFilesAsArgs(t, testCase.setFiles), testCase.expected)
+			assert.Equal(t, formatSetFilesAsArgs(t, testCase.setFiles), testCase.expected)
 		})
 	}
 }
@@ -142,7 +142,7 @@ func TestFormatValuesFilesAsArgs(t *testing.T) {
 
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, FormatValuesFilesAsArgs(t, testCase.valuesFiles), testCase.expected)
+			assert.Equal(t, formatValuesFilesAsArgs(t, testCase.valuesFiles), testCase.expected)
 		})
 	}
 }
