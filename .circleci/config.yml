@@ -71,7 +71,7 @@ install_gruntwork_utils: &install_gruntwork_utils
       --packer-version ${PACKER_VERSION} \
       --use-go-dep \
       --go-version ${GOLANG_VERSION} \
-      --go-src-path ./ 
+      --go-src-path ./
 
 
 version: 2
@@ -102,7 +102,7 @@ jobs:
       # Build any binaries that need to be built
       # We always want to build the binaries, because we will use the terratest_log_parser to parse out the test output
       # during a failure.
-      - run: 
+      - run:
           command: |
             cd ~/.go_workspace/src/github.com/gruntwork-io/terratest
             GO_ENABLED=0 build-go-binaries \
@@ -117,7 +117,7 @@ jobs:
           root: /home/circleci
           paths:
             - project
-              
+
   test:
     <<: *defaults
     steps:
@@ -138,7 +138,7 @@ jobs:
       # this, Go buffers all log output until all packages are done, which with slower running tests can cause CircleCI
       # to kill the build after more than 10 minutes without log output.
       # NOTE: because this doesn't build with the kubernetes tag, it will not run the kubernetes tests. See
-      # kubernetes_test build steps. 
+      # kubernetes_test build steps.
       - run: mkdir -p /tmp/logs
       - run: run-go-tests --packages "-p 1 ./..." | tee /tmp/logs/test_output.log
 
@@ -176,7 +176,7 @@ jobs:
             # Run the unit tests first, then the integration tests. They are separate because the integration tests
             # require additional filtering.
             run-go-tests --packages "-tags kubernetes ./modules/k8s" | tee /tmp/logs/test_output.log
-            run-go-tests --packages "-tags kubernetes -run TestKubernetes ./test" | tee -a /tmp/logs/test_output.log
+            run-go-tests --packages "-tags kubernetes -run \"(TestKubernetes)|(TestHelm)\" ./test" | tee -a /tmp/logs/test_output.log
 
       - run:
           command: ./cmd/bin/terratest_log_parser_linux_amd64 --testlog /tmp/logs/test_output.log --outputdir /tmp/logs
