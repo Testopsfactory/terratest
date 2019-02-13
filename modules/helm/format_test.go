@@ -90,16 +90,20 @@ func TestFormatSetFilesAsArgs(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		// Capture the range value and force it into this scope. Otherwise, it is defined outside this block so it can
-		// change when the subtests parallelize and switch contexts.
-		testCase := testCase
+	// We create a subtest group that is NOT parallel, so the main test waits for all the tests to finish. This way, we
+	// don't delete the files until the subtests finish.
+	t.Run("group", func(t *testing.T) {
+		for _, testCase := range testCases {
+			// Capture the range value and force it into this scope. Otherwise, it is defined outside this block so it can
+			// change when the subtests parallelize and switch contexts.
+			testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
-			t.Parallel()
-			assert.Equal(t, formatSetFilesAsArgs(t, testCase.setFiles), testCase.expected)
-		})
-	}
+			t.Run(testCase.name, func(t *testing.T) {
+				t.Parallel()
+				assert.Equal(t, formatSetFilesAsArgs(t, testCase.setFiles), testCase.expected)
+			})
+		}
+	})
 }
 
 func TestFormatValuesFilesAsArgs(t *testing.T) {
@@ -135,16 +139,20 @@ func TestFormatValuesFilesAsArgs(t *testing.T) {
 		},
 	}
 
-	for _, testCase := range testCases {
-		// Capture the range value and force it into this scope. Otherwise, it is defined outside this block so it can
-		// change when the subtests parallelize and switch contexts.
-		testCase := testCase
+	// We create a subtest group that is NOT parallel, so the main test waits for all the tests to finish. This way, we
+	// don't delete the files until the subtests finish.
+	t.Run("group", func(t *testing.T) {
+		for _, testCase := range testCases {
+			// Capture the range value and force it into this scope. Otherwise, it is defined outside this block so it can
+			// change when the subtests parallelize and switch contexts.
+			testCase := testCase
 
-		t.Run(testCase.name, func(t *testing.T) {
-			t.Parallel()
-			assert.Equal(t, formatValuesFilesAsArgs(t, testCase.valuesFiles), testCase.expected)
-		})
-	}
+			t.Run(testCase.name, func(t *testing.T) {
+				t.Parallel()
+				assert.Equal(t, formatValuesFilesAsArgs(t, testCase.valuesFiles), testCase.expected)
+			})
+		}
+	})
 }
 
 // createTempFiles will create numFiles temporary files that can pass the abspath checks.
