@@ -12,7 +12,7 @@ import (
 // - kubeconfig context
 // - namespace
 // - helm home path
-func GetCommonArgs(options *Options, args ...string) []string {
+func getCommonArgs(options *Options, args ...string) []string {
 	if options.KubectlOptions != nil && options.KubectlOptions.ContextName != "" {
 		args = append(args, "--kube-context", options.KubectlOptions.ContextName)
 	}

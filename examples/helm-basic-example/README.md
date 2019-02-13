@@ -7,8 +7,8 @@ There are two kinds of tests you can perform on a helm chart:
 - Helm Template tests are tests designed to test the logic of the templates. These tests should run `helm template` with
   various input values and parse the yaml to validate any logic embedded in the templates (e.g by reading them in using
   client-go). Since templates are not statically typed, the goal of these tests is to promote fast cycle time
-- Helm Integration tests are tests that are designed to deploy the infrastructure and validate the resource
-  configurations. If you consider the templates to be syntactic tests, these are semantic tests that validate the
+- Helm Integration tests are tests that are designed to deploy the infrastructure and validate that it actually
+  works as expected. If you consider the templates to be syntactic tests, these are semantic tests that validate the
   behavior of the deployed resources.
 
 The helm chart deploys a single replica Deployment resource given the container image spec. This chart requires the
