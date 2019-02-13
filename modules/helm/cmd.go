@@ -31,17 +31,17 @@ func getCommonArgs(options *Options, args ...string) []string {
 // RunHelmCommandAndGetOutputE runs helm with the given arguments and options and returns stdout/stderr.
 func RunHelmCommandAndGetOutputE(t *testing.T, options *Options, cmd string, additionalArgs ...string) (string, error) {
 	args := []string{cmd}
-	args = GetCommonArgs(options, args...)
+	args = getCommonArgs(options, args...)
 
-	args = append(args, FormatSetValuesAsArgs(options.SetValues)...)
+	args = append(args, formatSetValuesAsArgs(options.SetValues)...)
 
-	valuesFilesArgs, err := FormatValuesFilesAsArgsE(t, options.ValuesFiles)
+	valuesFilesArgs, err := formatValuesFilesAsArgsE(t, options.ValuesFiles)
 	if err != nil {
 		return "", errors.WithStackTrace(err)
 	}
 	args = append(args, valuesFilesArgs...)
 
-	setFilesArgs, err := FormatSetFilesAsArgsE(t, options.SetFiles)
+	setFilesArgs, err := formatSetFilesAsArgsE(t, options.SetFiles)
 	if err != nil {
 		return "", errors.WithStackTrace(err)
 	}

@@ -26,3 +26,7 @@ See the corresponding terratest code for an example of how to test this chart:
 1. `cd test`
 1. `dep ensure`
 1. `go test -v -tags kubernetes -run TestHelmBasicExampleTemplate`
+
+**NOTE:** we have build tags to differentiate kubernetes tests from non-kubernetes tests. This is done because minikube
+is heavy and can interfere with docker related tests in terratest. To avoid overloading the system, we run the
+kubernetes tests separately from the others.

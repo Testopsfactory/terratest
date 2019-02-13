@@ -1,12 +1,15 @@
 package helm
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
+	"github.com/ghodss/yaml"
 	"github.com/gruntwork-io/gruntwork-cli/errors"
-	"github.com/gruntwork-io/gruntwork-cli/files"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gruntwork-io/terratest/modules/files"
 )
 
 // RenderTemplate runs `helm template` to render the template given the provided options and returns stdout/stderr from
@@ -46,4 +49,29 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, templateFi
 
 	// Finally, call out to helm template command
 	return RunHelmCommandAndGetOutputE(t, options, "template", args...)
+}
+
+// UnmarshalK8SYaml is the same as UnmarshalK8SYamlE, but will fail the test if there is an error.
+func UnmarshalK8SYaml(t *testing.T, yamlData string, destinationObj interface{}) {
+	require.NoError(t, UnmarshalK8SYamlE(t, yamlData, destinationObj))
+}
+
+// UnmarshalK8SYamlE can be used to take template outputs and unmarshal them into the corresponding client-go struct. For
+// example, suppose you render the template into a Deployment object. You can unmarshal the yaml as follows:
+//
+// var deployment appsv1.Deployment
+// UnmarshalK8SYamlE(t, renderedOutput, &deployment)
+//
+// At the end of this, the deployment variable will be populated.
+func UnmarshalK8SYamlE(t *testing.T, yamlData string, destinationObj interface{}) error {
+	// NOTE: the client-go library can only decode json, so we will first convert the yaml to json before unmarshaling
+	jsonData, err := yaml.YAMLToJSON([]byte(yamlData))
+	if err != nil {
+		return errors.WithStackTrace(err)
+	}
+	err = json.Unmarshal(jsonData, destinationObj)
+	if err != nil {
+		return errors.WithStackTrace(err)
+	}
+	return nil
 }
