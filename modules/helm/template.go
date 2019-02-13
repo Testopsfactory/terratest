@@ -33,9 +33,8 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, templateFi
 	for _, templateFile := range templateFiles {
 		// validate this is a valid template file
 		absTemplateFile := filepath.Join(absChartDir, templateFile)
-		// TODO: return a typed error
 		if !files.FileExists(absTemplateFile) {
-			return "", errors.WithStackTrace(nil)
+			return "", errors.WithStackTrace(TemplateFileNotFoundError{Path: templateFile, ChartDir: absChartDir})
 		}
 
 		// Note: we only get the abs template file path to check it actually exists, but the `helm template` command

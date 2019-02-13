@@ -40,11 +40,10 @@ func FormatValuesFilesAsArgsE(t *testing.T, valuesFiles []string) ([]string, err
 	args := []string{}
 
 	for _, valuesFilePath := range valuesFiles {
-		// TODO: return a typed error
 		// Pass through filepath.Abs to make sure this file exists
 		absValuesFilePath, err := filepath.Abs(valuesFilePath)
 		if err != nil {
-			return args, errors.WithStackTrace(err)
+			return args, errors.WithStackTrace(ValuesFileNotFoundError{valuesFilePath})
 		}
 		args = append(args, "-f", absValuesFilePath)
 	}
@@ -69,11 +68,10 @@ func FormatSetFilesAsArgsE(t *testing.T, setFiles map[string]string) ([]string, 
 	keys := collections.Keys(setFiles)
 	for _, key := range keys {
 		setFilePath := setFiles[key]
-		// TODO: return a typed error
 		// Pass through filepath.Abs to make sure this file exists
 		absSetFilePath, err := filepath.Abs(setFilePath)
 		if err != nil {
-			return args, errors.WithStackTrace(err)
+			return args, errors.WithStackTrace(SetFileNotFoundError{setFilePath})
 		}
 		argValue := fmt.Sprintf("%s=%s", key, absSetFilePath)
 		args = append(args, "--set-file", argValue)
