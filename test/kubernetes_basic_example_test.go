@@ -33,7 +33,7 @@ func TestKubernetesBasicExample(t *testing.T) {
 	// To ensure we can reuse the resource config on the same cluster to test different scenarios, we setup a unique
 	// namespace for the resources for this test.
 	// Note that namespaces must be lowercase.
-	namespaceName := strings.ToLower(random.UniqueId())
+	namespaceName := fmt.Sprintf("kubernetes-basic-example-%s", strings.ToLower(random.UniqueId()))
 	k8s.CreateNamespace(t, options, namespaceName)
 	// Make sure we set the namespace on the options
 	options.Namespace = namespaceName
