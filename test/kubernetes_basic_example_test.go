@@ -7,6 +7,7 @@
 package test
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
