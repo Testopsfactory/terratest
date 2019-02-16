@@ -4,7 +4,19 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// DesiredNumberOfPodsNotCreated is returned when the number of pods matching a filter condition does not match the
+// desired number of Pods.
+type DesiredNumberOfPodsNotCreated struct {
+	Filter       metav1.ListOptions
+	DesiredCount int
+}
+
+func (err DesiredNumberOfPodsNotCreated) Error() string {
+	return fmt.Sprintf("Desired number of pods (%d) matching filter %v not yet created", err.DesiredCount, err.Filter)
+}
 
 // ServiceAccountTokenNotAvailable is returned when a Kubernetes ServiceAccount does not have a token provisioned yet.
 type ServiceAccountTokenNotAvailable struct {

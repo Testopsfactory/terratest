@@ -13,9 +13,27 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/gruntwork-io/terratest/modules/random"
 )
+
+func TestListPodsReturnsPodsInNamespace(t *testing.T) {
+	t.Parallel()
+
+	uniqueID := strings.ToLower(random.UniqueId())
+	options := NewKubectlOptions("", "")
+	options.Namespace = uniqueID
+	configData := fmt.Sprintf(EXAMPLE_POD_YAML_TEMPLATE, uniqueID, uniqueID)
+	defer KubectlDeleteFromString(t, options, configData)
+	KubectlApplyFromString(t, options, configData)
+
+	pods := ListPods(t, options, metav1.ListOptions{})
+	require.Equal(t, len(pods), 1)
+	pod := pods[0]
+	require.Equal(t, pod.Name, "nginx-pod")
+	require.Equal(t, pod.Namespace, uniqueID)
+}
 
 func TestGetPodEReturnsErrorForNonExistantPod(t *testing.T) {
 	t.Parallel()
@@ -38,6 +56,19 @@ func TestGetPodEReturnsCorrectPodInCorrectNamespace(t *testing.T) {
 	pod := GetPod(t, options, "nginx-pod")
 	require.Equal(t, pod.Name, "nginx-pod")
 	require.Equal(t, pod.Namespace, uniqueID)
+}
+
+func TestWaitUntilNumPodsCreatedReturnsSuccessfully(t *testing.T) {
+	t.Parallel()
+
+	uniqueID := strings.ToLower(random.UniqueId())
+	options := NewKubectlOptions("", "")
+	options.Namespace = uniqueID
+	configData := fmt.Sprintf(EXAMPLE_POD_YAML_TEMPLATE, uniqueID, uniqueID)
+	defer KubectlDeleteFromString(t, options, configData)
+	KubectlApplyFromString(t, options, configData)
+
+	WaitUntilNumPodsCreated(t, options, metav1.ListOptions{}, 1, 60, 1*time.Second)
 }
 
 func TestWaitUntilPodAvailableReturnsSuccessfully(t *testing.T) {

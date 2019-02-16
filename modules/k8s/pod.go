@@ -13,6 +13,28 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
+// ListPods will look for pods in the given namespace that match the given filters and return them. This will fail the
+// test if there is an error.
+func ListPods(t *testing.T, options *KubectlOptions, filters metav1.ListOptions) []corev1.Pod {
+	pods, err := ListPodsE(t, options, filters)
+	require.NoError(t, err)
+	return pods
+}
+
+// ListPodsE will look for pods in the given namespace that match the given filters and return them.
+func ListPodsE(t *testing.T, options *KubectlOptions, filters metav1.ListOptions) ([]corev1.Pod, error) {
+	clientset, err := GetKubernetesClientFromOptionsE(t, options)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := clientset.CoreV1().Pods(options.Namespace).List(filters)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Items, nil
+}
+
 // GetPod returns a Kubernetes pod resource in the provided namespace with the given name. This will
 // fail the test if there is an error.
 func GetPod(t *testing.T, options *KubectlOptions, podName string) *corev1.Pod {
@@ -28,6 +50,55 @@ func GetPodE(t *testing.T, options *KubectlOptions, podName string) (*corev1.Pod
 		return nil, err
 	}
 	return clientset.CoreV1().Pods(options.Namespace).Get(podName, metav1.GetOptions{})
+}
+
+// WaitUntilNumPods waits until the desired number of pods are created that match the provided filter. This will retry
+// the check for the specified amount of times, sleeping for the provided duration between each try. This will fail the
+// test if the retry times out.
+func WaitUntilNumPodsCreated(
+	t *testing.T,
+	options *KubectlOptions,
+	filters metav1.ListOptions,
+	desiredCount int,
+	retries int,
+	sleepBetweenRetries time.Duration,
+) {
+	require.NoError(t, WaitUntilNumPodsCreatedE(t, options, filters, desiredCount, retries, sleepBetweenRetries))
+}
+
+// WaitUntilNumPodsCreatedE waits until the desired number of pods are created that match the provided filter. This will
+// retry the check for the specified amount of times, sleeping for the provided duration between each try.
+func WaitUntilNumPodsCreatedE(
+	t *testing.T,
+	options *KubectlOptions,
+	filters metav1.ListOptions,
+	desiredCount int,
+	retries int,
+	sleepBetweenRetries time.Duration,
+) error {
+	statusMsg := fmt.Sprintf("Wait for num pods created to match desired count %d.", desiredCount)
+	message, err := retry.DoWithRetryE(
+		t,
+		statusMsg,
+		60,
+		1*time.Second,
+		func() (string, error) {
+			pods, err := ListPodsE(t, options, filters)
+			if err != nil {
+				return "", err
+			}
+			if len(pods) != desiredCount {
+				return "", DesiredNumberOfPodsNotCreated{Filter: filters, DesiredCount: desiredCount}
+			}
+			return "Desired number of Pods created", nil
+		},
+	)
+	if err != nil {
+		logger.Logf(t, "Timedout waiting for the desired number of Pods to be created: %s", err)
+		return err
+	}
+	logger.Logf(t, message)
+	return nil
 }
 
 // WaitUntilPodAvailable waits until the pod is running, retrying the check for the specified amount of times, sleeping
