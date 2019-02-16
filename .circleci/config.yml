@@ -59,7 +59,7 @@ setup_minikube: &setup_minikube
     )
 
     # Install helm
-    helm init --wait
+    # helm init --wait
 
 
 install_gruntwork_utils: &install_gruntwork_utils
