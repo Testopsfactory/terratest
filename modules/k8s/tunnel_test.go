@@ -29,7 +29,7 @@ func TestTunnelOpensAPortForwardTunnelToPod(t *testing.T) {
 
 	// Open a tunnel to pod from any available port locally
 	localPort := GetAvailablePort(t)
-	tunnel := NewTunnel(options, Pod, "nginx-pod", localPort, 80)
+	tunnel := NewTunnel(options, ResourceTypePod, "nginx-pod", localPort, 80)
 	defer tunnel.Close()
 	tunnel.ForwardPort(t)
 
@@ -59,7 +59,7 @@ func TestTunnelOpensAPortForwardTunnelToService(t *testing.T) {
 
 	// Open a tunnel from any available port locally
 	localPort := GetAvailablePort(t)
-	tunnel := NewTunnel(options, Service, "nginx-service", localPort, 80)
+	tunnel := NewTunnel(options, ResourceTypeService, "nginx-service", localPort, 80)
 	defer tunnel.Close()
 	tunnel.ForwardPort(t)
 

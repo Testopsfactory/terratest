@@ -27,15 +27,15 @@ import (
 type KubeResourceType int
 
 const (
-	Pod KubeResourceType = iota
-	Service
+	ResourceTypePod KubeResourceType = iota
+	ResourceTypeService
 )
 
 func (resourceType KubeResourceType) String() string {
 	switch resourceType {
-	case Pod:
+	case ResourceTypePod:
 		return "pod"
-	case Service:
+	case ResourceTypeService:
 		return "svc"
 	default:
 		// This should not happen
@@ -78,9 +78,9 @@ func (tunnel *Tunnel) Close() {
 // the name.
 func (tunnel *Tunnel) getAttachablePodForResourceE(t *testing.T) (string, error) {
 	switch tunnel.ResourceType {
-	case Pod:
+	case ResourceTypePod:
 		return tunnel.ResourceName, nil
-	case Service:
+	case ResourceTypeService:
 		return tunnel.getAttachablePodForServiceE(t)
 	default:
 		return "", UnknownKubeResourceType{tunnel.ResourceType}
