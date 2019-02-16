@@ -29,10 +29,17 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, templateFi
 	if err != nil {
 		return "", errors.WithStackTrace(err)
 	}
+	if !files.FileExists(chartDir) {
+		return "", errors.WithStackTrace(ChartNotFoundError{chartDir})
+	}
 
 	// Now construct the args
 	// We first construct the template args
 	args := []string{}
+	args, err = getValuesArgsE(t, options, args...)
+	if err != nil {
+		return "", err
+	}
 	for _, templateFile := range templateFiles {
 		// validate this is a valid template file
 		absTemplateFile := filepath.Join(absChartDir, templateFile)

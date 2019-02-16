@@ -26,3 +26,5 @@ spec:
           {{- $repo := required "containerImageRepo is required" .Values.containerImageRepo }}
           {{- $tag := required "containerImageTag is required" .Values.containerImageTag }}
           image: "{{ $repo }}:{{ $tag }}"
+          ports:
+          - containerPort: 80

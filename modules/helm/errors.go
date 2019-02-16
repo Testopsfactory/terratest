@@ -31,3 +31,12 @@ type TemplateFileNotFoundError struct {
 func (err TemplateFileNotFoundError) Error() string {
 	return fmt.Sprintf("Could not resolve template file %s relative to chart path %s", err.Path, err.ChartDir)
 }
+
+// ChartNotFoundError is returned when a provided chart dir is not found
+type ChartNotFoundError struct {
+	Path string
+}
+
+func (err ChartNotFoundError) Error() string {
+	return fmt.Sprintf("Could not chart path %s", err.Path)
+}
