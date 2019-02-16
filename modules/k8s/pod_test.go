@@ -1,4 +1,4 @@
-// +build kubernetes
+// +build kubeall kubernetes
 
 // NOTE: we have build tags to differentiate kubernetes tests from non-kubernetes tests. This is done because minikube
 // is heavy and can interfere with docker related tests in terratest. To avoid overloading the system, we run the
