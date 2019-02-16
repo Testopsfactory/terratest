@@ -1,4 +1,4 @@
-// +build kubernetes
+// +build kubernetes foo
 
 // NOTE: we have build tags to differentiate kubernetes tests from non-kubernetes tests. This is done because minikube
 // is heavy and can interfere with docker related tests in terratest. To avoid overloading the system, we run the
@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -37,6 +38,24 @@ func TestGetServiceEReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 	defer KubectlDeleteFromString(t, options, configData)
 
 	service := GetService(t, options, "nginx-service")
+	require.Equal(t, service.Name, "nginx-service")
+	require.Equal(t, service.Namespace, uniqueID)
+}
+
+func TestListServicesReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
+	t.Parallel()
+
+	uniqueID := strings.ToLower(random.UniqueId())
+	options := NewKubectlOptions("", "")
+	options.Namespace = uniqueID
+	configData := fmt.Sprintf(EXAMPLE_DEPLOYMENT_YAML_TEMPLATE, uniqueID, uniqueID, uniqueID)
+	KubectlApplyFromString(t, options, configData)
+	defer KubectlDeleteFromString(t, options, configData)
+
+	services := ListServices(t, options, metav1.ListOptions{})
+	require.Equal(t, len(services), 1)
+
+	service := services[0]
 	require.Equal(t, service.Name, "nginx-service")
 	require.Equal(t, service.Namespace, uniqueID)
 }
