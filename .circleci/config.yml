@@ -30,12 +30,6 @@ setup_minikube: &setup_minikube
     mkdir -p ${HOME}/.kube
     touch ${HOME}/.kube/config
 
-    # install helm
-    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
-    tar -xvf helm.tar.gz
-    chmod +x linux-amd64/helm
-    sudo mv linux-amd64/helm /usr/local/bin/
-
     # Install minikube
     curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
     chmod +x minikube
@@ -57,6 +51,22 @@ setup_minikube: &setup_minikube
       done
       true
     )
+
+
+install_helm: &install_helm
+  name: install helm
+  command: |
+    # install helm
+    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
+    tar -xvf helm.tar.gz
+    chmod +x linux-amd64/helm
+    sudo mv linux-amd64/helm /usr/local/bin/
+
+    # Grant the default service account cluster admin rights so helm works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
+
+    # Deploy Tiller
+    helm init --wait
 
 
 install_gruntwork_utils: &install_gruntwork_utils
@@ -204,7 +214,8 @@ jobs:
       - run:
           <<: *setup_minikube
 
-      - run: helm init --wait
+      - run:
+          <<: *install_helm
 
       # Run the Helm tests. These tests are run because the helm build tag is included, and we explicitly
       # select the helm tests
