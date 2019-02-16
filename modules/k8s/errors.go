@@ -7,6 +7,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// UnknownKubeResourceType is returned if the given resource type does not match the list of known resource types.
+type UnknownKubeResourceType struct {
+	ResourceType KubeResourceType
+}
+
+func (err UnknownKubeResourceType) Error() string {
+	return fmt.Sprintf("ResourceType ID %d is unknown", err.ResourceType)
+}
+
 // DesiredNumberOfPodsNotCreated is returned when the number of pods matching a filter condition does not match the
 // desired number of Pods.
 type DesiredNumberOfPodsNotCreated struct {

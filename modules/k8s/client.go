@@ -23,15 +23,10 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 func GetKubernetesClientFromOptionsE(t *testing.T, options *KubectlOptions) (*kubernetes.Clientset, error) {
 	var err error
 
-	// We have to give an actual configpath for LoadApiClientConfigE to work
-	kubeConfigPath := options.ConfigPath
-	if kubeConfigPath == "" {
-		kubeConfigPath, err = GetKubeConfigPathE(t)
-		if err != nil {
-			return nil, err
-		}
+	kubeConfigPath, err := options.GetConfigPath(t)
+	if err != nil {
+		return nil, err
 	}
-
 	logger.Logf(t, "Configuring kubectl using config file %s with context %s", kubeConfigPath, options.ContextName)
 	// Load API config (instead of more low level ClientConfig)
 	config, err := LoadApiClientConfigE(kubeConfigPath, options.ContextName)

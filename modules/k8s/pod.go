@@ -52,9 +52,9 @@ func GetPodE(t *testing.T, options *KubectlOptions, podName string) (*corev1.Pod
 	return clientset.CoreV1().Pods(options.Namespace).Get(podName, metav1.GetOptions{})
 }
 
-// WaitUntilNumPods waits until the desired number of pods are created that match the provided filter. This will retry
-// the check for the specified amount of times, sleeping for the provided duration between each try. This will fail the
-// test if the retry times out.
+// WaitUntilNumPodsCreated waits until the desired number of pods are created that match the provided filter. This will
+// retry the check for the specified amount of times, sleeping for the provided duration between each try. This will
+// fail the test if the retry times out.
 func WaitUntilNumPodsCreated(
 	t *testing.T,
 	options *KubectlOptions,
