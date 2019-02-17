@@ -235,6 +235,31 @@
   version = "v0.2.0"
 
 [[projects]]
+  digest = "1:2201d760bf96f21df8e79f7a7ece23883198109607d6788421818a5942bf7c8a"
+  name = "github.com/gruntwork-io/terratest"
+  packages = [
+    "modules/aws",
+    "modules/collections",
+    "modules/customerrors",
+    "modules/docker",
+    "modules/environment",
+    "modules/files",
+    "modules/gcp",
+    "modules/logger",
+    "modules/logger/parser",
+    "modules/oci",
+    "modules/packer",
+    "modules/random",
+    "modules/retry",
+    "modules/shell",
+    "modules/ssh",
+    "modules/terraform",
+  ]
+  pruneopts = "UT"
+  revision = "98d88f765d58ca34fbb8ac24cf20ff31a42d9667"
+  version = "v0.13.14"
+
+[[projects]]
   digest = "1:8eb1de8112c9924d59bf1d3e5c26f5eaa2bfc2a5fcbb92dc1c2e4546d695f277"
   name = "github.com/imdario/mergo"
   packages = ["."]
@@ -796,6 +821,22 @@
     "github.com/gruntwork-io/gruntwork-cli/errors",
     "github.com/gruntwork-io/gruntwork-cli/files",
     "github.com/gruntwork-io/gruntwork-cli/logging",
+    "github.com/gruntwork-io/terratest/modules/aws",
+    "github.com/gruntwork-io/terratest/modules/collections",
+    "github.com/gruntwork-io/terratest/modules/customerrors",
+    "github.com/gruntwork-io/terratest/modules/docker",
+    "github.com/gruntwork-io/terratest/modules/environment",
+    "github.com/gruntwork-io/terratest/modules/files",
+    "github.com/gruntwork-io/terratest/modules/gcp",
+    "github.com/gruntwork-io/terratest/modules/logger",
+    "github.com/gruntwork-io/terratest/modules/logger/parser",
+    "github.com/gruntwork-io/terratest/modules/oci",
+    "github.com/gruntwork-io/terratest/modules/packer",
+    "github.com/gruntwork-io/terratest/modules/random",
+    "github.com/gruntwork-io/terratest/modules/retry",
+    "github.com/gruntwork-io/terratest/modules/shell",
+    "github.com/gruntwork-io/terratest/modules/ssh",
+    "github.com/gruntwork-io/terratest/modules/terraform",
     "github.com/jstemmer/go-junit-report/formatter",
     "github.com/jstemmer/go-junit-report/parser",
     "github.com/magiconair/properties/assert",
