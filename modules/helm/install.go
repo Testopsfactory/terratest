@@ -10,10 +10,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/files"
 )
 
+// Install will install the selected helm chart with the provided options under the given release name. This will fail
+// the test if there is an error.
 func Install(t *testing.T, options *Options, chartDir string, releaseName string) {
 	require.NoError(t, InstallE(t, options, chartDir, releaseName))
 }
 
+// InstallE will install the selected helm chart with the provided options under the given release name.
 func InstallE(t *testing.T, options *Options, chartDir string, releaseName string) error {
 	// First, verify the charts dir exists
 	absChartDir, err := filepath.Abs(chartDir)
