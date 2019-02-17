@@ -10,6 +10,7 @@ data "template_file" "example" {
 data "template_file" "example2" {
   template = "${var.example2}"
 }
+
 resource "local_file" "example" {
   content  = "${data.template_file.example.rendered} + ${data.template_file.example2.rendered}"
   filename = "example.txt"
