@@ -38,12 +38,10 @@ func TestTunnelOpensAPortForwardTunnelToPod(t *testing.T) {
 	// Try to access the nginx service on the local port, retrying until we get a good response for up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
-		fmt.Sprintf("http://localhost:%d", localPort),
+		fmt.Sprintf("http://%s", tunnel.Endpoint()),
 		60,
 		5*time.Second,
-		func(statusCode int, body string) bool {
-			return statusCode == 200
-		},
+		verifyNginxWelcomePage,
 	)
 }
 
@@ -68,13 +66,18 @@ func TestTunnelOpensAPortForwardTunnelToService(t *testing.T) {
 	// Try to access the nginx service on the local port, retrying until we get a good response for up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
-		fmt.Sprintf("http://localhost:%d", localPort),
+		fmt.Sprintf("http://%s", tunnel.Endpoint()),
 		60,
 		5*time.Second,
-		func(statusCode int, body string) bool {
-			return statusCode == 200
-		},
+		verifyNginxWelcomePage,
 	)
+}
+
+func verifyNginxWelcomePage(statusCode int, body string) bool {
+	if statusCode != 200 {
+		return false
+	}
+	return strings.Contains(body, "Welcome to nginx")
 }
 
 const EXAMPLE_POD_WITH_SERVICE_YAML_TEMPLATE = `---
