@@ -80,8 +80,8 @@ func WaitUntilNumPodsCreatedE(
 	message, err := retry.DoWithRetryE(
 		t,
 		statusMsg,
-		60,
-		1*time.Second,
+		retries,
+		sleepBetweenRetries,
 		func() (string, error) {
 			pods, err := ListPodsE(t, options, filters)
 			if err != nil {
