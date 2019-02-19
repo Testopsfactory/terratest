@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -22,6 +23,9 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
+
+// Global lock to synchronize port selections
+var globalMutex sync.Mutex
 
 // KubeResourceType is an enum representing known resource types that can support port forwarding
 type KubeResourceType int
@@ -55,7 +59,8 @@ type Tunnel struct {
 	readyChan      chan struct{}
 }
 
-// NewTunnel will create a new Tunnel struct.
+// NewTunnel will create a new Tunnel struct. Note that if you use 0 for the local port, an open port on the host system
+// will be selected automatically, and the Tunnel struct will be updated with the selected port.
 func NewTunnel(kubectlOptions *KubectlOptions, resourceType KubeResourceType, resourceName string, local int, remote int) *Tunnel {
 	return &Tunnel{
 		out:            ioutil.Discard,
@@ -173,6 +178,24 @@ func (tunnel *Tunnel) ForwardPortE(t *testing.T) error {
 		return err
 	}
 	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", portForwardCreateURL)
+
+	// If the localport is 0, get an available port before continuing. We do this here instead of relying on the
+	// underlying portforwarder library, because the portforwarder library does not expose the selected local port in a
+	// machine readable manner.
+	// Synchronize on the global lock to avoid race conditions with concurrently selecting the same available port,
+	// since there is a brief moment between `GetAvailablePort` and `portforwader.ForwardPorts` where the selected port
+	// is available for selection again.
+	if tunnel.localPort == 0 {
+		logger.Log(t, "Requested local port is 0. Selecting an open port on host system")
+		tunnel.localPort, err = GetAvailablePortE(t)
+		if err != nil {
+			logger.Logf(t, "Error getting available port: %s", err)
+			return err
+		}
+		logger.Logf(t, "Selected port %d", tunnel.localPort)
+		globalMutex.Lock()
+		defer globalMutex.Unlock()
+	}
 
 	// Construct a new PortForwarder struct that manages the instructed port forward tunnel
 	ports := []string{fmt.Sprintf("%d:%d", tunnel.localPort, tunnel.remotePort)}
