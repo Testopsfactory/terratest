@@ -11,13 +11,14 @@ There are two kinds of tests you can perform on a helm chart:
   works as expected. If you consider the templates to be syntactic tests, these are semantic tests that validate the
   behavior of the deployed resources.
 
-The helm chart deploys a single replica Deployment resource given the container image spec. This chart requires the
-`containerImageRepo` and `containerImageTag` input values.
+The helm chart deploys a single replica `Deployment` resource given the container image spec and a `Service` that
+exposes it. This chart requires the `containerImageRepo` and `containerImageTag` input values.
 
 See the corresponding terratest code for an example of how to test this chart:
 
 - [helm_basic_example_template_test.go](/test/helm_basic_example_template_test.go): the template tests for this chart.
-<!-- TODO: Append the example with integration tests and deployment instructions once terratest has deploy test functions -->
+- [helm_basic_example_integration_test.go](/test/helm_basic_example_integration_test.go): the integration test for this
+  chart. This test will deploy the Helm Chart and verify the `Service` endpoint.
 
 ## Running automated tests against this Helm Chart
 
@@ -25,8 +26,12 @@ See the corresponding terratest code for an example of how to test this chart:
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
 1. `dep ensure`
-1. `go test -v -tags kubernetes -run TestHelmBasicExampleTemplate`
+1. `go test -v -tags helm -run TestHelmBasicExampleTemplate` for the template test
+1. `go test -v -tags helm -run TestHelmBasicExampleDeployment` for the integration test
 
-**NOTE:** we have build tags to differentiate kubernetes tests from non-kubernetes tests. This is done because minikube
-is heavy and can interfere with docker related tests in terratest. To avoid overloading the system, we run the
-kubernetes tests separately from the others.
+**NOTE**: we have build tags to differentiate kubernetes tests from non-kubernetes tests, and further differentiate helm
+tests. This is done because minikube is heavy and can interfere with docker related tests in terratest. Similarly, helm
+can overload the minikube system and thus interfere with the other kubernetes tests. Specifically, many of the tests
+start to fail with `connection refused` errors from `minikube`. To avoid overloading the system, we run the kubernetes
+tests and helm tests separately from the others. This may not be necessary if you have a sufficiently powerful machine.
+We recommend at least 4 cores and 16GB of RAM if you want to run all the tests together.

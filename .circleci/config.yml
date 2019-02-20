@@ -30,12 +30,6 @@ setup_minikube: &setup_minikube
     mkdir -p ${HOME}/.kube
     touch ${HOME}/.kube/config
 
-    # install helm
-    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
-    tar -xvf helm.tar.gz
-    chmod +x linux-amd64/helm
-    sudo mv linux-amd64/helm /usr/local/bin/
-
     # Install minikube
     curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
     chmod +x minikube
@@ -57,6 +51,22 @@ setup_minikube: &setup_minikube
       done
       true
     )
+
+
+install_helm: &install_helm
+  name: install helm
+  command: |
+    # install helm
+    curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz
+    tar -xvf helm.tar.gz
+    chmod +x linux-amd64/helm
+    sudo mv linux-amd64/helm /usr/local/bin/
+
+    # Grant the default service account cluster admin rights so helm works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
+
+    # Deploy Tiller
+    helm init --wait
 
 
 install_gruntwork_utils: &install_gruntwork_utils
@@ -176,7 +186,43 @@ jobs:
             # Run the unit tests first, then the integration tests. They are separate because the integration tests
             # require additional filtering.
             run-go-tests --packages "-tags kubernetes ./modules/k8s" | tee /tmp/logs/test_output.log
-            run-go-tests --packages "-tags kubernetes -run \"(TestKubernetes)|(TestHelm)\" ./test" | tee -a /tmp/logs/test_output.log
+            run-go-tests --packages "-tags kubernetes -run TestKubernetes ./test" | tee -a /tmp/logs/test_output.log
+
+      - run:
+          command: ./cmd/bin/terratest_log_parser_linux_amd64 --testlog /tmp/logs/test_output.log --outputdir /tmp/logs
+          when: always
+
+      # Store test result and log artifacts for browsing purposes
+      - store_artifacts:
+          path: /tmp/logs
+      - store_test_results:
+          path: /tmp/logs
+
+
+  helm_test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+
+      - run:
+          <<: *install_gruntwork_utils
+
+      # The weird way you have to set PATH in Circle 2.0
+      - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
+
+      - run:
+          <<: *setup_minikube
+
+      - run:
+          <<: *install_helm
+
+      # Run the Helm tests. These tests are run because the helm build tag is included, and we explicitly
+      # select the helm tests
+      - run:
+          command: |
+            mkdir -p /tmp/logs
+            run-go-tests --packages "-tags helm -run TestHelm ./test" | tee -a /tmp/logs/test_output.log
 
       - run:
           command: ./cmd/bin/terratest_log_parser_linux_amd64 --testlog /tmp/logs/test_output.log --outputdir /tmp/logs
@@ -223,10 +269,18 @@ workflows:
             tags:
               only: /^v.*/
 
+      - helm_test:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /^v.*/
+
       - deploy:
           requires:
             - test
             - kubernetes_test
+            - helm_test
           filters:
             tags:
               only: /^v.*/

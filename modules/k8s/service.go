@@ -17,6 +17,27 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
+// ListServices will look for services in the given namespace that match the given filters and return them. This will
+// fail the test if there is an error.
+func ListServices(t *testing.T, options *KubectlOptions, filters metav1.ListOptions) []corev1.Service {
+	service, err := ListServicesE(t, options, filters)
+	require.NoError(t, err)
+	return service
+}
+
+// ListServicesE will look for services in the given namespace that match the given filters and return them.
+func ListServicesE(t *testing.T, options *KubectlOptions, filters metav1.ListOptions) ([]corev1.Service, error) {
+	clientset, err := GetKubernetesClientFromOptionsE(t, options)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := clientset.CoreV1().Services(options.Namespace).List(filters)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Items, nil
+}
+
 // GetService returns a Kubernetes service resource in the provided namespace with the given name. This will
 // fail the test if there is an error.
 func GetService(t *testing.T, options *KubectlOptions, serviceName string) *corev1.Service {
