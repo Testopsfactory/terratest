@@ -11,6 +11,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/packer"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -71,6 +72,25 @@ func LoadEc2KeyPair(t *testing.T, testFolder string) *aws.Ec2Keypair {
 // formatEc2KeyPairPath formats a path to save an Ec2KeyPair in the given folder.
 func formatEc2KeyPairPath(testFolder string) string {
 	return FormatTestDataPath(testFolder, "Ec2KeyPair.json")
+}
+
+// SaveKubectlOptions serializes and saves KubectlOptions into the given folder. This allows you to create a KubectlOptions during setup
+// and reuse that KubectlOptions later during validation and teardown.
+func SaveKubectlOptions(t *testing.T, testFolder string, kubectlOptions *k8s.KubectlOptions) {
+	SaveTestData(t, formatKubectlOptionsPath(testFolder), kubectlOptions)
+}
+
+// LoadKubectlOptions loads and unserializes a KubectlOptions from the given folder. This allows you to reuse a KubectlOptions that was
+// created during an earlier setup step in later validation and teardown steps.
+func LoadKubectlOptions(t *testing.T, testFolder string) *k8s.KubectlOptions {
+	var kubectlOptions k8s.KubectlOptions
+	LoadTestData(t, formatKubectlOptionsPath(testFolder), &kubectlOptions)
+	return &kubectlOptions
+}
+
+// formatKubectlOptionsPath formats a path to save a KubectlOptions in the given folder.
+func formatKubectlOptionsPath(testFolder string) string {
+	return FormatTestDataPath(testFolder, "KubectlOptions.json")
 }
 
 // SaveString serializes and saves a uniquely named string value into the given folder. This allows you to create one or more string
