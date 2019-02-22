@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -217,4 +218,24 @@ func TestSaveAndLoadNamedInts(t *testing.T) {
 
 	assert.Equal(t, expectedData1, actualData1)
 	assert.Equal(t, expectedData2, actualData2)
+}
+
+func TestSaveAndLoadKubectlOptions(t *testing.T) {
+	t.Parallel()
+
+	tmpFolder, err := ioutil.TempDir("", "save-and-load-kubectl-options")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+
+	expectedData := &k8s.KubectlOptions{
+		ContextName: "terratest-context",
+		ConfigPath:  "~/.kube/config",
+		Namespace:   "default",
+		Env:         map[string]string{},
+	}
+	SaveKubectlOptions(t, tmpFolder, expectedData)
+
+	actualData := LoadKubectlOptions(t, tmpFolder)
+	assert.Equal(t, expectedData, actualData)
 }
