@@ -8,6 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type testData struct {
@@ -224,15 +225,15 @@ func TestSaveAndLoadKubectlOptions(t *testing.T) {
 	t.Parallel()
 
 	tmpFolder, err := ioutil.TempDir("", "save-and-load-kubectl-options")
-	if err != nil {
-		t.Fatalf("Failed to create temp dir: %v", err)
-	}
+	require.NoError(t, err)
 
 	expectedData := &k8s.KubectlOptions{
 		ContextName: "terratest-context",
 		ConfigPath:  "~/.kube/config",
 		Namespace:   "default",
-		Env:         map[string]string{},
+		Env: map[string]string{
+			"TERRATEST_ENV_VAR": "terratest",
+		},
 	}
 	SaveKubectlOptions(t, tmpFolder, expectedData)
 
