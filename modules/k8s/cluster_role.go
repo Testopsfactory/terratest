@@ -8,7 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// GetClusterRole returns a Kubernetes role resource with the given name. This will fail the test if there is an error.
+// GetClusterRole returns a Kubernetes ClusterRole resource with the given name. This will fail the test if there is an error.
 func GetClusterRole(t *testing.T, options *KubectlOptions, roleName string) *rbacv1.ClusterRole {
 	role, err := GetClusterRoleE(t, options, roleName)
 	require.NoError(t, err)
