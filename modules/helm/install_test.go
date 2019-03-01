@@ -13,16 +13,18 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
-// Test that we can install a remote chart (e.g stable/kubernetes-dashboard)
+// Test that we can install a remote chart (e.g stable/chartmuseum)
 func TestRemoteChartInstall(t *testing.T) {
 	t.Parallel()
 
-	helmChart := "stable/kubernetes-dashboard"
+	helmChart := "stable/chartmuseum"
 
 	// Use default kubectl options to create a new namespace for this test, and then update the namespace for kubectl
 	kubectlOptions := k8s.NewKubectlOptions("", "")
@@ -45,19 +47,29 @@ func TestRemoteChartInstall(t *testing.T) {
 
 	// Generate a unique release name so we can defer the delete before installing
 	releaseName := fmt.Sprintf(
-		"kube-dashboard-%s",
+		"chartmuseum-%s",
 		strings.ToLower(random.UniqueId()),
 	)
 	defer Delete(t, options, releaseName, true)
 	Install(t, options, helmChart, releaseName)
 
-	// Service name is RELEASE_NAME-CHART_NAME
-	serviceName := fmt.Sprintf("%s-kubernetes-dashboard", releaseName)
+	// Get pod and wait for it to be avaialable
+	// To get the pod, we need to filter it using the labels that the helm chart creates
+	filters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app=chartmuseum,release=%s", releaseName),
+	}
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, 1, 30, 10*time.Second)
+	pods := k8s.ListPods(t, kubectlOptions, filters)
+	for _, pod := range pods {
+		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, 30, 10*time.Second)
+	}
 
 	// Verify service is accessible. Wait for it to become available and then hit the endpoint.
+	// Service name is RELEASE_NAME-CHART_NAME
+	serviceName := fmt.Sprintf("%s-chartmuseum", releaseName)
 	k8s.WaitUntilServiceAvailable(t, kubectlOptions, serviceName, 10, 1*time.Second)
 	service := k8s.GetService(t, kubectlOptions, serviceName)
-	endpoint := k8s.GetServiceEndpoint(t, service, 443)
+	endpoint := k8s.GetServiceEndpoint(t, kubectlOptions, service, 8080)
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", endpoint),
