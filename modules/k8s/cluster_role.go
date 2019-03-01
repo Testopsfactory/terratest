@@ -18,6 +18,8 @@ func GetClusterRole(t *testing.T, options *KubectlOptions, roleName string) *rba
 // GetClusterRoleE returns a Kubernetes ClusterRole resource with the given name.
 func GetClusterRoleE(t *testing.T, options *KubectlOptions, roleName string) (*rbacv1.ClusterRole, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 	return clientset.RbacV1().ClusterRoles().Get(roleName, metav1.GetOptions{})
 }

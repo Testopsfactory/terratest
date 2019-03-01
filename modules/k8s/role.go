@@ -20,6 +20,8 @@ func GetRole(t *testing.T, options *KubectlOptions, roleName string) *rbacv1.Rol
 // is the one provided in the KubectlOptions.
 func GetRoleE(t *testing.T, options *KubectlOptions, roleName string) (*rbacv1.Role, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 	return clientset.RbacV1().Roles(options.Namespace).Get(roleName, metav1.GetOptions{})
 }
