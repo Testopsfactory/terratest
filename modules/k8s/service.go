@@ -92,8 +92,8 @@ func IsServiceAvailable(service *corev1.Service) bool {
 
 // GetServiceEndpoint will return the service access point. If the service endpoint is not ready, will fail the test
 // immediately.
-func GetServiceEndpoint(t *testing.T, service *corev1.Service, servicePort int) string {
-	endpoint, err := GetServiceEndpointE(t, service, servicePort)
+func GetServiceEndpoint(t *testing.T, options *KubectlOptions, service *corev1.Service, servicePort int) string {
+	endpoint, err := GetServiceEndpointE(t, options, service, servicePort)
 	require.NoError(t, err)
 	return endpoint
 }
@@ -104,13 +104,13 @@ func GetServiceEndpoint(t *testing.T, service *corev1.Service, servicePort int) 
 //   and the assigned node port for the provided service port, and return the URL that maps to node ip and node port.
 // - For LoadBalancer service type, return the publicly accessible hostname of the load balancer.
 // - All other service types are not supported.
-func GetServiceEndpointE(t *testing.T, service *corev1.Service, servicePort int) (string, error) {
+func GetServiceEndpointE(t *testing.T, options *KubectlOptions, service *corev1.Service, servicePort int) (string, error) {
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
 		// ClusterIP service type will map directly to service port
 		return fmt.Sprintf("%s:%d", service.Spec.ClusterIP, servicePort), nil
 	case corev1.ServiceTypeNodePort:
-		return findEndpointForNodePortService(t, service, int32(servicePort))
+		return findEndpointForNodePortService(t, options, service, int32(servicePort))
 	case corev1.ServiceTypeLoadBalancer:
 		ingress := service.Status.LoadBalancer.Ingress
 		if len(ingress) == 0 {
@@ -127,6 +127,7 @@ func GetServiceEndpointE(t *testing.T, service *corev1.Service, servicePort int)
 // allocated node port mapped to the service port, as well as find out the externally reachable ip (if available).
 func findEndpointForNodePortService(
 	t *testing.T,
+	options *KubectlOptions,
 	service *corev1.Service,
 	servicePort int32,
 ) (string, error) {
@@ -134,7 +135,7 @@ func findEndpointForNodePortService(
 	if err != nil {
 		return "", err
 	}
-	node, err := pickRandomNodeE(t)
+	node, err := pickRandomNodeE(t, options)
 	if err != nil {
 		return "", err
 	}
@@ -156,8 +157,8 @@ func findNodePortE(service *corev1.Service, servicePort int32) (int32, error) {
 }
 
 // pickRandomNode will pick a random node in the kubernetes cluster
-func pickRandomNodeE(t *testing.T) (corev1.Node, error) {
-	nodes, err := GetNodesE(t)
+func pickRandomNodeE(t *testing.T, options *KubectlOptions) (corev1.Node, error) {
+	nodes, err := GetNodesE(t, options)
 	if err != nil {
 		return corev1.Node{}, err
 	}

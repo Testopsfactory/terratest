@@ -86,7 +86,7 @@ func TestGetServiceEndpointEReturnsAccessibleEndpointForNodePort(t *testing.T) {
 	defer KubectlDeleteFromString(t, options, configData)
 
 	service := GetService(t, options, "nginx-service")
-	endpoint := GetServiceEndpoint(t, service, 80)
+	endpoint := GetServiceEndpoint(t, options, service, 80)
 	// Test up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
