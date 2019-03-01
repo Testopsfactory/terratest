@@ -56,7 +56,7 @@ func TestKubernetesBasicExampleServiceCheck(t *testing.T) {
 
 	// Now we verify that the service will successfully boot and start serving requests
 	service := k8s.GetService(t, options, "nginx-service")
-	endpoint := k8s.GetServiceEndpoint(t, service, 80)
+	endpoint := k8s.GetServiceEndpoint(t, options, service, 80)
 	// Test the endpoint for up to 5 minutes. This will only fail if we timeout waiting for the service to return a 200
 	// response.
 	http_helper.HttpGetWithRetryWithCustomValidation(

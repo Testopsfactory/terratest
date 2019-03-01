@@ -5,30 +5,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gruntwork-io/terratest/modules/logger"
-	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	// The following line loads the gcp plugin which is required to authenticate against GKE clusters.
-	// See: https://github.com/kubernetes/client-go/issues/242
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
 // GetNodes queries Kubernetes for information about the worker nodes registered to the cluster. If anything goes wrong,
 // the function will automatically fail the test.
-func GetNodes(t *testing.T) []corev1.Node {
-	nodes, err := GetNodesE(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+func GetNodes(t *testing.T, options *KubectlOptions) []corev1.Node {
+	nodes, err := GetNodesE(t, options)
+	require.NoError(t, err)
 	return nodes
 }
 
 // GetNodesE queries Kubernetes for information about the worker nodes registered to the cluster.
-func GetNodesE(t *testing.T) ([]corev1.Node, error) {
+func GetNodesE(t *testing.T, options *KubectlOptions) ([]corev1.Node, error) {
 	logger.Logf(t, "Getting list of nodes from Kubernetes")
-	clientset, err := GetKubernetesClientE(t)
+
+	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
 	}
@@ -42,18 +39,16 @@ func GetNodesE(t *testing.T) ([]corev1.Node, error) {
 
 // GetReadyNodes queries Kubernetes for information about the worker nodes registered to the cluster and only returns
 // those that are in the ready state. If anything goes wrong, the function will automatically fail the test.
-func GetReadyNodes(t *testing.T) []corev1.Node {
-	nodes, err := GetReadyNodesE(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+func GetReadyNodes(t *testing.T, options *KubectlOptions) []corev1.Node {
+	nodes, err := GetReadyNodesE(t, options)
+	require.NoError(t, err)
 	return nodes
 }
 
 // GetReadyNodesE queries Kubernetes for information about the worker nodes registered to the cluster and only returns
 // those that are in the ready state.
-func GetReadyNodesE(t *testing.T) ([]corev1.Node, error) {
-	nodes, err := GetNodesE(t)
+func GetReadyNodesE(t *testing.T, options *KubectlOptions) ([]corev1.Node, error) {
+	nodes, err := GetNodesE(t, options)
 	if err != nil {
 		return nil, err
 	}
@@ -79,23 +74,21 @@ func IsNodeReady(node corev1.Node) bool {
 
 // WaitUntilAllNodesReady continuously polls the Kubernetes cluster until all nodes in the cluster reach the ready
 // state, or runs out of retries. Will fail the test immediately if it times out.
-func WaitUntilAllNodesReady(t *testing.T, retries int, sleepBetweenRetries time.Duration) {
-	err := WaitUntilAllNodesReadyE(t, retries, sleepBetweenRetries)
-	if err != nil {
-		t.Fatal(err)
-	}
+func WaitUntilAllNodesReady(t *testing.T, options *KubectlOptions, retries int, sleepBetweenRetries time.Duration) {
+	err := WaitUntilAllNodesReadyE(t, options, retries, sleepBetweenRetries)
+	require.NoError(t, err)
 }
 
 // WaitUntilAllNodesReadyE continuously polls the Kubernetes cluster until all nodes in the cluster reach the ready
 // state, or runs out of retries.
-func WaitUntilAllNodesReadyE(t *testing.T, retries int, sleepBetweenRetries time.Duration) error {
+func WaitUntilAllNodesReadyE(t *testing.T, options *KubectlOptions, retries int, sleepBetweenRetries time.Duration) error {
 	message, err := retry.DoWithRetryE(
 		t,
 		"Wait for all Kube Nodes to be ready",
 		retries,
 		sleepBetweenRetries,
 		func() (string, error) {
-			_, err := AreAllNodesReadyE(t)
+			_, err := AreAllNodesReadyE(t, options)
 			if err != nil {
 				return "", err
 			}
@@ -107,15 +100,15 @@ func WaitUntilAllNodesReadyE(t *testing.T, retries int, sleepBetweenRetries time
 }
 
 // AreAllNodesReady checks if all nodes are ready in the Kubernetes cluster targeted by the current config context
-func AreAllNodesReady(t *testing.T) bool {
-	nodesReady, _ := AreAllNodesReadyE(t)
+func AreAllNodesReady(t *testing.T, options *KubectlOptions) bool {
+	nodesReady, _ := AreAllNodesReadyE(t, options)
 	return nodesReady
 }
 
 // AreAllNodesReadyE checks if all nodes are ready in the Kubernetes cluster targeted by the current config context. If
 // false, returns an error indicating the reason.
-func AreAllNodesReadyE(t *testing.T) (bool, error) {
-	nodes, err := GetNodesE(t)
+func AreAllNodesReadyE(t *testing.T, options *KubectlOptions) (bool, error) {
+	nodes, err := GetNodesE(t, options)
 	if err != nil {
 		return false, err
 	}
