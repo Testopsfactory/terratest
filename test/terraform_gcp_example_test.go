@@ -84,7 +84,7 @@ func TestTerraformGcpExample(t *testing.T) {
 		}
 
 		if actualText != expectedText {
-			return "", fmt.Errorf("Expeced GetLabelsForComputeInstanceE to return '%s' but got '%s'", expectedText, actualText)
+			return "", fmt.Errorf("Expected GetLabelsForComputeInstanceE to return '%s' but got '%s'", expectedText, actualText)
 		}
 
 		return "", nil
