@@ -225,7 +225,7 @@ func (tunnel *Tunnel) ForwardPortE(t *testing.T) error {
 
 // GetAvailablePort retrieves an available port on the host machine. This delegates the port selection to the golang net
 // library by starting a server and then checking the port that the server is using. This will fail the test if it could
-// not find an avilable port.
+// not find an available port.
 func GetAvailablePort(t *testing.T) int {
 	port, err := GetAvailablePortE(t)
 	require.NoError(t, err)
