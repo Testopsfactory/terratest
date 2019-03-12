@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -120,12 +121,13 @@ func TestOutputsForKeys(t *testing.T) {
 	//String value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
-	assert.True(t, ok, "data type wrong")
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
 	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
 	//List value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
 	expectedListItem := "Sirius"
 	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
 	assert.Equal(t, expectedListItem, outputInterfaceList[0].(string), "List Item %q should match %q",
@@ -133,6 +135,7 @@ func TestOutputsForKeys(t *testing.T) {
 
 	//Map value
 	outputInterfaceMap, ok := out["magnitudes"].(map[string]interface{})
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'magnitudes', expected map[string], got %T", out["magnitudes"]))
 	expectedMapLen := 3
 	expectedMapItem := -1.46
 	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain %d items", expectedMapLen)
@@ -166,12 +169,13 @@ func TestOutputsAll(t *testing.T) {
 	//String Value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
-	assert.True(t, ok, "data type wrong")
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
 	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
 	//List Value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
 	expectedListItem := "Betelgeuse"
 	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
 	assert.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
@@ -180,6 +184,7 @@ func TestOutputsAll(t *testing.T) {
 	//Map Value
 	expectedMapLen := 4
 	outputInterfaceMap, ok := out["constellations"].(map[string]interface{})
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'constellations', expected map[string], got %T", out["constellations"]))
 	expectedMapItem := "Aldebaran"
 	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
 	assert.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
