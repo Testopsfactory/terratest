@@ -1,6 +1,7 @@
 # Terratest
 
 [![Maintained by Gruntwork.io](https://img.shields.io/badge/maintained%20by-gruntwork.io-%235849a6.svg)](https://gruntwork.io/?ref=repo_terratest)
+[![CircleCI](https://circleci.com/gh/gruntwork-io/terratest.svg?style=svg)](https://circleci.com/gh/gruntwork-io/terratest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gruntwork-io/terratest)](https://goreportcard.com/report/github.com/gruntwork-io/terratest)
 [![GoDoc](https://godoc.org/github.com/gruntwork-io/terratest?status.svg)](https://godoc.org/github.com/gruntwork-io/terratest)
 
