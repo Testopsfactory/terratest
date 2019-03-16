@@ -23,7 +23,7 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 	region := gcp.GetRandomRegion(t, projectId, nil, []string{"asia-east2"})
 
 	randomValidGcpName := gcp.RandomValidGcpName()
-	cluster_size := 3
+	clusterSize := 3
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code instances located
@@ -43,9 +43,9 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
 	terraform.InitAndApply(t, terraformOptions)
 
-	instance_group_name := terraform.Output(t, terraformOptions, "instance_group_name")
+	instanceGroupName := terraform.Output(t, terraformOptions, "instance_group_name")
 
-	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectId, region, instance_group_name)
+	instanceGroup := gcp.FetchRegionalInstanceGroup(t, projectId, region, instanceGroupName)
 
 	// Validate that GetInstances() returns a non-zero number of Instances
 	maxRetries := 40
@@ -57,8 +57,8 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 			return "", fmt.Errorf("Failed to get Instances: %s", err)
 		}
 
-		if len(instances) != cluster_size {
-			return "", fmt.Errorf("Expected to find exactly %d Compute Instances in Instance Group but found %d.", cluster_size, len(instances))
+		if len(instances) != clusterSize {
+			return "", fmt.Errorf("Expected to find exactly %d Compute Instances in Instance Group but found %d.", clusterSize, len(instances))
 		}
 
 		return "", nil
@@ -71,8 +71,8 @@ func TestTerraformGcpInstanceGroupExample(t *testing.T) {
 			return "", fmt.Errorf("Failed to get public IPs from Instance Group")
 		}
 
-		if len(ips) != cluster_size {
-			return "", fmt.Errorf("Expected to get exactly %d public IP addresses but found %d.", cluster_size, len(ips))
+		if len(ips) != clusterSize {
+			return "", fmt.Errorf("Expected to get exactly %d public IP addresses but found %d.", clusterSize, len(ips))
 		}
 
 		return "", nil
