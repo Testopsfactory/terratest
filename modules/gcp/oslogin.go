@@ -3,10 +3,10 @@ package gcp
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/oslogin/v1"
@@ -17,7 +17,7 @@ import (
 // The `key` parameter should be the public key of the SSH key being uploaded.
 // This will fail the test if there is an error.
 func ImportSSHKey(t *testing.T, user, key string) {
-	require.NoErrorf(t, ImportSSHKeyE(t, user, key), "Could not add SSH Key to user %")
+	require.NoErrorf(t, ImportSSHKeyE(t, user, key), "Could not add SSH Key to user %s", user)
 }
 
 // ImportSSHKeyE will import an SSH key to GCP under the provided user identity.
@@ -52,9 +52,7 @@ func ImportSSHKeyE(t *testing.T, user, key string) error {
 // This will fail the test if there is an error.
 func GetLoginProfile(t *testing.T, user string) *oslogin.LoginProfile {
 	profile, err := GetLoginProfileE(t, user)
-	if err != nil {
-		t.Fatalf("Could not get login profile for user %s: %s", user, err)
-	}
+	require.NoErrorf(t, err, "Could not get login profile for user %s", user)
 
 	return profile
 }
