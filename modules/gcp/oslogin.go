@@ -3,6 +3,7 @@ package gcp
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -11,14 +12,17 @@ import (
 	"google.golang.org/api/oslogin/v1"
 )
 
-// Add an OS Login SSH Key
+// ImportSSHKey will import an SSH key to GCP under the provided user identity.
+// The `user` parameter should be the email address of the user.
+// The `key` parameter should be the public key of the SSH key being uploaded.
+// This will fail the test if there is an error.
 func ImportSSHKey(t *testing.T, user, key string) {
-	err := ImportSSHKeyE(t, user, key)
-	if err != nil {
-		t.Fatalf("Could not add SSH Key to user %s: %s", user, err)
-	}
+	require.NoErrorf(t, ImportSSHKeyE(t, user, key), "Could not add SSH Key to user %")
 }
 
+// ImportSSHKeyE will import an SSH key to GCP under the provided user identity.
+// The `user` parameter should be the email address of the user.
+// The `key` parameter should be the public key of the SSH key being uploaded.
 func ImportSSHKeyE(t *testing.T, user, key string) error {
 	logger.Logf(t, "Importing SSH key for user %s", user)
 
@@ -42,8 +46,10 @@ func ImportSSHKeyE(t *testing.T, user, key string) error {
 	return nil
 }
 
-// Retrieve the login profile; OS Login + ephemeral gcloud keys + identities for
-// the user.
+// GetLoginProfile will retrieve the login profile for a user's Google identity. The login profile is a combination of OS Login + gcloud SSH keys and POSIX
+// accounts the user will appear as. Generally, this will only be the OS Login key + account, but `gcloud compute ssh` could create temporary keys and profiles.
+// The `user` parameter should be the email address of the user.
+// This will fail the test if there is an error.
 func GetLoginProfile(t *testing.T, user string) *oslogin.LoginProfile {
 	profile, err := GetLoginProfileE(t, user)
 	if err != nil {
@@ -53,6 +59,9 @@ func GetLoginProfile(t *testing.T, user string) *oslogin.LoginProfile {
 	return profile
 }
 
+// GetLoginProfileE will retrieve the login profile for a user's Google identity. The login profile is a combination of OS Login + gcloud SSH keys and POSIX
+// accounts the user will appear as. Generally, this will only be the OS Login key + account, but `gcloud compute ssh` could create temporary keys and profiles.
+// The `user` parameter should be the email address of the user.
 func GetLoginProfileE(t *testing.T, user string) (*oslogin.LoginProfile, error) {
 	logger.Logf(t, "Getting login profile for user %s", user)
 
