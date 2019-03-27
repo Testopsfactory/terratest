@@ -357,7 +357,7 @@ To use the utility, you simply give it the log output from a `go test` run and a
 
 ```bash
 go test -timeout 30m | tee test_output.log
-terratest_log_parser -testlog test_ouptut.log -outputdir test_output
+terratest_log_parser -testlog test_output.log -outputdir test_output
 ```
 
 This will:
