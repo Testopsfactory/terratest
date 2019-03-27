@@ -12,7 +12,7 @@ func TestImportSSHKeyOSLogin(t *testing.T) {
 	keyPair := ssh.GenerateRSAKeyPair(t, 2048)
 	key := keyPair.PublicKey
 
-	user := GetGoogleIdentityTerratestEnvVar(t)
+	user := GetGoogleIdentityEmailEnvVar(t)
 
 	ImportSSHKey(t, user, key)
 }
@@ -20,7 +20,7 @@ func TestImportSSHKeyOSLogin(t *testing.T) {
 func TestGetLoginProfile(t *testing.T) {
 	t.Parallel()
 
-	user := GetGoogleIdentityTerratestEnvVar(t)
+	user := GetGoogleIdentityEmailEnvVar(t)
 	GetLoginProfile(t, user)
 }
 
@@ -30,7 +30,7 @@ func TestSetOSLoginKey(t *testing.T) {
 	keyPair := ssh.GenerateRSAKeyPair(t, 2048)
 	key := keyPair.PublicKey
 
-	user := GetGoogleIdentityTerratestEnvVar(t)
+	user := GetGoogleIdentityEmailEnvVar(t)
 
 	ImportSSHKey(t, user, key)
 	loginProfile := GetLoginProfile(t, user)

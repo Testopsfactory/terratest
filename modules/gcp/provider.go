@@ -27,8 +27,8 @@ var regionEnvVars = []string{
 	"CLOUDSDK_COMPUTE_REGION",
 }
 
-var googleIdentityEnvVars = []string{
-	"GOOGLE_IDENTITY_TERRATEST",
+var googleIdentityEmailEnvVars = []string{
+	"GOOGLE_IDENTITY_EMAIL",
 }
 
 // GetGoogleCredentialsFromEnvVar returns the Credentials for use with testing.
@@ -46,7 +46,7 @@ func GetGoogleRegionFromEnvVar(t *testing.T) string {
 	return environment.GetFirstNonEmptyEnvVarOrFatal(t, regionEnvVars)
 }
 
-// GetGoogleIdentityTerratestEnvVar returns a Google identity (user) for use with testing.
-func GetGoogleIdentityTerratestEnvVar(t *testing.T) string {
-	return environment.GetFirstNonEmptyEnvVarOrFatal(t, googleIdentityEnvVars)
+// GetGoogleIdentityEmailEnvVar returns a Google identity (user) for use with testing.
+func GetGoogleIdentityEmailEnvVar(t *testing.T) string {
+	return environment.GetFirstNonEmptyEnvVarOrFatal(t, googleIdentityEmailEnvVars)
 }
