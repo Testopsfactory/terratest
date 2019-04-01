@@ -24,6 +24,17 @@
 #   go-tests = true
 #   unused-packages = true
 
+# These dependencies are not directly required by terratest, but are defined here to directly hook them up so that they
+# are version locked when it is pulled in by projects depending on terratest.
+# This is necessary because kubernetes apimachinery and client-go do not support dep natively, and so overrides are
+# necessary to make it work.
+# See for more info:
+# - https://github.com/kubernetes/client-go/blob/kubernetes-1.11.3/INSTALL.md#dep-not-supported-yet
+# - https://golang.github.io/dep/docs/FAQ.html#how-do-i-constrain-a-transitive-dependency-s-version
+require = [
+    "github.com/json-iterator/go",
+]
+
 
 [[constraint]]
   name = "github.com/aws/aws-sdk-go"
@@ -80,3 +91,7 @@
 [[constraint]]
   branch = "release-9.0"
   name = "k8s.io/client-go"
+
+[[constraint]]
+  name = "github.com/json-iterator/go"
+  version = "v1.1.5"
