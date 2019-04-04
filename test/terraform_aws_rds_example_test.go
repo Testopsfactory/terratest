@@ -11,13 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// An example of how to test the Terraform module in examples/terraform-aws-example using Terratest.
+// An example of how to test the Terraform module in examples/terraform-aws-rds-example using Terratest.
 func TestTerraformAwsRdsExample(t *testing.T) {
 	t.Parallel()
 
-	// Give this EC2 Instance a unique ID for a name tag so we can distinguish it from any other EC2 Instance running
+	// Give this RDS Instance a unique ID for a name tag so we can distinguish it from any other RDS Instance running
 	// in your AWS account
-	expectedName := fmt.Sprintf("terratest-aws-example-%s", strings.ToLower(random.UniqueId()))
+	expectedName := fmt.Sprintf("terratest-aws-rds-example-%s", strings.ToLower(random.UniqueId()))
 	expectedPort := int64(3306)
 	expectedDatabaseName := "terratest"
 	username := "username"
