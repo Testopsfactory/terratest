@@ -3,6 +3,7 @@ package k8s
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
@@ -36,15 +37,15 @@ func ListIngressesE(t *testing.T, options *KubectlOptions, filters metav1.ListOp
 
 // GetIngress returns a Kubernetes Ingress resource in the provided namespace with the given name. This will fail the
 // test if there is an error.
-func GetIngress(t *testing.T, options *k8s.KubectlOptions, ingressName string) *extensionsv1beta1.Ingress {
+func GetIngress(t *testing.T, options *KubectlOptions, ingressName string) *extensionsv1beta1.Ingress {
 	ingress, err := GetIngressE(t, options, ingressName)
 	require.NoError(t, err)
 	return ingress
 }
 
 // GetIngressE returns a Kubernetes Ingress resource in the provided namespace with the given name.
-func GetIngressE(t *testing.T, options *k8s.KubectlOptions, ingressName string) (*extensionsv1beta1.Ingress, error) {
-	clientset, err := k8s.GetKubernetesClientFromOptionsE(t, options)
+func GetIngressE(t *testing.T, options *KubectlOptions, ingressName string) (*extensionsv1beta1.Ingress, error) {
+	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
 	}

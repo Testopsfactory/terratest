@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
@@ -125,8 +124,10 @@ metadata:
   namespace: %s
 spec:
   rules:
-  - path: /app
-    backend:
-	  serviceName: nginx-service
-	  servicePort: 80
+  - http:
+      paths:
+      - path: /app
+        backend:
+          serviceName: nginx-service
+          servicePort: 80
 `
