@@ -73,7 +73,7 @@ func TestWaitUntilIngressAvailableReturnsSuccessfully(t *testing.T) {
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
 
-	WaitUntilIngressAvailable(t, options, ExampleIngressName, 10, 1*time.Second)
+	WaitUntilIngressAvailable(t, options, ExampleIngressName, 60, 5*time.Second)
 }
 
 const EXAMPLE_INGRESS_DEPLOYMENT_YAML_TEMPLATE = `---
