@@ -1,5 +1,7 @@
 defaults: &defaults
-  machine: true
+  machine:
+    enabled: true
+    image: "ubuntu-1604:201903-01"
   environment:
     GRUNTWORK_INSTALLER_VERSION: v0.0.21
     MODULE_CI_VERSION: v0.13.3
@@ -23,6 +25,11 @@ setup_minikube: &setup_minikube
   name: install helm, kubectl and minikube
   working_directory: /tmp
   command: |
+    # Install yq so we can modify the configmap
+    sudo add-apt-repository ppa:rmescandon/yq
+    sudo apt-get update
+    sudo apt install -y yq
+
     # install kubectl
     curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
     chmod +x kubectl
@@ -39,7 +46,13 @@ setup_minikube: &setup_minikube
     # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
     # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
     # systemd.
-    sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube --extra-config=apiserver.Authorization.Mode=RBAC
+    sudo -E minikube start \
+      --vm-driver=none \
+      --kubernetes-version=${K8S_VERSION} \
+      --bootstrapper=localkube \
+      --extra-config=apiserver.Authorization.Mode=RBAC \
+      --cpus 2 --memory 4096
+
     # this for loop waits until kubectl can access the api server that Minikube has created
     $(
       for i in {1..150}; do # timeout for 5 minutes
@@ -52,6 +65,15 @@ setup_minikube: &setup_minikube
       true
     )
 
+    # Make sure to grant the default service account cluster admin rights so helm and ingress controller works
+    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
+
+    # Update the configmap to disable SSL since we won't have certs
+    kubectl get configmap -n kube-system nginx-load-balancer-conf -o yaml | yq write - data.ssl-redirect "\"false\"" | kubectl replace -f -
+
+    # Finally we wait for the rollout
+    kubectl rollout status -n kube-system deployment/nginx-ingress-controller --watch
+
 
 install_helm: &install_helm
   name: install helm
@@ -61,9 +83,6 @@ install_helm: &install_helm
     tar -xvf helm.tar.gz
     chmod +x linux-amd64/helm
     sudo mv linux-amd64/helm /usr/local/bin/
-
-    # Grant the default service account cluster admin rights so helm works
-    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
 
     # Deploy Tiller
     helm init --wait
