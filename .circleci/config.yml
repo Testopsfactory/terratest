@@ -4,7 +4,7 @@ defaults: &defaults
     image: "ubuntu-1604:201903-01"
   environment:
     GRUNTWORK_INSTALLER_VERSION: v0.0.21
-    MODULE_CI_VERSION: v0.13.4
+    MODULE_CI_VERSION: v0.13.12
     TERRAFORM_VERSION: 0.11.11
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: 1.3.3
@@ -32,7 +32,7 @@ install_gruntwork_utils: &install_gruntwork_utils
   command: |
     curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
     gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
-    gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --branch yori-add-k8s
+    gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
     configure-environment-for-gruntwork-module \
       --circle-ci-2-machine-executor \
       --terraform-version ${TERRAFORM_VERSION} \
