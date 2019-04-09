@@ -1,8 +1,10 @@
 defaults: &defaults
-  machine: true
+  machine:
+    enabled: true
+    image: "ubuntu-1604:201903-01"
   environment:
     GRUNTWORK_INSTALLER_VERSION: v0.0.21
-    MODULE_CI_VERSION: v0.13.3
+    MODULE_CI_VERSION: v0.13.12
     TERRAFORM_VERSION: 0.11.11
     TERRAGRUNT_VERSION: NONE
     PACKER_VERSION: 1.3.3
@@ -10,47 +12,6 @@ defaults: &defaults
     K8S_VERSION: v1.10.0  # Same as EKS
     HELM_VERSION: v2.12.2
     KUBECONFIG: /home/circleci/.kube/config
-    MINIKUBE_VERSION: v0.28.2  # See https://github.com/kubernetes/minikube/issues/2704
-    MINIKUBE_WANTUPDATENOTIFICATION: "false"
-    MINIKUBE_WANTREPORTERRORPROMPT: "false"
-    MINIKUBE_HOME: /home/circleci
-    CHANGE_MINIKUBE_NONE_USER: "true"
-
-
-# Install and setup minikube
-# https://github.com/kubernetes/minikube#linux-continuous-integration-without-vm-support
-setup_minikube: &setup_minikube
-  name: install helm, kubectl and minikube
-  working_directory: /tmp
-  command: |
-    # install kubectl
-    curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
-    chmod +x kubectl
-    sudo mv kubectl /usr/local/bin/
-    mkdir -p ${HOME}/.kube
-    touch ${HOME}/.kube/config
-
-    # Install minikube
-    curl -Lo minikube https://github.com/kubernetes/minikube/releases/download/${MINIKUBE_VERSION}/minikube-linux-amd64
-    chmod +x minikube
-    sudo mv minikube /usr/local/bin/
-
-    # start minikube and wait for it
-    # Ignore warnings on minikube start command, as it will log a warning due to using deprecated localkube
-    # bootstrapper. However, the localkube bootstrapper is necessary to run on CircleCI which doesn't have
-    # systemd.
-    sudo -E minikube start --vm-driver=none --kubernetes-version=${K8S_VERSION} --bootstrapper=localkube --extra-config=apiserver.Authorization.Mode=RBAC
-    # this for loop waits until kubectl can access the api server that Minikube has created
-    $(
-      for i in {1..150}; do # timeout for 5 minutes
-        kubectl get po &> /dev/null
-        if [ $? -ne 1 ]; then
-          break
-        fi
-        sleep 2
-      done
-      true
-    )
 
 
 install_helm: &install_helm
@@ -62,9 +23,6 @@ install_helm: &install_helm
     chmod +x linux-amd64/helm
     sudo mv linux-amd64/helm /usr/local/bin/
 
-    # Grant the default service account cluster admin rights so helm works
-    kubectl create clusterrolebinding default-service-account-cluster-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:default
-
     # Deploy Tiller
     helm init --wait
 
@@ -74,6 +32,7 @@ install_gruntwork_utils: &install_gruntwork_utils
   command: |
     curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
     gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
+    gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
     configure-environment-for-gruntwork-module \
       --circle-ci-2-machine-executor \
       --terraform-version ${TERRAFORM_VERSION} \
@@ -176,7 +135,7 @@ jobs:
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
 
       - run:
-          <<: *setup_minikube
+          command: setup-minikube
 
       # Run the Kubernetes tests. These tests are run because the kubernetes build tag is included, and we explicitly
       # select the kubernetes tests
@@ -212,7 +171,7 @@ jobs:
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
 
       - run:
-          <<: *setup_minikube
+          command: setup-minikube
 
       - run:
           <<: *install_helm

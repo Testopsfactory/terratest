@@ -33,9 +33,13 @@ func TestRunCommandAndGetOutputOrder(t *testing.T) {
 	bashCode := fmt.Sprintf(`
 echo_stderr(){
 	(>&2 echo "%s")
+	# Add sleep to stabilize the test
+	sleep .01s
 }
 echo_stdout(){
 	echo "%s"
+	# Add sleep to stabilize the test
+	sleep .01s
 }
 echo_stderr
 echo_stdout

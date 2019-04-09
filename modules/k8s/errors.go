@@ -4,8 +4,18 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// IngressNotAvailable is returned when a Kubernetes service is not yet available to accept traffic.
+type IngressNotAvailable struct {
+	ingress *extensionsv1beta1.Ingress
+}
+
+func (err IngressNotAvailable) Error() string {
+	return fmt.Sprintf("Ingress %s is not available", err.ingress.Name)
+}
 
 // UnknownKubeResourceType is returned if the given resource type does not match the list of known resource types.
 type UnknownKubeResourceType struct {
