@@ -12,9 +12,9 @@ import (
 	"github.com/gruntwork-io/terratest/modules/files"
 )
 
-// formatSetValuesAsArgs formats the given values as command line args for helm using set (e.g of the format
-// --set key=value)
-func formatSetValuesAsArgs(setValues map[string]string) []string {
+// formatSetValuesAsArgs formats the given values as command line args for helm using the given flag (e.g flags of
+// the format "--set"/"--set-string" resulting in args like --set/set-string key=value...)
+func formatSetValuesAsArgs(setValues map[string]string, flag string) []string {
 	args := []string{}
 
 	// To make it easier to test, go through the keys in sorted order
@@ -22,7 +22,7 @@ func formatSetValuesAsArgs(setValues map[string]string) []string {
 	for _, key := range keys {
 		value := setValues[key]
 		argValue := fmt.Sprintf("%s=%s", key, value)
-		args = append(args, "--set", argValue)
+		args = append(args, flag, argValue)
 	}
 
 	return args

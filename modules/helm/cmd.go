@@ -26,7 +26,8 @@ func getCommonArgs(options *Options, args ...string) []string {
 
 // getValuesArgsE computes the args to pass in for setting values
 func getValuesArgsE(t *testing.T, options *Options, args ...string) ([]string, error) {
-	args = append(args, formatSetValuesAsArgs(options.SetValues)...)
+	args = append(args, formatSetValuesAsArgs(options.SetValues, "--set")...)
+	args = append(args, formatSetValuesAsArgs(options.SetStrValues, "--set-string")...)
 
 	valuesFilesArgs, err := formatValuesFilesAsArgsE(t, options.ValuesFiles)
 	if err != nil {
