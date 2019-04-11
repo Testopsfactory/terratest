@@ -15,19 +15,25 @@ func TestFormatSetValuesAsArgs(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		name      string
-		setValues map[string]string
-		expected  []string
+		name         string
+		setValues    map[string]string
+		setStrValues map[string]string
+		expected     []string
+		expectedStr  []string
 	}{
 		{
 			"EmptyValue",
 			map[string]string{},
+			map[string]string{},
+			[]string{},
 			[]string{},
 		},
 		{
 			"SingleValue",
 			map[string]string{"containerImage": "null"},
+			map[string]string{"numericString": "123123123123"},
 			[]string{"--set", "containerImage=null"},
+			[]string{"--set-string", "numericString=123123123123"},
 		},
 		{
 			"MultipleValues",
@@ -35,9 +41,17 @@ func TestFormatSetValuesAsArgs(t *testing.T) {
 				"containerImage.repository": "nginx",
 				"containerImage.tag":        "v1.15.4",
 			},
+			map[string]string{
+				"numericString": "123123123123",
+				"otherString":   "null",
+			},
 			[]string{
 				"--set", "containerImage.repository=nginx",
 				"--set", "containerImage.tag=v1.15.4",
+			},
+			[]string{
+				"--set-string", "numericString=123123123123",
+				"--set-string", "otherString=null",
 			},
 		},
 	}
@@ -49,7 +63,8 @@ func TestFormatSetValuesAsArgs(t *testing.T) {
 
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, formatSetValuesAsArgs(testCase.setValues), testCase.expected)
+			assert.Equal(t, formatSetValuesAsArgs(testCase.setValues, "--set"), testCase.expected)
+			assert.Equal(t, formatSetValuesAsArgs(testCase.setStrValues, "--set-string"), testCase.expectedStr)
 		})
 	}
 }
