@@ -85,14 +85,14 @@ func DeleteEcsClusterE(t *testing.T, region string, cluster *ecs.Cluster) error 
 }
 
 // GetEcsService fetches information about specified ECS service.
-func GetEcsService(t *testing.T, region, clusterName, serviceName string) *ecs.Service {
+func GetEcsService(t *testing.T, region string, clusterName string, serviceName string) *ecs.Service {
 	service, err := GetEcsServiceE(t, region, clusterName, serviceName)
 	require.NoError(t, err)
 	return service
 }
 
 // GetEcsServiceE fetches information about specified ECS service.
-func GetEcsServiceE(t *testing.T, region, clusterName, serviceName string) (*ecs.Service, error) {
+func GetEcsServiceE(t *testing.T, region string, clusterName string, serviceName string) (*ecs.Service, error) {
 	output, err := NewEcsClient(t, region).DescribeServices(&ecs.DescribeServicesInput{
 		Cluster: aws.String(clusterName),
 		Services: []*string{
@@ -113,14 +113,14 @@ func GetEcsServiceE(t *testing.T, region, clusterName, serviceName string) (*ecs
 }
 
 // GetEcsTaskDefinition fetches information about specified ECS task definition.
-func GetEcsTaskDefinition(t *testing.T, region, taskDefinition string) *ecs.TaskDefinition {
+func GetEcsTaskDefinition(t *testing.T, region string, taskDefinition string) *ecs.TaskDefinition {
 	task, err := GetEcsTaskDefinitionE(t, region, taskDefinition)
 	require.NoError(t, err)
 	return task
 }
 
 // GetEcsTaskDefinitionE fetches information about specified ECS task definition.
-func GetEcsTaskDefinitionE(t *testing.T, region, taskDefinition string) (*ecs.TaskDefinition, error) {
+func GetEcsTaskDefinitionE(t *testing.T, region string, taskDefinition string) (*ecs.TaskDefinition, error) {
 	output, err := NewEcsClient(t, region).DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
 		TaskDefinition: aws.String(taskDefinition),
 	})
@@ -143,6 +143,5 @@ func NewEcsClientE(t *testing.T, region string) (*ecs.ECS, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return ecs.New(sess), nil
 }
