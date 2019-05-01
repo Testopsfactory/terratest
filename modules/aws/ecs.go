@@ -36,7 +36,7 @@ func GetEcsClusterE(t *testing.T, region string, name string) (*ecs.Cluster, err
 
 	numClusters := len(output.Clusters)
 	if numClusters != 1 {
-		return nil, fmt.Errorf("expected to find 1 ECS cluster named '%s' in region '%v', but found '%d'",
+		return nil, fmt.Errorf("Expected to find 1 ECS cluster named '%s' in region '%v', but found '%d'",
 			name, region, numClusters)
 	}
 
@@ -114,7 +114,7 @@ func GetEcsServiceE(t *testing.T, region, clusterName, serviceName string) (*ecs
 	numServices := len(output.Services)
 	if numServices != 1 {
 		return nil, fmt.Errorf(
-			"expected to find 1 ECS service named '%s' in cluster '%s' in region '%v', but found '%d'",
+			"Expected to find 1 ECS service named '%s' in cluster '%s' in region '%v', but found '%d'",
 			serviceName, clusterName, region, numServices)
 	}
 	return output.Services[0], nil
