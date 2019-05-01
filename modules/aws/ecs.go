@@ -12,9 +12,7 @@ import (
 // GetEcsCluster fetches information about specified ECS cluster.
 func GetEcsCluster(t *testing.T, region string, name string) *ecs.Cluster {
 	cluster, err := GetEcsClusterE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return cluster
 }
 
@@ -56,9 +54,7 @@ func GetDefaultEcsCluster(t *testing.T, region string) *ecs.Cluster {
 // CreateEcsCluster creates ECS cluster in the given region under the given name.
 func CreateEcsCluster(t *testing.T, region string, name string) *ecs.Cluster {
 	cluster, err := CreateEcsClusterE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return cluster
 }
 
@@ -76,9 +72,7 @@ func CreateEcsClusterE(t *testing.T, region string, name string) (*ecs.Cluster, 
 
 func DeleteEcsCluster(t *testing.T, region string, cluster *ecs.Cluster) {
 	err := DeleteEcsClusterE(t, region, cluster)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DeleteEcsClusterE deletes existing ECS cluster in the given region.
@@ -88,6 +82,52 @@ func DeleteEcsClusterE(t *testing.T, region string, cluster *ecs.Cluster) error 
 		Cluster: aws.String(*cluster.ClusterName),
 	})
 	return err
+}
+
+// GetEcsService fetches information about specified ECS service.
+func GetEcsService(t *testing.T, region string, clusterName string, serviceName string) *ecs.Service {
+	service, err := GetEcsServiceE(t, region, clusterName, serviceName)
+	require.NoError(t, err)
+	return service
+}
+
+// GetEcsServiceE fetches information about specified ECS service.
+func GetEcsServiceE(t *testing.T, region string, clusterName string, serviceName string) (*ecs.Service, error) {
+	output, err := NewEcsClient(t, region).DescribeServices(&ecs.DescribeServicesInput{
+		Cluster: aws.String(clusterName),
+		Services: []*string{
+			aws.String(serviceName),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	numServices := len(output.Services)
+	if numServices != 1 {
+		return nil, fmt.Errorf(
+			"Expected to find 1 ECS service named '%s' in cluster '%s' in region '%v', but found '%d'",
+			serviceName, clusterName, region, numServices)
+	}
+	return output.Services[0], nil
+}
+
+// GetEcsTaskDefinition fetches information about specified ECS task definition.
+func GetEcsTaskDefinition(t *testing.T, region string, taskDefinition string) *ecs.TaskDefinition {
+	task, err := GetEcsTaskDefinitionE(t, region, taskDefinition)
+	require.NoError(t, err)
+	return task
+}
+
+// GetEcsTaskDefinitionE fetches information about specified ECS task definition.
+func GetEcsTaskDefinitionE(t *testing.T, region string, taskDefinition string) (*ecs.TaskDefinition, error) {
+	output, err := NewEcsClient(t, region).DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(taskDefinition),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return output.TaskDefinition, nil
 }
 
 // NewEcsClient creates en ECS client.
@@ -103,6 +143,5 @@ func NewEcsClientE(t *testing.T, region string) (*ecs.ECS, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return ecs.New(sess), nil
 }
