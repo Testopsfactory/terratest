@@ -2,11 +2,13 @@ package test
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"terratest/modules/aws"
 	"terratest/modules/random"
 	"terratest/modules/terraform"
 	"testing"
+
+	awsSDK "github.com/aws/aws-sdk-go/aws"
+	"github.com/stretchr/testify/assert"
 )
 
 // An example of how to test the Terraform module in examples/terraform-aws-ecs-example using Terratest.
@@ -47,18 +49,18 @@ func TestTerraformAwsEcsExample(t *testing.T) {
 	// Look up the ECS cluster by name
 	cluster := aws.GetEcsCluster(t, awsRegion, expectedClusterName)
 
-	assert.Equal(t, int64(1), *cluster.ActiveServicesCount)
+	assert.Equal(t, int64(1), awsSDK.Int64Value(cluster.ActiveServicesCount))
 
 	// Look up the ECS service by name
 	service := aws.GetEcsService(t, awsRegion, expectedClusterName, expectedServiceName)
 
-	assert.Equal(t, int64(0), *service.DesiredCount)
-	assert.Equal(t, "FARGATE", *service.LaunchType)
+	assert.Equal(t, int64(0), awsSDK.Int64Value(service.DesiredCount))
+	assert.Equal(t, "FARGATE", awsSDK.StringValue(service.LaunchType))
 
 	// Look up the ECS task definition by ARN
 	task := aws.GetEcsTaskDefinition(t, awsRegion, taskDefinition)
 
-	assert.Equal(t, "256", *task.Cpu)
-	assert.Equal(t, "512", *task.Memory)
-	assert.Equal(t, "awsvpc", *task.NetworkMode)
+	assert.Equal(t, "256", awsSDK.StringValue(task.Cpu))
+	assert.Equal(t, "512", awsSDK.StringValue(task.Memory))
+	assert.Equal(t, "awsvpc", awsSDK.StringValue(task.NetworkMode))
 }
