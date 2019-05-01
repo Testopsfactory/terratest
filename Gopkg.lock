@@ -247,35 +247,6 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:7ecfbe8be4721ea863eb6ba5870a6eaf8e4e6f06320a1a2fa7a18734df4bf524"
-  name = "github.com/gruntwork-io/terratest"
-  packages = [
-    "modules/aws",
-    "modules/collections",
-    "modules/customerrors",
-    "modules/docker",
-    "modules/environment",
-    "modules/files",
-    "modules/gcp",
-    "modules/helm",
-    "modules/http-helper",
-    "modules/k8s",
-    "modules/logger",
-    "modules/logger/parser",
-    "modules/oci",
-    "modules/packer",
-    "modules/random",
-    "modules/retry",
-    "modules/shell",
-    "modules/ssh",
-    "modules/terraform",
-    "modules/test-structure",
-  ]
-  pruneopts = "UT"
-  revision = "57b60477c3c9dd77e8905cf1ed81ad26a2490fbd"
-  version = "v0.15.0"
-
-[[projects]]
   digest = "1:8eb1de8112c9924d59bf1d3e5c26f5eaa2bfc2a5fcbb92dc1c2e4546d695f277"
   name = "github.com/imdario/mergo"
   packages = ["."]
@@ -868,26 +839,6 @@
     "github.com/gruntwork-io/gruntwork-cli/errors",
     "github.com/gruntwork-io/gruntwork-cli/files",
     "github.com/gruntwork-io/gruntwork-cli/logging",
-    "github.com/gruntwork-io/terratest/modules/aws",
-    "github.com/gruntwork-io/terratest/modules/collections",
-    "github.com/gruntwork-io/terratest/modules/customerrors",
-    "github.com/gruntwork-io/terratest/modules/docker",
-    "github.com/gruntwork-io/terratest/modules/environment",
-    "github.com/gruntwork-io/terratest/modules/files",
-    "github.com/gruntwork-io/terratest/modules/gcp",
-    "github.com/gruntwork-io/terratest/modules/helm",
-    "github.com/gruntwork-io/terratest/modules/http-helper",
-    "github.com/gruntwork-io/terratest/modules/k8s",
-    "github.com/gruntwork-io/terratest/modules/logger",
-    "github.com/gruntwork-io/terratest/modules/logger/parser",
-    "github.com/gruntwork-io/terratest/modules/oci",
-    "github.com/gruntwork-io/terratest/modules/packer",
-    "github.com/gruntwork-io/terratest/modules/random",
-    "github.com/gruntwork-io/terratest/modules/retry",
-    "github.com/gruntwork-io/terratest/modules/shell",
-    "github.com/gruntwork-io/terratest/modules/ssh",
-    "github.com/gruntwork-io/terratest/modules/terraform",
-    "github.com/gruntwork-io/terratest/modules/test-structure",
     "github.com/jstemmer/go-junit-report/formatter",
     "github.com/jstemmer/go-junit-report/parser",
     "github.com/magiconair/properties/assert",
