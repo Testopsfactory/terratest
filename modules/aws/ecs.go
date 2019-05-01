@@ -12,9 +12,7 @@ import (
 // GetEcsCluster fetches information about specified ECS cluster.
 func GetEcsCluster(t *testing.T, region string, name string) *ecs.Cluster {
 	cluster, err := GetEcsClusterE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return cluster
 }
 
@@ -56,9 +54,7 @@ func GetDefaultEcsCluster(t *testing.T, region string) *ecs.Cluster {
 // CreateEcsCluster creates ECS cluster in the given region under the given name.
 func CreateEcsCluster(t *testing.T, region string, name string) *ecs.Cluster {
 	cluster, err := CreateEcsClusterE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return cluster
 }
 
@@ -76,9 +72,7 @@ func CreateEcsClusterE(t *testing.T, region string, name string) (*ecs.Cluster, 
 
 func DeleteEcsCluster(t *testing.T, region string, cluster *ecs.Cluster) {
 	err := DeleteEcsClusterE(t, region, cluster)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DeleteEcsClusterE deletes existing ECS cluster in the given region.
@@ -93,9 +87,7 @@ func DeleteEcsClusterE(t *testing.T, region string, cluster *ecs.Cluster) error 
 // GetEcsService fetches information about specified ECS service.
 func GetEcsService(t *testing.T, region, clusterName, serviceName string) *ecs.Service {
 	service, err := GetEcsServiceE(t, region, clusterName, serviceName)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return service
 }
 
@@ -123,9 +115,7 @@ func GetEcsServiceE(t *testing.T, region, clusterName, serviceName string) (*ecs
 // GetEcsTaskDefinition fetches information about specified ECS task definition.
 func GetEcsTaskDefinition(t *testing.T, region, taskDefinition string) *ecs.TaskDefinition {
 	task, err := GetEcsTaskDefinitionE(t, region, taskDefinition)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return task
 }
 
