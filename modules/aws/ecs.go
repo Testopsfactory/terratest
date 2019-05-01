@@ -36,7 +36,7 @@ func GetEcsClusterE(t *testing.T, region string, name string) (*ecs.Cluster, err
 
 	numClusters := len(output.Clusters)
 	if numClusters != 1 {
-		return nil, fmt.Errorf("Expected to find 1 ECS cluster named '%s' in region '%v', but found '%d'",
+		return nil, fmt.Errorf("expected to find 1 ECS cluster named '%s' in region '%v', but found '%d'",
 			name, region, numClusters)
 	}
 
@@ -88,6 +88,36 @@ func DeleteEcsClusterE(t *testing.T, region string, cluster *ecs.Cluster) error 
 		Cluster: aws.String(*cluster.ClusterName),
 	})
 	return err
+}
+
+// GetEcsService fetches information about specified ECS service.
+func GetEcsService(t *testing.T, region, clusterName, serviceName string) *ecs.Service {
+	service, err := GetEcsServiceE(t, region, clusterName, serviceName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return service
+}
+
+// GetEcsServiceE fetches information about specified ECS service.
+func GetEcsServiceE(t *testing.T, region, clusterName, serviceName string) (*ecs.Service, error) {
+	output, err := NewEcsClient(t, region).DescribeServices(&ecs.DescribeServicesInput{
+		Cluster: aws.String(clusterName),
+		Services: []*string{
+			aws.String(serviceName),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	numServices := len(output.Services)
+	if numServices != 1 {
+		return nil, fmt.Errorf(
+			"expected to find 1 ECS service named '%s' in cluster '%s' in region '%v', but found '%d'",
+			serviceName, clusterName, region, numServices)
+	}
+	return output.Services[0], nil
 }
 
 // NewEcsClient creates en ECS client.
