@@ -17,7 +17,7 @@ func TestTerraformAwsEcsExample(t *testing.T) {
 	expectedServiceName := fmt.Sprintf("terratest-aws-ecs-example-service-%s", random.UniqueId())
 
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
+	awsRegion := aws.GetRandomStableRegion(t, []string{"us-east-1", "eu-west-1"}, nil)
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
@@ -41,12 +41,24 @@ func TestTerraformAwsEcsExample(t *testing.T) {
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
 	terraform.InitAndApply(t, terraformOptions)
 
+	// Run `terraform output` to get the value of an output variable
+	taskDefinition := terraform.Output(t, terraformOptions, "task_definition")
+
 	// Look up the ECS cluster by name
 	cluster := aws.GetEcsCluster(t, awsRegion, expectedClusterName)
+
 	assert.Equal(t, int64(1), *cluster.ActiveServicesCount)
 
 	// Look up the ECS service by name
 	service := aws.GetEcsService(t, awsRegion, expectedClusterName, expectedServiceName)
+
 	assert.Equal(t, int64(0), *service.DesiredCount)
 	assert.Equal(t, "FARGATE", *service.LaunchType)
+
+	// Look up the ECS task definition by ARN
+	task := aws.GetEcsTaskDefinition(t, awsRegion, taskDefinition)
+
+	assert.Equal(t, "256", *task.Cpu)
+	assert.Equal(t, "512", *task.Memory)
+	assert.Equal(t, "awsvpc", *task.NetworkMode)
 }

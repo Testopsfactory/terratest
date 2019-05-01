@@ -120,6 +120,26 @@ func GetEcsServiceE(t *testing.T, region, clusterName, serviceName string) (*ecs
 	return output.Services[0], nil
 }
 
+// GetEcsTaskDefinition fetches information about specified ECS task definition.
+func GetEcsTaskDefinition(t *testing.T, region, taskDefinition string) *ecs.TaskDefinition {
+	task, err := GetEcsTaskDefinitionE(t, region, taskDefinition)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return task
+}
+
+// GetEcsTaskDefinitionE fetches information about specified ECS task definition.
+func GetEcsTaskDefinitionE(t *testing.T, region, taskDefinition string) (*ecs.TaskDefinition, error) {
+	output, err := NewEcsClient(t, region).DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(taskDefinition),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return output.TaskDefinition, nil
+}
+
 // NewEcsClient creates en ECS client.
 func NewEcsClient(t *testing.T, region string) *ecs.ECS {
 	client, err := NewEcsClientE(t, region)
