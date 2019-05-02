@@ -157,6 +157,6 @@ func primitiveToHclString(value interface{}) string {
 	//case int: return strconv.Itoa(v)
 
 	default:
-		return fmt.Sprintf("\"%v\"", v)
+		return fmt.Sprintf("%v", v)
 	}
 }
