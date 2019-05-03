@@ -148,9 +148,9 @@ func primitiveToHclString(value interface{}) string {
 	// (https://github.com/hashicorp/terraform/issues/7962), all ints must be wrapped as strings.
 	case bool:
 		if v {
-			return "\"1\""
+			return "1"
 		}
-		return "\"0\""
+		return "0"
 
 	// Note: due to a Terraform bug (https://github.com/hashicorp/terraform/issues/7962), we can't use proper HCL
 	// syntax for ints have to wrap them as strings by falling through to the default case
