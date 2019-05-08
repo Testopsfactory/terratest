@@ -2,6 +2,7 @@ package aws
 
 import (
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 
@@ -115,6 +116,35 @@ func CreateS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
+// PutS3BucketVersioningE creates an S3 bucket versioning configuration in the given region against the given bucket name, WITHOUT requiring MFA to remove versioning.
+func PutS3BucketVersioning(t *testing.T, region string, bucketName string) {
+	err := PutS3BucketVersioningE(t, region, bucketName)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// PutS3BucketVersioningE creates an S3 bucket versioning configuration in the given region against the given bucket name, WITHOUT requiring MFA to remove versioning.
+func PutS3BucketVersioningE(t *testing.T, region string, bucketName string) error {
+	logger.Logf(t, "Creating bucket versioning configuration for bucket %s in %s", bucketName, region)
+
+	s3Client, err := NewS3ClientE(t, region)
+	if err != nil {
+		return err
+	}
+
+	input := &s3.PutBucketVersioningInput{
+		Bucket: aws.String(bucketName),
+		VersioningConfiguration: &s3.VersioningConfiguration{
+			MFADelete: aws.String("Disabled"),
+			Status:    aws.String("Enabled"),
+		},
+	}
+
+	_, err = s3Client.PutBucketVersioning(input)
+	return err
+}
+
 // DeleteS3Bucket destroys the S3 bucket in the given region with the given name.
 func DeleteS3Bucket(t *testing.T, region string, name string) {
 	err := DeleteS3BucketE(t, region, name)
@@ -208,6 +238,33 @@ func EmptyS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
+// GetS3BucketVersioning fetches the given bucket's versioning configuration status and returns it as a string
+func GetS3BucketVersioning(t *testing.T, awsRegion string, bucket string) string {
+	versioningStatus, err := GetS3BucketVersioningE(t, awsRegion, bucket)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return versioningStatus
+}
+
+// GetS3BucketVersioningE fetches the given bucket's versioning configuration status and returns it as a string
+func GetS3BucketVersioningE(t *testing.T, awsRegion string, bucket string) (string, error) {
+	s3Client, err := NewS3ClientE(t, awsRegion)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := s3Client.GetBucketVersioning(&s3.GetBucketVersioningInput{
+		Bucket: &bucket,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return *res.Status, nil
+}
+
 // AssertS3BucketExists checks if the given S3 bucket exists in the given region and fail the test if it does not.
 func AssertS3BucketExists(t *testing.T, region string, name string) {
 	err := AssertS3BucketExistsE(t, region, name)
@@ -228,6 +285,30 @@ func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 	}
 	_, err = s3Client.HeadBucket(params)
 	return err
+}
+
+// AssertS3BucketVersioningExists checks if the given S3 bucket has a versioning configuration enabled and returns an error if it does not.
+func AssertS3BucketVersioningExists(t *testing.T, region string, bucketName string) {
+	err := AssertS3BucketVersioningExistsE(t, region, bucketName)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// AssertS3BucketVersioningExistsE checks if the given S3 bucket has a versioning configuration enabled and returns an error if it does not.
+func AssertS3BucketVersioningExistsE(t *testing.T, region string, bucketName string) error {
+	status, err := GetS3BucketVersioningE(t, region, bucketName)
+	if err != nil {
+		return err
+	}
+
+	errorMsg := errors.New("bucket versioning is not enabled")
+
+	if status == "Enabled" {
+		return nil
+	} else {
+		return errorMsg
+	}
 }
 
 // NewS3Client creates an S3 client.
