@@ -119,9 +119,7 @@ func CreateS3BucketE(t *testing.T, region string, name string) error {
 // PutS3BucketVersioning creates an S3 bucket versioning configuration in the given region against the given bucket name, WITHOUT requiring MFA to remove versioning.
 func PutS3BucketVersioning(t *testing.T, region string, bucketName string) {
 	err := PutS3BucketVersioningE(t, region, bucketName)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 }
 
 // PutS3BucketVersioningE creates an S3 bucket versioning configuration in the given region against the given bucket name, WITHOUT requiring MFA to remove versioning.
@@ -241,9 +239,7 @@ func EmptyS3BucketE(t *testing.T, region string, name string) error {
 // GetS3BucketVersioning fetches the given bucket's versioning configuration status and returns it as a string
 func GetS3BucketVersioning(t *testing.T, awsRegion string, bucket string) string {
 	versioningStatus, err := GetS3BucketVersioningE(t, awsRegion, bucket)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 
 	return versioningStatus
 }
@@ -290,9 +286,7 @@ func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 // AssertS3BucketVersioningExists checks if the given S3 bucket has a versioning configuration enabled and returns an error if it does not.
 func AssertS3BucketVersioningExists(t *testing.T, region string, bucketName string) {
 	err := AssertS3BucketVersioningExistsE(t, region, bucketName)
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 }
 
 // AssertS3BucketVersioningExistsE checks if the given S3 bucket has a versioning configuration enabled and returns an error if it does not.
