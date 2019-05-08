@@ -60,3 +60,20 @@ func (err AsgCapacityNotMetError) Error() string {
 func NewAsgCapacityNotMetError(asgName string, desiredCapacity int64, currentCapacity int64) AsgCapacityNotMetError {
 	return AsgCapacityNotMetError{asgName, desiredCapacity, currentCapacity}
 }
+
+// BucketVersioningNotEnabledError is returned when an S3 bucket that should have versioning does not have it applied
+type BucketVersioningNotEnabledError struct {
+	s3BucketName     string
+	awsRegion        string
+	versioningStatus string
+}
+
+func (err BucketVersioningNotEnabledError) Error() string {
+	return fmt.Sprintf(
+		"Versioning status for bucket #{err.s3BucketName} in the #{err.awsRegion} region is #{err.versioningStatus}",
+	)
+}
+
+func NewBucketVersioningNotEnabledError(s3BucketName string, awsRegion string, versioningStatus string) BucketVersioningNotEnabledError {
+	return BucketVersioningNotEnabledError{s3BucketName: s3BucketName, awsRegion: awsRegion, versioningStatus: versioningStatus}
+}
