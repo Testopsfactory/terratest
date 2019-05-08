@@ -1,4 +1,4 @@
-# Terraform AWS Example
+# Terraform AWS S3 Example
 
 This folder contains a simple Terraform module that deploys resources in [AWS](https://aws.amazon.com/) to demonstrate
 how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an [S3

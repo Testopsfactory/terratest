@@ -2,7 +2,6 @@ package aws
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 	"testing"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/stretchr/testify/require"
 )
 
 // FindS3BucketWithTag finds the name of the S3 bucket in the given region with the given tag key=value.
@@ -116,11 +116,11 @@ func CreateS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
-// PutS3BucketVersioningE creates an S3 bucket versioning configuration in the given region against the given bucket name, WITHOUT requiring MFA to remove versioning.
+// PutS3BucketVersioning creates an S3 bucket versioning configuration in the given region against the given bucket name, WITHOUT requiring MFA to remove versioning.
 func PutS3BucketVersioning(t *testing.T, region string, bucketName string) {
 	err := PutS3BucketVersioningE(t, region, bucketName)
 	if err != nil {
-		t.Fatal(err)
+		require.NoError(t, err)
 	}
 }
 
@@ -242,7 +242,7 @@ func EmptyS3BucketE(t *testing.T, region string, name string) error {
 func GetS3BucketVersioning(t *testing.T, awsRegion string, bucket string) string {
 	versioningStatus, err := GetS3BucketVersioningE(t, awsRegion, bucket)
 	if err != nil {
-		t.Fatal(err)
+		require.NoError(t, err)
 	}
 
 	return versioningStatus
@@ -262,7 +262,7 @@ func GetS3BucketVersioningE(t *testing.T, awsRegion string, bucket string) (stri
 		return "", err
 	}
 
-	return *res.Status, nil
+	return aws.StringValue(res.Status), nil
 }
 
 // AssertS3BucketExists checks if the given S3 bucket exists in the given region and fail the test if it does not.
@@ -291,7 +291,7 @@ func AssertS3BucketExistsE(t *testing.T, region string, name string) error {
 func AssertS3BucketVersioningExists(t *testing.T, region string, bucketName string) {
 	err := AssertS3BucketVersioningExistsE(t, region, bucketName)
 	if err != nil {
-		t.Fatal(err)
+		require.NoError(t, err)
 	}
 }
 
@@ -302,12 +302,10 @@ func AssertS3BucketVersioningExistsE(t *testing.T, region string, bucketName str
 		return err
 	}
 
-	errorMsg := errors.New("bucket versioning is not enabled")
-
 	if status == "Enabled" {
 		return nil
 	} else {
-		return errorMsg
+		return NewBucketVersioningNotEnabledError(bucketName, region, status)
 	}
 }
 
