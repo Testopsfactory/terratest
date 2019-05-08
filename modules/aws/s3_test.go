@@ -58,6 +58,20 @@ func TestAssertS3BucketExistsNoFalsePositive(t *testing.T) {
 	}
 }
 
+func TestAssertS3BucketVersioningEnabled(t *testing.T) {
+	t.Parallel()
+
+	region := GetRandomStableRegion(t, nil, nil)
+	s3BucketName := "gruntwork-terratest-" + strings.ToLower(random.UniqueId())
+	logger.Logf(t, "Random values selected. Region = %s, s3BucketName = %s\n", region, s3BucketName)
+
+	CreateS3Bucket(t, region, s3BucketName)
+	defer DeleteS3Bucket(t, region, s3BucketName)
+	PutS3BucketVersioning(t, region, s3BucketName)
+
+	AssertS3BucketVersioningExists(t, region, s3BucketName)
+}
+
 func TestEmptyS3Bucket(t *testing.T) {
 	t.Parallel()
 
