@@ -19,7 +19,7 @@
 
 variable "with_policy" {
   description = "If set to `true`, the bucket will be created with a bucket policy."
-  default = "false"
+  default = false
 }
 
 variable "tag_bucket_name" {
