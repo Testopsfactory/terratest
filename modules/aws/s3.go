@@ -15,9 +15,8 @@ import (
 // FindS3BucketWithTag finds the name of the S3 bucket in the given region with the given tag key=value.
 func FindS3BucketWithTag(t *testing.T, awsRegion string, key string, value string) string {
 	bucket, err := FindS3BucketWithTagE(t, awsRegion, key, value)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	return bucket
 }
 
@@ -58,9 +57,8 @@ func FindS3BucketWithTagE(t *testing.T, awsRegion string, key string, value stri
 // GetS3ObjectContents fetches the contents of the object in the given bucket with the given key and return it as a string.
 func GetS3ObjectContents(t *testing.T, awsRegion string, bucket string, key string) string {
 	contents, err := GetS3ObjectContentsE(t, awsRegion, bucket, key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	return contents
 }
 
@@ -95,9 +93,7 @@ func GetS3ObjectContentsE(t *testing.T, awsRegion string, bucket string, key str
 // CreateS3Bucket creates an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
 func CreateS3Bucket(t *testing.T, region string, name string) {
 	err := CreateS3BucketE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // CreateS3BucketE creates an S3 bucket in the given region with the given name. Note that S3 bucket names must be globally unique.
@@ -113,6 +109,30 @@ func CreateS3BucketE(t *testing.T, region string, name string) error {
 		Bucket: aws.String(name),
 	}
 	_, err = s3Client.CreateBucket(params)
+	return err
+}
+
+// PutS3BucketPolicy applies an IAM resource policy to a given S3 bucket to create it's bucket policy
+func PutS3BucketPolicy(t *testing.T, region string, bucketName string, policyJSONString string) {
+	err := PutS3BucketPolicyE(t, region, bucketName, policyJSONString)
+	require.NoError(t, err)
+}
+
+// PutS3BucketPolicyE applies an IAM resource policy to a given S3 bucket to create it's bucket policy
+func PutS3BucketPolicyE(t *testing.T, region string, bucketName string, policyJSONString string) error {
+	logger.Logf(t, "Applying bucket policy for bucket %s in %s", bucketName, region)
+
+	s3Client, err := NewS3ClientE(t, region)
+	if err != nil {
+		return err
+	}
+
+	input := &s3.PutBucketPolicyInput{
+		Bucket: aws.String(bucketName),
+		Policy: aws.String(policyJSONString),
+	}
+
+	_, err = s3Client.PutBucketPolicy(input)
 	return err
 }
 
@@ -146,9 +166,7 @@ func PutS3BucketVersioningE(t *testing.T, region string, bucketName string) erro
 // DeleteS3Bucket destroys the S3 bucket in the given region with the given name.
 func DeleteS3Bucket(t *testing.T, region string, name string) {
 	err := DeleteS3BucketE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DeleteS3BucketE destroys the S3 bucket in the given region with the given name.
@@ -170,9 +188,7 @@ func DeleteS3BucketE(t *testing.T, region string, name string) error {
 // EmptyS3BucketE removes the contents of an S3 bucket in the given region with the given name.
 func EmptyS3Bucket(t *testing.T, region string, name string) {
 	err := EmptyS3BucketE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // EmptyS3BucketE removes the contents of an S3 bucket in the given region with the given name.
@@ -261,12 +277,35 @@ func GetS3BucketVersioningE(t *testing.T, awsRegion string, bucket string) (stri
 	return aws.StringValue(res.Status), nil
 }
 
+// GetS3BucketPolicy fetches the given bucket's resource policy and returns it as a string
+func GetS3BucketPolicy(t *testing.T, awsRegion string, bucket string) string {
+	bucketPolicy, err := GetS3BucketPolicyE(t, awsRegion, bucket)
+	require.NoError(t, err)
+
+	return bucketPolicy
+}
+
+// GetS3BucketPolicyE fetches the given bucket's resource policy and returns it as a string
+func GetS3BucketPolicyE(t *testing.T, awsRegion string, bucket string) (string, error) {
+	s3Client, err := NewS3ClientE(t, awsRegion)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := s3Client.GetBucketPolicy(&s3.GetBucketPolicyInput{
+		Bucket: &bucket,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return aws.StringValue(res.Policy), nil
+}
+
 // AssertS3BucketExists checks if the given S3 bucket exists in the given region and fail the test if it does not.
 func AssertS3BucketExists(t *testing.T, region string, name string) {
 	err := AssertS3BucketExistsE(t, region, name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // AssertS3BucketExistsE checks if the given S3 bucket exists in the given region and return an error if it does not.
@@ -303,12 +342,31 @@ func AssertS3BucketVersioningExistsE(t *testing.T, region string, bucketName str
 	}
 }
 
+// AssertS3BucketPolicyExists checks if the given S3 bucket has a resource policy attached and returns an error if it does not
+func AssertS3BucketPolicyExists(t *testing.T, region string, bucketName string) {
+	err := AssertS3BucketPolicyExistsE(t, region, bucketName)
+	require.NoError(t, err)
+}
+
+// AssertS3BucketPolicyExistsE checks if the given S3 bucket has a resource policy attached and returns an error if it does not
+func AssertS3BucketPolicyExistsE(t *testing.T, region string, bucketName string) error {
+	policy, err := GetS3BucketPolicyE(t, region, bucketName)
+	if err != nil {
+		return err
+	}
+
+	if policy == "" {
+		return NewNoBucketPolicyError(bucketName, region, policy)
+	} else {
+		return nil
+	}
+}
+
 // NewS3Client creates an S3 client.
 func NewS3Client(t *testing.T, region string) *s3.S3 {
 	client, err := NewS3ClientE(t, region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	return client
 }
 
@@ -325,9 +383,7 @@ func NewS3ClientE(t *testing.T, region string) (*s3.S3, error) {
 // NewS3Uploader creates an S3 Uploader.
 func NewS3Uploader(t *testing.T, region string) *s3manager.Uploader {
 	uploader, err := NewS3UploaderE(t, region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return uploader
 }
 

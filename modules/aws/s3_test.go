@@ -127,6 +127,25 @@ func TestEmptyS3BucketVersioned(t *testing.T) {
 	testEmptyBucket(t, s3Client, region, s3BucketName)
 }
 
+func TestAssertS3BucketPolicyExists(t *testing.T) {
+	t.Parallel()
+
+	region := GetRandomStableRegion(t, nil, nil)
+
+	id := random.UniqueId()
+	logger.Logf(t, "Random values selected. Region = %s, Id = %s\n", region, id)
+
+	s3BucketName := "gruntwork-terratest-" + strings.ToLower(id)
+	exampleBucketPolicy := fmt.Sprintf(`{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":"s3:Get*","Resource":"arn:aws:s3:::%s/*","Condition":{"Bool":{"aws:SecureTransport":"false"}}}]}`, s3BucketName)
+
+	CreateS3Bucket(t, region, s3BucketName)
+	defer DeleteS3Bucket(t, region, s3BucketName)
+	PutS3BucketPolicy(t, region, s3BucketName, exampleBucketPolicy)
+
+	AssertS3BucketPolicyExists(t, region, s3BucketName)
+
+}
+
 func testEmptyBucket(t *testing.T, s3Client *s3.S3, region string, s3BucketName string) {
 	expectedFileCount := rand.Intn(10000)
 

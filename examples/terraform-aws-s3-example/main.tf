@@ -17,6 +17,12 @@ resource "aws_s3_bucket" "test_bucket" {
   }
 }
 
+resource "aws_s3_bucket_policy" "bucket_access_policy" {
+  count = "${var.with_policy == "true" ? 1 : 0}"
+  bucket = "${aws_s3_bucket.test_bucket.id}"
+  policy = "${data.aws_iam_policy_document.s3_bucket_policy.json}"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # LOCALS
 # Used to represent any data that requires complex expressions/interpolations
