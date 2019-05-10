@@ -70,10 +70,32 @@ type BucketVersioningNotEnabledError struct {
 
 func (err BucketVersioningNotEnabledError) Error() string {
 	return fmt.Sprintf(
-		"Versioning status for bucket #{err.s3BucketName} in the #{err.awsRegion} region is #{err.versioningStatus}",
+		"Versioning status for bucket %s in the %s region is %s",
+		err.s3BucketName,
+		err.awsRegion,
+		err.versioningStatus,
 	)
 }
 
 func NewBucketVersioningNotEnabledError(s3BucketName string, awsRegion string, versioningStatus string) BucketVersioningNotEnabledError {
 	return BucketVersioningNotEnabledError{s3BucketName: s3BucketName, awsRegion: awsRegion, versioningStatus: versioningStatus}
+}
+
+// NoBucketPolicyError is returned when an S3 bucket that should have a policy applied does not
+type NoBucketPolicyError struct {
+	s3BucketName string
+	awsRegion    string
+	bucketPolicy string
+}
+
+func (err NoBucketPolicyError) Error() string {
+	return fmt.Sprintf(
+		"The policy for bucket %s in the %s region does not have a policy attached.",
+		err.s3BucketName,
+		err.awsRegion,
+	)
+}
+
+func NewNoBucketPolicyError(s3BucketName string, awsRegion string, bucketPolicy string) NoBucketPolicyError {
+	return NoBucketPolicyError{s3BucketName: s3BucketName, awsRegion: awsRegion, bucketPolicy: bucketPolicy}
 }

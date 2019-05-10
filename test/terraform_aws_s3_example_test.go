@@ -33,6 +33,7 @@ func TestTerraformAwsS3Example(t *testing.T) {
 		Vars: map[string]interface{}{
 			"tag_bucket_name":        expectedName,
 			"tag_bucket_environment": expectedEnvironment,
+			"with_policy":            "true",
 		},
 
 		// Environment variables to set when running Terraform
@@ -54,4 +55,7 @@ func TestTerraformAwsS3Example(t *testing.T) {
 	actualStatus := aws.GetS3BucketVersioning(t, awsRegion, bucketID)
 	expectedStatus := "Enabled"
 	assert.Equal(t, expectedStatus, actualStatus)
+
+	// Verify that our Bucket has a policy attached
+	aws.AssertS3BucketPolicyExists(t, awsRegion, bucketID)
 }
