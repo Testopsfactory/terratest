@@ -12,6 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/packer"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // An example of how to test the Packer template in examples/packer-basic-example using Terratest.
@@ -66,7 +67,7 @@ func TestPackerBasicExampleWithVarFile(t *testing.T) {
 
 	// Create temporary packer variable file to store aws region
 	varFile, err := ioutil.TempFile("", "*.json")
-	assert.NoError(t, err, "Did not expect temp file creation to cause error")
+	require.NoError(t, err, "Did not expect temp file creation to cause error")
 
 	// Be sure to clean up temp file
 	defer os.Remove(varFile.Name())
@@ -74,7 +75,7 @@ func TestPackerBasicExampleWithVarFile(t *testing.T) {
 	// Write random generated aws region to temporary json file
 	varFileContent := []byte(fmt.Sprintf("{ \"aws_region\": \"%s\" }", awsRegion))
 	_, err = varFile.Write(varFileContent)
-	assert.NoError(t, err, "Did not expect writing to temp file %s to cause error", varFile.Name())
+	require.NoError(t, err, "Did not expect writing to temp file %s to cause error", varFile.Name())
 
 	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
