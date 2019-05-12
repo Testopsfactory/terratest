@@ -2,6 +2,8 @@ package test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -26,6 +28,61 @@ func TestPackerBasicExample(t *testing.T) {
 		// Variables to pass to our Packer build using -var options
 		Vars: map[string]string{
 			"aws_region": awsRegion,
+		},
+
+		// Only build the AWS AMI
+		Only: "amazon-ebs",
+	}
+
+	// Make sure the Packer build completes successfully
+	amiID := packer.BuildArtifact(t, packerOptions)
+
+	// Clean up the AMI after we're done
+	defer terratest_aws.DeleteAmiAndAllSnapshots(t, awsRegion, amiID)
+
+	// Check if AMI is shared/not shared with account
+	requestingAccount := terratest_aws.CanonicalAccountId
+	randomAccount := "123456789012" // Random Account
+	ec2Client := terratest_aws.NewEc2Client(t, awsRegion)
+	ShareAmi(t, amiID, requestingAccount, ec2Client)
+	accountsWithLaunchPermissions := terratest_aws.GetAccountsWithLaunchPermissionsForAmi(t, awsRegion, amiID)
+	assert.NotContains(t, accountsWithLaunchPermissions, randomAccount)
+	assert.Contains(t, accountsWithLaunchPermissions, requestingAccount)
+
+	// Check if AMI is public
+	MakeAmiPublic(t, amiID, ec2Client)
+	amiIsPublic := terratest_aws.GetAmiPubliclyAccessible(t, awsRegion, amiID)
+	assert.True(t, amiIsPublic)
+}
+
+// An example of how to test the Packer template in examples/packer-basic-example using Terratest
+// with the VarFiles option. This test generates a temporary *.json file containing the value
+// for the `aws_region` variable.
+func TestPackerBasicExampleWithVarFile(t *testing.T) {
+	t.Parallel()
+
+	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
+	awsRegion := terratest_aws.GetRandomStableRegion(t, nil, nil)
+
+	// Create temporary packer variable file to store aws region
+	varFile, err := ioutil.TempFile("", "*.json")
+	assert.NoError(t, err, "Did not expect temp file creation to cause error")
+
+	// Be sure to clean up temp file
+	defer os.Remove(varFile.Name())
+
+	// Write random generated aws region to temporary json file
+	varFileContent := []byte(fmt.Sprintf("{ \"aws_region\": \"%s\" }", awsRegion))
+	_, err = varFile.Write(varFileContent)
+	assert.NoError(t, err, "Did not expect writing to temp file %s to cause error", varFile.Name())
+
+	packerOptions := &packer.Options{
+		// The path to where the Packer template is located
+		Template: "../examples/packer-basic-example/build.json",
+
+		// Variable file to to pass to our Packer build using -var-file option
+		VarFiles: []string{
+			varFile.Name(),
 		},
 
 		// Only build the AWS AMI
