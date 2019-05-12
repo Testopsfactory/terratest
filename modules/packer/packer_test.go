@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExtractAmiIdFromOneLine(t *testing.T) {
@@ -159,10 +161,7 @@ func TestFormatPackerArgs(t *testing.T) {
 	for _, test := range tests {
 		args := formatPackerArgs(test.option)
 		if strings.Join(args, " ") != test.expected {
-			t.Errorf("Did not get expected formatted packer args. Expected: %s. Actual: %s",
-				test.expected,
-				args,
-			)
+			assert.Equal(t, strings.Join(args, " "), test.expected)
 		}
 	}
 }
