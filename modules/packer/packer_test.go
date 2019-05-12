@@ -160,8 +160,6 @@ func TestFormatPackerArgs(t *testing.T) {
 
 	for _, test := range tests {
 		args := formatPackerArgs(test.option)
-		if strings.Join(args, " ") != test.expected {
-			assert.Equal(t, strings.Join(args, " "), test.expected)
-		}
+		assert.Equal(t, strings.Join(args, " "), test.expected)
 	}
 }
