@@ -46,6 +46,43 @@ func ImportSSHKeyE(t *testing.T, user, key string) error {
 	return nil
 }
 
+// DeleteSSHKey will delete an SSH key attached to the provided user identity.
+// The `user` parameter should be the email address of the user.
+// The `key` parameter should be the public key of the SSH key that was uploaded.
+// This will fail the test if there is an error.
+func DeleteSSHKey(t *testing.T, user, key string) {
+	require.NoErrorf(t, DeleteSSHKeyE(t, user, key), "Could not delete SSH Key for user %s", user)
+}
+
+// DeleteSSHKeyE will delete an SSH key attached to the provided user identity.
+// The `user` parameter should be the email address of the user.
+// The `key` parameter should be the public key of the SSH key that was uploaded.
+func DeleteSSHKeyE(t *testing.T, user, key string) error {
+	logger.Logf(t, "Deleting SSH key for user %s", user)
+
+	ctx := context.Background()
+	service, err := NewOSLoginServiceE(t)
+	if err != nil {
+		return err
+	}
+
+	loginProfile := GetLoginProfile(t, user)
+
+	for _, v := range loginProfile.SshPublicKeys {
+		if key == v.Key {
+			path := fmt.Sprintf("users/%s/sshPublicKeys/%s", user, v.Fingerprint)
+			_, err = service.Users.SshPublicKeys.Delete(path).Context(ctx).Do()
+			break
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetLoginProfile will retrieve the login profile for a user's Google identity. The login profile is a combination of OS Login + gcloud SSH keys and POSIX
 // accounts the user will appear as. Generally, this will only be the OS Login key + account, but `gcloud compute ssh` could create temporary keys and profiles.
 // The `user` parameter should be the email address of the user.
