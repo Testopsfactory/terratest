@@ -17,6 +17,7 @@ import (
 type Options struct {
 	Template string            // The path to the Packer template
 	Vars     map[string]string // The custom vars to pass when running the build command
+	VarFiles []string          // Var file paths to pass Packer using -var-file option
 	Only     string            // If specified, only run the build of this name
 	Env      map[string]string // Custom environment variables to set when running Packer
 }
@@ -138,6 +139,10 @@ func formatPackerArgs(options *Options) []string {
 
 	for key, value := range options.Vars {
 		args = append(args, "-var", fmt.Sprintf("%s=%s", key, value))
+	}
+
+	for _, file_path := range options.VarFiles {
+		args = append(args, "-var-file", file_path)
 	}
 
 	if options.Only != "" {

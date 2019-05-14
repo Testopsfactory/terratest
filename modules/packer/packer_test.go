@@ -2,7 +2,10 @@ package packer
 
 import (
 	"fmt"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExtractAmiIdFromOneLine(t *testing.T) {
@@ -115,5 +118,48 @@ func TestExtractArtifactINoIdPresent(t *testing.T) {
 
 	if err == nil {
 		t.Error("Expected to get an error when extracting an Artifact ID from text with no Artifact ID in it, but got nil")
+	}
+}
+
+func TestFormatPackerArgs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		option   *Options
+		expected string
+	}{
+		{
+			option: &Options{
+				Template: "packer.json",
+			},
+			expected: "build -machine-readable packer.json",
+		},
+		{
+			option: &Options{
+				Template: "packer.json",
+				Vars: map[string]string{
+					"foo": "bar",
+				},
+				Only: "onlythis",
+			},
+			expected: "build -machine-readable -var foo=bar -only=onlythis packer.json",
+		},
+		{
+			option: &Options{
+				Template: "packer.json",
+				Vars: map[string]string{
+					"foo": "bar",
+				},
+				VarFiles: []string{
+					"foofile.json",
+				},
+			},
+			expected: "build -machine-readable -var foo=bar -var-file foofile.json packer.json",
+		},
+	}
+
+	for _, test := range tests {
+		args := formatPackerArgs(test.option)
+		assert.Equal(t, strings.Join(args, " "), test.expected)
 	}
 }
