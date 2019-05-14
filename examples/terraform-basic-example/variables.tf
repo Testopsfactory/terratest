@@ -11,7 +11,6 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
@@ -25,4 +24,16 @@ variable "example" {
 variable "example2" {
   description = "Example variable 2"
   default     = ""
+}
+
+variable "example_list" {
+  description = "An example variable that is a list."
+  type        = "list"
+  default     = []
+}
+
+variable "example_map" {
+  description = "An example variable that is a map."
+  type        = "map"
+  default     = {}
 }
