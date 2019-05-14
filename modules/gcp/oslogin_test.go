@@ -14,8 +14,8 @@ func TestImportSSHKeyOSLogin(t *testing.T) {
 
 	user := GetGoogleIdentityEmailEnvVar(t)
 
+	defer DeleteSSHKey(t, user, key)
 	ImportSSHKey(t, user, key)
-	DeleteSSHKey(t, user, key)
 }
 
 func TestGetLoginProfile(t *testing.T) {
@@ -33,8 +33,8 @@ func TestSetOSLoginKey(t *testing.T) {
 
 	user := GetGoogleIdentityEmailEnvVar(t)
 
-	ImportSSHKey(t, user, key)
 	defer DeleteSSHKey(t, user, key)
+	ImportSSHKey(t, user, key)
 	loginProfile := GetLoginProfile(t, user)
 
 	found := false
