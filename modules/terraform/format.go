@@ -57,7 +57,7 @@ func formatTerraformArgs(vars map[string]interface{}, prefix string) []string {
 // arbitrary Go types to an HCL string. Therefore, this method is a simple implementation that correctly handles
 // ints, booleans, lists, and maps. Everything else is forced into a string using Sprintf. Hopefully, this approach is
 // good enough for the type of variables we deal with in Terratest.
-func toHclString(value interface{}, isChild bool) string {
+func toHclString(value interface{}, isNested bool) string {
 	// Ideally, we'd use a type switch here to identify slices and maps, but we can't do that, because Go doesn't
 	// support generics, and the type switch only matches concrete types. So we could match []interface{}, but if
 	// a user passes in []string{}, that would NOT match (the same logic applies to maps). Therefore, we have to
@@ -68,7 +68,7 @@ func toHclString(value interface{}, isChild bool) string {
 	} else if m, isMap := tryToConvertToGenericMap(value); isMap {
 		return mapToHclString(m)
 	} else {
-		return primitiveToHclString(value, isChild)
+		return primitiveToHclString(value, isNested)
 	}
 }
 
@@ -140,7 +140,7 @@ func mapToHclString(m map[string]interface{}) string {
 
 // Convert a primitive, such as a bool, int, or string, to an HCL string. If this isn't a primitive, force its value
 // using Sprintf. See ToHclString for details.
-func primitiveToHclString(value interface{}, isChild bool) string {
+func primitiveToHclString(value interface{}, isNested bool) string {
 	switch v := value.(type) {
 
 	case bool:
@@ -150,8 +150,8 @@ func primitiveToHclString(value interface{}, isChild bool) string {
 		return "0"
 
 	case string:
-		// If string is a child of a larger data structure (e.g. list of string, map of string), ensure value is quoted
-		if isChild {
+		// If string is nested in a larger data structure (e.g. list of string, map of string), ensure value is quoted
+		if isNested {
 			return fmt.Sprintf("\"%v\"", v)
 		}
 
