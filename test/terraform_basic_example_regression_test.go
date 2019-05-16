@@ -61,6 +61,7 @@ func TestTerraformFormatNestedMultipleItems(t *testing.T) {
 	options.Vars["example_list"] = testList
 
 	defer terraform.Destroy(t, options)
+	terraform.InitAndApply(t, options)
 	outputMap := OutputJsonMap(t, options, "example_list")
 	actualExampleList := outputMap["value"]
 	AssertEqualJson(t, actualExampleList, testList)
@@ -79,6 +80,7 @@ func TestTerraformFormatNestedOneLevelMap(t *testing.T) {
 	options.Vars["example_map"] = testMap
 
 	defer terraform.Destroy(t, options)
+	terraform.InitAndApply(t, options)
 	outputMap := OutputJsonMap(t, options, "example_map")
 	actualExampleMap := outputMap["value"]
 	AssertEqualJson(t, actualExampleMap, testMap)
