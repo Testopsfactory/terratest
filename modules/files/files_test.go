@@ -116,6 +116,18 @@ func TestCopyTerraformFolderToTemp(t *testing.T) {
 	assertDirectoriesEqual(t, expectedDir, tmpDir)
 }
 
+func TestCopyTerragruntFolderToTemp(t *testing.T) {
+	t.Parallel()
+
+	originalDir := filepath.Join(copyFolderContentsFixtureRoot, "terragrunt-files")
+	expectedDir := filepath.Join(copyFolderContentsFixtureRoot, "no-state-files")
+
+	tmpDir, err := CopyTerragruntFolderToTemp(originalDir, t.Name())
+	assert.NoError(t, err)
+
+	assertDirectoriesEqual(t, expectedDir, tmpDir)
+}
+
 // Diffing two directories to ensure they have the exact same files, contents, etc and showing exactly what's different
 // takes a lot of code. Why waste time on that when this functionality is already nicely implemented in the Unix/Linux
 // "diff" command? We shell out to that command at test time.

@@ -1,7 +1,7 @@
 package terraform
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -31,8 +31,8 @@ func DestroyE(t *testing.T, options *Options) (string, error) {
 // DestroyAllE runs terragrunt destroy with the given options and return stdout.
 func DestroyAllE(t *testing.T, options *Options) (string, error) {
 	if options.TerraformBinary != "terragrunt" {
-		return "", errors.New("terragrunt must be set as TerraformBinary to use this method")
+		return "", fmt.Errorf("terragrunt must be set as TerraformBinary to use this method")
 	}
 
-	return RunTerraformCommandE(t, options, FormatArgs(options.Vars, "destroy-all", "-force", "-input=false", "-lock=false")...)
+	return RunTerraformCommandE(t, options, FormatArgs(options, "destroy-all", "-force", "-input=false", "-lock=false")...)
 }

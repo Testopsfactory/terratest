@@ -59,3 +59,48 @@ func TestPlanWithFailure(t *testing.T) {
 	_, getExitCodeErr := InitAndPlanE(t, options)
 	assert.Error(t, getExitCodeErr)
 }
+
+func TestPlanAllTgNoError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt-multi-plan", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+	}
+
+	getExitCode, errExitCode := PlanAllExitCodeTgE(t, options)
+	// GetExitCodeForRunCommandError was unable to determine the exit code correctly
+	if errExitCode != nil {
+		t.Fatal(errExitCode)
+	}
+
+	// Since PlanAllExitCodeTgE returns error codes, we want to compare against 1
+	assert.Equal(t, DefaultSuccessExitCode, getExitCode)
+
+}
+func TestPlanAllTgWithError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt-with-error", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+	}
+
+	getExitCode, errExitCode := PlanAllExitCodeTgE(t, options)
+	// GetExitCodeForRunCommandError was unable to determine the exit code correctly
+	if errExitCode != nil {
+		t.Fatal(errExitCode)
+	}
+
+	assert.Equal(t, DefaultErrorExitCode, getExitCode)
+}

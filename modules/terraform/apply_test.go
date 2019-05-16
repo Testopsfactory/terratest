@@ -66,3 +66,41 @@ func TestApplyWithErrorWithRetry(t *testing.T) {
 
 	assert.Contains(t, out, "This is the first run, exiting with an error")
 }
+func TestApplyAllTgNoError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+	}
+
+	out := ApplyAllTg(t, options)
+
+	assert.Contains(t, out, "Hello, World")
+}
+func TestApplyAllTgError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-with-error", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+		MaxRetries:      1,
+		RetryableTerraformErrors: map[string]string{
+			"This is the first run, exiting with an error": "Intentional failure in test fixture",
+		},
+	}
+
+	out := ApplyAllTg(t, options)
+
+	assert.Contains(t, out, "This is the first run, exiting with an error")
+}

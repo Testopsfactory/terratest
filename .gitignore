@@ -4,6 +4,7 @@ terraform.tfstate
 terraform.tfvars
 *.tfstate*
 .terragrunt
+.terragrunt-cache
 
 .idea
 *.iml

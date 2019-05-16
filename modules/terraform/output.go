@@ -2,7 +2,6 @@ package terraform
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -17,15 +16,6 @@ func Output(t *testing.T, options *Options, key string) string {
 	return out
 }
 
-// OutputAll calls terragrunt output for the given variable and return its value.
-func OutputAll(t *testing.T, options *Options, key string) string {
-	out, err := OutputAllE(t, options, key)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return out
-}
-
 // OutputE calls terraform output for the given variable and return its value.
 func OutputE(t *testing.T, options *Options, key string) (string, error) {
 	if options.TerraformBinary == "terragrunt" {
@@ -33,22 +23,6 @@ func OutputE(t *testing.T, options *Options, key string) (string, error) {
 	}
 
 	output, err := RunTerraformCommandE(t, options, "output", "-no-color", key)
-
-	if err != nil {
-		return "", err
-	}
-
-	return strings.TrimSpace(output), nil
-}
-
-// OutputAllE calls terragrunt output for the given variable and return its value.
-func OutputAllE(t *testing.T, options *Options, key string) (string, error) {
-	if options.TerraformBinary != "terragrunt" {
-		return "", errors.New("terragrunt must be set as TerraformBinary to use this method")
-	}
-
-	options.NoStderr = true
-	output, err := RunTerraformCommandE(t, options, "output-all", "-no-color", key)
 
 	if err != nil {
 		return "", err
@@ -161,14 +135,69 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 	return resultMap, nil
 }
 
-// OutputForKeysE calls terraform output for the given key list and returns values as a map.
+// OutputForKeys calls terraform output for the given key list and returns values as a map.
 // If keys not found in the output, fails the test
 func OutputForKeys(t *testing.T, options *Options, keys []string) map[string]interface{} {
 	out, err := OutputForKeysE(t, options, keys)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	return out
+}
+
+// OutputForKeysTgE calls terragrunt output-all for the given key list and returns values as a map.
+// If keys not found in the output, fails the test
+func OutputForKeysTgE(t *testing.T, options *Options, keys []string) (map[string]interface{}, error) {
+	out, err := RunTerraformCommandE(t, options, "output-all", "-no-color", "-json")
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse out json from terragrunt output
+	outList := strings.Split(out, "\n")
+	for index, line := range outList {
+		if line == "{" {
+			outList = outList[index:]
+			break
+		}
+	}
+
+	// Parse out strings in json block that are not json.
+	// Due to how readStdoutAndStderr threads, it's possible
+	// to get terragrunt output in the json
+	for index, line := range outList {
+		if strings.Contains(line, "[terragrunt]") {
+			outList = append(outList[:index], outList[index+1:]...)
+		}
+	}
+
+	// Rejoin list back together
+	out = strings.Join(outList, "\n")
+
+	outputMap := map[string]map[string]interface{}{}
+	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
+		return nil, err
+	}
+
+	if keys == nil {
+		outputKeys := make([]string, 0, len(outputMap))
+		for k := range outputMap {
+			outputKeys = append(outputKeys, k)
+		}
+		keys = outputKeys
+	}
+
+	resultMap := make(map[string]interface{})
+	for _, key := range keys {
+		value, containsValue := outputMap[key]["value"]
+		if !containsValue {
+			return nil, fmt.Errorf("output doesn't contain a value for the key %q", key)
+		}
+		resultMap[key] = value
+	}
+	return resultMap, nil
+
 }
 
 // OutputForKeysE calls terraform output for the given key list and returns values as a map.
@@ -213,8 +242,11 @@ func OutputAll(t *testing.T, options *Options) map[string]interface{} {
 	return out
 }
 
-// OutputListE calls terraform output and returns all the outputs as a map
+// OutputAllE calls terraform or terragrunt output and returns all the outputs as a map
 func OutputAllE(t *testing.T, options *Options) (map[string]interface{}, error) {
+	if options.TerraformBinary == "terragrunt" {
+		return OutputForKeysTgE(t, options, nil)
+	}
 	return OutputForKeysE(t, options, nil)
 }
 

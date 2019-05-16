@@ -8,7 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
-	"github.com/kamsz/terratest/modules/shell"
+	"github.com/gruntwork-io/terratest/modules/shell"
 )
 
 // GetCommonOptions extracts commons terraform options
@@ -60,7 +60,6 @@ func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalAr
 			Args:       args,
 			WorkingDir: options.TerraformDir,
 			Env:        options.EnvVars,
-			NoStderr:   options.NoStderr,
 		}
 
 		out, err := shell.RunCommandAndGetOutputE(t, cmd)
@@ -91,10 +90,19 @@ func GetExitCodeForTerraformCommand(t *testing.T, additionalOptions *Options, ar
 // GetExitCodeForTerraformCommandE runs terraform with the given arguments and options and returns exit code
 func GetExitCodeForTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (int, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
+	binary := additionalOptions.TerraformBinary
 
-	logger.Log(t, "Running terraform %v", args)
+	if binary == "" {
+		binary = "terraform"
+	}
+
+	if binary == "terragrunt" {
+		args = append(args, "--terragrunt-non-interactive")
+	}
+
+	logger.Log(t, "Running terragrunt with args", args)
 	cmd := shell.Command{
-		Command:    "terraform",
+		Command:    binary,
 		Args:       args,
 		WorkingDir: options.TerraformDir,
 		Env:        options.EnvVars,

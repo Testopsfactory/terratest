@@ -209,3 +209,66 @@ func TestOutputsForKeysError(t *testing.T) {
 
 	assert.Error(t, err)
 }
+
+func TestOutputAllTg(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-output-all", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+	}
+
+	InitAndApply(t, options)
+	out := OutputAll(t, options)
+
+	expectedLen := 4
+	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+
+	//String Value
+	expectedString := "Sun"
+	str, ok := out["our_star"].(string)
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
+	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
+
+	//List Value
+	expectedListLen := 3
+	outputInterfaceList, ok := out["stars"].([]interface{})
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
+	expectedListItem := "Betelgeuse"
+	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
+	assert.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
+		expectedListItem, outputInterfaceList[0].(string))
+
+	//Map Value
+	expectedMapLen := 4
+	outputInterfaceMap, ok := out["constellations"].(map[string]interface{})
+	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'constellations', expected map[string], got %T", out["constellations"]))
+	expectedMapItem := "Aldebaran"
+	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
+	assert.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
+		expectedMapItem, outputInterfaceMap["Taurus"].(string))
+}
+
+func TestOutputForKeyTgError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+	}
+
+	InitAndApply(t, options)
+	_, err = OutputForKeysE(t, options, []string{"random_key"})
+
+	assert.Error(t, err)
+}

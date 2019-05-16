@@ -49,6 +49,39 @@ func CopyTerraformFolderToTemp(folderPath string, tempFolderPrefix string) (stri
 	return destFolder, nil
 }
 
+// CopyTerragruntFolderToTemp creates a copy of the given folder and all its contents in a temp folder with a unique name and the given prefix.
+// Since terragrunt uses tfvars files to specify modules, they are copied to the temporary directory as well.
+// Terraform state files are excluded as well as .terragrunt-cache to avoid overwriting contents.
+func CopyTerragruntFolderToTemp(folderPath string, tempFolderPrefix string) (string, error) {
+	tmpDir, err := ioutil.TempDir("", tempFolderPrefix)
+	if err != nil {
+		return "", err
+	}
+
+	// Inside of the temp folder, we create a subfolder that preserves the name of the folder we're copying from.
+	absFolderPath, err := filepath.Abs(folderPath)
+	if err != nil {
+		return "", err
+	}
+	folderName := filepath.Base(absFolderPath)
+	destFolder := filepath.Join(tmpDir, folderName)
+
+	if err := os.MkdirAll(destFolder, 0777); err != nil {
+		return "", err
+	}
+
+	filter := func(path string) bool {
+		return !PathContainsHiddenFileOrFolder(path) && !PathContainsTerraformState(path)
+	}
+
+	if err := CopyFolderContentsWithFilter(folderPath, destFolder, filter); err != nil {
+		return "", err
+	}
+
+	return destFolder, nil
+
+}
+
 // CopyFolderContents copies all the files and folders within the given source folder to the destination folder.
 func CopyFolderContents(source string, destination string) error {
 	return CopyFolderContentsWithFilter(source, destination, func(path string) bool {
@@ -97,6 +130,12 @@ func CopyFolderContentsWithFilter(source string, destination string, filter func
 func PathContainsTerraformStateOrVars(path string) bool {
 	filename := filepath.Base(path)
 	return filename == "terraform.tfstate" || filename == "terraform.tfstate.backup" || filename == "terraform.tfvars"
+}
+
+// PathContainsTerraformState returns true if the path corresponds to a Terraform state file.
+func PathContainsTerraformState(path string) bool {
+	filename := filepath.Base(path)
+	return filename == "terraform.tfstate" || filename == "terraform.tfstate.backup"
 }
 
 // PathContainsHiddenFileOrFolder returns true if the given path contains a hidden file or folder.
