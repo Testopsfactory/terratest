@@ -3,12 +3,15 @@ package gcp
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"path"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/robmorgan/terratest/modules/retry"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
 )
@@ -581,10 +584,23 @@ func NewComputeService(t *testing.T) *compute.Service {
 func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	ctx := context.Background()
 
-	client, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get default client: %v", err)
-	}
+	// Retrieve the Google OAuth token using a retry loop as it can sometimes return an error.
+	// e.g: oauth2: cannot fetch token: Post https://oauth2.googleapis.com/token: net/http: TLS handshake timeout
+	// This is loosely based on https://github.com/kubernetes/kubernetes/blob/7e8de5422cb5ad76dd0c147cf4336220d282e34b/pkg/cloudprovider/providers/gce/gce.go#L831.
+	maxRetries := 6
+	timeBetweenRetries := 10 * time.Second
+	var client *http.Client
+	var err error
+	retry.DoWithRetry(t, "Attempting to request a Google OAuth2 token...", maxRetries, timeBetweenRetries, func() (string, error) {
+		client, err = google.DefaultClient(ctx, compute.CloudPlatformScope)
+		if err != nil {
+			return "", fmt.Errorf("Failed to get default client: %v", err)
+		}
+
+		return "", nil
+	})
+
+	logger.Log(t, "Got Google OAuth2 token, continuing.")
 
 	service, err := compute.New(client)
 	if err != nil {
