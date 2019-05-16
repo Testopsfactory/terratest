@@ -35,7 +35,7 @@
     "image_name": "terratest-packer-example-{{isotime | clean_image_name}}",
     "image_family": "terratest",
     "project_id": "{{user `gcp_project_id`}}",
-    "source_image_family": "ubuntu-1604-lts",
+    "source_image_family": "ubuntu-1804-lts",
     "zone": "{{user `gcp_zone`}}",
     "ssh_username": "ubuntu"
   }, {
