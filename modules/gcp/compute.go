@@ -590,6 +590,8 @@ func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	var err error
 	maxRetries := 6
 	timeBetweenRetries := 10 * time.Second
+	// We directly implement the retry logic here instead of using the `retry` module so that we aren't relying on
+	// modifying variables in an inner function.
 	for i := 0; i < maxRetries; i++ {
 		logger.Logf(t, "Attempting to request a Google OAuth2 token (%d/%d)...", i+1, maxRetries)
 		client, err = google.DefaultClient(ctx, compute.CloudPlatformScope)
