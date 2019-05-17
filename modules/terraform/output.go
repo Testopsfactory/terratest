@@ -18,10 +18,6 @@ func Output(t *testing.T, options *Options, key string) string {
 
 // OutputE calls terraform output for the given variable and return its value.
 func OutputE(t *testing.T, options *Options, key string) (string, error) {
-	if options.TerraformBinary == "terragrunt" {
-		options.NoStderr = true
-	}
-
 	output, err := RunTerraformCommandE(t, options, "output", "-no-color", key)
 
 	if err != nil {
@@ -137,60 +133,6 @@ func OutputForKeys(t *testing.T, options *Options, keys []string) map[string]int
 	return out
 }
 
-// TgOutputForKeysE calls terragrunt output-all for the given key list and returns values as a map.
-// If keys not found in the output, fails the test
-func TgOutputForKeysE(t *testing.T, options *Options, keys []string) (map[string]interface{}, error) {
-	out, err := RunTerraformCommandE(t, options, "output-all", "-no-color", "-json")
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse out json from terragrunt output
-	outList := strings.Split(out, "\n")
-	for index, line := range outList {
-		if line == "{" {
-			outList = outList[index:]
-			break
-		}
-	}
-
-	// Parse out strings in json block that are not json.
-	// Due to how readStdoutAndStderr threads, it's possible
-	// to get terragrunt output in the json
-	for index, line := range outList {
-		if strings.Contains(line, "[terragrunt]") {
-			outList = append(outList[:index], outList[index+1:]...)
-		}
-	}
-
-	// Rejoin list back together
-	out = strings.Join(outList, "\n")
-
-	outputMap := map[string]map[string]interface{}{}
-	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
-		return nil, err
-	}
-
-	if keys == nil {
-		outputKeys := make([]string, 0, len(outputMap))
-		for k := range outputMap {
-			outputKeys = append(outputKeys, k)
-		}
-		keys = outputKeys
-	}
-
-	resultMap := make(map[string]interface{})
-	for _, key := range keys {
-		value, containsValue := outputMap[key]["value"]
-		if !containsValue {
-			return nil, OutputKeyNotFound(string(key))
-		}
-		resultMap[key] = value
-	}
-	return resultMap, nil
-
-}
-
 // OutputForKeysE calls terraform output for the given key list and returns values as a map.
 // The returned values are of type interface{} and need to be type casted as necessary. Refer to output_test.go
 func OutputForKeysE(t *testing.T, options *Options, keys []string) (map[string]interface{}, error) {
@@ -231,10 +173,7 @@ func OutputAll(t *testing.T, options *Options) map[string]interface{} {
 	return out
 }
 
-// OutputAllE calls terraform or terragrunt output and returns all the outputs as a map
+// OutputAllE calls terraform and returns all the outputs as a map
 func OutputAllE(t *testing.T, options *Options) (map[string]interface{}, error) {
-	if options.TerraformBinary == "terragrunt" {
-		return TgOutputForKeysE(t, options, nil)
-	}
 	return OutputForKeysE(t, options, nil)
 }
