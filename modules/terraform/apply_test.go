@@ -69,7 +69,7 @@ func TestApplyWithErrorWithRetry(t *testing.T) {
 func TestApplyAllTgNoError(t *testing.T) {
 	t.Parallel()
 
-	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-no-error", t.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestApplyAllTgNoError(t *testing.T) {
 func TestApplyAllTgError(t *testing.T) {
 	t.Parallel()
 
-	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-with-error", t.Name())
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-with-error", t.Name())
 	if err != nil {
 		t.Fatal(err)
 	}

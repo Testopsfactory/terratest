@@ -213,7 +213,7 @@ func TestOutputsForKeysError(t *testing.T) {
 func TestOutputAllTg(t *testing.T) {
 	t.Parallel()
 
-	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-output-all", t.Name())
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-output-all", t.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,7 +257,7 @@ func TestOutputAllTg(t *testing.T) {
 func TestOutputForKeyTgError(t *testing.T) {
 	t.Parallel()
 
-	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-output-map", t.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
