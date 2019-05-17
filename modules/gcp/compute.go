@@ -591,7 +591,7 @@ func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	maxRetries := 6
 	timeBetweenRetries := 10 * time.Second
 	for i := 0; i < maxRetries; i++ {
-		logger.Log(t, "Attempting to request a Google OAuth2 token...")
+		logger.Logf(t, "Attempting to request a Google OAuth2 token (%d/%d)...", i+1, maxRetries)
 		client, err = google.DefaultClient(ctx, compute.CloudPlatformScope)
 		if err == nil {
 			logger.Log(t, "Got Google OAuth2 token, continuing.")
