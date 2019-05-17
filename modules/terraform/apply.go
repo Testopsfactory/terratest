@@ -1,8 +1,9 @@
 package terraform
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // InitAndApply runs terraform init and apply with the given options and return stdout/stderr from the apply command. Note that this
@@ -10,9 +11,7 @@ import (
 // apply.
 func InitAndApply(t *testing.T, options *Options) string {
 	out, err := InitAndApplyE(t, options)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -35,19 +34,15 @@ func InitAndApplyE(t *testing.T, options *Options) (string, error) {
 // assumes the caller is responsible for cleaning up any resources created by running apply.
 func Apply(t *testing.T, options *Options) string {
 	out, err := ApplyE(t, options)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
-// ApplyAllTg runs terragrunt apply with the given options and return stdout/stderr. Note that this method does NOT call destroy and
+// TgApplyAll runs terragrunt apply with the given options and return stdout/stderr. Note that this method does NOT call destroy and
 // assumes the caller is responsible for cleaning up any resources created by running apply.
-func ApplyAllTg(t *testing.T, options *Options) string {
-	out, err := ApplyAllTgE(t, options)
-	if err != nil {
-		t.Fatal(err)
-	}
+func TgApplyAll(t *testing.T, options *Options) string {
+	out, err := TgApplyAllE(t, options)
+	require.NoError(t, err)
 	return out
 }
 
@@ -57,11 +52,11 @@ func ApplyE(t *testing.T, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, FormatArgs(options, "apply", "-input=false", "-lock=false", "-auto-approve")...)
 }
 
-// ApplyAllTgE runs terragrunt apply-all with the given options and return stdout/stderr. Note that this method does NOT call destroy and
+// TgApplyAllE runs terragrunt apply-all with the given options and return stdout/stderr. Note that this method does NOT call destroy and
 // assumes the caller is responsible for cleaning up any resources created by running apply.
-func ApplyAllTgE(t *testing.T, options *Options) (string, error) {
+func TgApplyAllE(t *testing.T, options *Options) (string, error) {
 	if options.TerraformBinary != "terragrunt" {
-		return "", fmt.Errorf("terragrunt must be set as TerraformBinary to use this method")
+		return "", TgInvalidBinary(options.TerraformBinary)
 	}
 
 	return RunTerraformCommandE(t, options, FormatArgs(options, "apply-all", "-input=false", "-lock=false", "-auto-approve")...)

@@ -5,16 +5,14 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestOutputList(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-list", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -27,10 +25,10 @@ func TestOutputList(t *testing.T) {
 	expectedItem := "John Coltrane"
 	expectedArray := []string{"John Coltrane", "Tommy Flanagan", "Paul Chambers", "Art Taylor"}
 
-	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
-	assert.Contains(t, out, expectedItem, "Output should contain %q item", expectedItem)
-	assert.Equal(t, out[0], expectedItem, "First item should be %q, got %q", expectedItem, out[0])
-	assert.Equal(t, out, expectedArray, "Array %q should match %q", expectedArray, out)
+	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	require.Contains(t, out, expectedItem, "Output should contain %q item", expectedItem)
+	require.Equal(t, out[0], expectedItem, "First item should be %q, got %q", expectedItem, out[0])
+	require.Equal(t, out, expectedArray, "Array %q should match %q", expectedArray, out)
 }
 
 func TestOutputNotListError(t *testing.T) {
@@ -48,16 +46,14 @@ func TestOutputNotListError(t *testing.T) {
 	InitAndApply(t, options)
 	_, err = OutputListE(t, options, "not_a_list")
 
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestOutputMap(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -76,17 +72,15 @@ func TestOutputMap(t *testing.T) {
 		"drums":    "Martin Bulloch",
 	}
 
-	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
-	assert.Equal(t, expectedMap, out, "Map %q should match %q", expectedMap, out)
+	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	require.Equal(t, expectedMap, out, "Map %q should match %q", expectedMap, out)
 }
 
 func TestOutputNotMapError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -95,16 +89,14 @@ func TestOutputNotMapError(t *testing.T) {
 	InitAndApply(t, options)
 	_, err = OutputMapE(t, options, "not_a_map")
 
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestOutputsForKeys(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-all", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -116,36 +108,36 @@ func TestOutputsForKeys(t *testing.T) {
 	out := OutputForKeys(t, options, keys)
 
 	expectedLen := 3
-	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
 
 	//String value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
-	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
+	require.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
 	//List value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
 	expectedListItem := "Sirius"
-	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
-	assert.Equal(t, expectedListItem, outputInterfaceList[0].(string), "List Item %q should match %q",
+	require.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
+	require.Equal(t, expectedListItem, outputInterfaceList[0].(string), "List Item %q should match %q",
 		expectedListItem, outputInterfaceList[0].(string))
 
 	//Map value
 	outputInterfaceMap, ok := out["magnitudes"].(map[string]interface{})
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'magnitudes', expected map[string], got %T", out["magnitudes"]))
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'magnitudes', expected map[string], got %T", out["magnitudes"]))
 	expectedMapLen := 3
 	expectedMapItem := -1.46
-	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain %d items", expectedMapLen)
-	assert.Equal(t, expectedMapItem, outputInterfaceMap["Sirius"].(float64), "Map Item %q should match %q",
+	require.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain %d items", expectedMapLen)
+	require.Equal(t, expectedMapItem, outputInterfaceMap["Sirius"].(float64), "Map Item %q should match %q",
 		expectedMapItem, outputInterfaceMap["Sirius"].(float64))
 
 	//Key not in the parameter list
 	outputNotPresentMap, ok := out["constellations"].(map[string]interface{})
-	assert.False(t, ok)
-	assert.Nil(t, outputNotPresentMap)
+	require.False(t, ok)
+	require.Nil(t, outputNotPresentMap)
 }
 
 func TestOutputsAll(t *testing.T) {
@@ -164,30 +156,30 @@ func TestOutputsAll(t *testing.T) {
 	out := OutputAll(t, options)
 
 	expectedLen := 4
-	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
 
 	//String Value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
-	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
+	require.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
 	//List Value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
 	expectedListItem := "Betelgeuse"
-	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
-	assert.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
+	require.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
+	require.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
 		expectedListItem, outputInterfaceList[0].(string))
 
 	//Map Value
 	expectedMapLen := 4
 	outputInterfaceMap, ok := out["constellations"].(map[string]interface{})
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'constellations', expected map[string], got %T", out["constellations"]))
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'constellations', expected map[string], got %T", out["constellations"]))
 	expectedMapItem := "Aldebaran"
-	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
-	assert.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
+	require.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
+	require.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
 		expectedMapItem, outputInterfaceMap["Taurus"].(string))
 }
 
@@ -195,9 +187,7 @@ func TestOutputsForKeysError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-map", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -207,16 +197,14 @@ func TestOutputsForKeysError(t *testing.T) {
 
 	_, err = OutputForKeysE(t, options, []string{"random_key"})
 
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestOutputAllTg(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-output-all", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir:    testFolder,
@@ -227,30 +215,30 @@ func TestOutputAllTg(t *testing.T) {
 	out := OutputAll(t, options)
 
 	expectedLen := 4
-	assert.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
 
 	//String Value
 	expectedString := "Sun"
 	str, ok := out["our_star"].(string)
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
-	assert.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'our_star', expected string, got %T", out["our_star"]))
+	require.Equal(t, expectedString, str, "String %q should match %q", expectedString, str)
 
 	//List Value
 	expectedListLen := 3
 	outputInterfaceList, ok := out["stars"].([]interface{})
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'stars', expected [], got %T", out["stars"]))
 	expectedListItem := "Betelgeuse"
-	assert.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
-	assert.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
+	require.Len(t, outputInterfaceList, expectedListLen, "Output list should contain %d items", expectedListLen)
+	require.Equal(t, expectedListItem, outputInterfaceList[2].(string), "List item %q should match %q",
 		expectedListItem, outputInterfaceList[0].(string))
 
 	//Map Value
 	expectedMapLen := 4
 	outputInterfaceMap, ok := out["constellations"].(map[string]interface{})
-	assert.True(t, ok, fmt.Sprintf("Wrong data type for 'constellations', expected map[string], got %T", out["constellations"]))
+	require.True(t, ok, fmt.Sprintf("Wrong data type for 'constellations', expected map[string], got %T", out["constellations"]))
 	expectedMapItem := "Aldebaran"
-	assert.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
-	assert.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
+	require.Len(t, outputInterfaceMap, expectedMapLen, "Output map should contain 4 items")
+	require.Equal(t, expectedMapItem, outputInterfaceMap["Taurus"].(string), "Map item %q should match %q",
 		expectedMapItem, outputInterfaceMap["Taurus"].(string))
 }
 
@@ -258,9 +246,7 @@ func TestOutputForKeyTgError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-output-map", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir:    testFolder,
@@ -268,7 +254,7 @@ func TestOutputForKeyTgError(t *testing.T) {
 	}
 
 	InitAndApply(t, options)
-	_, err = OutputForKeysE(t, options, []string{"random_key"})
+	_, err = TgOutputForKeysE(t, options, []string{"random_key"})
 
-	assert.Error(t, err)
+	require.Error(t, err)
 }
