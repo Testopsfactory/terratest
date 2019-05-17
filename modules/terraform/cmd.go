@@ -87,7 +87,7 @@ func GetExitCodeForTerraformCommand(t *testing.T, additionalOptions *Options, ar
 func GetExitCodeForTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (int, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	logger.Log(t, "Running terragrunt with args", args)
+	logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
 	cmd := shell.Command{
 		Command:    options.TerraformBinary,
 		Args:       args,

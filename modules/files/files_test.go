@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,8 +20,8 @@ func TestFileExists(t *testing.T) {
 	currentFile, err := filepath.Abs(os.Args[0])
 	require.NoError(t, err)
 
-	require.True(t, FileExists(currentFile))
-	require.False(t, FileExists("/not/a/real/path"))
+	assert.True(t, FileExists(currentFile))
+	assert.False(t, FileExists("/not/a/real/path"))
 }
 
 func TestCopyFolderContents(t *testing.T) {
