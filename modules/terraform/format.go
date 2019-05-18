@@ -44,7 +44,7 @@ func formatTerraformArgs(vars map[string]interface{}, prefix string) []string {
 	var args []string
 
 	for key, value := range vars {
-		hclString := toHclString(value)
+		hclString := toHclString(value, false)
 		argValue := fmt.Sprintf("%s=%s", key, hclString)
 		args = append(args, prefix, argValue)
 	}
@@ -57,7 +57,7 @@ func formatTerraformArgs(vars map[string]interface{}, prefix string) []string {
 // arbitrary Go types to an HCL string. Therefore, this method is a simple implementation that correctly handles
 // ints, booleans, lists, and maps. Everything else is forced into a string using Sprintf. Hopefully, this approach is
 // good enough for the type of variables we deal with in Terratest.
-func toHclString(value interface{}) string {
+func toHclString(value interface{}, isNested bool) string {
 	// Ideally, we'd use a type switch here to identify slices and maps, but we can't do that, because Go doesn't
 	// support generics, and the type switch only matches concrete types. So we could match []interface{}, but if
 	// a user passes in []string{}, that would NOT match (the same logic applies to maps). Therefore, we have to
@@ -68,7 +68,7 @@ func toHclString(value interface{}) string {
 	} else if m, isMap := tryToConvertToGenericMap(value); isMap {
 		return mapToHclString(m)
 	} else {
-		return primitiveToHclString(value)
+		return primitiveToHclString(value, isNested)
 	}
 }
 
@@ -119,7 +119,7 @@ func sliceToHclString(slice []interface{}) string {
 	hclValues := []string{}
 
 	for _, value := range slice {
-		hclValue := toHclString(value)
+		hclValue := toHclString(value, true)
 		hclValues = append(hclValues, hclValue)
 	}
 
@@ -131,7 +131,7 @@ func mapToHclString(m map[string]interface{}) string {
 	keyValuePairs := []string{}
 
 	for key, value := range m {
-		keyValuePair := fmt.Sprintf("%s = %s", key, toHclString(value))
+		keyValuePair := fmt.Sprintf("%s = %s", key, toHclString(value, true))
 		keyValuePairs = append(keyValuePairs, keyValuePair)
 	}
 
@@ -140,21 +140,22 @@ func mapToHclString(m map[string]interface{}) string {
 
 // Convert a primitive, such as a bool, int, or string, to an HCL string. If this isn't a primitive, force its value
 // using Sprintf. See ToHclString for details.
-func primitiveToHclString(value interface{}) string {
+func primitiveToHclString(value interface{}, isNested bool) string {
 	switch v := value.(type) {
 
-	// Terraform treats a boolean true as a 1 and a boolean false as a 0. It's best to convert to these ints when
-	// passing booleans as -var parameters. Moreover, due to a Terraform bug
-	// (https://github.com/hashicorp/terraform/issues/7962), all ints must be wrapped as strings.
 	case bool:
 		if v {
 			return "1"
 		}
 		return "0"
 
-	// Note: due to a Terraform bug (https://github.com/hashicorp/terraform/issues/7962), we can't use proper HCL
-	// syntax for ints have to wrap them as strings by falling through to the default case
-	//case int: return strconv.Itoa(v)
+	case string:
+		// If string is nested in a larger data structure (e.g. list of string, map of string), ensure value is quoted
+		if isNested {
+			return fmt.Sprintf("\"%v\"", v)
+		}
+
+		return fmt.Sprintf("%v", v)
 
 	default:
 		return fmt.Sprintf("%v", v)
