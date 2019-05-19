@@ -26,7 +26,7 @@
   version = "v0.6.0"
 
 [[projects]]
-  digest = "1:2d250c122b8bac482f51d6a2fbed9252f0d7bdc53f5a324db00061cc5d7254d8"
+  digest = "1:980b777d47c47298a3bb4134f337ee6896fee8c85417878bec9cb1c78312ce26"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -64,6 +64,7 @@
     "service/acm",
     "service/autoscaling",
     "service/cloudwatchlogs",
+    "service/dynamodb",
     "service/ec2",
     "service/ecs",
     "service/iam",
@@ -822,6 +823,7 @@
     "github.com/aws/aws-sdk-go/service/acm",
     "github.com/aws/aws-sdk-go/service/autoscaling",
     "github.com/aws/aws-sdk-go/service/cloudwatchlogs",
+    "github.com/aws/aws-sdk-go/service/dynamodb",
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/ecs",
     "github.com/aws/aws-sdk-go/service/iam",
