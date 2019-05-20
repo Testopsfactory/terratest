@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// GetDynamoDbTableTags fetches resource tags of a specified dynamoDB table.
+// GetDynamoDbTableTags fetches resource tags of a specified dynamoDB table. This will fail the test if there are any errors
 func GetDynamoDbTableTags(t *testing.T, region string, tableName string) []*dynamodb.Tag {
 	tags, err := GetDynamoDbTableTagsE(t, region, tableName)
 	require.NoError(t, err)
@@ -27,14 +27,14 @@ func GetDynamoDbTableTagsE(t *testing.T, region string, tableName string) ([]*dy
 	return out.Tags, err
 }
 
-// GetDynamoDBTableTimeToLive fetches information about TTL configuration of a specified dynamoDB table.
+// GetDynamoDBTableTimeToLive fetches information about the TTL configuration of a specified dynamoDB table. This will fail the test if there are any errors.
 func GetDynamoDBTableTimeToLive(t *testing.T, region string, tableName string) *dynamodb.TimeToLiveDescription {
 	ttl, err := GetDynamoDBTableTimeToLiveE(t, region, tableName)
 	require.NoError(t, err)
 	return ttl
 }
 
-// GetDynamoDBTableTimeToLiveE fetches information about TTL configuration of a specified dynamoDB table.
+// GetDynamoDBTableTimeToLiveE fetches information about the TTL configuration of a specified dynamoDB table.
 func GetDynamoDBTableTimeToLiveE(t *testing.T, region string, tableName string) (*dynamodb.TimeToLiveDescription, error) {
 	out, err := NewDynamoDBClient(t, region).DescribeTimeToLive(&dynamodb.DescribeTimeToLiveInput{
 		TableName: aws.String(tableName),
@@ -45,14 +45,14 @@ func GetDynamoDBTableTimeToLiveE(t *testing.T, region string, tableName string) 
 	return out.TimeToLiveDescription, err
 }
 
-// GetDynamoDBTable fetches information about specified dynamoDB table.
+// GetDynamoDBTable fetches information about the specified dynamoDB table. This will fail the test if there are any errors.
 func GetDynamoDBTable(t *testing.T, region string, tableName string) *dynamodb.TableDescription {
 	table, err := GetDynamoDBTableE(t, region, tableName)
 	require.NoError(t, err)
 	return table
 }
 
-// GetDynamoDBTableE fetches information about specified dynamoDB table.
+// GetDynamoDBTableE fetches information about the specified dynamoDB table.
 func GetDynamoDBTableE(t *testing.T, region string, tableName string) (*dynamodb.TableDescription, error) {
 	out, err := NewDynamoDBClient(t, region).DescribeTable(&dynamodb.DescribeTableInput{
 		TableName: aws.String(tableName),
