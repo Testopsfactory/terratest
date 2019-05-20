@@ -19,6 +19,7 @@ func TestTerraformAwsDynamoDBExample(t *testing.T) {
 	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
 	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
 
+	// Set up expected values to be checked later
 	expectedTableName := fmt.Sprintf("terratest-aws-dynamodb-example-table-%s", random.UniqueId())
 	expectedKmsKeyArn := aws.GetCmkArn(t, awsRegion, "alias/aws/dynamodb")
 	expectedKeySchema := []*dynamodb.KeySchemaElement{
