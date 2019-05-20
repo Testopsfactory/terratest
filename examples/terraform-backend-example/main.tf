@@ -9,6 +9,10 @@ terraform {
   backend "s3" {}
 }
 
+variable "foo" {
+  description = "Some data to store as an output of this module"
+}
+
 output "foo" {
-  value = "bar"
+  value = "${var.foo}"
 }
