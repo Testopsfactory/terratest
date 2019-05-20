@@ -20,7 +20,7 @@ func FormatArgs(options *Options, args ...string) []string {
 // FormatTerraformVarsAsArgs formats the given variables as command-line args for Terraform (e.g. of the format
 // -var key=value).
 func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
-	return formatTerraformArgs(vars, "-var")
+	return formatTerraformArgs(vars, "-var", true)
 }
 
 // FormatTerraformArgs will format multiple args with the arg name (e.g. "-var-file", []string{"foo.tfvars", "bar.tfvars"})
@@ -34,19 +34,25 @@ func FormatTerraformArgs(argName string, args []string) []string {
 }
 
 // FormatTerraformBackendConfigAsArgs formats the given variables as backend config args for Terraform (e.g. of the
-// format -backend-config key=value).
+// format -backend-config=key=value).
 func FormatTerraformBackendConfigAsArgs(vars map[string]interface{}) []string {
-	return formatTerraformArgs(vars, "-backend-config")
+	return formatTerraformArgs(vars, "-backend-config", false)
 }
 
-// Format the given vars into 'Terraform' format, with each var being prefixed with the given prefix.
-func formatTerraformArgs(vars map[string]interface{}, prefix string) []string {
+// Format the given vars into 'Terraform' format, with each var being prefixed with the given prefix. If
+// useSpaceAsSeparator is true, a space will separate the prefix and each var (e.g., -var foo=bar). If
+// useSpaceAsSeparator is false, an equals will separate the prefix and each var (e.g., -backend-config=foo=bar).
+func formatTerraformArgs(vars map[string]interface{}, prefix string, useSpaceAsSeparator bool) []string {
 	var args []string
 
 	for key, value := range vars {
 		hclString := toHclString(value, false)
 		argValue := fmt.Sprintf("%s=%s", key, hclString)
-		args = append(args, prefix, argValue)
+		if useSpaceAsSeparator {
+			args = append(args, prefix, argValue)
+		} else {
+			args = append(args, fmt.Sprintf("%s=%s", prefix, argValue))
+		}
 	}
 
 	return args
