@@ -56,7 +56,7 @@ func TestPlanWithFailure(t *testing.T) {
 	require.Error(t, getExitCodeErr)
 }
 
-func TgTestPlanAllNoError(t *testing.T) {
+func TestTgPlanAllNoError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-multi-plan", t.Name())
@@ -75,9 +75,9 @@ func TgTestPlanAllNoError(t *testing.T) {
 
 	// Since PlanAllExitCodeTgE returns error codes, we want to compare against 1
 	require.Equal(t, DefaultSuccessExitCode, getExitCode)
-
 }
-func TgTestPlanAllWithError(t *testing.T) {
+
+func TestTgPlanAllWithError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-with-plan-error", t.Name())

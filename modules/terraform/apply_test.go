@@ -60,7 +60,7 @@ func TestApplyWithErrorWithRetry(t *testing.T) {
 
 	require.Contains(t, out, "This is the first run, exiting with an error")
 }
-func TgTestApplyAllTgError(t *testing.T) {
+func TestTgApplyAllTgError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-no-error", t.Name())
@@ -76,7 +76,7 @@ func TgTestApplyAllTgError(t *testing.T) {
 	require.Contains(t, out, "Hello, World")
 }
 
-func TgTestApplyAllError(t *testing.T) {
+func TestTgApplyAllError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-with-error", t.Name())
