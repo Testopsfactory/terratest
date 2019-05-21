@@ -175,17 +175,36 @@ func GetEc2InstanceIdsByTag(t *testing.T, region string, tagName string, tagValu
 
 // GetEc2InstanceIdsByTagE returns all the IDs of EC2 instances in the given region with the given tag.
 func GetEc2InstanceIdsByTagE(t *testing.T, region string, tagName string, tagValue string) ([]string, error) {
+	ec2Filters := map[string][]string{
+		fmt.Sprintf("tag:%s", tagName): {tagValue},
+	}
+	return GetEc2InstanceIdsByFiltersE(t, region, ec2Filters)
+}
+
+// GetEc2InstanceIdsByFilters returns all the IDs of EC2 instances in the given region which match to EC2 filter list
+// as per https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#DescribeInstancesInput.
+func GetEc2InstanceIdsByFilters(t *testing.T, region string, ec2Filters map[string][]string) []string {
+	out, err := GetEc2InstanceIdsByFiltersE(t, region, ec2Filters)
+	require.NoError(t, err)
+	return out
+}
+
+// GetEc2InstanceIdsByFilters returns all the IDs of EC2 instances in the given region which match to EC2 filter list
+// as per https://docs.aws.amazon.com/sdk-for-go/api/service/ec2/#DescribeInstancesInput.
+func GetEc2InstanceIdsByFiltersE(t *testing.T, region string, ec2Filters map[string][]string) ([]string, error) {
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}
 
-	tagFilter := &ec2.Filter{
-		Name:   aws.String(fmt.Sprintf("tag:%s", tagName)),
-		Values: []*string{aws.String(tagValue)},
+	ec2FilterList := []*ec2.Filter{}
+
+	for name, values := range ec2Filters {
+		ec2FilterList = append(ec2FilterList, &ec2.Filter{Name: aws.String(name), Values: aws.StringSlice(values)})
 	}
+
 	// TODO: implement pagination for cases that extend beyond limit (1000 instances)
-	output, err := client.DescribeInstances(&ec2.DescribeInstancesInput{Filters: []*ec2.Filter{tagFilter}})
+	output, err := client.DescribeInstances(&ec2.DescribeInstancesInput{Filters: ec2FilterList})
 	if err != nil {
 		return nil, err
 	}
