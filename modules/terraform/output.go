@@ -3,6 +3,7 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -68,11 +69,33 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 		return nil, err
 	}
 
-	outputMap := map[string]interface{}{}
-	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
+	var output interface{}
+	if err := json.Unmarshal([]byte(out), &output); err != nil {
 		return nil, err
 	}
 
+	if outputMap, isMap := output.(map[string]interface{}); isMap {
+		return parseListOutputTerraform11OrOlder(outputMap, key)
+	} else if outputList, isList := output.([]interface{}); isList {
+		return parseListOutputTerraform12OrNewer(outputList, key)
+	}
+
+	return nil, UnexpectedOutputType{Key: key, ExpectedType: "map or list", ActualType: reflect.TypeOf(output).String()}
+}
+
+// Parse a list output in the format it is returned by Terraform 0.12 and newer versions
+func parseListOutputTerraform12OrNewer(outputList []interface{}, key string) ([]string, error) {
+	list := []string{}
+
+	for _, item := range outputList {
+		list = append(list, fmt.Sprintf("%v", item))
+	}
+
+	return list, nil
+}
+
+// Parse a list output in the format it is returned by Terraform 0.11 and older versions
+func parseListOutputTerraform11OrOlder(outputMap map[string]interface{}, key string) ([]string, error) {
 	value, containsValue := outputMap["value"]
 	if !containsValue {
 		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
@@ -114,18 +137,21 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 		return nil, err
 	}
 
+	// Terraform 0.11 or older return an object where the value we want is under the key "value". Terraform 0.12 and
+	// older return the value we want directly.
 	value, containsValue := outputMap["value"]
-	if !containsValue {
-		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
-	}
+	if containsValue {
+		// Handle Terraform 0.11 and older
+		valueMap, ok := value.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("Output value %q is not a map", value)
+		}
 
-	valueMap, ok := value.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("Output value %q is not a map", value)
+		outputMap = valueMap
 	}
 
 	resultMap := make(map[string]string)
-	for k, v := range valueMap {
+	for k, v := range outputMap {
 		resultMap[k] = fmt.Sprintf("%v", v)
 	}
 	return resultMap, nil
@@ -193,4 +219,14 @@ type EmptyOutput string
 
 func (outputName EmptyOutput) Error() string {
 	return fmt.Sprintf("Required output %s was empty", string(outputName))
+}
+
+type UnexpectedOutputType struct {
+	Key          string
+	ExpectedType string
+	ActualType   string
+}
+
+func (err UnexpectedOutputType) Error() string {
+	return fmt.Sprintf("Expected output '%s' to be of type '%s' but got '%s'", err.Key, err.ExpectedType, err.ActualType)
 }
