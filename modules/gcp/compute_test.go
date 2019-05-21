@@ -162,14 +162,14 @@ func createComputeInstance(t *testing.T, projectID string, zone string, name str
 
 	// Per GCP docs (https://cloud.google.com/compute/docs/reference/rest/v1/instances/setMachineType), the MachineType
 	// is actually specified as a partial URL
-	machineTypeUrl := fmt.Sprintf("zones/%s/machineTypes/%s", zone, machineType)
-	sourceImageUrl := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/images/%s", sourceImageFamilyProjectName, sourceImageFamilyName)
+	machineTypeURL := fmt.Sprintf("zones/%s/machineTypes/%s", zone, machineType)
+	sourceImageURL := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/images/%s", sourceImageFamilyProjectName, sourceImageFamilyName)
 
 	// Based on the properties listed as required at https://cloud.google.com/compute/docs/reference/rest/v1/instances/insert
 	// plus a somewhat painful cycle of add-next-property-try-fix-error-message-repeat.
 	instanceConfig := &compute.Instance{
 		Name:        name,
-		MachineType: machineTypeUrl,
+		MachineType: machineTypeURL,
 		NetworkInterfaces: []*compute.NetworkInterface{
 			&compute.NetworkInterface{
 				AccessConfigs: []*compute.AccessConfig{
@@ -179,9 +179,10 @@ func createComputeInstance(t *testing.T, projectID string, zone string, name str
 		},
 		Disks: []*compute.AttachedDisk{
 			&compute.AttachedDisk{
-				Boot: true,
+				AutoDelete: true,
+				Boot:       true,
 				InitializeParams: &compute.AttachedDiskInitializeParams{
-					SourceImage: sourceImageUrl,
+					SourceImage: sourceImageURL,
 				},
 			},
 		},
@@ -200,7 +201,7 @@ func createComputeInstance(t *testing.T, projectID string, zone string, name str
 	}
 }
 
-// Helper function that destroys the given Compute Instance
+// Helper function that destroys the given Compute Instance and all of its attached disks.
 func deleteComputeInstance(t *testing.T, projectID string, zone string, name string) {
 	t.Logf("Deleting Compute Instance %s\n", name)
 
