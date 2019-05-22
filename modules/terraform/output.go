@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Output calls terraform output for the given variable and return its value.
 func Output(t *testing.T, options *Options, key string) string {
 	out, err := OutputE(t, options, key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -30,9 +30,7 @@ func OutputE(t *testing.T, options *Options, key string) (string, error) {
 // OutputRequired calls terraform output for the given variable and return its value. If the value is empty, fail the test.
 func OutputRequired(t *testing.T, options *Options, key string) string {
 	out, err := OutputRequiredE(t, options, key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -54,9 +52,7 @@ func OutputRequiredE(t *testing.T, options *Options, key string) (string, error)
 // If the output value is not a list type, then it fails the test.
 func OutputList(t *testing.T, options *Options, key string) []string {
 	out, err := OutputListE(t, options, key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -75,7 +71,7 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 
 	value, containsValue := outputMap["value"]
 	if !containsValue {
-		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
+		return nil, OutputKeyNotFound(key)
 	}
 
 	list := []string{}
@@ -85,7 +81,7 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 			list = append(list, fmt.Sprintf("%v", item))
 		}
 	default:
-		return nil, fmt.Errorf("Output value %q is not a list", value)
+		return nil, OutputValueNotList{Value: value}
 	}
 
 	return list, nil
@@ -95,9 +91,7 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 // If the output value is not a map type, then it fails the test.
 func OutputMap(t *testing.T, options *Options, key string) map[string]string {
 	out, err := OutputMapE(t, options, key)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -116,12 +110,12 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 
 	value, containsValue := outputMap["value"]
 	if !containsValue {
-		return nil, fmt.Errorf("Output doesn't contain a value for the key %q", key)
+		return nil, OutputKeyNotFound(string(key))
 	}
 
 	valueMap, ok := value.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Output value %q is not a map", value)
+		return nil, OutputValueNotMap{Value: value}
 	}
 
 	resultMap := make(map[string]string)
@@ -131,13 +125,11 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 	return resultMap, nil
 }
 
-// OutputForKeysE calls terraform output for the given key list and returns values as a map.
+// OutputForKeys calls terraform output for the given key list and returns values as a map.
 // If keys not found in the output, fails the test
 func OutputForKeys(t *testing.T, options *Options, keys []string) map[string]interface{} {
 	out, err := OutputForKeysE(t, options, keys)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -166,7 +158,7 @@ func OutputForKeysE(t *testing.T, options *Options, keys []string) (map[string]i
 	for _, key := range keys {
 		value, containsValue := outputMap[key]["value"]
 		if !containsValue {
-			return nil, fmt.Errorf("output doesn't contain a value for the key %q", key)
+			return nil, OutputKeyNotFound(string(key))
 		}
 		resultMap[key] = value
 	}
@@ -177,20 +169,11 @@ func OutputForKeysE(t *testing.T, options *Options, keys []string) (map[string]i
 // If there is error fetching the output, fails the test
 func OutputAll(t *testing.T, options *Options) map[string]interface{} {
 	out, err := OutputAllE(t, options)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
-// OutputListE calls terraform output and returns all the outputs as a map
+// OutputAllE calls terraform and returns all the outputs as a map
 func OutputAllE(t *testing.T, options *Options) (map[string]interface{}, error) {
 	return OutputForKeysE(t, options, nil)
-}
-
-// EmptyOutput is an error that occurs when an output is empty.
-type EmptyOutput string
-
-func (outputName EmptyOutput) Error() string {
-	return fmt.Sprintf("Required output %s was empty", string(outputName))
 }

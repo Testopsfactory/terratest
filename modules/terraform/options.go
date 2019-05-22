@@ -8,6 +8,7 @@ import (
 
 // Options for running Terraform commands
 type Options struct {
+	TerraformBinary          string                 // Name of the binary that will be used
 	TerraformDir             string                 // The path to the folder where the Terraform code is defined.
 	Vars                     map[string]interface{} // The vars to pass to Terraform commands using the -var option.
 	VarFiles                 []string               // The var file paths to pass to Terraform commands using -var-file option.
@@ -20,4 +21,5 @@ type Options struct {
 	Upgrade                  bool                   // Whether the -upgrade flag of the terraform init command should be set to true or not
 	NoColor                  bool                   // Whether the -no-color flag will be set for any Terraform command or not
 	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
+	NoStderr                 bool                   // Disable stderr redirection
 }

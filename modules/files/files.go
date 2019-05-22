@@ -21,6 +21,37 @@ func FileExists(path string) bool {
 // terraform.tfvars files are not copied to this temp folder, as you typically don't want them interfering with your
 // tests.
 func CopyTerraformFolderToTemp(folderPath string, tempFolderPrefix string) (string, error) {
+	filter := func(path string) bool {
+		return !PathContainsHiddenFileOrFolder(path) && !PathContainsTerraformStateOrVars(path)
+	}
+
+	destFolder, err := CopyFolderToTemp(folderPath, tempFolderPrefix, filter)
+	if err != nil {
+		return "", err
+	}
+
+	return destFolder, nil
+}
+
+// CopyTerragruntFolderToTemp creates a copy of the given folder and all its contents in a temp folder with a unique name and the given prefix.
+// Since terragrunt uses tfvars files to specify modules, they are copied to the temporary directory as well.
+// Terraform state files are excluded as well as .terragrunt-cache to avoid overwriting contents.
+func CopyTerragruntFolderToTemp(folderPath string, tempFolderPrefix string) (string, error) {
+	filter := func(path string) bool {
+		return !PathContainsHiddenFileOrFolder(path) && !PathContainsTerraformState(path)
+	}
+
+	destFolder, err := CopyFolderToTemp(folderPath, tempFolderPrefix, filter)
+	if err != nil {
+		return "", err
+	}
+
+	return destFolder, nil
+}
+
+// CopyFolderToTemp creates a copy of the given folder and all its filtered contents in a temp folder
+// with a unique name and the given prefix.
+func CopyFolderToTemp(folderPath string, tempFolderPrefix string, filter func(path string) bool) (string, error) {
 	tmpDir, err := ioutil.TempDir("", tempFolderPrefix)
 	if err != nil {
 		return "", err
@@ -36,10 +67,6 @@ func CopyTerraformFolderToTemp(folderPath string, tempFolderPrefix string) (stri
 
 	if err := os.MkdirAll(destFolder, 0777); err != nil {
 		return "", err
-	}
-
-	filter := func(path string) bool {
-		return !PathContainsHiddenFileOrFolder(path) && !PathContainsTerraformStateOrVars(path)
 	}
 
 	if err := CopyFolderContentsWithFilter(folderPath, destFolder, filter); err != nil {
@@ -97,6 +124,12 @@ func CopyFolderContentsWithFilter(source string, destination string, filter func
 func PathContainsTerraformStateOrVars(path string) bool {
 	filename := filepath.Base(path)
 	return filename == "terraform.tfstate" || filename == "terraform.tfstate.backup" || filename == "terraform.tfvars"
+}
+
+// PathContainsTerraformState returns true if the path corresponds to a Terraform state file.
+func PathContainsTerraformState(path string) bool {
+	filename := filepath.Base(path)
+	return filename == "terraform.tfstate" || filename == "terraform.tfstate.backup"
 }
 
 // PathContainsHiddenFileOrFolder returns true if the given path contains a hidden file or folder.

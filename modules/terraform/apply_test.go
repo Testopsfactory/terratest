@@ -4,16 +4,14 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestApplyNoError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -22,19 +20,17 @@ func TestApplyNoError(t *testing.T) {
 
 	out := InitAndApply(t, options)
 
-	assert.Contains(t, out, "Hello, World")
+	require.Contains(t, out, "Hello, World")
 
 	// Check that NoColor correctly doesn't output the colour escape codes which look like [0m,[1m or [32m
-	assert.NotRegexp(t, `\[\d*m`, out, "Output should not contain color escape codes")
+	require.NotRegexp(t, `\[\d*m`, out, "Output should not contain color escape codes")
 }
 
 func TestApplyWithErrorNoRetry(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-with-error", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -42,17 +38,15 @@ func TestApplyWithErrorNoRetry(t *testing.T) {
 
 	out, err := InitAndApplyE(t, options)
 
-	assert.Error(t, err)
-	assert.Contains(t, out, "This is the first run, exiting with an error")
+	require.Error(t, err)
+	require.Contains(t, out, "This is the first run, exiting with an error")
 }
 
 func TestApplyWithErrorWithRetry(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-with-error", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	options := &Options{
 		TerraformDir: testFolder,
@@ -64,5 +58,40 @@ func TestApplyWithErrorWithRetry(t *testing.T) {
 
 	out := InitAndApply(t, options)
 
-	assert.Contains(t, out, "This is the first run, exiting with an error")
+	require.Contains(t, out, "This is the first run, exiting with an error")
+}
+func TestTgApplyAllTgError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-no-error", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+	}
+
+	out := TgApplyAll(t, options)
+
+	require.Contains(t, out, "Hello, World")
+}
+
+func TestTgApplyAllError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-with-error", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir:    testFolder,
+		TerraformBinary: "terragrunt",
+		MaxRetries:      1,
+		RetryableTerraformErrors: map[string]string{
+			"This is the first run, exiting with an error": "Intentional failure in test fixture",
+		},
+	}
+
+	out := TgApplyAll(t, options)
+
+	require.Contains(t, out, "This is the first run, exiting with an error")
 }
