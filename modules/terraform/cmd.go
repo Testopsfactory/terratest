@@ -2,7 +2,6 @@ package terraform
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/collections"
@@ -49,28 +48,16 @@ func RunTerraformCommand(t *testing.T, additionalOptions *Options, args ...strin
 func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	description := fmt.Sprintf("Running %s %v", options.TerraformBinary, args)
-	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
-		cmd := shell.Command{
-			Command:    options.TerraformBinary,
-			Args:       args,
-			WorkingDir: options.TerraformDir,
-			Env:        options.EnvVars,
-		}
+	cmd := shell.Command{
+		Command:    options.TerraformBinary,
+		Args:       args,
+		WorkingDir: options.TerraformDir,
+		Env:        options.EnvVars,
+	}
 
-		out, err := shell.RunCommandAndGetOutputE(t, cmd)
-		if err == nil {
-			return out, nil
-		}
-
-		for errorText, errorMessage := range options.RetryableTerraformErrors {
-			if strings.Contains(out, errorText) {
-				logger.Logf(t, "%s failed with the error '%s' but this error was expected and warrants a retry. Further details: %s\n", options.TerraformBinary, errorText, errorMessage)
-				return out, err
-			}
-		}
-
-		return out, retry.FatalError{Underlying: err}
+	description := fmt.Sprintf("%s %v", options.TerraformBinary, args)
+	return retry.DoWithRetryableErrorsE(t, description, options.RetryableTerraformErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+		return shell.RunCommandAndGetOutputE(t, cmd)
 	})
 }
 
