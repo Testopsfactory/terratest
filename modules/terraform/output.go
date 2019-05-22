@@ -140,7 +140,9 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 	// Terraform 0.11 or older return an object where the value we want is under the key "value". Terraform 0.12 and
 	// older return the value we want directly.
 	value, containsValue := outputMap["value"]
-	if containsValue {
+	_, containsSensitive := outputMap["sensitive"]
+	_, containsType := outputMap["type"]
+	if containsValue && containsSensitive && containsType {
 		// Handle Terraform 0.11 and older
 		valueMap, ok := value.(map[string]interface{})
 		if !ok {
