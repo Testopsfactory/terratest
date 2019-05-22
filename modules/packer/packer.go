@@ -4,11 +4,12 @@ package packer
 import (
 	"errors"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/retry"
 	"regexp"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/gruntwork-io/terratest/modules/retry"
 
 	"github.com/gruntwork-io/terratest/modules/customerrors"
 	"github.com/gruntwork-io/terratest/modules/logger"
