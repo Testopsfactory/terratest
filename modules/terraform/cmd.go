@@ -16,6 +16,15 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	if options.NoColor && !collections.ListContains(args, "-no-color") {
 		args = append(args, "-no-color")
 	}
+
+	if options.TerraformBinary == "" {
+		options.TerraformBinary = "terraform"
+	}
+
+	if options.TerraformBinary == "terragrunt" {
+		args = append(args, "--terragrunt-non-interactive")
+	}
+
 	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
 	if options.SshAgent != nil {
 		// Initialize EnvVars, if it hasn't been set yet
@@ -40,10 +49,10 @@ func RunTerraformCommand(t *testing.T, additionalOptions *Options, args ...strin
 func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	description := fmt.Sprintf("Running terraform %v", args)
+	description := fmt.Sprintf("Running %s %v", options.TerraformBinary, args)
 	return retry.DoWithRetryE(t, description, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		cmd := shell.Command{
-			Command:    "terraform",
+			Command:    options.TerraformBinary,
 			Args:       args,
 			WorkingDir: options.TerraformDir,
 			Env:        options.EnvVars,
@@ -56,7 +65,7 @@ func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalAr
 
 		for errorText, errorMessage := range options.RetryableTerraformErrors {
 			if strings.Contains(out, errorText) {
-				logger.Logf(t, "terraform failed with the error '%s' but this error was expected and warrants a retry. Further details: %s\n", errorText, errorMessage)
+				logger.Logf(t, "%s failed with the error '%s' but this error was expected and warrants a retry. Further details: %s\n", options.TerraformBinary, errorText, errorMessage)
 				return out, err
 			}
 		}
@@ -78,9 +87,9 @@ func GetExitCodeForTerraformCommand(t *testing.T, additionalOptions *Options, ar
 func GetExitCodeForTerraformCommandE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (int, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	logger.Log(t, "Running terraform %v", args)
+	logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
 	cmd := shell.Command{
-		Command:    "terraform",
+		Command:    options.TerraformBinary,
 		Args:       args,
 		WorkingDir: options.TerraformDir,
 		Env:        options.EnvVars,
