@@ -23,10 +23,15 @@ func TestPackerDockerExampleLocal(t *testing.T) {
 
 		// Only build the Docker image for local testing
 		Only: "ubuntu-docker",
+
+		// Configure retries for intermittent errors
+		RetryableErrors:    DefaultRetryablePackerErrors,
+		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+		MaxRetries:         DefaultMaxPackerRetries,
 	}
 
 	// Build the Docker image using Packer
-	packer.BuildAmi(t, packerOptions)
+	packer.BuildArtifact(t, packerOptions)
 
 	serverPort := 8080
 	expectedServerText := fmt.Sprintf("Hello, %s!", random.UniqueId())

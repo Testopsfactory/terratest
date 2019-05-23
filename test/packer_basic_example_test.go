@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -14,6 +15,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// Occasionally, a Packer build may fail due to intermittent issues (e.g., brief network outage or EC2 issue). We try
+// to make our tests resilient to that by specifying those known common errors here and telling our builds to retry if
+// they hit those errors.
+var DefaultRetryablePackerErrors = map[string]string{
+	"Script disconnected unexpectedly": "Occasionally, Packer seems to lose connectivity to AWS, perhaps due to a brief network outage",
+}
+var DefaultTimeBetweenPackerRetries = 15 * time.Second
+
+const DefaultMaxPackerRetries = 3
 
 // An example of how to test the Packer template in examples/packer-basic-example using Terratest.
 func TestPackerBasicExample(t *testing.T) {
@@ -33,6 +44,11 @@ func TestPackerBasicExample(t *testing.T) {
 
 		// Only build the AWS AMI
 		Only: "amazon-ebs",
+
+		// Configure retries for intermittent errors
+		RetryableErrors:    DefaultRetryablePackerErrors,
+		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+		MaxRetries:         DefaultMaxPackerRetries,
 	}
 
 	// Make sure the Packer build completes successfully
@@ -88,6 +104,11 @@ func TestPackerBasicExampleWithVarFile(t *testing.T) {
 
 		// Only build the AWS AMI
 		Only: "amazon-ebs",
+
+		// Configure retries for intermittent errors
+		RetryableErrors:    DefaultRetryablePackerErrors,
+		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+		MaxRetries:         DefaultMaxPackerRetries,
 	}
 
 	// Make sure the Packer build completes successfully
@@ -134,6 +155,11 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 
 			// Only build the AWS AMI
 			Only: "amazon-ebs",
+
+			// Configure retries for intermittent errors
+			RetryableErrors:    DefaultRetryablePackerErrors,
+			TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+			MaxRetries:         DefaultMaxPackerRetries,
 		}
 
 		identifierToOptions[random.UniqueId()] = packerOptions

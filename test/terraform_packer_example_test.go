@@ -76,6 +76,11 @@ func buildAMI(t *testing.T, awsRegion string, workingDir string) {
 		Vars: map[string]string{
 			"aws_region": awsRegion,
 		},
+
+		// Configure retries for intermittent errors
+		RetryableErrors:    DefaultRetryablePackerErrors,
+		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+		MaxRetries:         DefaultMaxPackerRetries,
 	}
 
 	// Save the Packer Options so future test stages can use them

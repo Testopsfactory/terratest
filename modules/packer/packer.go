@@ -7,6 +7,9 @@ import (
 	"regexp"
 	"sync"
 	"testing"
+	"time"
+
+	"github.com/gruntwork-io/terratest/modules/retry"
 
 	"github.com/gruntwork-io/terratest/modules/customerrors"
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -15,11 +18,14 @@ import (
 
 // Options are the options for Packer.
 type Options struct {
-	Template string            // The path to the Packer template
-	Vars     map[string]string // The custom vars to pass when running the build command
-	VarFiles []string          // Var file paths to pass Packer using -var-file option
-	Only     string            // If specified, only run the build of this name
-	Env      map[string]string // Custom environment variables to set when running Packer
+	Template           string            // The path to the Packer template
+	Vars               map[string]string // The custom vars to pass when running the build command
+	VarFiles           []string          // Var file paths to pass Packer using -var-file option
+	Only               string            // If specified, only run the build of this name
+	Env                map[string]string // Custom environment variables to set when running Packer
+	RetryableErrors    map[string]string // If packer build fails with one of these (transient) errors, retry. The keys are a regexp to match against the error and the message is what to display to a user if that error is matched.
+	MaxRetries         int               // Maximum number of times to retry errors matching RetryableErrors
+	TimeBetweenRetries time.Duration     // The amount of time to wait between retries
 }
 
 // BuildArtifacts can take a map of identifierName <-> Options and then parallelize
@@ -89,7 +95,11 @@ func BuildArtifactE(t *testing.T, options *Options) (string, error) {
 		Env:     options.Env,
 	}
 
-	output, err := shell.RunCommandAndGetOutputE(t, cmd)
+	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
+	output, err := retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+		return shell.RunCommandAndGetOutputE(t, cmd)
+	})
+
 	if err != nil {
 		return "", err
 	}

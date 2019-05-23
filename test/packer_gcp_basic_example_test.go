@@ -30,6 +30,11 @@ func TestPackerGCPBasicExample(t *testing.T) {
 
 		// Only build the Google Compute Image
 		Only: "googlecompute",
+
+		// Configure retries for intermittent errors
+		RetryableErrors:    DefaultRetryablePackerErrors,
+		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+		MaxRetries:         DefaultMaxPackerRetries,
 	}
 
 	// Make sure the Packer build completes successfully

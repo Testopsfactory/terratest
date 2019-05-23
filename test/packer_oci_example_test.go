@@ -39,6 +39,11 @@ func TestPackerOciExample(t *testing.T) {
 
 		// Only build an OCI image
 		Only: "oracle-oci",
+
+		// Configure retries for intermittent errors
+		RetryableErrors:    DefaultRetryablePackerErrors,
+		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
+		MaxRetries:         DefaultMaxPackerRetries,
 	}
 
 	// Make sure the Packer build completes successfully
