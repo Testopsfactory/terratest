@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -49,14 +48,11 @@ func TestApplyWithErrorWithRetry(t *testing.T) {
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-with-error", t.Name())
 	require.NoError(t, err)
 
-	firstRunError, err := regexp.Compile("This is the first run, exiting with an error")
-	require.NoError(t, err)
-
 	options := &Options{
 		TerraformDir: testFolder,
 		MaxRetries:   1,
-		RetryableTerraformErrors: map[*regexp.Regexp]string{
-			firstRunError: "Intentional failure in test fixture",
+		RetryableTerraformErrors: map[string]string{
+			"This is the first run, exiting with an error": "Intentional failure in test fixture",
 		},
 	}
 
@@ -86,15 +82,12 @@ func TestTgApplyAllError(t *testing.T) {
 	testFolder, err := files.CopyTerragruntFolderToTemp("../../test/fixtures/terragrunt/terragrunt-with-error", t.Name())
 	require.NoError(t, err)
 
-	firstRunError, err := regexp.Compile("This is the first run, exiting with an error")
-	require.NoError(t, err)
-
 	options := &Options{
 		TerraformDir:    testFolder,
 		TerraformBinary: "terragrunt",
 		MaxRetries:      1,
-		RetryableTerraformErrors: map[*regexp.Regexp]string{
-			firstRunError: "Intentional failure in test fixture",
+		RetryableTerraformErrors: map[string]string{
+			"This is the first run, exiting with an error": "Intentional failure in test fixture",
 		},
 	}
 
