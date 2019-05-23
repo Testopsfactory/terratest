@@ -18,14 +18,14 @@ import (
 
 // Options are the options for Packer.
 type Options struct {
-	Template           string                    // The path to the Packer template
-	Vars               map[string]string         // The custom vars to pass when running the build command
-	VarFiles           []string                  // Var file paths to pass Packer using -var-file option
-	Only               string                    // If specified, only run the build of this name
-	Env                map[string]string         // Custom environment variables to set when running Packer
-	RetryableErrors    map[*regexp.Regexp]string // If packer build fails with one of these (transient) errors, retry. The keys are a regexp to match against the error and the message is what to display to a user if that error is matched.
-	MaxRetries         int                       // Maximum number of times to retry errors matching RetryableErrors
-	TimeBetweenRetries time.Duration             // The amount of time to wait between retries
+	Template           string            // The path to the Packer template
+	Vars               map[string]string // The custom vars to pass when running the build command
+	VarFiles           []string          // Var file paths to pass Packer using -var-file option
+	Only               string            // If specified, only run the build of this name
+	Env                map[string]string // Custom environment variables to set when running Packer
+	RetryableErrors    map[string]string // If packer build fails with one of these (transient) errors, retry. The keys are a regexp to match against the error and the message is what to display to a user if that error is matched.
+	MaxRetries         int               // Maximum number of times to retry errors matching RetryableErrors
+	TimeBetweenRetries time.Duration     // The amount of time to wait between retries
 }
 
 // BuildArtifacts can take a map of identifierName <-> Options and then parallelize

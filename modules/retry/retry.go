@@ -93,7 +93,7 @@ func DoWithRetryE(t *testing.T, actionDescription string, maxRetries int, sleepB
 // matches any of the regular expressions in the specified retryableErrors map. If there is a match, sleep for
 // sleepBetweenRetries, and retry the specified action, up to a maximum of maxRetries retries. If there is no match,
 // return that error immediately, wrapped in a FatalError. If maxRetries is exceeded, return a MaxRetriesExceeded error.
-func DoWithRetryableErrors(t *testing.T, actionDescription string, retryableErrors map[*regexp.Regexp]string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) string {
+func DoWithRetryableErrors(t *testing.T, actionDescription string, retryableErrors map[string]string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) string {
 	out, err := DoWithRetryableErrorsE(t, actionDescription, retryableErrors, maxRetries, sleepBetweenRetries, action)
 	require.NoError(t, err)
 	return out
@@ -104,14 +104,23 @@ func DoWithRetryableErrors(t *testing.T, actionDescription string, retryableErro
 // matches any of the regular expressions in the specified retryableErrors map. If there is a match, sleep for
 // sleepBetweenRetries, and retry the specified action, up to a maximum of maxRetries retries. If there is no match,
 // return that error immediately, wrapped in a FatalError. If maxRetries is exceeded, return a MaxRetriesExceeded error.
-func DoWithRetryableErrorsE(t *testing.T, actionDescription string, retryableErrors map[*regexp.Regexp]string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) (string, error) {
+func DoWithRetryableErrorsE(t *testing.T, actionDescription string, retryableErrors map[string]string, maxRetries int, sleepBetweenRetries time.Duration, action func() (string, error)) (string, error) {
+	retryableErrorsRegexp := map[*regexp.Regexp]string{}
+	for errorStr, errorMessage := range retryableErrors {
+		errorRegex, err := regexp.Compile(errorStr)
+		if err != nil {
+			return "", FatalError{Underlying: err}
+		}
+		retryableErrorsRegexp[errorRegex] = errorMessage
+	}
+
 	return DoWithRetryE(t, actionDescription, maxRetries, sleepBetweenRetries, func() (string, error) {
 		output, err := action()
 		if err == nil {
 			return output, nil
 		}
 
-		for errorRegexp, errorMessage := range retryableErrors {
+		for errorRegexp, errorMessage := range retryableErrorsRegexp {
 			if errorRegexp.MatchString(output) || errorRegexp.MatchString(err.Error()) {
 				logger.Logf(t, "'%s' failed with the error '%s' but this error was expected and warrants a retry. Further details: %s\n", actionDescription, err.Error(), errorMessage)
 				return output, err

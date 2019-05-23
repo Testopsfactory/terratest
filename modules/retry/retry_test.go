@@ -2,11 +2,8 @@ package retry
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -178,56 +175,43 @@ func TestDoWithRetryableErrors(t *testing.T) {
 		}
 	}
 
-	matchAllRegexp, err := regexp.Compile(".*")
-	require.NoError(t, err)
+	matchAllRegexp := ".*"
+	matchExpectedErrorExactRegexp := expectedError.Error()
+	matchExpectedErrorRegexp := "^expected.*$"
+	matchNothingRegexp1 := "this won't match any of our errors"
+	matchNothingRegexp2 := "this also won't match any of our errors"
+	matchStdoutExactlyRegexp := expectedOutput
+	matchStdoutRegexp := "this.*output"
 
-	matchExpectedErrorExactRegexp, err := regexp.Compile(expectedError.Error())
-	require.NoError(t, err)
-
-	matchExpectedErrorRegexp, err := regexp.Compile("^expected.*$")
-	require.NoError(t, err)
-
-	matchNothingRegexp1, err := regexp.Compile("this won't match any of our errors")
-	require.NoError(t, err)
-
-	matchNothingRegexp2, err := regexp.Compile("this also won't match any of our errors")
-	require.NoError(t, err)
-
-	matchStdoutExactlyRegexp, err := regexp.Compile(expectedOutput)
-	require.NoError(t, err)
-
-	matchStdoutRegexp, err := regexp.Compile("this.*output")
-	require.NoError(t, err)
-
-	noRetryableErrors := map[*regexp.Regexp]string{}
-	retryOnAllErrors := map[*regexp.Regexp]string{
+	noRetryableErrors := map[string]string{}
+	retryOnAllErrors := map[string]string{
 		matchAllRegexp: "match all errors",
 	}
-	retryOnExpectedErrorExactMatch := map[*regexp.Regexp]string{
+	retryOnExpectedErrorExactMatch := map[string]string{
 		matchExpectedErrorExactRegexp: "match expected error exactly",
 	}
-	retryOnExpectedErrorRegexpMatch := map[*regexp.Regexp]string{
+	retryOnExpectedErrorRegexpMatch := map[string]string{
 		matchExpectedErrorRegexp: "match expected error using a regex",
 	}
-	retryOnExpectedErrorRegexpMatchWithOthers := map[*regexp.Regexp]string{
+	retryOnExpectedErrorRegexpMatchWithOthers := map[string]string{
 		matchNothingRegexp1:      "unrelated regex that shouldn't match anything",
 		matchExpectedErrorRegexp: "match expected error using a regex",
 		matchNothingRegexp2:      "another unrelated regex that shouldn't match anything",
 	}
-	retryOnErrorsThatWontMatch := map[*regexp.Regexp]string{
+	retryOnErrorsThatWontMatch := map[string]string{
 		matchNothingRegexp1: "unrelated regex that shouldn't match anything",
 		matchNothingRegexp2: "another unrelated regex that shouldn't match anything",
 	}
-	retryOnExpectedStdoutExactMatch := map[*regexp.Regexp]string{
+	retryOnExpectedStdoutExactMatch := map[string]string{
 		matchStdoutExactlyRegexp: "match expected stdout exactly",
 	}
-	retryOnExpectedStdoutRegex := map[*regexp.Regexp]string{
+	retryOnExpectedStdoutRegex := map[string]string{
 		matchStdoutRegexp: "match expected stdout using a regex",
 	}
 
 	testCases := []struct {
 		description     string
-		retryableErrors map[*regexp.Regexp]string
+		retryableErrors map[string]string
 		maxRetries      int
 		expectedError   error
 		action          func() (string, error)
