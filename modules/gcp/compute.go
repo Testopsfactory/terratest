@@ -3,12 +3,13 @@ package gcp
 import (
 	"context"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/retry"
 	"net/http"
 	"path"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gruntwork-io/terratest/modules/retry"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -593,7 +594,7 @@ func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 	timeBetweenRetries := 10 * time.Second
 
 	var client *http.Client
-	
+
 	_, retryErr := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		var clientErr error
 		client, clientErr = google.DefaultClient(ctx, compute.CloudPlatformScope)
