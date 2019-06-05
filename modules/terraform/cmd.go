@@ -49,10 +49,11 @@ func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalAr
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
 	cmd := shell.Command{
-		Command:    options.TerraformBinary,
-		Args:       args,
-		WorkingDir: options.TerraformDir,
-		Env:        options.EnvVars,
+		Command:           options.TerraformBinary,
+		Args:              args,
+		WorkingDir:        options.TerraformDir,
+		Env:               options.EnvVars,
+		OutputMaxLineSize: options.OutputMaxLineSize,
 	}
 
 	description := fmt.Sprintf("%s %v", options.TerraformBinary, args)
@@ -76,10 +77,11 @@ func GetExitCodeForTerraformCommandE(t *testing.T, additionalOptions *Options, a
 
 	logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
 	cmd := shell.Command{
-		Command:    options.TerraformBinary,
-		Args:       args,
-		WorkingDir: options.TerraformDir,
-		Env:        options.EnvVars,
+		Command:           options.TerraformBinary,
+		Args:              args,
+		WorkingDir:        options.TerraformDir,
+		Env:               options.EnvVars,
+		OutputMaxLineSize: options.OutputMaxLineSize,
 	}
 
 	_, err := shell.RunCommandAndGetOutputE(t, cmd)

@@ -17,10 +17,11 @@ import (
 
 // Command is a simpler struct for defining commands than Go's built-in Cmd.
 type Command struct {
-	Command    string            // The command to run
-	Args       []string          // The args to pass to the command
-	WorkingDir string            // The working directory
-	Env        map[string]string // Additional environment variables to set
+	Command           string            // The command to run
+	Args              []string          // The args to pass to the command
+	WorkingDir        string            // The working directory
+	Env               map[string]string // Additional environment variables to set
+	OutputMaxLineSize *int              // The max line size of stdout and stderr (in bytes)
 }
 
 // RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
@@ -72,7 +73,7 @@ func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 		return "", err
 	}
 
-	output, err := readStdoutAndStderr(t, stdout, stderr)
+	output, err := readStdoutAndStderr(t, stdout, stderr, command.OutputMaxLineSize)
 	if err != nil {
 		return output, err
 	}
@@ -85,11 +86,19 @@ func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 }
 
 // This function captures stdout and stderr while still printing it to the stdout and stderr of this Go program
-func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadCloser) (string, error) {
+func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadCloser, maxLineSize *int) (string, error) {
 	allOutput := []string{}
 
 	stdoutScanner := bufio.NewScanner(stdout)
 	stderrScanner := bufio.NewScanner(stderr)
+
+	if maxLineSize != nil {
+		stdoutBuf := make([]byte, maxLineSize)
+		stderrBuf := make([]byte, maxLineSize)
+
+		stdoutScanner.Buffer(stdoutBuf, maxLineSize)
+		stderrScanner.Buffer(stderrBuf, maxLineSize)
+	}
 
 	wg := &sync.WaitGroup{}
 	mutex := &sync.Mutex{}
