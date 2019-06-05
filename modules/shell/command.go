@@ -93,11 +93,8 @@ func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadClose
 	stderrScanner := bufio.NewScanner(stderr)
 
 	if maxLineSize != nil {
-		stdoutBuf := make([]byte, maxLineSize)
-		stderrBuf := make([]byte, maxLineSize)
-
-		stdoutScanner.Buffer(stdoutBuf, maxLineSize)
-		stderrScanner.Buffer(stderrBuf, maxLineSize)
+		stdoutScanner.Buffer(make([]byte, maxLineSize), maxLineSize)
+		stderrScanner.Buffer(make([]byte, maxLineSize), maxLineSize)
 	}
 
 	wg := &sync.WaitGroup{}
