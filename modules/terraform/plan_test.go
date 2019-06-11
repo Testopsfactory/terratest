@@ -3,46 +3,11 @@ package terraform
 import (
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/stretchr/testify/require"
 )
 
-func TestPlanWithNoChanges(t *testing.T) {
-	t.Parallel()
-	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
-	require.NoError(t, err)
-
-	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
-	options := &Options{
-		TerraformDir: testFolder,
-
-		EnvVars: map[string]string{
-			"AWS_DEFAULT_REGION": awsRegion,
-		},
-	}
-	exitCode := InitAndPlan(t, options)
-	require.Equal(t, DefaultSuccessExitCode, exitCode)
-}
-
-func TestPlanWithChanges(t *testing.T) {
-	t.Parallel()
-	testFolder, err := files.CopyTerraformFolderToTemp("../../examples/terraform-aws-example", t.Name())
-	require.NoError(t, err)
-
-	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
-	options := &Options{
-		TerraformDir: testFolder,
-
-		EnvVars: map[string]string{
-			"AWS_DEFAULT_REGION": awsRegion,
-		},
-	}
-	exitCode := InitAndPlan(t, options)
-	require.Equal(t, TerraformPlanChangesPresentExitCode, exitCode)
-}
-
-func TestPlanWithFailure(t *testing.T) {
+func TestInitAndPlanWithError(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-with-plan-error", t.Name())
@@ -52,7 +17,63 @@ func TestPlanWithFailure(t *testing.T) {
 		TerraformDir: testFolder,
 	}
 
-	_, getExitCodeErr := InitAndPlanE(t, options)
+	_, err = InitAndPlanE(t, options)
+	require.Error(t, err)
+}
+
+func TestInitAndPlanWithNoError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	out, err := InitAndPlanE(t, options)
+	require.NoError(t, err)
+	require.Contains(t, out, "No changes. Infrastructure is up-to-date.")
+}
+
+func TestPlanWithExitCodeWithNoChanges(t *testing.T) {
+	t.Parallel()
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+	exitCode := InitAndPlanWithExitCode(t, options)
+	require.Equal(t, DefaultSuccessExitCode, exitCode)
+}
+
+func TestPlanWithExitCodeWithChanges(t *testing.T) {
+	t.Parallel()
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-basic-configuration", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+		Vars: map[string]interface{}{
+			"cnt": 1,
+		},
+	}
+	exitCode := InitAndPlanWithExitCode(t, options)
+	require.Equal(t, TerraformPlanChangesPresentExitCode, exitCode)
+}
+
+func TestPlanWithExitCodeWithFailure(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-with-plan-error", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	_, getExitCodeErr := InitAndPlanWithExitCodeE(t, options)
 	require.Error(t, getExitCodeErr)
 }
 
