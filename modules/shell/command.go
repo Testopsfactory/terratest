@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io"
 	"os"
 	"os/exec"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
@@ -101,7 +102,6 @@ func runCommandAndStoreOutputE(t *testing.T, command Command, storedStdout *[]st
 	if err != nil {
 		return err
 	}
-
 
 	if err := readStdoutAndStderr(t, stdout, stderr, storedStdout, storedStderr); err != nil {
 		return err
