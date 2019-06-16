@@ -1,6 +1,9 @@
 package terraform
 
 import (
+	"fmt"
+	"github.com/magiconair/properties/assert"
+	"reflect"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -94,4 +97,27 @@ func TestTgApplyAllError(t *testing.T) {
 	out := TgApplyAll(t, options)
 
 	require.Contains(t, out, "This is the first run, exiting with an error")
+}
+
+func TestTgApplyOutput(t *testing.T) {
+	t.Parallel()
+
+	options := &Options{
+		TerraformDir:    "../../test/fixtures/terragrunt/terragrunt-output",
+		TerraformBinary: "terragrunt",
+	}
+
+	Apply(t, options)
+
+	strOutput := OutputRequired(t, options, "str")
+	assert.Equal(t, strOutput, "str")
+
+	listOutput := OutputList(t, options, "list")
+	assert.Equal(t, listOutput, []string{"a", "b", "c"})
+
+	mapOutput := OutputMap(t, options, "map")
+	assert.Equal(t, mapOutput, map[string]string{"foo": "bar"})
+
+	allOutputs := OutputForKeys(t, options, []string{"str", "list", "map"})
+	assert.Equal(t, allOutputs, map[string]interface{}{"str": "str", "list": []interface{}{"a", "b", "c"}, "map": map[string]interface{}{"foo": "bar"}})
 }

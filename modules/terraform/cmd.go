@@ -61,6 +61,24 @@ func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalAr
 	})
 }
 
+// RunTerraformCommandE runs terraform with the given arguments and options and returns solely its stdout (but not
+// stderr).
+func RunTerraformCommandAndGetStdoutE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (string, error) {
+	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
+
+	cmd := shell.Command{
+		Command:    options.TerraformBinary,
+		Args:       args,
+		WorkingDir: options.TerraformDir,
+		Env:        options.EnvVars,
+	}
+
+	description := fmt.Sprintf("%s %v", options.TerraformBinary, args)
+	return retry.DoWithRetryableErrorsE(t, description, options.RetryableTerraformErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+		return shell.RunCommandAndGetStdOutE(t, cmd)
+	})
+}
+
 // GetExitCodeForTerraformCommand runs terraform with the given arguments and options and returns exit code
 func GetExitCodeForTerraformCommand(t *testing.T, additionalOptions *Options, args ...string) int {
 	exitCode, err := GetExitCodeForTerraformCommandE(t, additionalOptions, args...)
