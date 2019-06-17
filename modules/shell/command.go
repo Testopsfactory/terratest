@@ -78,7 +78,8 @@ func RunCommandAndGetStdOutE(t *testing.T, command Command) (string, error) {
 	return output, err
 }
 
-// RunCommandAndGetOutputE runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of that command will also
+// runCommandAndStoreOutputE runs a shell command and stores each line from stdout and stderr in the given
+// storedStdout and storedStderr variables, respectively. The stdout and stderr of that command will also
 // be printed to the stdout and stderr of this Go program to make debugging easier.
 func runCommandAndStoreOutputE(t *testing.T, command Command, storedStdout *[]string, storedStderr *[]string) error {
 	logger.Logf(t, "Running command %s with args %s", command.Command, command.Args)
