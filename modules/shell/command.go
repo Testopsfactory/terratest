@@ -61,6 +61,7 @@ func RunCommandAndGetOutputE(t *testing.T, command Command) (string, error) {
 
 // RunCommandAndGetStdOut runs a shell command and returns solely its stdout (but not stderr) as a string. The stdout
 // and stderr of that command will also be printed to the stdout and stderr of this Go program to make debugging easier.
+// If there are any errors, fail the test.
 func RunCommandAndGetStdOut(t *testing.T, command Command) string {
 	output, err := RunCommandAndGetStdOutE(t, command)
 	require.NoError(t, err)
