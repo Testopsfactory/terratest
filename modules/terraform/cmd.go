@@ -61,8 +61,8 @@ func RunTerraformCommandE(t *testing.T, additionalOptions *Options, additionalAr
 	})
 }
 
-// RunTerraformCommandE runs terraform with the given arguments and options and returns solely its stdout (but not
-// stderr).
+// RunTerraformCommandAndGetStdoutE runs terraform with the given arguments and options and returns solely its stdout
+// (but not stderr).
 func RunTerraformCommandAndGetStdoutE(t *testing.T, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
