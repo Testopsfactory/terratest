@@ -649,10 +649,10 @@
   version = "v2.2.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:bf61730197acc225b5153ba3eb3d7b87c01da71f98896d9855309f37be7743ca"
+  digest = "1:aa8baec3af7896083e40bdd77a8bb00c74a0ab9f29672b970ec6001b4daf3105"
   name = "k8s.io/api"
   packages = [
+    ".",
     "admissionregistration/v1alpha1",
     "admissionregistration/v1beta1",
     "apps/v1",
@@ -843,6 +843,7 @@
     "github.com/gruntwork-io/gruntwork-cli/errors",
     "github.com/gruntwork-io/gruntwork-cli/files",
     "github.com/gruntwork-io/gruntwork-cli/logging",
+    "github.com/json-iterator/go",
     "github.com/jstemmer/go-junit-report/formatter",
     "github.com/jstemmer/go-junit-report/parser",
     "github.com/magiconair/properties/assert",
@@ -862,6 +863,7 @@
     "google.golang.org/api/compute/v1",
     "google.golang.org/api/iterator",
     "google.golang.org/api/oslogin/v1",
+    "k8s.io/api",
     "k8s.io/api/apps/v1",
     "k8s.io/api/authorization/v1",
     "k8s.io/api/core/v1",
