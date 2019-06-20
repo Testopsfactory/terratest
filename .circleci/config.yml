@@ -109,6 +109,7 @@ jobs:
       # NOTE: because this doesn't build with the kubernetes tag, it will not run the kubernetes tests. See
       # kubernetes_test build steps.
       - run: mkdir -p /tmp/logs
+      - run: run-go-tests --packages "-p 1 -tags=special -run TestRunCommandWithHugeLineOutput ./modules/shell"
       - run: run-go-tests --packages "-p 1 ./..." | tee /tmp/logs/test_output.log
 
       - run:

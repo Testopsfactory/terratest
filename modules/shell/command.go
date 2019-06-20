@@ -19,10 +19,11 @@ import (
 
 // Command is a simpler struct for defining commands than Go's built-in Cmd.
 type Command struct {
-	Command    string            // The command to run
-	Args       []string          // The args to pass to the command
-	WorkingDir string            // The working directory
-	Env        map[string]string // Additional environment variables to set
+	Command           string            // The command to run
+	Args              []string          // The args to pass to the command
+	WorkingDir        string            // The working directory
+	Env               map[string]string // Additional environment variables to set
+	OutputMaxLineSize int               // The max line size of stdout and stderr (in bytes)
 }
 
 // RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
@@ -105,7 +106,7 @@ func runCommandAndStoreOutputE(t *testing.T, command Command, storedStdout *[]st
 		return err
 	}
 
-	if err := readStdoutAndStderr(t, stdout, stderr, storedStdout, storedStderr); err != nil {
+	if err := readStdoutAndStderr(t, stdout, stderr, storedStdout, storedStderr, command.OutputMaxLineSize); err != nil {
 		return err
 	}
 
@@ -118,9 +119,14 @@ func runCommandAndStoreOutputE(t *testing.T, command Command, storedStdout *[]st
 
 // This function captures stdout and stderr into the given variables while still printing it to the stdout and stderr
 // of this Go program
-func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadCloser, storedStdout *[]string, storedStderr *[]string) error {
+func readStdoutAndStderr(t *testing.T, stdout io.ReadCloser, stderr io.ReadCloser, storedStdout *[]string, storedStderr *[]string, maxLineSize int) error {
 	stdoutScanner := bufio.NewScanner(stdout)
 	stderrScanner := bufio.NewScanner(stderr)
+
+	if maxLineSize > 0 {
+		stdoutScanner.Buffer(make([]byte, maxLineSize), maxLineSize)
+		stderrScanner.Buffer(make([]byte, maxLineSize), maxLineSize)
+	}
 
 	wg := &sync.WaitGroup{}
 	mutex := &sync.Mutex{}
