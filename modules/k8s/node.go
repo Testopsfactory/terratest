@@ -23,6 +23,12 @@ func GetNodes(t *testing.T, options *KubectlOptions) []corev1.Node {
 
 // GetNodesE queries Kubernetes for information about the worker nodes registered to the cluster.
 func GetNodesE(t *testing.T, options *KubectlOptions) ([]corev1.Node, error) {
+	return GetNodesByFilterE(t, options, metav1.ListOptions{})
+}
+
+// GetNodesByFilterE queries Kubernetes for information about the worker nodes registered to the cluster, filtering the
+// list of nodes using the provided ListOptions.
+func GetNodesByFilterE(t *testing.T, options *KubectlOptions, filter metav1.ListOptions) ([]corev1.Node, error) {
 	logger.Logf(t, "Getting list of nodes from Kubernetes")
 
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
@@ -30,7 +36,7 @@ func GetNodesE(t *testing.T, options *KubectlOptions) ([]corev1.Node, error) {
 		return nil, err
 	}
 
-	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, err := clientset.CoreV1().Nodes().List(filter)
 	if err != nil {
 		return nil, err
 	}

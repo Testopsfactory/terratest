@@ -131,7 +131,7 @@ func findEndpointForNodePortService(
 	service *corev1.Service,
 	servicePort int32,
 ) (string, error) {
-	nodePort, err := findNodePortE(service, int32(servicePort))
+	nodePort, err := FindNodePortE(service, int32(servicePort))
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +147,7 @@ func findEndpointForNodePortService(
 }
 
 // Given the desired servicePort, return the allocated nodeport
-func findNodePortE(service *corev1.Service, servicePort int32) (int32, error) {
+func FindNodePortE(service *corev1.Service, servicePort int32) (int32, error) {
 	for _, port := range service.Spec.Ports {
 		if port.Port == servicePort {
 			return port.NodePort, nil
