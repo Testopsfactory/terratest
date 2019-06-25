@@ -139,7 +139,7 @@ func findEndpointForNodePortService(
 	if err != nil {
 		return "", err
 	}
-	nodeHostname, err := findNodeHostnameE(t, node)
+	nodeHostname, err := FindNodeHostnameE(t, node)
 	if err != nil {
 		return "", err
 	}
@@ -170,7 +170,7 @@ func pickRandomNodeE(t *testing.T, options *KubectlOptions) (corev1.Node, error)
 }
 
 // Given a node, return the ip address, preferring the external IP
-func findNodeHostnameE(t *testing.T, node corev1.Node) (string, error) {
+func FindNodeHostnameE(t *testing.T, node corev1.Node) (string, error) {
 	nodeIDUri, err := url.Parse(node.Spec.ProviderID)
 	if err != nil {
 		return "", err
