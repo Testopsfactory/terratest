@@ -62,21 +62,43 @@ validateServerIsWorking(t, terraformOptions)
 
 
 
-## Install
+## Quickstart
 
-Prerequisite: install [Go](https://golang.org/).
+### Install requirements
 
-To add Terratest to your projects, we recommend using a Go dependency manager such as
-[dep](https://github.com/golang/dep) to add the packages you wish to use (see [package by package overview](#package-by-package-overview) for the list). For example, to add the `terraform` package:
+Terratest uses the Go testing framework. To use terratest, you need to install:
 
-```bash
-dep ensure -add github.com/gruntwork-io/terratest/modules/terraform
+- [Go](https://golang.org/) (requires version >=1.10)
+- [dep](https://github.com/golang/dep) (requires version >=0.5.1)
+
+
+### Setting up your project
+
+1. Golang requires go source files to be available in the `GOPATH`. By default this is typically `$HOME/go/src`. Create a new blank folder in the `GOPATH` to hold your terraform module and terratest code. For example, if you were developing a VPC module named `terraform-aws-vpc`, create the folder `$HOME/go/src/terraform-aws-vpc` to hold your module code.
+1. In the project folder, create three subfolders:
+    1. `modules`: This folder should contain your terraform modules that will be tested.
+    1. `examples`: This folder should contain examples of how to use the modules. These should be self-contained deployable examples. Meaning, it should provision all the resources that are necessary to run the modules in the `modules` folder.
+    1. `test`: This folder should contain your terratest code.
+1. Copy the [basic terraform example](https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-basic-example) into the `examples` folder.
+1. Copy the [basic terraform example test](https://github.com/gruntwork-io/terratest/blob/master/test/terraform_basic_example_test.go) into the `test` folder.
+1. In the `test` folder, create a `Gopkg.toml` file with the following content:
+
+```
+[[constraint]]
+  name = "github.com/gruntwork-io/terratest"
+  version = "0.17.4"
 ```
 
-Alternatively, you can use `go get`:
+Now you should be able to run the example test. To run the test:
 
-```bash
-go get github.com/gruntwork-io/terratest/modules/terraform
+1. Change your working directory to the `test` folder.
+1. Run `dep ensure`
+1. Run `go test -v .`
+
+Note that `go` has a default test timeout of 10 minutes. With infrastructure testing, your tests will surpass the 10 minutes very easily. To extend the timeout, you can pass in the `-timeout` option, which takes a `go` duration string (e.g `10m` for 10 minutes or `1h` for 1 hour). For example, to run the tests with a 90 minute timeout:
+
+```
+go test -v -timeout 90m .
 ```
 
 
