@@ -74,13 +74,22 @@ Terratest uses the Go testing framework. To use terratest, you need to install:
 
 ### Setting up your project
 
-1. Golang requires go source files to be available in the `GOPATH`. By default this is typically `$HOME/go/src`. Create a new blank folder in the `GOPATH` to hold your terraform module and terratest code. For example, if you were developing a VPC module named `terraform-aws-vpc`, create the folder `$HOME/go/src/terraform-aws-vpc` to hold your module code.
+1. Golang requires go source files to be available in the `GOPATH`. By default this is typically `$HOME/go/src`. Create
+   a new blank folder in the `GOPATH` to hold your terraform module and terratest code. For example, if you were
+   developing a VPC module named `terraform-aws-vpc`, create the folder `$HOME/go/src/terraform-aws-vpc` to hold your
+   module code.
 1. In the project folder, create three subfolders:
     1. `modules`: This folder should contain your terraform modules that will be tested.
-    1. `examples`: This folder should contain examples of how to use the modules. These should be self-contained deployable examples. Meaning, it should provision all the resources that are necessary to run the modules in the `modules` folder.
+    1. `examples`: This folder should contain examples of how to use the modules. These should be self-contained
+       deployable examples. Meaning, it should provision all the resources that are necessary to run the modules in the
+       `modules` folder.
     1. `test`: This folder should contain your terratest code.
-1. Copy the [basic terraform example](https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-basic-example) into the `examples` folder.
-1. Copy the [basic terraform example test](https://github.com/gruntwork-io/terratest/blob/master/test/terraform_basic_example_test.go) into the `test` folder.
+1. Copy the [basic terraform
+   example](https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-basic-example) into the `examples`
+   folder.
+1. Copy the [basic terraform example
+   test](https://github.com/gruntwork-io/terratest/blob/master/test/terraform_basic_example_test.go) into the `test`
+   folder.
 1. In the `test` folder, create a `Gopkg.toml` file with the following content:
 
 ```
@@ -93,13 +102,25 @@ Now you should be able to run the example test. To run the test:
 
 1. Change your working directory to the `test` folder.
 1. Run `dep ensure`
-1. Run `go test -v .`
-
-Note that `go` has a default test timeout of 10 minutes. With infrastructure testing, your tests will surpass the 10 minutes very easily. To extend the timeout, you can pass in the `-timeout` option, which takes a `go` duration string (e.g `10m` for 10 minutes or `1h` for 1 hour). For example, to run the tests with a 90 minute timeout:
-
-```
-go test -v -timeout 90m .
-```
+    - This will download all the dependencies to the current directory (in this case, the `test` folder) under the
+      folder `vendor`. You should only need to run this when you update the `Gopkg.toml` file, or if you have not run it
+      previously on the machine (e.g in a CI environment).
+    - This will create a new file `Gopkg.lock`. This file acts as an index of all the versions of every dependency you
+      need.
+    - You should check in the `Gopkg.lock` file that is generated so that all future calls to `dep ensure` will be
+      consistent, but you should NOT check in the `vendor` folder, as that can be recreated using `dep ensure` from the
+      `Gopkg.lock` file.
+1. Each time you want to run the tests, use `go test -v -timeout 90m .`
+    - Note that `go` has a default test timeout of 10 minutes. With infrastructure testing, your tests will surpass the
+      10 minutes very easily. To extend the timeout, you can pass in the `-timeout` option, which takes a `go` duration
+      string (e.g `10m` for 10 minutes or `1h` for 1 hour). In the above command, we use the `-timeout` option to
+      override to a 90 minute timeout.
+    - When you hit the timeout, Go automatically exits the test, **skipping all cleanup routines**. This is problematic
+      for infrastructure testing because it will skip your deferred infrastructure cleanup steps (i.e `terraform
+      destroy`), leaving behind the infrastructure that was spun up. So it is important to use a longer timeout
+      everytime you run the tests.
+    - See the [Cleanup section](#cleanup) for more information on how to setup robust clean up procedures in the face of
+      test timeouts and instabilities.
 
 
 ### Installing the utility binaries
