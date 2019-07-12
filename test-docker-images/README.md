@@ -26,7 +26,7 @@ that Packer templates that build Docker images can reference them directly as in
   },{
     "name": "ubuntu-docker",
     "type": "docker",
-    "image": "gruntwork/ubuntu-test:16.04",
+    "image": "gruntwork/ubuntu-test:18.04",
     "commit": "true"
   }],
   "provisioners": [
