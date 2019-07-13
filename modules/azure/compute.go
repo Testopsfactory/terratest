@@ -8,6 +8,29 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// getVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf
+func getVirtualMachineClient(subscriptionID string) (compute.VirtualMachinesClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return compute.NewVirtualMachinesClient(""), err
+	}
+
+	// Create a VM client
+	vmClient := compute.NewVirtualMachinesClient(subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return compute.NewVirtualMachinesClient(""), err
+	}
+
+	// Attach authorizer to the client
+	vmClient.Authorizer = *authorizer
+
+	return vmClient, nil
+}
+
 // GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine
 func GetSizeOfVirtualMachine(t *testing.T, vmName string, resGroupName string, subscriptionID string) string {
 	size, err := GetSizeOfVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -24,26 +47,14 @@ func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, 
 		return "", err
 	}
 
-	subscriptionID, err = getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
 	// Create a VM client
-	vmClient := compute.NewVirtualMachinesClient(subscriptionID)
-
-	// Create an authorizer
-	authorizer, err := NewAuthorizer()
+	vmClient, err := getVirtualMachineClient(subscriptionID)
 	if err != nil {
 		return "", err
 	}
-
-	// Attach authorizer to the client
-	vmClient.Authorizer = *authorizer
 
 	// Get the details of the target virtual machine
-	ctx := context.TODO()
-	vm, err := vmClient.Get(ctx, resGroupName, vmName, compute.InstanceView)
+	vm, err := vmClient.Get(context.Background(), resGroupName, vmName, compute.InstanceView)
 	if err != nil {
 		return "", err
 	}
@@ -70,26 +81,14 @@ func GetTagsForVirtualMachineE(t *testing.T, vmName string, resGroupName string,
 		return tags, err
 	}
 
-	subscriptionID, err = getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return tags, err
-	}
-
 	// Create a VM client
-	vmClient := compute.NewVirtualMachinesClient(subscriptionID)
-
-	// Create an authorizer
-	authorizer, err := NewAuthorizer()
+	vmClient, err := getVirtualMachineClient(subscriptionID)
 	if err != nil {
 		return tags, err
 	}
-
-	// Attach authorizer to the client
-	vmClient.Authorizer = *authorizer
 
 	// Get the details of the target virtual machine
-	ctx := context.TODO()
-	vm, err := vmClient.Get(ctx, resGroupName, vmName, compute.InstanceView)
+	vm, err := vmClient.Get(context.Background(), resGroupName, vmName, compute.InstanceView)
 	if err != nil {
 		return tags, err
 	}
