@@ -2,6 +2,7 @@
 package http_helper
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,18 +14,22 @@ import (
 	"github.com/gruntwork-io/terratest/modules/retry"
 )
 
-// HttpGet performs an HTTP GET on the given URL and return the HTTP status code and body. If there's any error, fail the test.
-func HttpGet(t *testing.T, url string) (int, string) {
-	statusCode, body, err := HttpGetE(t, url)
+// HttpGet performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
+// return the HTTP status code and body. If there's any error, fail the test.
+func HttpGet(t *testing.T, url string, TLSConfig *tls.Config) (int, string) {
+	statusCode, body, err := HttpGetE(t, url, TLSConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return statusCode, body
 }
 
-// HttpGetE performs an HTTP GET on the given URL and return the HTTP status code, body, and any error.
-func HttpGetE(t *testing.T, url string) (int, string, error) {
+// HttpGetE performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
+// return the HTTP status code, body, and any error.
+func HttpGetE(t *testing.T, url string, TLSConfig *tls.Config) (int, string, error) {
 	logger.Logf(t, "Making an HTTP GET call to URL %s", url)
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = TLSConfig
 
 	client := http.Client{
 		// By default, Go does not impose a timeout, so an HTTP connection attempt can hang for a LONG time.
@@ -48,8 +53,8 @@ func HttpGetE(t *testing.T, url string) (int, string, error) {
 
 // HttpGetWithValidation performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, fail the test.
-func HttpGetWithValidation(t *testing.T, url string, expectedStatusCode int, expectedBody string) {
-	err := HttpGetWithValidationE(t, url, expectedStatusCode, expectedBody)
+func HttpGetWithValidation(t *testing.T, url string, TLSConfig *tls.Config, expectedStatusCode int, expectedBody string) {
+	err := HttpGetWithValidationE(t, url, TLSConfig, expectedStatusCode, expectedBody)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,23 +62,23 @@ func HttpGetWithValidation(t *testing.T, url string, expectedStatusCode int, exp
 
 // HttpGetWithValidationE performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, return an error.
-func HttpGetWithValidationE(t *testing.T, url string, expectedStatusCode int, expectedBody string) error {
-	return HttpGetWithCustomValidationE(t, url, func(statusCode int, body string) bool {
+func HttpGetWithValidationE(t *testing.T, url string, TLSConfig *tls.Config, expectedStatusCode int, expectedBody string) error {
+	return HttpGetWithCustomValidationE(t, url, TLSConfig, func(statusCode int, body string) bool {
 		return statusCode == expectedStatusCode && body == expectedBody
 	})
 }
 
 // HttpGetWithCustomValidation performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
-func HttpGetWithCustomValidation(t *testing.T, url string, validateResponse func(int, string) bool) {
-	err := HttpGetWithCustomValidationE(t, url, validateResponse)
+func HttpGetWithCustomValidation(t *testing.T, url string, TLSConfig *tls.Config, validateResponse func(int, string) bool) {
+	err := HttpGetWithCustomValidationE(t, url, TLSConfig, validateResponse)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 // HttpGetWithCustomValidationE performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
-func HttpGetWithCustomValidationE(t *testing.T, url string, validateResponse func(int, string) bool) error {
-	statusCode, body, err := HttpGetE(t, url)
+func HttpGetWithCustomValidationE(t *testing.T, url string, TLSConfig *tls.Config, validateResponse func(int, string) bool) error {
+	statusCode, body, err := HttpGetE(t, url, TLSConfig)
 
 	if err != nil {
 		return err
@@ -88,8 +93,8 @@ func HttpGetWithCustomValidationE(t *testing.T, url string, validateResponse fun
 
 // HttpGetWithRetry repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
-func HttpGetWithRetry(t *testing.T, url string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
-	err := HttpGetWithRetryE(t, url, expectedStatus, expectedBody, retries, sleepBetweenRetries)
+func HttpGetWithRetry(t *testing.T, url string, TLSConfig *tls.Config, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
+	err := HttpGetWithRetryE(t, url, TLSConfig, expectedStatus, expectedBody, retries, sleepBetweenRetries)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,9 +102,9 @@ func HttpGetWithRetry(t *testing.T, url string, expectedStatus int, expectedBody
 
 // HttpGetWithRetryE repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
-func HttpGetWithRetryE(t *testing.T, url string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
+func HttpGetWithRetryE(t *testing.T, url string, TLSConfig *tls.Config, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
-		return "", HttpGetWithValidationE(t, url, expectedStatus, expectedBody)
+		return "", HttpGetWithValidationE(t, url, TLSConfig, expectedStatus, expectedBody)
 	})
 
 	return err
@@ -107,8 +112,8 @@ func HttpGetWithRetryE(t *testing.T, url string, expectedStatus int, expectedBod
 
 // HttpGetWithRetryWithCustomValidation repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
 // has been exceeded.
-func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) {
-	err := HttpGetWithRetryWithCustomValidationE(t, url, retries, sleepBetweenRetries, validateResponse)
+func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, TLSConfig *tls.Config, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) {
+	err := HttpGetWithRetryWithCustomValidationE(t, url, TLSConfig, retries, sleepBetweenRetries, validateResponse)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,21 +121,10 @@ func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, retries int,
 
 // HttpGetWithRetryWithCustomValidationE repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
 // has been exceeded.
-func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) error {
+func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, TLSConfig *tls.Config, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
-		return "", HttpGetWithCustomValidationE(t, url, validateResponse)
+		return "", HttpGetWithCustomValidationE(t, url, TLSConfig, validateResponse)
 	})
 
 	return err
-}
-
-// ValidationFunctionFailed is an error that occurs if a validation function fails.
-type ValidationFunctionFailed struct {
-	Url    string
-	Status int
-	Body   string
-}
-
-func (err ValidationFunctionFailed) Error() string {
-	return fmt.Sprintf("Validation failed for URL %s. Response status: %d. Response body:\n%s", err.Url, err.Status, err.Body)
 }

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"crypto/tls"
 	"fmt"
 	"strconv"
 	"testing"
@@ -58,6 +59,9 @@ func TestPackerDockerExampleLocal(t *testing.T) {
 	timeBetweenRetries := 2 * time.Second
 	url := fmt.Sprintf("http://localhost:%d", serverPort)
 
+	// Setup a TLS configuration to submit with the helper, a blank struct is acceptable
+	tlsConfig := tls.Config{}
+
 	// Verify that we get back a 200 OK with the expected text
-	http_helper.HttpGetWithRetry(t, url, 200, expectedServerText, maxRetries, timeBetweenRetries)
+	http_helper.HttpGetWithRetry(t, url, &tlsConfig, 200, expectedServerText, maxRetries, timeBetweenRetries)
 }
