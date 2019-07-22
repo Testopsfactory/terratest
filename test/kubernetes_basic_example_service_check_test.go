@@ -9,6 +9,7 @@
 package test
 
 import (
+	"crypto/tls"
 	"fmt"
 	"path/filepath"
 	"strings"
