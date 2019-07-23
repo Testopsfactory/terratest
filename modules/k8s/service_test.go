@@ -9,6 +9,7 @@
 package k8s
 
 import (
+	"crypto/tls"
 	"fmt"
 	"strings"
 	"testing"
@@ -87,10 +88,15 @@ func TestGetServiceEndpointEReturnsAccessibleEndpointForNodePort(t *testing.T) {
 
 	service := GetService(t, options, "nginx-service")
 	endpoint := GetServiceEndpoint(t, options, service, 80)
+
+	// Setup a TLS configuration to submit with the helper, a blank struct is acceptable
+	tlsConfig := tls.Config{}
+
 	// Test up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", endpoint),
+		&tlsConfig,
 		30,
 		10*time.Second,
 		func(statusCode int, body string) bool {
