@@ -8,6 +8,7 @@
 package test
 
 import (
+	"crypto/tls"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -83,11 +84,16 @@ func TestHelmBasicExampleDeployment(t *testing.T) {
 	// Now we verify that the service will successfully boot and start serving requests
 	service := k8s.GetService(t, kubectlOptions, serviceName)
 	endpoint := k8s.GetServiceEndpoint(t, kubectlOptions, service, 80)
+
+	// Setup a TLS configuration to submit with the helper, a blank struct is acceptable
+	tlsConfig := tls.Config{}
+
 	// Test the endpoint for up to 5 minutes. This will only fail if we timeout waiting for the service to return a 200
 	// response.
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", endpoint),
+		&tlsConfig,
 		30,
 		10*time.Second,
 		func(statusCode int, body string) bool {

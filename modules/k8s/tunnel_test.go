@@ -9,6 +9,7 @@
 package k8s
 
 import (
+	"crypto/tls"
 	"fmt"
 	"strings"
 	"testing"
@@ -34,10 +35,14 @@ func TestTunnelOpensAPortForwardTunnelToPod(t *testing.T) {
 	defer tunnel.Close()
 	tunnel.ForwardPort(t)
 
+	// Setup a TLS configuration to submit with the helper, a blank struct is acceptable
+	tlsConfig := tls.Config{}
+
 	// Try to access the nginx service on the local port, retrying until we get a good response for up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", tunnel.Endpoint()),
+		&tlsConfig,
 		60,
 		5*time.Second,
 		verifyNginxWelcomePage,
@@ -61,10 +66,14 @@ func TestTunnelOpensAPortForwardTunnelToService(t *testing.T) {
 	defer tunnel.Close()
 	tunnel.ForwardPort(t)
 
+	// Setup a TLS configuration to submit with the helper, a blank struct is acceptable
+	tlsConfig := tls.Config{}
+
 	// Try to access the nginx service on the local port, retrying until we get a good response for up to 5 minutes
 	http_helper.HttpGetWithRetryWithCustomValidation(
 		t,
 		fmt.Sprintf("http://%s", tunnel.Endpoint()),
+		&tlsConfig,
 		60,
 		5*time.Second,
 		verifyNginxWelcomePage,
