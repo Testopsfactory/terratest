@@ -31,22 +31,22 @@ func CreateNamespaceE(t *testing.T, options *KubectlOptions, namespaceName strin
 }
 
 // GetNamespace will query the Kubernetes cluster targeted by the provided options for the requested namespace. This will
-// fail the test if there is an error in creating the namespace.
-func GetNamespace(t *testing.T, options *KubectlOptions, namespaceName string) corev1.Namespace {
+// fail the test if there is an error in getting the namespace or if the namespace doesn't exist.
+func GetNamespace(t *testing.T, options *KubectlOptions, namespaceName string) *corev1.Namespace {
 	namespace, err := GetNamespaceE(t, options, namespaceName)
 	require.NoError(t, err)
+	require.NotNil(t, namespace)
 	return namespace
 }
 
 // GetNamespaceE will query the Kubernetes cluster targeted by the provided options for the requested namespace.
-func GetNamespaceE(t *testing.T, options *KubectlOptions, namespaceName string) (corev1.Namespace, error) {
+func GetNamespaceE(t *testing.T, options *KubectlOptions, namespaceName string) (*corev1.Namespace, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
-		return corev1.Namespace{}, err
+		return nil, err
 	}
 
-	namespace, err := clientset.CoreV1().Namespaces().Get(namespaceName, metav1.GetOptions{})
-	return *namespace, err
+	return clientset.CoreV1().Namespaces().Get(namespaceName, metav1.GetOptions{})
 }
 
 // DeleteNamespace will delete the requested namespace from the Kubernetes cluster targeted by the provided options. This will
