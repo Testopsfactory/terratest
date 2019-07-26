@@ -3,8 +3,25 @@
 This folder contains a simple Terraform module that deploys resources in [AWS](https://aws.amazon.com/) to demonstrate
 how you can use Terratest to write automated tests for your AWS Terraform code. This module deploys an [EC2
 Instance](https://aws.amazon.com/ec2/) with a public IP in the AWS region specified in the `aws_region` variable. The
-EC2 Instance allows SSH requests on the port specified by the `ssh_port` variable, and is configured to accept
-passwords for authentication.
+EC2 Instance allows SSH requests on the port specified by the `ssh_port` variable, and is configured with a user data
+script so that it will accept passwords for authentication.
+
+Please note that the Terraform deployment outlined in
+[the example directory for this test](/examples/terraform-ssh-password-example) will expect a default VPC to exist in
+the target region for deployments to go into.
+
+If this default VPC has been deleted from your AWS account, it can be recreated with the following command:
+
+``` shell
+$ aws ec2 create-default-vpc --region eu-west-2
+{
+    "Vpc": {
+        "CidrBlock": "172.31.0.0/16",
+        "InstanceTenancy": "default",
+        "IsDefault": true,
+        "State": "pending",
+        ...
+```
 
 Check out [test/terraform_ssh_password_example_test.go](/test/terraform_ssh_password_example_test.go) to see how you
 can write automated tests for this module.
