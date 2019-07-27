@@ -1,6 +1,7 @@
 package http_helper
 
 import (
+	"crypto/tls"
 	"sync"
 	"testing"
 	"time"
@@ -35,8 +36,8 @@ func ContinuouslyCheckUrl(
 				logger.Logf(t, "Got signal to stop downtime checks for URL %s.\n", url)
 				return
 			case <-time.After(sleepBetweenChecks):
-				statusCode, body, err := HttpGetE(t, url)
-				// Nonblocking send, defaulting to logging a warning if there is no channel reader
+				statusCode, body, err := HttpGetE(t, url, &tls.Config{})
+				// Non-blocking send, defaulting to logging a warning if there is no channel reader
 				select {
 				case responses <- GetResponse{StatusCode: statusCode, Body: body}:
 					// do nothing since all we want to do is send the response

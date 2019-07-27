@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
@@ -21,8 +22,8 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
-// Test that we can install a remote chart (e.g stable/chartmuseum)
-func TestRemoteChartInstall(t *testing.T) {
+// Test that we can install and upgrade a remote chart (e.g stable/chartmuseum)
+func TestRemoteChartInstallAndUpgrade(t *testing.T) {
 	t.Parallel()
 
 	helmChart := "stable/chartmuseum"
@@ -64,6 +65,28 @@ func TestRemoteChartInstall(t *testing.T) {
 	for _, pod := range pods {
 		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, 30, 10*time.Second)
 	}
+
+	// Setting replica count to 2 to check the upgrade functionality.
+	// After successful upgrade , the count of pods should be equal to 2.
+	options.SetValues = map[string]string{
+		"replicaCount": "2",
+		"service.type": "NodePort",
+	}
+	Upgrade(t, options, helmChart, releaseName)
+
+	// Get pod and wait for it to be avaialable
+	// To get the pod, we need to filter it using the labels that the helm chart creates
+	filters = metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app=chartmuseum,release=%s", releaseName),
+	}
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, 2, 30, 10*time.Second)
+	pods = k8s.ListPods(t, kubectlOptions, filters)
+	for _, pod := range pods {
+		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, 30, 10*time.Second)
+	}
+
+	// Verify number of pods are equal to 2
+	assert.Equal(t, len(pods), 2, "The pods count should be equal to 2 post upgrade")
 
 	// Verify service is accessible. Wait for it to become available and then hit the endpoint.
 	// Service name is RELEASE_NAME-CHART_NAME
