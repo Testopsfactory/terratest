@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// getVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf
-func getVirtualMachineClient(subscriptionID string) (compute.VirtualMachinesClient, error) {
+// GetVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf
+func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
-		return compute.NewVirtualMachinesClient(""), err
+		return nil, err
 	}
 
 	// Create a VM client
@@ -22,17 +22,17 @@ func getVirtualMachineClient(subscriptionID string) (compute.VirtualMachinesClie
 	// Create an authorizer
 	authorizer, err := NewAuthorizer()
 	if err != nil {
-		return compute.NewVirtualMachinesClient(""), err
+		return nil, err
 	}
 
 	// Attach authorizer to the client
 	vmClient.Authorizer = *authorizer
 
-	return vmClient, nil
+	return &vmClient, nil
 }
 
 // GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine
-func GetSizeOfVirtualMachine(t *testing.T, vmName string, resGroupName string, subscriptionID string) string {
+func GetSizeOfVirtualMachine(t *testing.T, vmName string, resGroupName string, subscriptionID string) compute.VirtualMachineSizeTypes {
 	size, err := GetSizeOfVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
@@ -40,7 +40,7 @@ func GetSizeOfVirtualMachine(t *testing.T, vmName string, resGroupName string, s
 }
 
 // GetSizeOfVirtualMachineE gets the size type of the given Azure Virtual Machine
-func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, subscriptionID string) (string, error) {
+func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, subscriptionID string) (compute.VirtualMachineSizeTypes, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {
@@ -48,7 +48,7 @@ func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, 
 	}
 
 	// Create a VM client
-	vmClient, err := getVirtualMachineClient(subscriptionID)
+	vmClient, err := GetVirtualMachineClient(subscriptionID)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +59,7 @@ func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, 
 		return "", err
 	}
 
-	return string(vm.VirtualMachineProperties.HardwareProfile.VMSize), nil
+	return vm.VirtualMachineProperties.HardwareProfile.VMSize, nil
 }
 
 // GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map
@@ -82,7 +82,7 @@ func GetTagsForVirtualMachineE(t *testing.T, vmName string, resGroupName string,
 	}
 
 	// Create a VM client
-	vmClient, err := getVirtualMachineClient(subscriptionID)
+	vmClient, err := GetVirtualMachineClient(subscriptionID)
 	if err != nil {
 		return tags, err
 	}

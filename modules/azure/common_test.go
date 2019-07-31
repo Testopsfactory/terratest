@@ -1,8 +1,13 @@
 package azure
 
-import "testing"
+import (
+	"github.com/stretchr/testify/require"
+	"testing"
+)
 
-func Test_getTargetAzureSubscription(t *testing.T) {
+func TestGetTargetAzureSubscription(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		subID string
 	}
@@ -20,18 +25,19 @@ func Test_getTargetAzureSubscription(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := getTargetAzureSubscription(tt.args.subID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getTargetAzureSubscription() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("getTargetAzureSubscription() = %v, want %v", got, tt.want)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.Equal(t, tt.want, got)
 			}
 		})
 	}
 }
 
-func Test_getTargetAzureResourceGroupName(t *testing.T) {
+func TestGetTargetAzureResourceGroupName(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		rgName string
 	}
@@ -49,12 +55,11 @@ func Test_getTargetAzureResourceGroupName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := getTargetAzureResourceGroupName(tt.args.rgName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getTargetAzureResourceGroupName() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("getTargetAzureResourceGroupName() = %v, want %v", got, tt.want)
+
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.Equal(t, tt.want, got)
 			}
 		})
 	}
