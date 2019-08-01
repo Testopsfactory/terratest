@@ -1,10 +1,14 @@
 package azure
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 const (
-	// AzureSubscriptionID is an optional env variable custom to Terratest to designate a target Azure subscription ID
-	AzureSubscriptionID = "AZURE_SUB_ID"
+	// AzureSubscriptionID is an optional env variable supported by the `azurerm` Terraform provider to
+	// designate a target Azure subscription ID
+	AzureSubscriptionID = "ARM_SUBSCRIPTION_ID"
 
 	// AzureResGroupName is an optional env variable custom to Terratest to designate a target Azure resource group
 	AzureResGroupName = "AZURE_RES_GROUP_NAME"
@@ -13,6 +17,7 @@ const (
 // getTargetAzureSubscription is a helper function to find the correct target Azure Subscription ID,
 // with provided arguments taking precedence over environment variables
 func getTargetAzureSubscription(subscriptionID string) (string, error) {
+	fmt.Printf("Initial subscription ID is %s\n", subscriptionID)
 	if subscriptionID == "" {
 		if id, exists := os.LookupEnv(AzureSubscriptionID); exists {
 			return id, nil
@@ -20,6 +25,8 @@ func getTargetAzureSubscription(subscriptionID string) (string, error) {
 
 		return "", SubscriptionIDNotFound{}
 	}
+
+	fmt.Printf("Final subscription ID is %s\n", subscriptionID)
 
 	return subscriptionID, nil
 }
