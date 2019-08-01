@@ -95,7 +95,7 @@ required = [
 
 [[constraint]]
   name = "k8s.io/kubernetes"
-  version = "v1.13.3"
+  version = "v1.15.1"
 
 [[constraint]]
   name = "github.com/json-iterator/go"
