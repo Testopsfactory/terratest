@@ -97,6 +97,6 @@ required = [
   name = "github.com/json-iterator/go"
   version = "v1.1.5"
 
-[[override]]
+[[constraint]]
   name = "k8s.io/api"
   revision = "a33c8200050fc0751848276811abf3fc029b3133"
