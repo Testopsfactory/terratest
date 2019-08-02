@@ -86,17 +86,21 @@ required = [
 # Kubernetes API
 
 [[constraint]]
-  branch = "release-1.12"
   name = "k8s.io/apimachinery"
+  branch = "release-1.12"
 
 [[constraint]]
-  branch = "release-9.0"
   name = "k8s.io/client-go"
+  branch = "release-9.0"
+
+[[constraint]]
+  name = "k8s.io/kubernetes"
+  version = "v1.15.1"
 
 [[constraint]]
   name = "github.com/json-iterator/go"
   version = "v1.1.5"
 
-[[override]]
+[[constraint]]
   name = "k8s.io/api"
   revision = "a33c8200050fc0751848276811abf3fc029b3133"

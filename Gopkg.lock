@@ -804,12 +804,12 @@
   revision = "13596e875accbd333e0b5bd5fd9462185acd9958"
 
 [[projects]]
-  digest = "1:51314886250b22f73377febaadd972084684122e2e1d3004f388dff60754ba05"
+  digest = "1:0eb0e54e287f561fa804eba0640e99c857606aa47c04c0a41ce6e395e0ea3b7a"
   name = "k8s.io/kubernetes"
   packages = ["pkg/kubectl/generate"]
   pruneopts = "UT"
-  revision = "721bfa751924da8d1680787490c54b9179b1fed0"
-  version = "v1.13.3"
+  revision = "4485c6f18cee9a5d3c3b4e523bd27972b1b53892"
+  version = "v1.15.1"
 
 [solve-meta]
   analyzer-name = "dep"
