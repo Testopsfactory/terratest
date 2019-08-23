@@ -13,6 +13,7 @@ variety of helper functions and patterns for common infrastructure testing tasks
 - Testing Docker images
 - Executing commands on servers over SSH
 - Working with AWS APIs
+- Working with Azure APIs
 - Working with GCP APIs
 - Working with Kubernetes APIs
 - Testing Helm Charts
@@ -231,6 +232,7 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 | Package            | Description                                                                                                                                                                                                                                                                                          |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **aws**            | Functions that make it easier to work with the AWS APIs. Examples: find an EC2 Instance by tag, get the IPs of EC2 Instances in an ASG, create an EC2 KeyPair, look up a VPC ID.                                                                                                                     |
+| **azure**          | Functions that make it easier to work with the Azure APIs. Examples: get the size of a virtual machine, get the tags of a virtual machine.                                                                                                                                                           |
 | **collections**    | Go doesn't have much of a collections library built-in, so this package has a few helper methods for working with lists and maps. Examples: subtract two lists from each other.                                                                                                                      |
 | **docker**         | Functions that make it easier to work with Docker and Docker Compose. Examples: run `docker-compose` commands.                                                                                                                                                                                       |
 | **environment**    | Functions for interacting with os environment. Examples: check for first non empty environment variable in a list.                                                                                                                                                                                   |
