@@ -5,50 +5,26 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 )
 
-const (
-	doBodyPath         = "/doBody"
-	doHeadersPath      = "/doHeaders"
-	wrongStatusPath    = "/wrongStatus"
-	requestTimeoutPath = "/requestTimeout"
-	retryPath          = "/retry"
-)
-
-var baseUrl string
-
-func TestHttpDo(t *testing.T) {
-	t.Parallel()
-
-	handlers := map[string]func(http.ResponseWriter, *http.Request){
-		doBodyPath:         bodyCopyHandler,
-		doHeadersPath:      headersCopyHandler,
-		wrongStatusPath:    wrongStatusHandler,
-		requestTimeoutPath: sleepingHandler,
-		retryPath:          retryHandler,
-	}
-	listener, port := RunDummyHandlerServer(t, handlers)
-	defer shutDownServer(t, listener)
-
-	baseUrl = fmt.Sprintf("http://localhost:%d", port)
-
-	t.Run("okBody", okBody)
-	t.Run("okHeaders", okHeaders)
-	t.Run("wrongStatus", wrongStatus)
-	t.Run("requestTimeout", requestTimeout)
-	t.Run("okWithRetry", okWithRetry)
-	t.Run("errorWithRetry", errorWithRetry)
+func getTestServerForFunction(handler func(w http.ResponseWriter,
+	r *http.Request)) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(handler))
 }
 
-func okBody(t *testing.T) {
-	url := fmt.Sprintf("%s%s", baseUrl, doBodyPath)
+func TestOkBody(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(bodyCopyHandler)
+	defer ts.Close()
+	url := ts.URL
 	expectedBody := "Hello, Terratest!"
 	body := bytes.NewReader([]byte(expectedBody))
-	statusCode, respBody := HttpDo(t, "POST", url, body, nil)
+	statusCode, respBody := HTTPDo(t, "POST", url, body, nil)
 
 	expectedCode := 200
 	if statusCode != expectedCode {
@@ -59,10 +35,38 @@ func okBody(t *testing.T) {
 	}
 }
 
-func okHeaders(t *testing.T) {
-	url := fmt.Sprintf("%s%s", baseUrl, doHeadersPath)
+func TestHTTPDoWithValidation(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(bodyCopyHandler)
+	defer ts.Close()
+	url := ts.URL
+	expectedBody := "Hello, Terratest!"
+	body := bytes.NewReader([]byte(expectedBody))
+	HTTPDoWithValidation(t, "POST", url, body, nil, 200, expectedBody)
+}
+
+func TestHTTPDoWithCustomValidation(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(bodyCopyHandler)
+	defer ts.Close()
+	url := ts.URL
+	expectedBody := "Hello, Terratest!"
+	body := bytes.NewReader([]byte(expectedBody))
+
+	customValidation := func(statusCode int, response string) bool {
+		return statusCode == 200 && response == expectedBody
+	}
+
+	HTTPDoWithCustomValidation(t, "POST", url, body, nil, customValidation)
+}
+
+func TestOkHeaders(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(headersCopyHandler)
+	defer ts.Close()
+	url := ts.URL
 	headers := map[string]string{"Authorization": "Bearer 1a2b3c99ff"}
-	statusCode, respBody := HttpDo(t, "POST", url, nil, headers)
+	statusCode, respBody := HTTPDo(t, "POST", url, nil, headers)
 
 	expectedCode := 200
 	if statusCode != expectedCode {
@@ -74,9 +78,12 @@ func okHeaders(t *testing.T) {
 	}
 }
 
-func wrongStatus(t *testing.T) {
-	url := fmt.Sprintf("%s%s", baseUrl, wrongStatusPath)
-	statusCode, _ := HttpDo(t, "POST", url, nil, nil)
+func TestWrongStatus(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(wrongStatusHandler)
+	defer ts.Close()
+	url := ts.URL
+	statusCode, _ := HTTPDo(t, "POST", url, nil, nil)
 
 	expectedCode := 500
 	if statusCode != expectedCode {
@@ -84,9 +91,12 @@ func wrongStatus(t *testing.T) {
 	}
 }
 
-func requestTimeout(t *testing.T) {
-	url := fmt.Sprintf("%s%s", baseUrl, requestTimeoutPath)
-	_, _, err := HttpDoE(t, "DELETE", url, nil, nil)
+func TestRequestTimeout(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(sleepingHandler)
+	defer ts.Close()
+	url := ts.URL
+	_, _, err := HTTPDoE(t, "DELETE", url, nil, nil)
 
 	if err == nil {
 		t.Error("handler didn't return a timeout error")
@@ -96,18 +106,22 @@ func requestTimeout(t *testing.T) {
 	}
 }
 
-var counter int
-
-func okWithRetry(t *testing.T) {
+func TestOkWithRetry(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(retryHandler)
+	defer ts.Close()
+	url := ts.URL
 	counter = 3
-	url := fmt.Sprintf("%s%s", baseUrl, retryPath)
-	HttpDoWithRetry(t, "POST", url, nil, nil, 200, 10, time.Second)
+	HTTPDoWithRetry(t, "POST", url, nil, nil, 200, 10, time.Second)
 }
 
-func errorWithRetry(t *testing.T) {
-	counter = 3
-	url := fmt.Sprintf("%s%s", baseUrl, retryPath)
-	_, err := HttpDoWithRetryE(t, "POST", url, nil, nil, 200, 2, time.Second)
+func TestErrorWithRetry(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(failRetryHandler)
+	defer ts.Close()
+	failCounter = 3
+	url := ts.URL
+	_, err := HTTPDoWithRetryE(t, "POST", url, nil, nil, 200, 2, time.Second)
 
 	if err == nil {
 		t.Error("handler didn't return a retry error")
@@ -143,9 +157,22 @@ func sleepingHandler(w http.ResponseWriter, r *http.Request) {
 	time.Sleep(time.Second * 15)
 }
 
+var counter int
+
 func retryHandler(w http.ResponseWriter, r *http.Request) {
 	if counter > 0 {
 		counter--
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+var failCounter int
+
+func failRetryHandler(w http.ResponseWriter, r *http.Request) {
+	if failCounter > 0 {
+		failCounter--
 		w.WriteHeader(http.StatusServiceUnavailable)
 	} else {
 		w.WriteHeader(http.StatusOK)
