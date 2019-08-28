@@ -91,7 +91,7 @@ func HttpGetWithCustomValidationE(t *testing.T, url string, tlsConfig *tls.Confi
 	}
 
 	if !validateResponse(statusCode, body) {
-		return ValidationFunctionFailed{URL: url, Status: statusCode, Body: body}
+		return ValidationFunctionFailed{Url: url, Status: statusCode, Body: body}
 	}
 
 	return nil
@@ -192,7 +192,7 @@ func HTTPDoWithRetryE(t *testing.T, method string, url string, body io.Reader, h
 		}
 		logger.Logf(t, "output: %v", out)
 		if statusCode != expectedStatus {
-			return "", ValidationFunctionFailed{URL: url, Status: statusCode}
+			return "", ValidationFunctionFailed{Url: url, Status: statusCode}
 		}
 		return out, nil
 	})
@@ -255,7 +255,7 @@ func HTTPDoWithCustomValidationE(t *testing.T, method string, url string, body i
 	}
 
 	if !validateResponse(statusCode, respBody) {
-		return ValidationFunctionFailed{URL: url, Status: statusCode, Body: respBody}
+		return ValidationFunctionFailed{Url: url, Status: statusCode, Body: respBody}
 	}
 
 	return nil
