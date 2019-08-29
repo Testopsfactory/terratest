@@ -1,8 +1,14 @@
+// +build azure
+
+// NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
+// CircleCI.
+
 package azure
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetTargetAzureSubscription(t *testing.T) {
