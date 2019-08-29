@@ -46,7 +46,7 @@ func RunDummyServerE(t *testing.T, text string) (net.Listener, int, error) {
 	return listener, port, err
 }
 
-// RunDummyHandlerServer runs a dummy HTTP server on a unique port that will serve given handlers. Returns the Listener for the server,
+// RunDummyServerWithHandlers runs a dummy HTTP server on a unique port that will serve given handlers. Returns the Listener for the server,
 // the port it's listening on, or an error if something went wrong while trying to start the listener. Make sure to call
 // the Close() method on the Listener when you're done!
 func RunDummyServerWithHandlers(t *testing.T, handlers map[string]func(http.ResponseWriter, *http.Request)) (net.Listener, int) {
@@ -57,7 +57,7 @@ func RunDummyServerWithHandlers(t *testing.T, handlers map[string]func(http.Resp
 	return listener, port
 }
 
-// RunDummyHandlerServerE runs a dummy HTTP server on a unique port that will server given handlers. Returns the Listener for the server,
+// RunDummyServerWithHandlersE runs a dummy HTTP server on a unique port that will server given handlers. Returns the Listener for the server,
 // the port it's listening on, or an error if something went wrong while trying to start the listener. Make sure to call
 // the Close() method on the Listener when you're done!
 func RunDummyServerWithHandlersE(t *testing.T, handlers map[string]func(http.ResponseWriter, *http.Request)) (net.Listener, int, error) {
