@@ -1,8 +1,9 @@
 package azure
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetTargetAzureSubscription(t *testing.T) {
