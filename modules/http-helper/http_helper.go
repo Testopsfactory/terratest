@@ -57,7 +57,7 @@ func HttpGetE(t *testing.T, url string, tlsConfig *tls.Config) (int, string, err
 	return resp.StatusCode, strings.TrimSpace(string(body)), nil
 }
 
-// HTTPGetWithValidation performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// HttpGetWithValidation performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, fail the test.
 func HttpGetWithValidation(t *testing.T, url string, tlsConfig *tls.Config, expectedStatusCode int, expectedBody string) {
 	err := HttpGetWithValidationE(t, url, tlsConfig, expectedStatusCode, expectedBody)
@@ -66,7 +66,7 @@ func HttpGetWithValidation(t *testing.T, url string, tlsConfig *tls.Config, expe
 	}
 }
 
-// HTTPGetWithValidationE performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// HttpGetWithValidationE performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, return an error.
 func HttpGetWithValidationE(t *testing.T, url string, tlsConfig *tls.Config, expectedStatusCode int, expectedBody string) error {
 	return HttpGetWithCustomValidationE(t, url, tlsConfig, func(statusCode int, body string) bool {
@@ -97,7 +97,7 @@ func HttpGetWithCustomValidationE(t *testing.T, url string, tlsConfig *tls.Confi
 	return nil
 }
 
-// HTTPGetWithRetry repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
+// HttpGetWithRetry repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetry(t *testing.T, url string, tlsConfig *tls.Config, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
 	err := HttpGetWithRetryE(t, url, tlsConfig, expectedStatus, expectedBody, retries, sleepBetweenRetries)
@@ -106,7 +106,7 @@ func HttpGetWithRetry(t *testing.T, url string, tlsConfig *tls.Config, expectedS
 	}
 }
 
-// HTTPGetWithRetryE repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
+// HttpGetWithRetryE repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetryE(t *testing.T, url string, tlsConfig *tls.Config, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
@@ -116,7 +116,7 @@ func HttpGetWithRetryE(t *testing.T, url string, tlsConfig *tls.Config, expected
 	return err
 }
 
-// HTTPGetWithRetryWithCustomValidation repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
+// HttpGetWithRetryWithCustomValidation repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
 // has been exceeded.
 func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, tlsConfig *tls.Config, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) {
 	err := HttpGetWithRetryWithCustomValidationE(t, url, tlsConfig, retries, sleepBetweenRetries, validateResponse)
@@ -125,7 +125,7 @@ func HttpGetWithRetryWithCustomValidation(t *testing.T, url string, tlsConfig *t
 	}
 }
 
-// HTTPGetWithRetryWithCustomValidationE repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
+// HttpGetWithRetryWithCustomValidationE repeatedly performs an HTTP GET on the given URL until the given validation function returns true or max retries
 // has been exceeded.
 func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, tlsConfig *tls.Config, retries int, sleepBetweenRetries time.Duration, validateResponse func(int, string) bool) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
@@ -209,7 +209,7 @@ func HTTPDoWithValidationRetry(t *testing.T, method string, url string, body io.
 	}
 }
 
-// HTTPDoWithValidaitonRetryE repeatedly performs the given HTTP method on the given URL until the given status code and
+// HTTPDoWithValidationRetryE repeatedly performs the given HTTP method on the given URL until the given status code and
 // body are returned or until max retries has been exceeded.
 func HTTPDoWithValidationRetryE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
