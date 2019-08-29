@@ -34,6 +34,8 @@
 required = [
     "github.com/json-iterator/go",
     "k8s.io/api",
+    "github.com/golang/protobuf/proto",
+    "contrib.go.opencensus.io/exporter/ocagent",
 ]
 
 
@@ -43,7 +45,7 @@ required = [
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
-  version = "31.1.0"
+  version = "32.5.0"
 
 [[constraint]]
   name = "github.com/Azure/go-autorest"
@@ -103,12 +105,21 @@ required = [
 
 [[constraint]]
   name = "k8s.io/kubernetes"
-  version = "v1.15.1"
+  version = "1.15.1"
 
 [[constraint]]
   name = "github.com/json-iterator/go"
-  version = "v1.1.5"
+  version = "1.1.5"
 
 [[constraint]]
   name = "k8s.io/api"
   revision = "a33c8200050fc0751848276811abf3fc029b3133"
+
+# Azure SDK transitive dependencies
+[[constraint]]
+  name = "github.com/golang/protobuf"
+  version = "1.3.1"
+
+[[constraint]]
+  name = "contrib.go.opencensus.io/exporter/ocagent"
+  version = "0.4.5"
