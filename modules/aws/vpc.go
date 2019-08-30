@@ -39,30 +39,60 @@ func GetDefaultVpc(t *testing.T, region string) *Vpc {
 
 // GetDefaultVpcE fetches information about the default VPC in the given region.
 func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
+	defaultVpcFilter := ec2.Filter{Name: &isDefaultFilterName, Values: []*string{&isDefaultFilterValue}}
+	vpcs, err := GetVpcsE(t, []*ec2.Filter{&defaultVpcFilter}, region)
+
+	numVpcs := len(vpcs)
+	if numVpcs != 1 {
+		return nil, fmt.Errorf("Expected to find one default VPC in region %s but found %s", region, strconv.Itoa(numVpcs))
+	}
+
+	return vpcs[0], err
+}
+
+func GetVpcById(t *testing.T, vpcId string, region string) *Vpc {
+	vpc, err := GetVpcByIdE(t, vpcId, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return vpc
+}
+
+func GetVpcByIdE(t *testing.T, vpcId string, region string) (*Vpc, error) {
+	vpcIdFilter := ec2.Filter{Name: &vpcIDFilterName, Values: []*string{&vpcId}}
+	vpcs, err := GetVpcsE(t, []*ec2.Filter{&vpcIdFilter}, region)
+
+	numVpcs := len(vpcs)
+	if numVpcs != 1 {
+		return nil, fmt.Errorf("Expected to find one VPC in region %s but found %s", region, strconv.Itoa(numVpcs))
+	}
+
+	return vpcs[0], err
+}
+
+func GetVpcsE(t *testing.T, filters []*ec2.Filter, region string) ([]*Vpc, error) {
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
 		return nil, err
 	}
 
-	defaultVpcFilter := ec2.Filter{Name: &isDefaultFilterName, Values: []*string{&isDefaultFilterValue}}
-	vpcs, err := client.DescribeVpcs(&ec2.DescribeVpcsInput{Filters: []*ec2.Filter{&defaultVpcFilter}})
+	vpcs, err := client.DescribeVpcs(&ec2.DescribeVpcsInput{Filters: filters})
 	if err != nil {
 		return nil, err
 	}
 
 	numVpcs := len(vpcs.Vpcs)
-	if numVpcs != 1 {
-		return nil, fmt.Errorf("Expected to find one default VPC in region %s but found %s", region, strconv.Itoa(numVpcs))
+	retVal := make([]*Vpc, numVpcs)
+	
+	for i, vpc := range vpcs.Vpcs {
+		subnets, err := GetSubnetsForVpcE(t, aws.StringValue(vpc.VpcId), region)
+		if err != nil {
+			return nil, err
+		}
+		retVal[i] = &Vpc{Id: aws.StringValue(vpc.VpcId), Name: FindVpcName(vpc), Subnets: subnets}
 	}
-
-	defaultVpc := vpcs.Vpcs[0]
-
-	subnets, err := GetSubnetsForVpcE(t, aws.StringValue(defaultVpc.VpcId), region)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Vpc{Id: aws.StringValue(defaultVpc.VpcId), Name: FindVpcName(defaultVpc), Subnets: subnets}, nil
+	
+	return retVal, nil
 }
 
 // FindVpcName extracts the VPC name from its tags (if any). Fall back to "Default" if it's the default VPC or empty string
