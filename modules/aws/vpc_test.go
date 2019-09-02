@@ -43,7 +43,7 @@ func TestGetVpcsE(t *testing.T) {
 	assert.Equal(t, len(vpcs), 1)
 	assert.NotEmpty(t, vpcs[0].Name)
 
-	// the default VPS has by default one subnet per availability zone
+	// the default VPC has by default one subnet per availability zone
 	// https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html
 	assert.Equal(t, len(vpcs[0].Subnets), len(azs))
 }
