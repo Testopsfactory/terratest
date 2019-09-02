@@ -83,7 +83,7 @@ func GetVpcsE(t *testing.T, filters []*ec2.Filter, region string) ([]*Vpc, error
 
 	numVpcs := len(vpcs.Vpcs)
 	retVal := make([]*Vpc, numVpcs)
-	
+
 	for i, vpc := range vpcs.Vpcs {
 		subnets, err := GetSubnetsForVpcE(t, aws.StringValue(vpc.VpcId), region)
 		if err != nil {
@@ -91,7 +91,7 @@ func GetVpcsE(t *testing.T, filters []*ec2.Filter, region string) ([]*Vpc, error
 		}
 		retVal[i] = &Vpc{Id: aws.StringValue(vpc.VpcId), Name: FindVpcName(vpc), Subnets: subnets}
 	}
-	
+
 	return retVal, nil
 }
 

@@ -21,24 +21,24 @@ func TestGetDefaultVpc(t *testing.T) {
 	assert.Regexp(t, "^vpc-[[:alnum:]]+$", vpc.Id)
 }
 
-func TestGetVpcById(t *testing.T){
+func TestGetVpcById(t *testing.T) {
 	region := GetRandomStableRegion(t, nil, nil)
 	vpc := createVpc(t, region)
 	defer deleteVpc(t, *vpc.VpcId, region)
 
-	vpcTest := GetVpcById(t, *vpc.VpcId, region)	
-	assert.Equal(t, *vpc.VpcId, vpcTest.Id)	
+	vpcTest := GetVpcById(t, *vpc.VpcId, region)
+	assert.Equal(t, *vpc.VpcId, vpcTest.Id)
 }
 
-func TestGetVpcsE(t *testing.T){
+func TestGetVpcsE(t *testing.T) {
 	region := GetRandomStableRegion(t, nil, nil)
 	azs := GetAvailabilityZones(t, region)
 
 	var isDefaultFilterName = "isDefault"
 	var isDefaultFilterValue = "true"
-	
+
 	defaultVpcFilter := ec2.Filter{Name: &isDefaultFilterName, Values: []*string{&isDefaultFilterValue}}
-	vpcs, _ := GetVpcsE(t, []*ec2.Filter{&defaultVpcFilter}, region)	
+	vpcs, _ := GetVpcsE(t, []*ec2.Filter{&defaultVpcFilter}, region)
 
 	assert.Equal(t, len(vpcs), 1)
 	assert.NotEmpty(t, vpcs[0].Name)
@@ -68,9 +68,9 @@ func createVpc(t *testing.T, region string) ec2.Vpc {
 	return *createVpcOutput.Vpc
 }
 
-func deleteVpc(t *testing.T, vpcId string, region string){
+func deleteVpc(t *testing.T, vpcId string, region string) {
 	ec2Client := NewEc2Client(t, region)
-	
+
 	_, err := ec2Client.DeleteVpc(&ec2.DeleteVpcInput{
 		VpcId: aws.String(vpcId),
 	})
