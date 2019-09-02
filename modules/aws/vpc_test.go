@@ -22,6 +22,8 @@ func TestGetDefaultVpc(t *testing.T) {
 }
 
 func TestGetVpcById(t *testing.T) {
+	t.Parallel()
+
 	region := GetRandomStableRegion(t, nil, nil)
 	vpc := createVpc(t, region)
 	defer deleteVpc(t, *vpc.VpcId, region)
@@ -31,6 +33,8 @@ func TestGetVpcById(t *testing.T) {
 }
 
 func TestGetVpcsE(t *testing.T) {
+	t.Parallel()
+
 	region := GetRandomStableRegion(t, nil, nil)
 	azs := GetAvailabilityZones(t, region)
 
