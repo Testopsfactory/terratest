@@ -38,8 +38,8 @@ func TestGetVpcsE(t *testing.T) {
 	region := GetRandomStableRegion(t, nil, nil)
 	azs := GetAvailabilityZones(t, region)
 
-	var isDefaultFilterName = "isDefault"
-	var isDefaultFilterValue = "true"
+	isDefaultFilterName := "isDefault"
+	isDefaultFilterValue := "true"
 
 	defaultVpcFilter := ec2.Filter{Name: &isDefaultFilterName, Values: []*string{&isDefaultFilterValue}}
 	vpcs, _ := GetVpcsE(t, []*ec2.Filter{&defaultVpcFilter}, region)
