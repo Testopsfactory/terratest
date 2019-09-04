@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/stretchr/testify/require"
 )
 
 // Vpc is an Amazon Virtual Private Cloud.
@@ -31,9 +32,7 @@ var isDefaultFilterValue = "true"
 // GetDefaultVpc fetches information about the default VPC in the given region.
 func GetDefaultVpc(t *testing.T, region string) *Vpc {
 	vpc, err := GetDefaultVpcE(t, region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return vpc
 }
 
@@ -50,14 +49,14 @@ func GetDefaultVpcE(t *testing.T, region string) (*Vpc, error) {
 	return vpcs[0], err
 }
 
+// GetVpcById fetches information about a VPC with given Id in the given region.
 func GetVpcById(t *testing.T, vpcId string, region string) *Vpc {
 	vpc, err := GetVpcByIdE(t, vpcId, region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return vpc
 }
 
+// GetVpcByIdE fetches information about a VPC with given Id in the given region.
 func GetVpcByIdE(t *testing.T, vpcId string, region string) (*Vpc, error) {
 	vpcIdFilter := ec2.Filter{Name: &vpcIDFilterName, Values: []*string{&vpcId}}
 	vpcs, err := GetVpcsE(t, []*ec2.Filter{&vpcIdFilter}, region)
@@ -70,6 +69,7 @@ func GetVpcByIdE(t *testing.T, vpcId string, region string) (*Vpc, error) {
 	return vpcs[0], err
 }
 
+// GetVpcsE fetches informations about VPCs from given regions limited by filters
 func GetVpcsE(t *testing.T, filters []*ec2.Filter, region string) ([]*Vpc, error) {
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
