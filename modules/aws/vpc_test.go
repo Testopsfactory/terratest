@@ -44,7 +44,7 @@ func TestGetVpcsE(t *testing.T) {
 	defaultVpcFilter := ec2.Filter{Name: &isDefaultFilterName, Values: []*string{&isDefaultFilterValue}}
 	vpcs, _ := GetVpcsE(t, []*ec2.Filter{&defaultVpcFilter}, region)
 
-	assert.Equal(t, len(vpcs), 1)
+	require.Equal(t, len(vpcs), 1)
 	assert.NotEmpty(t, vpcs[0].Name)
 
 	// the default VPC has by default one subnet per availability zone
