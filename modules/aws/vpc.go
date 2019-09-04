@@ -63,7 +63,7 @@ func GetVpcByIdE(t *testing.T, vpcId string, region string) (*Vpc, error) {
 
 	numVpcs := len(vpcs)
 	if numVpcs != 1 {
-		return nil, fmt.Errorf("Expected to find one VPC in region %s but found %s", region, strconv.Itoa(numVpcs))
+		return nil, fmt.Errorf("Expected to find one VPC with ID %s in region %s but found %s", vpcId, region, strconv.Itoa(numVpcs))
 	}
 
 	return vpcs[0], err
