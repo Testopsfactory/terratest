@@ -2,6 +2,7 @@
 package http_helper
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -137,7 +138,10 @@ func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, tlsConfig *
 
 // HTTPDo performs the given HTTP method on the given URL and return the HTTP status code and body.
 // If there's any error, fail the test.
-func HTTPDo(t *testing.T, method string, url string, body io.Reader, headers map[string]string) (int, string) {
+func HTTPDo(
+	t *testing.T, method string, url string, body io.Reader,
+	headers map[string]string,
+) (int, string) {
 	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers)
 	if err != nil {
 		t.Fatal(err)
@@ -146,7 +150,10 @@ func HTTPDo(t *testing.T, method string, url string, body io.Reader, headers map
 }
 
 // HTTPDoE performs the given HTTP method on the given URL and return the HTTP status code, body, and any error.
-func HTTPDoE(t *testing.T, method string, url string, body io.Reader, headers map[string]string) (int, string, error) {
+func HTTPDoE(
+	t *testing.T, method string, url string, body io.Reader,
+	headers map[string]string,
+) (int, string, error) {
 	logger.Logf(t, "Making an HTTP %s call to URL %s", method, url)
 
 	client := http.Client{
@@ -173,8 +180,13 @@ func HTTPDoE(t *testing.T, method string, url string, body io.Reader, headers ma
 // HTTPDoWithRetry repeatedly performs the given HTTP method on the given URL until the given status code and body are
 // returned or until max retries has been exceeded.
 // The function compares the expected status code against the received one and fails if they don't match.
-func HTTPDoWithRetry(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatus int, retries int, sleepBetweenRetries time.Duration) string {
-	out, err := HTTPDoWithRetryE(t, method, url, body, headers, expectedStatus, retries, sleepBetweenRetries)
+func HTTPDoWithRetry(
+	t *testing.T, method string, url string,
+	body []byte, headers map[string]string, expectedStatus int,
+	retries int, sleepBetweenRetries time.Duration,
+) string {
+	out, err := HTTPDoWithRetryE(t, method, url, body,
+		headers, expectedStatus, retries, sleepBetweenRetries)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,25 +196,36 @@ func HTTPDoWithRetry(t *testing.T, method string, url string, body io.Reader, he
 // HTTPDoWithRetryE repeatedly performs the given HTTP method on the given URL until the given status code and body are
 // returned or until max retries has been exceeded.
 // The function compares the expected status code against the received one and fails if they don't match.
-func HTTPDoWithRetryE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatus int, retries int, sleepBetweenRetries time.Duration) (string, error) {
-	out, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP %s to URL %s", method, url), retries, sleepBetweenRetries, func() (string, error) {
-		statusCode, out, err := HTTPDoE(t, method, url, body, headers)
-		if err != nil {
-			return "", err
-		}
-		logger.Logf(t, "output: %v", out)
-		if statusCode != expectedStatus {
-			return "", ValidationFunctionFailed{Url: url, Status: statusCode}
-		}
-		return out, nil
-	})
+func HTTPDoWithRetryE(
+	t *testing.T, method string, url string,
+	body []byte, headers map[string]string, expectedStatus int,
+	retries int, sleepBetweenRetries time.Duration,
+) (string, error) {
+	out, err := retry.DoWithRetryE(
+		t, fmt.Sprintf("HTTP %s to URL %s", method, url), retries,
+		sleepBetweenRetries, func() (string, error) {
+			bodyReader := bytes.NewReader(body)
+			statusCode, out, err := HTTPDoE(t, method, url, bodyReader, headers)
+			if err != nil {
+				return "", err
+			}
+			logger.Logf(t, "output: %v", out)
+			if statusCode != expectedStatus {
+				return "", ValidationFunctionFailed{Url: url, Status: statusCode}
+			}
+			return out, nil
+		})
 
 	return out, err
 }
 
 // HTTPDoWithValidationRetry repeatedly performs the given HTTP method on the given URL until the given status code and
 // body are returned or until max retries has been exceeded.
-func HTTPDoWithValidationRetry(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
+func HTTPDoWithValidationRetry(
+	t *testing.T, method string, url string,
+	body []byte, headers map[string]string, expectedStatus int,
+	expectedBody string, retries int, sleepBetweenRetries time.Duration,
+) {
 	err := HTTPDoWithValidationRetryE(t, method, url, body, headers, expectedStatus, expectedBody, retries, sleepBetweenRetries)
 	if err != nil {
 		t.Fatal(err)
@@ -211,10 +234,16 @@ func HTTPDoWithValidationRetry(t *testing.T, method string, url string, body io.
 
 // HTTPDoWithValidationRetryE repeatedly performs the given HTTP method on the given URL until the given status code and
 // body are returned or until max retries has been exceeded.
-func HTTPDoWithValidationRetryE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
-	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
-		return "", HTTPDoWithValidationE(t, method, url, body, headers, expectedStatus, expectedBody)
-	})
+func HTTPDoWithValidationRetryE(
+	t *testing.T, method string, url string,
+	body []byte, headers map[string]string, expectedStatus int,
+	expectedBody string, retries int, sleepBetweenRetries time.Duration,
+) error {
+	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries,
+		sleepBetweenRetries, func() (string, error) {
+			bodyReader := bytes.NewReader(body)
+			return "", HTTPDoWithValidationE(t, method, url, bodyReader, headers, expectedStatus, expectedBody)
+		})
 
 	return err
 }
