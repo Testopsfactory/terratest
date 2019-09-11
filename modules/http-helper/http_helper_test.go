@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func getTestServerForFunction(handler func(w http.ResponseWriter,
@@ -110,9 +112,12 @@ func TestOkWithRetry(t *testing.T) {
 	t.Parallel()
 	ts := getTestServerForFunction(retryHandler)
 	defer ts.Close()
+	body := "TEST_CONTENT"
+	bodyBytes := []byte(body)
 	url := ts.URL
 	counter = 3
-	HTTPDoWithRetry(t, "POST", url, nil, nil, 200, 10, time.Second)
+	response := HTTPDoWithRetry(t, "POST", url, bodyBytes, nil, 200, 10, time.Second)
+	require.Equal(t, body, response)
 }
 
 func TestErrorWithRetry(t *testing.T) {
@@ -165,6 +170,8 @@ func retryHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	} else {
 		w.WriteHeader(http.StatusOK)
+		bytes, _ := ioutil.ReadAll(r.Body)
+		w.Write(bytes)
 	}
 }
 
@@ -176,5 +183,7 @@ func failRetryHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	} else {
 		w.WriteHeader(http.StatusOK)
+		bytes, _ := ioutil.ReadAll(r.Body)
+		w.Write(bytes)
 	}
 }
