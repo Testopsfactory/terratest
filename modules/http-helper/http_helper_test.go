@@ -182,6 +182,7 @@ func failRetryHandler(w http.ResponseWriter, r *http.Request) {
 	if failCounter > 0 {
 		failCounter--
 		w.WriteHeader(http.StatusServiceUnavailable)
+		ioutil.ReadAll(r.Body)
 	} else {
 		w.WriteHeader(http.StatusOK)
 		bytes, _ := ioutil.ReadAll(r.Body)
