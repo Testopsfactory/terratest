@@ -19,10 +19,10 @@ func TestFormatTerraformVarsAsArgs(t *testing.T) {
 		{map[string]interface{}{"foo": 123}, []string{"-var", "foo=123"}},
 		{map[string]interface{}{"foo": true}, []string{"-var", "foo=1"}},
 		{map[string]interface{}{"foo": []int{1, 2, 3}}, []string{"-var", "foo=[1, 2, 3]"}},
-		{map[string]interface{}{"foo": map[string]string{"baz": "blah"}}, []string{"-var", "foo={baz = \"blah\"}"}},
+		{map[string]interface{}{"foo": map[string]string{"baz": "blah"}}, []string{"-var", "foo={\"baz\" = \"blah\"}"}},
 		{
 			map[string]interface{}{"str": "bar", "int": -1, "bool": false, "list": []string{"foo", "bar", "baz"}, "map": map[string]int{"foo": 0}},
-			[]string{"-var", "str=bar", "-var", "int=-1", "-var", "bool=0", "-var", "list=[\"foo\", \"bar\", \"baz\"]", "-var", "map={foo = 0}"},
+			[]string{"-var", "str=bar", "-var", "int=-1", "-var", "bool=0", "-var", "list=[\"foo\", \"bar\", \"baz\"]", "-var", "map={\"foo\" = 0}"},
 		},
 	}
 
@@ -62,11 +62,12 @@ func TestMapToHclString(t *testing.T) {
 		expected string
 	}{
 		{map[string]interface{}{}, "{}"},
-		{map[string]interface{}{"key1": "value1"}, "{key1 = \"value1\"}"},
-		{map[string]interface{}{"key1": 123}, "{key1 = 123}"},
-		{map[string]interface{}{"key1": true}, "{key1 = 1}"},
-		{map[string]interface{}{"key1": []int{1, 2, 3}}, "{key1 = [1, 2, 3]}"}, // Any value that isn't a primitive is forced into a string
-		{map[string]interface{}{"key1": "value1", "key2": 0, "key3": false}, "{key1 = \"value1\", key2 = 0, key3 = 0}"},
+		{map[string]interface{}{"key1": "value1"}, "{\"key1\" = \"value1\"}"},
+		{map[string]interface{}{"key1": 123}, "{\"key1\" = 123}"},
+		{map[string]interface{}{"key1": true}, "{\"key1\" = 1}"},
+		{map[string]interface{}{"key1": []int{1, 2, 3}}, "{\"key1\" = [1, 2, 3]}"}, // Any value that isn't a primitive is forced into a string
+		{map[string]interface{}{"key1": "value1", "key2": 0, "key3": false}, "{\"key1\" = \"value1\", \"key2\" = 0, \"key3\" = 0}"},
+		{map[string]interface{}{"key1.a.b.c": "value1"}, "{\"key1.a.b.c\" = \"value1\"}"},
 	}
 
 	for _, testCase := range testCases {
@@ -121,8 +122,8 @@ func TestSliceToHclString(t *testing.T) {
 		{[]interface{}{true}, "[1]"},
 		{[]interface{}{[]int{1, 2, 3}}, "[[1, 2, 3]]"}, // Any value that isn't a primitive is forced into a string
 		{[]interface{}{"foo", 0, false}, "[\"foo\", 0, 0]"},
-		{[]interface{}{map[string]interface{}{"foo": "bar"}}, "[{foo = \"bar\"}]"},
-		{[]interface{}{map[string]interface{}{"foo": "bar"}, map[string]interface{}{"foo": "bar"}}, "[{foo = \"bar\"}, {foo = \"bar\"}]"},
+		{[]interface{}{map[string]interface{}{"foo": "bar"}}, "[{\"foo\" = \"bar\"}]"},
+		{[]interface{}{map[string]interface{}{"foo": "bar"}, map[string]interface{}{"foo": "bar"}}, "[{\"foo\" = \"bar\"}, {\"foo\" = \"bar\"}]"},
 	}
 
 	for _, testCase := range testCases {
@@ -144,8 +145,8 @@ func TestToHclString(t *testing.T) {
 		{true, "1"},
 		{[]int{1, 2, 3}, "[1, 2, 3]"},
 		{[]string{"foo", "bar", "baz"}, "[\"foo\", \"bar\", \"baz\"]"},
-		{map[string]string{"key1": "value1"}, "{key1 = \"value1\"}"},
-		{map[string]int{"key1": 123}, "{key1 = 123}"},
+		{map[string]string{"key1": "value1"}, "{\"key1\" = \"value1\"}"},
+		{map[string]int{"key1": 123}, "{\"key1\" = 123}"},
 	}
 
 	for _, testCase := range testCases {

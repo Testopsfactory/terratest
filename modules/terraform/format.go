@@ -137,7 +137,7 @@ func mapToHclString(m map[string]interface{}) string {
 	keyValuePairs := []string{}
 
 	for key, value := range m {
-		keyValuePair := fmt.Sprintf("%s = %s", key, toHclString(value, true))
+		keyValuePair := fmt.Sprintf(`"%s" = %s`, key, toHclString(value, true))
 		keyValuePairs = append(keyValuePairs, keyValuePair)
 	}
 
