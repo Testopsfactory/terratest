@@ -143,6 +143,38 @@ func GetSubnetsForVpcE(t *testing.T, vpcID string, region string) ([]Subnet, err
 	return subnets, nil
 }
 
+// Returns True if a subnet is public.
+// A public subnet is a subnet that's associated with a route table that has a route to an Internet gateway.
+func IsPublicSubnet(t *testing.T, subnetId string, region string) bool {
+
+	var subnetIdFilterName = "association.subnet-id"
+
+	subnetIdFilter := ec2.Filter{
+		Name:   &subnetIdFilterName,
+		Values: []*string{&subnetId},
+	}
+
+	client, err := NewEc2ClientE(t, region)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rts, err := client.DescribeRouteTables(&ec2.DescribeRouteTablesInput{Filters: []*ec2.Filter{&subnetIdFilter}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, rt := range rts.RouteTables {
+		for _, r := range rt.Routes {
+			if *r.GatewayId != "" && *r.GatewayId != "local" {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // GetRandomPrivateCidrBlock gets a random CIDR block from the range of acceptable private IP addresses per RFC 1918
 // (https://tools.ietf.org/html/rfc1918#section-3)
 // The routingPrefix refers to the "/28" in 1.2.3.4/28.
