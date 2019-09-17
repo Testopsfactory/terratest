@@ -143,11 +143,16 @@ func GetSubnetsForVpcE(t *testing.T, vpcID string, region string) ([]Subnet, err
 	return subnets, nil
 }
 
-// Returns True if a subnet is public.
-// A public subnet is a subnet that's associated with a route table that has a route to an Internet gateway.
+// IsPublicSubnet returns True if the subnet identified by the given id in the provided region is public.
 func IsPublicSubnet(t *testing.T, subnetId string, region string) bool {
+	isPublic, err := IsPublicSubnetE(t, subnetId, region)
+	require.NoError(t, err)
+	return isPublic
+}
 
-	var subnetIdFilterName = "association.subnet-id"
+// IsPublicSubnetE returns True if the subnet identified by the given id in the provided region is public.
+func IsPublicSubnetE(t *testing.T, subnetId string, region string) (bool, error) {
+	subnetIdFilterName := "association.subnet-id"
 
 	subnetIdFilter := ec2.Filter{
 		Name:   &subnetIdFilterName,
@@ -156,23 +161,23 @@ func IsPublicSubnet(t *testing.T, subnetId string, region string) bool {
 
 	client, err := NewEc2ClientE(t, region)
 	if err != nil {
-		t.Fatal(err)
+		return false, err
 	}
 
 	rts, err := client.DescribeRouteTables(&ec2.DescribeRouteTablesInput{Filters: []*ec2.Filter{&subnetIdFilter}})
 	if err != nil {
-		t.Fatal(err)
+		return false, err
 	}
 
 	for _, rt := range rts.RouteTables {
 		for _, r := range rt.Routes {
-			if *r.GatewayId != "" && *r.GatewayId != "local" {
-				return true
+			if strings.HasPrefix(*aws.String(*r.GatewayId), "igw-") {
+				return true, nil
 			}
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // GetRandomPrivateCidrBlock gets a random CIDR block from the range of acceptable private IP addresses per RFC 1918
