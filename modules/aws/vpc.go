@@ -171,7 +171,7 @@ func IsPublicSubnetE(t *testing.T, subnetId string, region string) (bool, error)
 
 	for _, rt := range rts.RouteTables {
 		for _, r := range rt.Routes {
-			if strings.HasPrefix(*aws.String(*r.GatewayId), "igw-") {
+			if strings.HasPrefix(aws.StringValue(r.GatewayId), "igw-") {
 				return true, nil
 			}
 		}
