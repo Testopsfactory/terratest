@@ -1,43 +1,39 @@
-locals {
-  name = "terraform-network-example"
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
 provider "aws" {
-  region = "${var.aws-region}"
+  region = "${var.aws_region}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A SIMPLE NETWORK
-# The network has an internet gatway and two subnets - private and public - in the same availability zone.
+# The network has an internet gateway and two subnets - private and public - in the same availability zone.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_vpc" "main" {
-  cidr_block = "${var.main-vpc-cidr}"
+  cidr_block = "${var.main_vpc_cidr}"
 
   tags = {
-    Name = "${local.name}"
+    Name = "${var.tag_name}"
   }
 }
 
-resource "aws_internet_gateway" "main-gateway" {
+resource "aws_internet_gateway" "main_gateway" {
   vpc_id = "${aws_vpc.main.id}"
 
   tags = {
-    Name = "${local.name}"
+    Name = "${var.tag_name}"
   }
 }
 
 resource "aws_subnet" "private" {
   vpc_id                  = "${aws_vpc.main.id}"
-  cidr_block              = "${var.private-subnet-cidr}"
+  cidr_block              = "${var.private_subnet_cidr}"
   map_public_ip_on_launch = false
     
   tags = {
-    Name = "${local.name}"
+    Name = "${var.tag_name}"
   }
 
   availability_zone = "${data.aws_availability_zones.available.names[0]}"
@@ -45,11 +41,11 @@ resource "aws_subnet" "private" {
 
 resource "aws_subnet" "public" {
   vpc_id                  = "${aws_vpc.main.id}"
-  cidr_block              = "${var.public-subnet-cidr}"
+  cidr_block              = "${var.public_subnet_cidr}"
   map_public_ip_on_launch = true
     
   tags = {
-    Name = "${local.name}"
+    Name = "${var.tag_name}"
   }
 
   availability_zone = "${data.aws_availability_zones.available.names[0]}"
@@ -64,11 +60,11 @@ resource "aws_route_table" "public" {
 
   route {
     cidr_block = "91.189.0.0/24" 
-    gateway_id = "${aws_internet_gateway.main-gateway.id}"
+    gateway_id = "${aws_internet_gateway.main_gateway.id}"
   }
 
   tags = {
-    Name = "${local.name}"
+    Name = "${var.tag_name}"
   }
 }
 
@@ -88,7 +84,7 @@ resource "aws_eip" "nat" {
 resource "aws_nat_gateway" "nat" {
   allocation_id   = "${aws_eip.nat.id}"
   subnet_id       = "${aws_subnet.public.id}"
-  depends_on      = ["aws_internet_gateway.main-gateway"]
+  depends_on      = ["aws_internet_gateway.main_gateway"]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -104,7 +100,7 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "${local.name}"
+    Name = "${var.tag_name}"
   }
 }
 

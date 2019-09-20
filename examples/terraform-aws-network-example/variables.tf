@@ -11,15 +11,15 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "main-vpc-cidr" {
+variable "main_vpc_cidr" {
   description = "The CIDR of the main VPC"
 }
 
-variable "public-subnet-cidr" {
+variable "public_subnet_cidr" {
   description = "The CIDR of public subnet"
 }
 
-variable "private-subnet-cidr" {
+variable "private_subnet_cidr" {
   description = "The CIDR of the private subnet"
 }
 
@@ -28,7 +28,12 @@ variable "private-subnet-cidr" {
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "aws-region" {
+variable "aws_region" {
   description = "The AWS region to deploy into"
   default     = "us-east-1"
+}
+
+variable "tag_name" {
+  description = "A name used to tag the resource"
+  default = "terraform-network-example"
 }

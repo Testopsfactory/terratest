@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// An example of how to test the Terraform module in examples/terraform-aws-example using Terratest.
+// An example of how to test the Terraform module in examples/terraform-aws-network-example using Terratest.
 func TestTerraformAwsNetworkExample(t *testing.T) {
 	t.Parallel()
 
@@ -27,16 +27,11 @@ func TestTerraformAwsNetworkExample(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"main-vpc-cidr":       vpcCidr,
-			"private-subnet-cidr": privateSubnetCidr,
-			"public-subnet-cidr":  publicSubnetCidr,
-			"aws-region":          awsRegion,
+			"main_vpc_cidr":       vpcCidr,
+			"private_subnet_cidr": privateSubnetCidr,
+			"public_subnet_cidr":  publicSubnetCidr,
+			"aws_region":          awsRegion,
 		},
-
-		// Environment variables to set when running Terraform
-		// EnvVars: map[string]string{
-		// 	"AWS_DEFAULT_REGION": awsRegion,
-		// },
 	}
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
@@ -46,15 +41,15 @@ func TestTerraformAwsNetworkExample(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	publicSubnetId := terraform.Output(t, terraformOptions, "public-subnet-id")
-	privateSubnetId := terraform.Output(t, terraformOptions, "private-subnet-id")
-	vpcId := terraform.Output(t, terraformOptions, "main-vpc-id")
+	publicSubnetId := terraform.Output(t, terraformOptions, "public_subnet_id")
+	privateSubnetId := terraform.Output(t, terraformOptions, "private_subnet_id")
+	vpcId := terraform.Output(t, terraformOptions, "main_vpc_id")
 
 	subnets := aws.GetSubnetsForVpc(t, vpcId, awsRegion)
 
 	require.Equal(t, 2, len(subnets))
-	// Verify if the network that supposes to be public is really public
+	// Verify if the network that is supposed to be public is really public
 	assert.True(t, aws.IsPublicSubnet(t, publicSubnetId, awsRegion))
-	// Verify if the network that supposes to be private is really private
+	// Verify if the network that is supposed to be private is really private
 	assert.False(t, aws.IsPublicSubnet(t, privateSubnetId, awsRegion))
 }
