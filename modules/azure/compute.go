@@ -2,9 +2,9 @@ package azure
 
 import (
 	"context"
-	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	_ "github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,7 +32,7 @@ func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesCli
 }
 
 // GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine
-func GetSizeOfVirtualMachine(t *testing.T, vmName string, resGroupName string, subscriptionID string) compute.VirtualMachineSizeTypes {
+func GetSizeOfVirtualMachine(t TestingT, vmName string, resGroupName string, subscriptionID string) compute.VirtualMachineSizeTypes {
 	size, err := GetSizeOfVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
@@ -40,7 +40,7 @@ func GetSizeOfVirtualMachine(t *testing.T, vmName string, resGroupName string, s
 }
 
 // GetSizeOfVirtualMachineE gets the size type of the given Azure Virtual Machine
-func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, subscriptionID string) (compute.VirtualMachineSizeTypes, error) {
+func GetSizeOfVirtualMachineE(t TestingT, vmName string, resGroupName string, subscriptionID string) (compute.VirtualMachineSizeTypes, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {
@@ -63,7 +63,7 @@ func GetSizeOfVirtualMachineE(t *testing.T, vmName string, resGroupName string, 
 }
 
 // GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map
-func GetTagsForVirtualMachine(t *testing.T, vmName string, resGroupName string, subscriptionID string) map[string]string {
+func GetTagsForVirtualMachine(t TestingT, vmName string, resGroupName string, subscriptionID string) map[string]string {
 	tags, err := GetTagsForVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
@@ -71,7 +71,7 @@ func GetTagsForVirtualMachine(t *testing.T, vmName string, resGroupName string, 
 }
 
 // GetTagsForVirtualMachineE gets the tags of the given Virtual Machine as a map
-func GetTagsForVirtualMachineE(t *testing.T, vmName string, resGroupName string, subscriptionID string) (map[string]string, error) {
+func GetTagsForVirtualMachineE(t TestingT, vmName string, resGroupName string, subscriptionID string) (map[string]string, error) {
 	// Setup a blank map to populate and return
 	tags := make(map[string]string)
 

@@ -2,22 +2,22 @@ package helm
 
 import (
 	"path/filepath"
-	"testing"
 
 	"github.com/gruntwork-io/gruntwork-cli/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/files"
+	_ "github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // Install will install the selected helm chart with the provided options under the given release name. This will fail
 // the test if there is an error.
-func Install(t *testing.T, options *Options, chart string, releaseName string) {
+func Install(t TestingT, options *Options, chart string, releaseName string) {
 	require.NoError(t, InstallE(t, options, chart, releaseName))
 }
 
 // InstallE will install the selected helm chart with the provided options under the given release name.
-func InstallE(t *testing.T, options *Options, chart string, releaseName string) error {
+func InstallE(t TestingT, options *Options, chart string, releaseName string) error {
 	// If the chart refers to a path, convert to absolute path. Otherwise, pass straight through as it may be a remote
 	// chart.
 	if files.FileExists(chart) {

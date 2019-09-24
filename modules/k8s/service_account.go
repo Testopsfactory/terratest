@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"fmt"
-	"testing"
 	"time"
 
 	"github.com/gruntwork-io/gruntwork-cli/errors"
@@ -14,11 +13,12 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
+	_ "github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetServiceAccount returns a Kubernetes service account resource in the provided namespace with the given name. The
 // namespace used is the one provided in the KubectlOptions. This will fail the test if there is an error.
-func GetServiceAccount(t *testing.T, options *KubectlOptions, serviceAccountName string) *corev1.ServiceAccount {
+func GetServiceAccount(t TestingT, options *KubectlOptions, serviceAccountName string) *corev1.ServiceAccount {
 	serviceAccount, err := GetServiceAccountE(t, options, serviceAccountName)
 	require.NoError(t, err)
 	return serviceAccount
@@ -26,7 +26,7 @@ func GetServiceAccount(t *testing.T, options *KubectlOptions, serviceAccountName
 
 // GetServiceAccountE returns a Kubernetes service account resource in the provided namespace with the given name. The
 // namespace used is the one provided in the KubectlOptions.
-func GetServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccountName string) (*corev1.ServiceAccount, error) {
+func GetServiceAccountE(t TestingT, options *KubectlOptions, serviceAccountName string) (*corev1.ServiceAccount, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
@@ -36,13 +36,13 @@ func GetServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccountNam
 
 // CreateServiceAccount will create a new service account resource in the provided namespace with the given name. The
 // namespace used is the one provided in the KubectlOptions. This will fail the test if there is an error.
-func CreateServiceAccount(t *testing.T, options *KubectlOptions, serviceAccountName string) {
+func CreateServiceAccount(t TestingT, options *KubectlOptions, serviceAccountName string) {
 	require.NoError(t, CreateServiceAccountE(t, options, serviceAccountName))
 }
 
 // CreateServiceAccountE will create a new service account resource in the provided namespace with the given name. The
 // namespace used is the one provided in the KubectlOptions.
-func CreateServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccountName string) error {
+func CreateServiceAccountE(t TestingT, options *KubectlOptions, serviceAccountName string) error {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func CreateServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccount
 
 // GetServiceAccountAuthToken will retrieve the ServiceAccount token from the cluster so it can be used to
 // authenticate requests as that ServiceAccount. This will fail the test if there is an error.
-func GetServiceAccountAuthToken(t *testing.T, kubectlOptions *KubectlOptions, serviceAccountName string) string {
+func GetServiceAccountAuthToken(t TestingT, kubectlOptions *KubectlOptions, serviceAccountName string) string {
 	token, err := GetServiceAccountAuthTokenE(t, kubectlOptions, serviceAccountName)
 	require.NoError(t, err)
 	return token
@@ -68,7 +68,7 @@ func GetServiceAccountAuthToken(t *testing.T, kubectlOptions *KubectlOptions, se
 
 // GetServiceAccountAuthTokenE will retrieve the ServiceAccount token from the cluster so it can be used to
 // authenticate requests as that ServiceAccount.
-func GetServiceAccountAuthTokenE(t *testing.T, kubectlOptions *KubectlOptions, serviceAccountName string) (string, error) {
+func GetServiceAccountAuthTokenE(t TestingT, kubectlOptions *KubectlOptions, serviceAccountName string) (string, error) {
 	// Wait for the TokenController to provision a ServiceAccount token
 	msg, err := retry.DoWithRetryE(
 		t,
@@ -106,7 +106,7 @@ func GetServiceAccountAuthTokenE(t *testing.T, kubectlOptions *KubectlOptions, s
 // AddConfigContextForServiceAccountE will add a new config context that binds the ServiceAccount auth token to the
 // Kubernetes cluster of the current config context.
 func AddConfigContextForServiceAccountE(
-	t *testing.T,
+	t TestingT,
 	kubectlOptions *KubectlOptions,
 	contextName string,
 	serviceAccountName string,

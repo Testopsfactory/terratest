@@ -7,8 +7,9 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"testing"
 	"time"
+
+	_ "github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // Logf logs the given format and arguments, formatted using fmt.Sprintf, to stdout, along with a timestamp and information
@@ -28,20 +29,20 @@ import (
 //
 // Note that there is a proposal to improve t.Logf (https://github.com/golang/go/issues/24929), but until that's
 // implemented, this method is our best bet.
-func Logf(t *testing.T, format string, args ...interface{}) {
+func Logf(t TestingT, format string, args ...interface{}) {
 	DoLog(t, 2, os.Stdout, fmt.Sprintf(format, args...))
 }
 
 // Log logs the given arguments to stdout, along with a timestamp and information about what test and file is doing the
 // logging. This is an alternative to t.Logf that logs to stdout immediately, rather than buffering all log output and
 // only displaying it at the very end of the test. See the Logf method for more info.
-func Log(t *testing.T, args ...interface{}) {
+func Log(t TestingT, args ...interface{}) {
 	DoLog(t, 2, os.Stdout, args...)
 }
 
 // DoLog logs the given arguments to the given writer, along with a timestamp and information about what test and file is
 // doing the logging.
-func DoLog(t *testing.T, callDepth int, writer io.Writer, args ...interface{}) {
+func DoLog(t TestingT, callDepth int, writer io.Writer, args ...interface{}) {
 	date := time.Now()
 	prefix := fmt.Sprintf("%s %s %s:", t.Name(), date.Format(time.RFC3339), CallerPrefix(callDepth+1))
 	allArgs := append([]interface{}{prefix}, args...)

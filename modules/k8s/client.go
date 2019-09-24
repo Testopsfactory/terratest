@@ -10,10 +10,11 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
+	_ "github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetKubernetesClientE returns a Kubernetes API client that can be used to make requests.
-func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
+func GetKubernetesClientE(t TestingT) (*kubernetes.Clientset, error) {
 	kubeConfigPath, err := GetKubeConfigPathE(t)
 	if err != nil {
 		return nil, err
@@ -24,7 +25,7 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 }
 
 // GetKubernetesClientFromOptionsE returns a Kubernetes API client given a configured KubectlOptions object.
-func GetKubernetesClientFromOptionsE(t *testing.T, options *KubectlOptions) (*kubernetes.Clientset, error) {
+func GetKubernetesClientFromOptionsE(t TestingT, options *KubectlOptions) (*kubernetes.Clientset, error) {
 	var err error
 
 	kubeConfigPath, err := options.GetConfigPath(t)

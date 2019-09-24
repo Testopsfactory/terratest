@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"testing"
 
 	gwErrors "github.com/gruntwork-io/gruntwork-cli/errors"
 	homedir "github.com/mitchellh/go-homedir"
@@ -17,6 +16,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/environment"
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	_ "github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // LoadConfigFromPath will load a ClientConfig object from a file path that points to a location on disk containing a
@@ -44,7 +44,7 @@ func LoadApiClientConfigE(configPath string, contextName string) (*restclient.Co
 // DeleteConfigContextE will remove the context specified at the provided name, and remove any clusters and authinfos
 // that are orphaned as a result of it. The config path is either specified in the environment variable KUBECONFIG or at
 // the user's home directory under `.kube/config`.
-func DeleteConfigContextE(t *testing.T, contextName string) error {
+func DeleteConfigContextE(t TestingT, contextName string) error {
 	kubeConfigPath, err := GetKubeConfigPathE(t)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func DeleteConfigContextE(t *testing.T, contextName string) error {
 
 // DeleteConfigContextWithPathE will remove the context specified at the provided name, and remove any clusters and
 // authinfos that are orphaned as a result of it.
-func DeleteConfigContextWithPathE(t *testing.T, kubeConfigPath string, contextName string) error {
+func DeleteConfigContextWithPathE(t TestingT, kubeConfigPath string, contextName string) error {
 	logger.Logf(t, "Removing kubectl config context %s from config at path %s", contextName, kubeConfigPath)
 
 	// Load config and get data structure representing config info
@@ -125,7 +125,7 @@ func RemoveOrphanedClusterAndAuthInfoConfig(config *api.Config) {
 }
 
 // GetKubeConfigPathE determines which file path to use as the kubectl config path
-func GetKubeConfigPathE(t *testing.T) (string, error) {
+func GetKubeConfigPathE(t TestingT) (string, error) {
 	kubeConfigPath := environment.GetFirstNonEmptyEnvVarOrEmptyString(t, []string{"KUBECONFIG"})
 	if kubeConfigPath == "" {
 		configPath, err := KubeConfigPathFromHomeDirE()
@@ -150,7 +150,7 @@ func KubeConfigPathFromHomeDirE() (string, error) {
 
 // CopyHomeKubeConfigToTemp will copy the kubeconfig in the home directory to a temp file. This will fail the test if
 // there are any errors.
-func CopyHomeKubeConfigToTemp(t *testing.T) string {
+func CopyHomeKubeConfigToTemp(t TestingT) string {
 	path, err := CopyHomeKubeConfigToTempE(t)
 	if err != nil {
 		if path != "" {
@@ -162,7 +162,7 @@ func CopyHomeKubeConfigToTemp(t *testing.T) string {
 }
 
 // CopyHomeKubeConfigToTempE will copy the kubeconfig in the home directory to a temp file.
-func CopyHomeKubeConfigToTempE(t *testing.T) (string, error) {
+func CopyHomeKubeConfigToTempE(t TestingT) (string, error) {
 	configPath, err := KubeConfigPathFromHomeDirE()
 	if err != nil {
 		return "", err
