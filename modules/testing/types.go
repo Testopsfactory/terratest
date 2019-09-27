@@ -6,17 +6,9 @@ package testing
 // makes terratest usable in a wider variety of contexts (e.g. use with ginkgo : https://godoc.org/github.com/onsi/ginkgo#GinkgoT)
 type TestingT interface {
 	Fail()
+	Fatalf(format string, args ...interface{})
 	Error(args ...interface{})
 	Errorf(format string, args ...interface{})
-	FailNow()
-	Fatal(args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Log(args ...interface{})
+	Name() string
 	Logf(format string, args ...interface{})
-	Failed() bool
-	Parallel()
-	Skip(args ...interface{})
-	Skipf(format string, args ...interface{})
-	SkipNow()
-	Skipped() bool
 }
