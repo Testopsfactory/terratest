@@ -206,10 +206,16 @@ func LoadTestData(t *testing.T, path string, value interface{}) {
 
 // IsTestDataPresent returns true if a file exists at $path and the test data there is non-empty.
 func IsTestDataPresent(t *testing.T, path string) bool {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		} else {
+			t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
+		}
+	}
 	bytes, err := ioutil.ReadFile(path)
-	if err != nil && strings.Contains(err.Error(), "no such file or directory") {
-		return false
-	} else if err != nil {
+
+	if err != nil {
 		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
 	}
 
