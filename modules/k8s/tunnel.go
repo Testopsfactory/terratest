@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 
@@ -19,7 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
-	"k8s.io/kubernetes/pkg/kubectl/generate"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 )
@@ -45,6 +45,14 @@ func (resourceType KubeResourceType) String() string {
 		// This should not happen
 		return "UNKNOWN_RESOURCE_TYPE"
 	}
+}
+
+func makeLabels(labels map[string]string) string {
+	out := []string{}
+	for key, value := range labels {
+		out = append(out, fmt.Sprintf("%s=%s", key, value))
+	}
+	return strings.Join(out, ",")
 }
 
 // Tunnel is the main struct that configures and manages port forwading tunnels to Kubernetes resources.
@@ -103,7 +111,7 @@ func (tunnel *Tunnel) getAttachablePodForServiceE(t *testing.T) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	selectorLabelsOfPods := generate.MakeLabels(service.Spec.Selector)
+	selectorLabelsOfPods := makeLabels(service.Spec.Selector)
 	servicePods, err := ListPodsE(t, tunnel.kubectlOptions, metav1.ListOptions{LabelSelector: selectorLabelsOfPods})
 	if err != nil {
 		return "", err
