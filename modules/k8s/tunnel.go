@@ -47,6 +47,7 @@ func (resourceType KubeResourceType) String() string {
 	}
 }
 
+// makeLabels is a helper to format a map of label key and value pairs into a single string for use as a selector.
 func makeLabels(labels map[string]string) string {
 	out := []string{}
 	for key, value := range labels {
