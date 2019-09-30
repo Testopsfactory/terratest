@@ -143,6 +143,43 @@ func GetSubnetsForVpcE(t *testing.T, vpcID string, region string) ([]Subnet, err
 	return subnets, nil
 }
 
+// IsPublicSubnet returns True if the subnet identified by the given id in the provided region is public.
+func IsPublicSubnet(t *testing.T, subnetId string, region string) bool {
+	isPublic, err := IsPublicSubnetE(t, subnetId, region)
+	require.NoError(t, err)
+	return isPublic
+}
+
+// IsPublicSubnetE returns True if the subnet identified by the given id in the provided region is public.
+func IsPublicSubnetE(t *testing.T, subnetId string, region string) (bool, error) {
+	subnetIdFilterName := "association.subnet-id"
+
+	subnetIdFilter := ec2.Filter{
+		Name:   &subnetIdFilterName,
+		Values: []*string{&subnetId},
+	}
+
+	client, err := NewEc2ClientE(t, region)
+	if err != nil {
+		return false, err
+	}
+
+	rts, err := client.DescribeRouteTables(&ec2.DescribeRouteTablesInput{Filters: []*ec2.Filter{&subnetIdFilter}})
+	if err != nil {
+		return false, err
+	}
+
+	for _, rt := range rts.RouteTables {
+		for _, r := range rt.Routes {
+			if strings.HasPrefix(aws.StringValue(r.GatewayId), "igw-") {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
 // GetRandomPrivateCidrBlock gets a random CIDR block from the range of acceptable private IP addresses per RFC 1918
 // (https://tools.ietf.org/html/rfc1918#section-3)
 // The routingPrefix refers to the "/28" in 1.2.3.4/28.
