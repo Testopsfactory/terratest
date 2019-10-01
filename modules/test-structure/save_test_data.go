@@ -209,7 +209,7 @@ func IsTestDataPresent(t *testing.T, path string) bool {
 	if err != nil {
 		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
 	}
-	if exists == false {
+	if !exists {
 		return false
 	}
 
