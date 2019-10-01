@@ -55,7 +55,7 @@ var stableRegions = []string{
 
 	// Middle East and Africa
 	"southafricanorth",
-	"southfricawest",
+	"southafricawest",
 	"uaecentral",
 	"uaenorth",
 }
