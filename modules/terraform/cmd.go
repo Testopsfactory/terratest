@@ -7,7 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/shell"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetCommonOptions extracts commons terraform options
@@ -36,7 +36,7 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 }
 
 // RunTerraformCommand runs terraform with the given arguments and options and return stdout/stderr.
-func RunTerraformCommand(t TestingT, additionalOptions *Options, args ...string) string {
+func RunTerraformCommand(t testing.TestingT, additionalOptions *Options, args ...string) string {
 	out, err := RunTerraformCommandE(t, additionalOptions, args...)
 	if err != nil {
 		t.Fatal(err)
@@ -45,7 +45,7 @@ func RunTerraformCommand(t TestingT, additionalOptions *Options, args ...string)
 }
 
 // RunTerraformCommandE runs terraform with the given arguments and options and return stdout/stderr.
-func RunTerraformCommandE(t TestingT, additionalOptions *Options, additionalArgs ...string) (string, error) {
+func RunTerraformCommandE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
 	cmd := shell.Command{
@@ -64,7 +64,7 @@ func RunTerraformCommandE(t TestingT, additionalOptions *Options, additionalArgs
 
 // RunTerraformCommandAndGetStdoutE runs terraform with the given arguments and options and returns solely its stdout
 // (but not stderr).
-func RunTerraformCommandAndGetStdoutE(t TestingT, additionalOptions *Options, additionalArgs ...string) (string, error) {
+func RunTerraformCommandAndGetStdoutE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
 	cmd := shell.Command{
@@ -81,7 +81,7 @@ func RunTerraformCommandAndGetStdoutE(t TestingT, additionalOptions *Options, ad
 }
 
 // GetExitCodeForTerraformCommand runs terraform with the given arguments and options and returns exit code
-func GetExitCodeForTerraformCommand(t TestingT, additionalOptions *Options, args ...string) int {
+func GetExitCodeForTerraformCommand(t testing.TestingT, additionalOptions *Options, args ...string) int {
 	exitCode, err := GetExitCodeForTerraformCommandE(t, additionalOptions, args...)
 	if err != nil {
 		t.Fatal(err)
@@ -90,7 +90,7 @@ func GetExitCodeForTerraformCommand(t TestingT, additionalOptions *Options, args
 }
 
 // GetExitCodeForTerraformCommandE runs terraform with the given arguments and options and returns exit code
-func GetExitCodeForTerraformCommandE(t TestingT, additionalOptions *Options, additionalArgs ...string) (int, error) {
+func GetExitCodeForTerraformCommandE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (int, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
 	logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)

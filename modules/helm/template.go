@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/files"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // RenderTemplate runs `helm template` to render the template given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates. This function will fail
 // the test if there is an error rendering the template.
-func RenderTemplate(t TestingT, options *Options, chartDir string, releaseName string, templateFiles []string) string {
+func RenderTemplate(t testing.TestingT, options *Options, chartDir string, releaseName string, templateFiles []string) string {
 	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles)
 	require.NoError(t, err)
 	return out
@@ -23,7 +23,7 @@ func RenderTemplate(t TestingT, options *Options, chartDir string, releaseName s
 
 // RenderTemplateE runs `helm template` to render the template given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates.
-func RenderTemplateE(t TestingT, options *Options, chartDir string, releaseName string, templateFiles []string) (string, error) {
+func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, releaseName string, templateFiles []string) (string, error) {
 	// First, verify the charts dir exists
 	absChartDir, err := filepath.Abs(chartDir)
 	if err != nil {
@@ -62,7 +62,7 @@ func RenderTemplateE(t TestingT, options *Options, chartDir string, releaseName 
 }
 
 // UnmarshalK8SYaml is the same as UnmarshalK8SYamlE, but will fail the test if there is an error.
-func UnmarshalK8SYaml(t TestingT, yamlData string, destinationObj interface{}) {
+func UnmarshalK8SYaml(t testing.TestingT, yamlData string, destinationObj interface{}) {
 	require.NoError(t, UnmarshalK8SYamlE(t, yamlData, destinationObj))
 }
 
@@ -73,7 +73,7 @@ func UnmarshalK8SYaml(t TestingT, yamlData string, destinationObj interface{}) {
 // UnmarshalK8SYamlE(t, renderedOutput, &deployment)
 //
 // At the end of this, the deployment variable will be populated.
-func UnmarshalK8SYamlE(t TestingT, yamlData string, destinationObj interface{}) error {
+func UnmarshalK8SYamlE(t testing.TestingT, yamlData string, destinationObj interface{}) error {
 	// NOTE: the client-go library can only decode json, so we will first convert the yaml to json before unmarshaling
 	jsonData, err := yaml.YAMLToJSON([]byte(yamlData))
 	if err != nil {

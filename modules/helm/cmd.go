@@ -3,7 +3,7 @@ package helm
 import (
 	"github.com/gruntwork-io/gruntwork-cli/errors"
 	"github.com/gruntwork-io/terratest/modules/shell"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // getCommonArgs extracts common helm options. In this case, these are:
@@ -32,7 +32,7 @@ func getNamespaceArgs(options *Options) []string {
 }
 
 // getValuesArgsE computes the args to pass in for setting values
-func getValuesArgsE(t TestingT, options *Options, args ...string) ([]string, error) {
+func getValuesArgsE(t testing.TestingT, options *Options, args ...string) ([]string, error) {
 	args = append(args, formatSetValuesAsArgs(options.SetValues, "--set")...)
 	args = append(args, formatSetValuesAsArgs(options.SetStrValues, "--set-string")...)
 
@@ -51,7 +51,7 @@ func getValuesArgsE(t TestingT, options *Options, args ...string) ([]string, err
 }
 
 // RunHelmCommandAndGetOutputE runs helm with the given arguments and options and returns stdout/stderr.
-func RunHelmCommandAndGetOutputE(t TestingT, options *Options, cmd string, additionalArgs ...string) (string, error) {
+func RunHelmCommandAndGetOutputE(t testing.TestingT, options *Options, cmd string, additionalArgs ...string) (string, error) {
 	args := []string{cmd}
 	args = getCommonArgs(options, args...)
 	args = append(args, additionalArgs...)

@@ -6,11 +6,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/gruntwork-io/terratest/modules/logger"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetIamCurrentUserName gets the username for the current IAM user.
-func GetIamCurrentUserName(t TestingT) string {
+func GetIamCurrentUserName(t testing.TestingT) string {
 	out, err := GetIamCurrentUserNameE(t)
 	if err != nil {
 		t.Fatal(err)
@@ -19,7 +19,7 @@ func GetIamCurrentUserName(t TestingT) string {
 }
 
 // GetIamCurrentUserNameE gets the username for the current IAM user.
-func GetIamCurrentUserNameE(t TestingT) (string, error) {
+func GetIamCurrentUserNameE(t testing.TestingT) (string, error) {
 	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
 		return "", err
@@ -34,7 +34,7 @@ func GetIamCurrentUserNameE(t TestingT) (string, error) {
 }
 
 // GetIamCurrentUserArn gets the ARN for the current IAM user.
-func GetIamCurrentUserArn(t TestingT) string {
+func GetIamCurrentUserArn(t testing.TestingT) string {
 	out, err := GetIamCurrentUserArnE(t)
 	if err != nil {
 		t.Fatal(err)
@@ -43,7 +43,7 @@ func GetIamCurrentUserArn(t TestingT) string {
 }
 
 // GetIamCurrentUserArnE gets the ARN for the current IAM user.
-func GetIamCurrentUserArnE(t TestingT) (string, error) {
+func GetIamCurrentUserArnE(t testing.TestingT) (string, error) {
 	iamClient, err := NewIamClientE(t, defaultRegion)
 	if err != nil {
 		return "", err
@@ -58,7 +58,7 @@ func GetIamCurrentUserArnE(t TestingT) (string, error) {
 }
 
 // CreateMfaDevice creates an MFA device using the given IAM client.
-func CreateMfaDevice(t TestingT, iamClient *iam.IAM, deviceName string) *iam.VirtualMFADevice {
+func CreateMfaDevice(t testing.TestingT, iamClient *iam.IAM, deviceName string) *iam.VirtualMFADevice {
 	mfaDevice, err := CreateMfaDeviceE(t, iamClient, deviceName)
 	if err != nil {
 		t.Fatal(err)
@@ -67,7 +67,7 @@ func CreateMfaDevice(t TestingT, iamClient *iam.IAM, deviceName string) *iam.Vir
 }
 
 // CreateMfaDeviceE creates an MFA device using the given IAM client.
-func CreateMfaDeviceE(t TestingT, iamClient *iam.IAM, deviceName string) (*iam.VirtualMFADevice, error) {
+func CreateMfaDeviceE(t testing.TestingT, iamClient *iam.IAM, deviceName string) (*iam.VirtualMFADevice, error) {
 	logger.Logf(t, "Creating an MFA device called %s", deviceName)
 
 	output, err := iamClient.CreateVirtualMFADevice(&iam.CreateVirtualMFADeviceInput{
@@ -86,7 +86,7 @@ func CreateMfaDeviceE(t TestingT, iamClient *iam.IAM, deviceName string) (*iam.V
 
 // EnableMfaDevice enables a newly created MFA Device by supplying the first two one-time passwords, so that it can be used for future
 // logins by the given IAM User.
-func EnableMfaDevice(t TestingT, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADevice) {
+func EnableMfaDevice(t testing.TestingT, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADevice) {
 	err := EnableMfaDeviceE(t, iamClient, mfaDevice)
 	if err != nil {
 		t.Fatal(err)
@@ -95,7 +95,7 @@ func EnableMfaDevice(t TestingT, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADe
 
 // EnableMfaDeviceE enables a newly created MFA Device by supplying the first two one-time passwords, so that it can be used for future
 // logins by the given IAM User.
-func EnableMfaDeviceE(t TestingT, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADevice) error {
+func EnableMfaDeviceE(t testing.TestingT, iamClient *iam.IAM, mfaDevice *iam.VirtualMFADevice) error {
 	logger.Logf(t, "Enabling MFA device %s", aws.StringValue(mfaDevice.SerialNumber))
 
 	iamUserName, err := GetIamCurrentUserArnE(t)
@@ -134,7 +134,7 @@ func EnableMfaDeviceE(t TestingT, iamClient *iam.IAM, mfaDevice *iam.VirtualMFAD
 }
 
 // NewIamClient creates a new IAM client.
-func NewIamClient(t TestingT, region string) *iam.IAM {
+func NewIamClient(t testing.TestingT, region string) *iam.IAM {
 	client, err := NewIamClientE(t, region)
 	if err != nil {
 		t.Fatal(err)
@@ -143,7 +143,7 @@ func NewIamClient(t TestingT, region string) *iam.IAM {
 }
 
 // NewIamClientE creates a new IAM client.
-func NewIamClientE(t TestingT, region string) (*iam.IAM, error) {
+func NewIamClientE(t testing.TestingT, region string) (*iam.IAM, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

@@ -12,11 +12,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateAndDestroyS3Bucket(t TestingT) {
+func TestCreateAndDestroyS3Bucket(t testing.TestingT) {
 	t.Parallel()
 
 	region := GetRandomStableRegion(t, nil, nil)
@@ -29,7 +29,7 @@ func TestCreateAndDestroyS3Bucket(t TestingT) {
 	DeleteS3Bucket(t, region, s3BucketName)
 }
 
-func TestAssertS3BucketExistsNoFalseNegative(t TestingT) {
+func TestAssertS3BucketExistsNoFalseNegative(t testing.TestingT) {
 	t.Parallel()
 
 	region := GetRandomStableRegion(t, nil, nil)
@@ -42,7 +42,7 @@ func TestAssertS3BucketExistsNoFalseNegative(t TestingT) {
 	AssertS3BucketExists(t, region, s3BucketName)
 }
 
-func TestAssertS3BucketExistsNoFalsePositive(t TestingT) {
+func TestAssertS3BucketExistsNoFalsePositive(t testing.TestingT) {
 	t.Parallel()
 
 	region := GetRandomStableRegion(t, nil, nil)
@@ -58,7 +58,7 @@ func TestAssertS3BucketExistsNoFalsePositive(t TestingT) {
 	}
 }
 
-func TestAssertS3BucketVersioningEnabled(t TestingT) {
+func TestAssertS3BucketVersioningEnabled(t testing.TestingT) {
 	t.Parallel()
 
 	region := GetRandomStableRegion(t, nil, nil)
@@ -72,7 +72,7 @@ func TestAssertS3BucketVersioningEnabled(t TestingT) {
 	AssertS3BucketVersioningExists(t, region, s3BucketName)
 }
 
-func TestEmptyS3Bucket(t TestingT) {
+func TestEmptyS3Bucket(t testing.TestingT) {
 	t.Parallel()
 
 	// region := GetRandomStableRegion(t, nil, nil)
@@ -93,7 +93,7 @@ func TestEmptyS3Bucket(t TestingT) {
 	testEmptyBucket(t, s3Client, region, s3BucketName)
 }
 
-func TestEmptyS3BucketVersioned(t TestingT) {
+func TestEmptyS3BucketVersioned(t testing.TestingT) {
 	t.Parallel()
 
 	region := GetRandomStableRegion(t, nil, nil)
@@ -127,7 +127,7 @@ func TestEmptyS3BucketVersioned(t TestingT) {
 	testEmptyBucket(t, s3Client, region, s3BucketName)
 }
 
-func TestAssertS3BucketPolicyExists(t TestingT) {
+func TestAssertS3BucketPolicyExists(t testing.TestingT) {
 	t.Parallel()
 
 	region := GetRandomStableRegion(t, nil, nil)
@@ -146,7 +146,7 @@ func TestAssertS3BucketPolicyExists(t TestingT) {
 
 }
 
-func testEmptyBucket(t TestingT, s3Client *s3.S3, region string, s3BucketName string) {
+func testEmptyBucket(t testing.TestingT, s3Client *s3.S3, region string, s3BucketName string) {
 	expectedFileCount := rand.Intn(10000)
 
 	logger.Logf(t, "Uploading %s files to bucket %s", strconv.Itoa(expectedFileCount), s3BucketName)

@@ -6,14 +6,14 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/oracle/oci-go-sdk/common"
 	"github.com/oracle/oci-go-sdk/core"
 )
 
 // GetRandomSubnetID gets a randomly chosen subnet OCID in the given availability domain.
 // The returned value can be overridden by of the environment variable TF_VAR_subnet_ocid.
-func GetRandomSubnetID(t TestingT, compartmentID string, availabilityDomain string) string {
+func GetRandomSubnetID(t testing.TestingT, compartmentID string, availabilityDomain string) string {
 	ocid, err := GetRandomSubnetIDE(t, compartmentID, availabilityDomain)
 	if err != nil {
 		t.Fatal(err)
@@ -23,7 +23,7 @@ func GetRandomSubnetID(t TestingT, compartmentID string, availabilityDomain stri
 
 // GetRandomSubnetIDE gets a randomly chosen subnet OCID in the given availability domain.
 // The returned value can be overridden by of the environment variable TF_VAR_subnet_ocid.
-func GetRandomSubnetIDE(t TestingT, compartmentID string, availabilityDomain string) (string, error) {
+func GetRandomSubnetIDE(t testing.TestingT, compartmentID string, availabilityDomain string) (string, error) {
 	configProvider := common.DefaultConfigProvider()
 	client, err := core.NewVirtualNetworkClientWithConfigurationProvider(configProvider)
 	if err != nil {
@@ -56,7 +56,7 @@ func GetRandomSubnetIDE(t TestingT, compartmentID string, availabilityDomain str
 }
 
 // GetAllVcnIDs gets the list of VCNs available in the given compartment.
-func GetAllVcnIDs(t TestingT, compartmentID string) []string {
+func GetAllVcnIDs(t testing.TestingT, compartmentID string) []string {
 	vcnIDS, err := GetAllVcnIDsE(t, compartmentID)
 	if err != nil {
 		t.Fatal(err)
@@ -65,7 +65,7 @@ func GetAllVcnIDs(t TestingT, compartmentID string) []string {
 }
 
 // GetAllVcnIDsE gets the list of VCNs available in the given compartment.
-func GetAllVcnIDsE(t TestingT, compartmentID string) ([]string, error) {
+func GetAllVcnIDsE(t testing.TestingT, compartmentID string) ([]string, error) {
 	configProvider := common.DefaultConfigProvider()
 	client, err := core.NewVirtualNetworkClientWithConfigurationProvider(configProvider)
 	if err != nil {

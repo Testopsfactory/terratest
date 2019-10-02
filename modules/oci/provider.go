@@ -3,8 +3,8 @@ package oci
 import (
 	"os"
 
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/oracle/oci-go-sdk/common"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // You can set this environment variable to force Terratest to use a specific compartment.
@@ -21,7 +21,7 @@ const subnetIDEnvVar = "TF_VAR_subnet_ocid"
 const passPhraseEnvVar = "TF_VAR_pass_phrase"
 
 // GetRootComparmentID gets an OCID of the root compartment (a.k.a. tenancy OCID).
-func GetRootCompartmentID(t TestingT) string {
+func GetRootCompartmentID(t testing.TestingT) string {
 	tenancyID, err := GetRootCompartmentIDE(t)
 	if err != nil {
 		t.Fatal(err)
@@ -30,7 +30,7 @@ func GetRootCompartmentID(t TestingT) string {
 }
 
 // GetRootComparmentIDE gets an OCID of the root compartment (a.k.a. tenancy OCID).
-func GetRootCompartmentIDE(t TestingT (string, error) {
+func GetRootCompartmentIDE(t testing.TestingT) (string, error) {
 	configProvider := common.DefaultConfigProvider()
 	tenancyID, err := configProvider.TenancyOCID()
 	if err != nil {

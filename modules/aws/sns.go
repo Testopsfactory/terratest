@@ -4,11 +4,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gruntwork-io/terratest/modules/logger"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // CreateSnsTopic creates an SNS Topic and return the ARN.
-func CreateSnsTopic(t TestingT, region string, snsTopicName string) string {
+func CreateSnsTopic(t testing.TestingT, region string, snsTopicName string) string {
 	out, err := CreateSnsTopicE(t, region, snsTopicName)
 	if err != nil {
 		t.Fatal(err)
@@ -17,7 +17,7 @@ func CreateSnsTopic(t TestingT, region string, snsTopicName string) string {
 }
 
 // CreateSnsTopicE creates an SNS Topic and return the ARN.
-func CreateSnsTopicE(t TestingT, region string, snsTopicName string) (string, error) {
+func CreateSnsTopicE(t testing.TestingT, region string, snsTopicName string) (string, error) {
 	logger.Logf(t, "Creating SNS topic %s in %s", snsTopicName, region)
 
 	snsClient, err := NewSnsClientE(t, region)
@@ -38,7 +38,7 @@ func CreateSnsTopicE(t TestingT, region string, snsTopicName string) (string, er
 }
 
 // DeleteSNSTopic deletes an SNS Topic.
-func DeleteSNSTopic(t TestingT, region string, snsTopicArn string) {
+func DeleteSNSTopic(t testing.TestingT, region string, snsTopicArn string) {
 	err := DeleteSNSTopicE(t, region, snsTopicArn)
 	if err != nil {
 		t.Fatal(err)
@@ -46,7 +46,7 @@ func DeleteSNSTopic(t TestingT, region string, snsTopicArn string) {
 }
 
 // DeleteSNSTopicE deletes an SNS Topic.
-func DeleteSNSTopicE(t TestingT, region string, snsTopicArn string) error {
+func DeleteSNSTopicE(t testing.TestingT, region string, snsTopicArn string) error {
 	logger.Logf(t, "Deleting SNS topic %s in %s", snsTopicArn, region)
 
 	snsClient, err := NewSnsClientE(t, region)
@@ -63,7 +63,7 @@ func DeleteSNSTopicE(t TestingT, region string, snsTopicArn string) error {
 }
 
 // NewSnsClient creates a new SNS client.
-func NewSnsClient(t TestingT, region string) *sns.SNS {
+func NewSnsClient(t testing.TestingT, region string) *sns.SNS {
 	client, err := NewSnsClientE(t, region)
 	if err != nil {
 		t.Fatal(err)
@@ -72,7 +72,7 @@ func NewSnsClient(t TestingT, region string) *sns.SNS {
 }
 
 // NewSnsClientE creates a new SNS client.
-func NewSnsClientE(t TestingT, region string) (*sns.SNS, error) {
+func NewSnsClientE(t testing.TestingT, region string) (*sns.SNS, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

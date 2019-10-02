@@ -14,19 +14,19 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/retry"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // ListServices will look for services in the given namespace that match the given filters and return them. This will
 // fail the test if there is an error.
-func ListServices(t TestingT, options *KubectlOptions, filters metav1.ListOptions) []corev1.Service {
+func ListServices(t testing.TestingT, options *KubectlOptions, filters metav1.ListOptions) []corev1.Service {
 	service, err := ListServicesE(t, options, filters)
 	require.NoError(t, err)
 	return service
 }
 
 // ListServicesE will look for services in the given namespace that match the given filters and return them.
-func ListServicesE(t TestingT, options *KubectlOptions, filters metav1.ListOptions) ([]corev1.Service, error) {
+func ListServicesE(t testing.TestingT, options *KubectlOptions, filters metav1.ListOptions) ([]corev1.Service, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
@@ -40,14 +40,14 @@ func ListServicesE(t TestingT, options *KubectlOptions, filters metav1.ListOptio
 
 // GetService returns a Kubernetes service resource in the provided namespace with the given name. This will
 // fail the test if there is an error.
-func GetService(t TestingT, options *KubectlOptions, serviceName string) *corev1.Service {
+func GetService(t testing.TestingT, options *KubectlOptions, serviceName string) *corev1.Service {
 	service, err := GetServiceE(t, options, serviceName)
 	require.NoError(t, err)
 	return service
 }
 
 // GetServiceE returns a Kubernetes service resource in the provided namespace with the given name.
-func GetServiceE(t TestingT, options *KubectlOptions, serviceName string) (*corev1.Service, error) {
+func GetServiceE(t testing.TestingT, options *KubectlOptions, serviceName string) (*corev1.Service, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func GetServiceE(t TestingT, options *KubectlOptions, serviceName string) (*core
 }
 
 // WaitUntilServiceAvailable waits until the service endpoint is ready to accept traffic.
-func WaitUntilServiceAvailable(t TestingT, options *KubectlOptions, serviceName string, retries int, sleepBetweenRetries time.Duration) {
+func WaitUntilServiceAvailable(t testing.TestingT, options *KubectlOptions, serviceName string, retries int, sleepBetweenRetries time.Duration) {
 	statusMsg := fmt.Sprintf("Wait for service %s to be provisioned.", serviceName)
 	message := retry.DoWithRetry(
 		t,
@@ -101,7 +101,7 @@ func IsServiceAvailable(service *corev1.Service) bool {
 
 // GetServiceEndpoint will return the service access point. If the service endpoint is not ready, will fail the test
 // immediately.
-func GetServiceEndpoint(t TestingT, options *KubectlOptions, service *corev1.Service, servicePort int) string {
+func GetServiceEndpoint(t testing.TestingT, options *KubectlOptions, service *corev1.Service, servicePort int) string {
 	endpoint, err := GetServiceEndpointE(t, options, service, servicePort)
 	require.NoError(t, err)
 	return endpoint
@@ -114,7 +114,7 @@ func GetServiceEndpoint(t TestingT, options *KubectlOptions, service *corev1.Ser
 // - For LoadBalancer service type, return the publicly accessible hostname of the load balancer.
 //   If the hostname is empty, it will return the public IP of the LoadBalancer.
 // - All other service types are not supported.
-func GetServiceEndpointE(t TestingT, options *KubectlOptions, service *corev1.Service, servicePort int) (string, error) {
+func GetServiceEndpointE(t testing.TestingT, options *KubectlOptions, service *corev1.Service, servicePort int) (string, error) {
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
 		// ClusterIP service type will map directly to service port
@@ -148,7 +148,7 @@ func GetServiceEndpointE(t TestingT, options *KubectlOptions, service *corev1.Se
 // Extracts a endpoint that can be reached outside the kubernetes cluster. NodePort type needs to find the right
 // allocated node port mapped to the service port, as well as find out the externally reachable ip (if available).
 func findEndpointForNodePortService(
-	t TestingT,
+	t testing.TestingT,
 	options *KubectlOptions,
 	service *corev1.Service,
 	servicePort int32,
@@ -179,7 +179,7 @@ func FindNodePortE(service *corev1.Service, servicePort int32) (int32, error) {
 }
 
 // pickRandomNode will pick a random node in the kubernetes cluster
-func pickRandomNodeE(t TestingT, options *KubectlOptions) (corev1.Node, error) {
+func pickRandomNodeE(t testing.TestingT, options *KubectlOptions) (corev1.Node, error) {
 	nodes, err := GetNodesE(t, options)
 	if err != nil {
 		return corev1.Node{}, err
@@ -192,7 +192,7 @@ func pickRandomNodeE(t TestingT, options *KubectlOptions) (corev1.Node, error) {
 }
 
 // Given a node, return the ip address, preferring the external IP
-func FindNodeHostnameE(t TestingT, node corev1.Node) (string, error) {
+func FindNodeHostnameE(t testing.TestingT, node corev1.Node) (string, error) {
 	nodeIDUri, err := url.Parse(node.Spec.ProviderID)
 	if err != nil {
 		return "", err
@@ -208,7 +208,7 @@ func FindNodeHostnameE(t TestingT, node corev1.Node) (string, error) {
 // findAwsNodeHostname will return the public ip of the node, assuming the node is an AWS EC2 instance.
 // If the instance does not have a public IP, will return the internal hostname as recorded on the Kubernetes node
 // object.
-func findAwsNodeHostnameE(t TestingT, node corev1.Node, awsIDUri *url.URL) (string, error) {
+func findAwsNodeHostnameE(t testing.TestingT, node corev1.Node, awsIDUri *url.URL) (string, error) {
 	// Path is /AVAILABILITY_ZONE/INSTANCE_ID
 	parts := strings.Split(awsIDUri.Path, "/")
 	if len(parts) != 3 {

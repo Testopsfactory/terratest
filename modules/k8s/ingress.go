@@ -10,19 +10,19 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // ListIngresses will look for Ingress resources in the given namespace that match the given filters and return them.
 // This will fail the test if there is an error.
-func ListIngresses(t TestingT, options *KubectlOptions, filters metav1.ListOptions) []extensionsv1beta1.Ingress {
+func ListIngresses(t testing.TestingT, options *KubectlOptions, filters metav1.ListOptions) []extensionsv1beta1.Ingress {
 	ingresses, err := ListIngressesE(t, options, filters)
 	require.NoError(t, err)
 	return ingresses
 }
 
 // ListIngressesE will look for Ingress resources in the given namespace that match the given filters and return them.
-func ListIngressesE(t TestingT, options *KubectlOptions, filters metav1.ListOptions) ([]extensionsv1beta1.Ingress, error) {
+func ListIngressesE(t testing.TestingT, options *KubectlOptions, filters metav1.ListOptions) ([]extensionsv1beta1.Ingress, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
@@ -37,14 +37,14 @@ func ListIngressesE(t TestingT, options *KubectlOptions, filters metav1.ListOpti
 
 // GetIngress returns a Kubernetes Ingress resource in the provided namespace with the given name. This will fail the
 // test if there is an error.
-func GetIngress(t TestingT, options *KubectlOptions, ingressName string) *extensionsv1beta1.Ingress {
+func GetIngress(t testing.TestingT, options *KubectlOptions, ingressName string) *extensionsv1beta1.Ingress {
 	ingress, err := GetIngressE(t, options, ingressName)
 	require.NoError(t, err)
 	return ingress
 }
 
 // GetIngressE returns a Kubernetes Ingress resource in the provided namespace with the given name.
-func GetIngressE(t TestingT, options *KubectlOptions, ingressName string) (*extensionsv1beta1.Ingress, error) {
+func GetIngressE(t testing.TestingT, options *KubectlOptions, ingressName string) (*extensionsv1beta1.Ingress, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func IsIngressAvailable(ingress *extensionsv1beta1.Ingress) bool {
 }
 
 // WaitUntilIngressAvailable waits until the Ingress resource has an endpoint provisioned for it.
-func WaitUntilIngressAvailable(t TestingT, options *KubectlOptions, ingressName string, retries int, sleepBetweenRetries time.Duration) {
+func WaitUntilIngressAvailable(t testing.TestingT, options *KubectlOptions, ingressName string, retries int, sleepBetweenRetries time.Duration) {
 	statusMsg := fmt.Sprintf("Wait for ingress %s to be provisioned.", ingressName)
 	message := retry.DoWithRetry(
 		t,

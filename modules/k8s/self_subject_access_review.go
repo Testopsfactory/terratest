@@ -6,12 +6,12 @@ import (
 	authv1 "k8s.io/api/authorization/v1"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // CanIDo returns whether or not the provided action is allowed by the client configured by the provided kubectl option.
 // This will fail if there are any errors accessing the kubernetes API (but not if the action is denied).
-func CanIDo(t TestingT, options *KubectlOptions, action authv1.ResourceAttributes) bool {
+func CanIDo(t testing.TestingT, options *KubectlOptions, action authv1.ResourceAttributes) bool {
 	allowed, err := CanIDoE(t, options, action)
 	require.NoError(t, err)
 	return allowed
@@ -19,7 +19,7 @@ func CanIDo(t TestingT, options *KubectlOptions, action authv1.ResourceAttribute
 
 // CanIDoE returns whether or not the provided action is allowed by the client configured by the provided kubectl option.
 // This will an error if there are problems accessing the kubernetes API (but not if the action is simply denied).
-func CanIDoE(t TestingT, options *KubectlOptions, action authv1.ResourceAttributes) (bool, error) {
+func CanIDoE(t testing.TestingT, options *KubectlOptions, action authv1.ResourceAttributes) (bool, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return false, err

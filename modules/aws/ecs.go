@@ -5,19 +5,19 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecs"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
 // GetEcsCluster fetches information about specified ECS cluster.
-func GetEcsCluster(t TestingT, region string, name string) *ecs.Cluster {
+func GetEcsCluster(t testing.TestingT, region string, name string) *ecs.Cluster {
 	cluster, err := GetEcsClusterE(t, region, name)
 	require.NoError(t, err)
 	return cluster
 }
 
 // GetEcsClusterE fetches information about specified ECS cluster.
-func GetEcsClusterE(t TestingT, region string, name string) (*ecs.Cluster, error) {
+func GetEcsClusterE(t testing.TestingT, region string, name string) (*ecs.Cluster, error) {
 	client, err := NewEcsClientE(t, region)
 	if err != nil {
 		return nil, err
@@ -42,24 +42,24 @@ func GetEcsClusterE(t TestingT, region string, name string) (*ecs.Cluster, error
 }
 
 // GetDefaultEcsClusterE fetches information about default ECS cluster.
-func GetDefaultEcsClusterE(t TestingT, region string) (*ecs.Cluster, error) {
+func GetDefaultEcsClusterE(t testing.TestingT, region string) (*ecs.Cluster, error) {
 	return GetEcsClusterE(t, region, "default")
 }
 
 // GetDefaultEcsCluster fetches information about default ECS cluster.
-func GetDefaultEcsCluster(t TestingT, region string) *ecs.Cluster {
+func GetDefaultEcsCluster(t testing.TestingT, region string) *ecs.Cluster {
 	return GetEcsCluster(t, region, "default")
 }
 
 // CreateEcsCluster creates ECS cluster in the given region under the given name.
-func CreateEcsCluster(t TestingT, region string, name string) *ecs.Cluster {
+func CreateEcsCluster(t testing.TestingT, region string, name string) *ecs.Cluster {
 	cluster, err := CreateEcsClusterE(t, region, name)
 	require.NoError(t, err)
 	return cluster
 }
 
 // CreateEcsClusterE creates ECS cluster in the given region under the given name.
-func CreateEcsClusterE(t TestingT, region string, name string) (*ecs.Cluster, error) {
+func CreateEcsClusterE(t testing.TestingT, region string, name string) (*ecs.Cluster, error) {
 	client := NewEcsClient(t, region)
 	cluster, err := client.CreateCluster(&ecs.CreateClusterInput{
 		ClusterName: aws.String(name),
@@ -70,13 +70,13 @@ func CreateEcsClusterE(t TestingT, region string, name string) (*ecs.Cluster, er
 	return cluster.Cluster, nil
 }
 
-func DeleteEcsCluster(t TestingT, region string, cluster *ecs.Cluster) {
+func DeleteEcsCluster(t testing.TestingT, region string, cluster *ecs.Cluster) {
 	err := DeleteEcsClusterE(t, region, cluster)
 	require.NoError(t, err)
 }
 
 // DeleteEcsClusterE deletes existing ECS cluster in the given region.
-func DeleteEcsClusterE(t TestingT, region string, cluster *ecs.Cluster) error {
+func DeleteEcsClusterE(t testing.TestingT, region string, cluster *ecs.Cluster) error {
 	client := NewEcsClient(t, region)
 	_, err := client.DeleteCluster(&ecs.DeleteClusterInput{
 		Cluster: aws.String(*cluster.ClusterName),
@@ -85,14 +85,14 @@ func DeleteEcsClusterE(t TestingT, region string, cluster *ecs.Cluster) error {
 }
 
 // GetEcsService fetches information about specified ECS service.
-func GetEcsService(t TestingT, region string, clusterName string, serviceName string) *ecs.Service {
+func GetEcsService(t testing.TestingT, region string, clusterName string, serviceName string) *ecs.Service {
 	service, err := GetEcsServiceE(t, region, clusterName, serviceName)
 	require.NoError(t, err)
 	return service
 }
 
 // GetEcsServiceE fetches information about specified ECS service.
-func GetEcsServiceE(t TestingT, region string, clusterName string, serviceName string) (*ecs.Service, error) {
+func GetEcsServiceE(t testing.TestingT, region string, clusterName string, serviceName string) (*ecs.Service, error) {
 	output, err := NewEcsClient(t, region).DescribeServices(&ecs.DescribeServicesInput{
 		Cluster: aws.String(clusterName),
 		Services: []*string{
@@ -113,14 +113,14 @@ func GetEcsServiceE(t TestingT, region string, clusterName string, serviceName s
 }
 
 // GetEcsTaskDefinition fetches information about specified ECS task definition.
-func GetEcsTaskDefinition(t TestingT, region string, taskDefinition string) *ecs.TaskDefinition {
+func GetEcsTaskDefinition(t testing.TestingT, region string, taskDefinition string) *ecs.TaskDefinition {
 	task, err := GetEcsTaskDefinitionE(t, region, taskDefinition)
 	require.NoError(t, err)
 	return task
 }
 
 // GetEcsTaskDefinitionE fetches information about specified ECS task definition.
-func GetEcsTaskDefinitionE(t TestingT, region string, taskDefinition string) (*ecs.TaskDefinition, error) {
+func GetEcsTaskDefinitionE(t testing.TestingT, region string, taskDefinition string) (*ecs.TaskDefinition, error) {
 	output, err := NewEcsClient(t, region).DescribeTaskDefinition(&ecs.DescribeTaskDefinitionInput{
 		TaskDefinition: aws.String(taskDefinition),
 	})
@@ -131,14 +131,14 @@ func GetEcsTaskDefinitionE(t TestingT, region string, taskDefinition string) (*e
 }
 
 // NewEcsClient creates en ECS client.
-func NewEcsClient(t TestingT, region string) *ecs.ECS {
+func NewEcsClient(t testing.TestingT, region string) *ecs.ECS {
 	client, err := NewEcsClientE(t, region)
 	require.NoError(t, err)
 	return client
 }
 
 // NewEcsClientE creates an ECS client.
-func NewEcsClientE(t TestingT, region string) (*ecs.ECS, error) {
+func NewEcsClientE(t testing.TestingT, region string) (*ecs.ECS, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

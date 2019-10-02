@@ -3,19 +3,19 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
 // GetParameter retrieves the latest version of SSM Parameter at keyName with decryption.
-func GetParameter(t TestingT, awsRegion string, keyName string) string {
+func GetParameter(t testing.TestingT, awsRegion string, keyName string) string {
 	keyValue, err := GetParameterE(t, awsRegion, keyName)
 	require.NoError(t, err)
 	return keyValue
 }
 
 // GetParameterE retrieves the latest version of SSM Parameter at keyName with decryption.
-func GetParameterE(t TestingT, awsRegion string, keyName string) (string, error) {
+func GetParameterE(t testing.TestingT, awsRegion string, keyName string) (string, error) {
 	ssmClient, err := NewSsmClientE(t, awsRegion)
 	if err != nil {
 		return "", err
@@ -31,14 +31,14 @@ func GetParameterE(t TestingT, awsRegion string, keyName string) (string, error)
 }
 
 // PutParameter creates new version of SSM Parameter at keyName with keyValue as SecureString.
-func PutParameter(t TestingT, awsRegion string, keyName string, keyDescription string, keyValue string) int64 {
+func PutParameter(t testing.TestingT, awsRegion string, keyName string, keyDescription string, keyValue string) int64 {
 	version, err := PutParameterE(t, awsRegion, keyName, keyDescription, keyValue)
 	require.NoError(t, err)
 	return version
 }
 
 // PutParameterE creates new version of SSM Parameter at keyName with keyValue as SecureString.
-func PutParameterE(t TestingT, awsRegion string, keyName string, keyDescription string, keyValue string) (int64, error) {
+func PutParameterE(t testing.TestingT, awsRegion string, keyName string, keyDescription string, keyValue string) (int64, error) {
 	ssmClient, err := NewSsmClientE(t, awsRegion)
 	if err != nil {
 		return 0, err
@@ -53,14 +53,14 @@ func PutParameterE(t TestingT, awsRegion string, keyName string, keyDescription 
 }
 
 // NewSsmClient creates a SSM client.
-func NewSsmClient(t TestingT, region string) *ssm.SSM {
+func NewSsmClient(t testing.TestingT, region string) *ssm.SSM {
 	client, err := NewSsmClientE(t, region)
 	require.NoError(t, err)
 	return client
 }
 
 // NewSsmClientE creates an SSM client.
-func NewSsmClientE(t TestingT, region string) (*ssm.SSM, error) {
+func NewSsmClientE(t testing.TestingT, region string) (*ssm.SSM, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

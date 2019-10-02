@@ -6,13 +6,13 @@ import (
 	"sort"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/oracle/oci-go-sdk/common"
 	"github.com/oracle/oci-go-sdk/core"
 )
 
 // DeleteImage deletes a custom image with given OCID.
-func DeleteImage(t TestingT, ocid string) {
+func DeleteImage(t testing.TestingT, ocid string) {
 	err := DeleteImageE(t, ocid)
 	if err != nil {
 		t.Fatal(err)
@@ -20,7 +20,7 @@ func DeleteImage(t TestingT, ocid string) {
 }
 
 // DeleteImageE deletes a custom image with given OCID.
-func DeleteImageE(t TestingT, ocid string) error {
+func DeleteImageE(t testing.TestingT, ocid string) error {
 	logger.Logf(t, "Deleting image with OCID %s", ocid)
 
 	configProvider := common.DefaultConfigProvider()
@@ -35,7 +35,7 @@ func DeleteImageE(t TestingT, ocid string) error {
 }
 
 // GetMostRecentImageID gets the OCID of the most recent image in the given compartment that has the given OS name and version.
-func GetMostRecentImageID(t TestingT, compartmentID string, osName string, osVersion string) string {
+func GetMostRecentImageID(t testing.TestingT, compartmentID string, osName string, osVersion string) string {
 	ocid, err := GetMostRecentImageIDE(t, compartmentID, osName, osVersion)
 	if err != nil {
 		t.Fatal(err)
@@ -44,7 +44,7 @@ func GetMostRecentImageID(t TestingT, compartmentID string, osName string, osVer
 }
 
 // GetMostRecentImageIDE gets the OCID of the most recent image in the given compartment that has the given OS name and version.
-func GetMostRecentImageIDE(t TestingT, compartmentID string, osName string, osVersion string) (string, error) {
+func GetMostRecentImageIDE(t testing.TestingT, compartmentID string, osName string, osVersion string) (string, error) {
 	configProvider := common.DefaultConfigProvider()
 	client, err := core.NewComputeClientWithConfigurationProvider(configProvider)
 	if err != nil {

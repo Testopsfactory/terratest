@@ -16,17 +16,13 @@ type TestingT interface {
 	// created during the test. Calling FailNow does not stop
 	// those other goroutines.
 	FailNow()
+	Fatal(args ...interface{})
 	// Fatalf is equivalent to Logf followed by FailNow.
 	Fatalf(format string, args ...interface{})
 	// Error is equivalent to Log followed by Fail.
 	Error(args ...interface{})
 	// Errorf is equivalent to Logf followed by Fail.
 	Errorf(format string, args ...interface{})
-	// Log formats its arguments using default formatting, analogous to Println,
-	// and records the text in the error log. For tests, the text will be printed only if
-	// the test fails or the -test.v flag is set. For benchmarks, the text is always
-	// printed to avoid having performance depend on the value of the -test.v flag.
-	Log(args ...interface{})
 	// Logf formats its arguments according to the format, analogous to Printf, and
 	// records the text in the error log. A final newline is added if not provided. For
 	// tests, the text will be printed only if the test fails or the -test.v flag is

@@ -1,11 +1,11 @@
 package terraform
 
 import (
-	_ "github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // Get calls terraform get and return stdout/stderr.
-func Get(t TestingT, options *Options) string {
+func Get(t testing.TestingT, options *Options) string {
 	out, err := GetE(t, options)
 	if err != nil {
 		t.Fatal(err)
@@ -14,6 +14,6 @@ func Get(t TestingT, options *Options) string {
 }
 
 // GetE calls terraform get and return stdout/stderr.
-func GetE(t TestingT, options *Options) (string, error) {
+func GetE(t testing.TestingT, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, "get", "-update")
 }
