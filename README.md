@@ -127,7 +127,7 @@ Now you should be able to run the example test. To run the test:
 ### Installing the utility binaries
 
 Terratest also ships utility binaries that you can use to improve the debugging experience (see [Debugging interleaved
-test output](#debugging-interleaved-test-output). The compiled binaries are shipped separately from the library in the [Releases page](https://github.com/gruntwork-io/terratest/releases).
+test output](#debugging-interleaved-test-output)). The compiled binaries are shipped separately from the library in the [Releases page](https://github.com/gruntwork-io/terratest/releases).
 
 To install a binary, download the version that matches your platform and place it somewhere on your `PATH`. For example
 to install version 0.13.13 of `terratest_log_parser`:
@@ -292,7 +292,7 @@ strongly recommend running tests in an environment that is totally separate from
 testing infrastructure code for AWS, you should run your tests in a completely separate AWS account.
 
 This means that you will have to write your infrastructure code in such a way that you can plug in ([dependency
-injection](https://en.wikipedia.org/wiki/Dependency_injection) environment-specific details, such as account IDs,
+injection](https://en.wikipedia.org/wiki/Dependency_injection)) environment-specific details, such as account IDs,
 domain names, IP addresses, etc. Adding support for this will typically make your code cleaner and more flexible.
 
 
