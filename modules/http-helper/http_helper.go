@@ -140,9 +140,9 @@ func HttpGetWithRetryWithCustomValidationE(t *testing.T, url string, tlsConfig *
 // If there's any error, fail the test.
 func HTTPDo(
 	t *testing.T, method string, url string, body io.Reader,
-	headers map[string]string,
+	headers map[string]string, tlsConfig *tls.Config,
 ) (int, string) {
-	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers)
+	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers, tlsConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,13 +152,18 @@ func HTTPDo(
 // HTTPDoE performs the given HTTP method on the given URL and return the HTTP status code, body, and any error.
 func HTTPDoE(
 	t *testing.T, method string, url string, body io.Reader,
-	headers map[string]string,
+	headers map[string]string, tlsConfig *tls.Config,
 ) (int, string, error) {
 	logger.Logf(t, "Making an HTTP %s call to URL %s", method, url)
 
+	tr := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+
 	client := http.Client{
 		// By default, Go does not impose a timeout, so an HTTP connection attempt can hang for a LONG time.
-		Timeout: 10 * time.Second,
+		Timeout:   10 * time.Second,
+		Transport: tr,
 	}
 
 	req := newRequest(method, url, body, headers)
@@ -183,10 +188,10 @@ func HTTPDoE(
 func HTTPDoWithRetry(
 	t *testing.T, method string, url string,
 	body []byte, headers map[string]string, expectedStatus int,
-	retries int, sleepBetweenRetries time.Duration,
+	retries int, sleepBetweenRetries time.Duration, tlsConfig *tls.Config,
 ) string {
 	out, err := HTTPDoWithRetryE(t, method, url, body,
-		headers, expectedStatus, retries, sleepBetweenRetries)
+		headers, expectedStatus, retries, sleepBetweenRetries, tlsConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -199,13 +204,13 @@ func HTTPDoWithRetry(
 func HTTPDoWithRetryE(
 	t *testing.T, method string, url string,
 	body []byte, headers map[string]string, expectedStatus int,
-	retries int, sleepBetweenRetries time.Duration,
+	retries int, sleepBetweenRetries time.Duration, tlsConfig *tls.Config,
 ) (string, error) {
 	out, err := retry.DoWithRetryE(
 		t, fmt.Sprintf("HTTP %s to URL %s", method, url), retries,
 		sleepBetweenRetries, func() (string, error) {
 			bodyReader := bytes.NewReader(body)
-			statusCode, out, err := HTTPDoE(t, method, url, bodyReader, headers)
+			statusCode, out, err := HTTPDoE(t, method, url, bodyReader, headers, tlsConfig)
 			if err != nil {
 				return "", err
 			}
@@ -224,9 +229,9 @@ func HTTPDoWithRetryE(
 func HTTPDoWithValidationRetry(
 	t *testing.T, method string, url string,
 	body []byte, headers map[string]string, expectedStatus int,
-	expectedBody string, retries int, sleepBetweenRetries time.Duration,
+	expectedBody string, retries int, sleepBetweenRetries time.Duration, tlsConfig *tls.Config,
 ) {
-	err := HTTPDoWithValidationRetryE(t, method, url, body, headers, expectedStatus, expectedBody, retries, sleepBetweenRetries)
+	err := HTTPDoWithValidationRetryE(t, method, url, body, headers, expectedStatus, expectedBody, retries, sleepBetweenRetries, tlsConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,12 +242,12 @@ func HTTPDoWithValidationRetry(
 func HTTPDoWithValidationRetryE(
 	t *testing.T, method string, url string,
 	body []byte, headers map[string]string, expectedStatus int,
-	expectedBody string, retries int, sleepBetweenRetries time.Duration,
+	expectedBody string, retries int, sleepBetweenRetries time.Duration, tlsConfig *tls.Config,
 ) error {
 	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries,
 		sleepBetweenRetries, func() (string, error) {
 			bodyReader := bytes.NewReader(body)
-			return "", HTTPDoWithValidationE(t, method, url, bodyReader, headers, expectedStatus, expectedBody)
+			return "", HTTPDoWithValidationE(t, method, url, bodyReader, headers, expectedStatus, expectedBody, tlsConfig)
 		})
 
 	return err
@@ -250,8 +255,8 @@ func HTTPDoWithValidationRetryE(
 
 // HTTPDoWithValidation performs the given HTTP method on the given URL and verify that you get back the expected status
 // code and body. If either doesn't match, fail the test.
-func HTTPDoWithValidation(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatusCode int, expectedBody string) {
-	err := HTTPDoWithValidationE(t, method, url, body, headers, expectedStatusCode, expectedBody)
+func HTTPDoWithValidation(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatusCode int, expectedBody string, tlsConfig *tls.Config) {
+	err := HTTPDoWithValidationE(t, method, url, body, headers, expectedStatusCode, expectedBody, tlsConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -259,16 +264,16 @@ func HTTPDoWithValidation(t *testing.T, method string, url string, body io.Reade
 
 // HTTPDoWithValidationE performs the given HTTP method on the given URL and verify that you get back the expected status
 // code and body. If either doesn't match, return an error.
-func HTTPDoWithValidationE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatusCode int, expectedBody string) error {
+func HTTPDoWithValidationE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, expectedStatusCode int, expectedBody string, tlsConfig *tls.Config) error {
 	return HTTPDoWithCustomValidationE(t, method, url, body, headers, func(statusCode int, body string) bool {
 		return statusCode == expectedStatusCode && body == expectedBody
-	})
+	}, tlsConfig)
 }
 
 // HTTPDoWithCustomValidation performs the given HTTP method on the given URL and validate the returned status code and
 // body using the given function.
-func HTTPDoWithCustomValidation(t *testing.T, method string, url string, body io.Reader, headers map[string]string, validateResponse func(int, string) bool) {
-	err := HTTPDoWithCustomValidationE(t, method, url, body, headers, validateResponse)
+func HTTPDoWithCustomValidation(t *testing.T, method string, url string, body io.Reader, headers map[string]string, validateResponse func(int, string) bool, tlsConfig *tls.Config) {
+	err := HTTPDoWithCustomValidationE(t, method, url, body, headers, validateResponse, tlsConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -276,8 +281,8 @@ func HTTPDoWithCustomValidation(t *testing.T, method string, url string, body io
 
 // HTTPDoWithCustomValidationE performs the given HTTP method on the given URL and validate the returned status code and
 // body using the given function.
-func HTTPDoWithCustomValidationE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, validateResponse func(int, string) bool) error {
-	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers)
+func HTTPDoWithCustomValidationE(t *testing.T, method string, url string, body io.Reader, headers map[string]string, validateResponse func(int, string) bool, tlsConfig *tls.Config) error {
+	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers, tlsConfig)
 
 	if err != nil {
 		return err
