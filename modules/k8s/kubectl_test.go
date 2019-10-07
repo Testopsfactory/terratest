@@ -9,23 +9,18 @@
 package k8s
 
 import (
+	"fmt"
+	"strings"
 	"testing"
-	"math/rand"
 
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
 )
 
 // Test that RunKubectlAndGetOutputE will run kubectl and return the output by running a can-i command call.
 func TestRunKubectlAndGetOutputReturnsOutput(t *testing.T) {
-	options := NewKubectlOptions("", "", func(n int) string {
-		cont c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-		
-		b := make([]byte, n)
-		for i := range b {
-			b[i] = c[rand.Intn(len(c))]
-		}
-		return string(b)
-	}(16))
+	namespaceName := fmt.Sprintf("kubectl-test-%s", strings.ToLower(random.UniqueId()))
+	options := NewKubectlOptions("", "", namespaceName)
 	output, err := RunKubectlAndGetOutputE(t, options, "auth", "can-i", "get", "pods")
 	require.NoError(t, err)
 	require.Equal(t, output, "yes")
