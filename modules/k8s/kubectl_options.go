@@ -13,7 +13,7 @@ type KubectlOptions struct {
 // NewKubectlOptions will return a pointer to new instance of KubectlOptions with the configured options
 func NewKubectlOptions(opts ...string) *KubectlOptions {
 	switch {
-	case len(opts) = 2:
+	case len(opts) = 3:
 		return &KubectlOptions{
 			ContextName: opts[0],
 			ConfigPath:  opts[1],
