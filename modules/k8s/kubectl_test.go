@@ -10,6 +10,7 @@ package k8s
 
 import (
 	"testing"
+	"math/rand"
 
 	"github.com/stretchr/testify/require"
 )
