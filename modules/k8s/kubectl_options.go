@@ -11,11 +11,19 @@ type KubectlOptions struct {
 }
 
 // NewKubectlOptions will return a pointer to new instance of KubectlOptions with the configured options
-func NewKubectlOptions(contextName string, configPath string, namespace string) *KubectlOptions {
-	return &KubectlOptions{
-		ContextName: contextName,
-		ConfigPath:  configPath,
-		Namespace:   namespace,
+func NewKubectlOptions(opts ...string) *KubectlOptions {
+	switch {
+	case len(opts) = 2:
+		return &KubectlOptions{
+			ContextName: opts[0],
+			ConfigPath: opts[1],
+		}
+	case len(opts) > 2:
+		return &KubectlOptions{
+			ContextName: opts[0],
+			ConfigPath:  opts[1],
+			Namespace:   opts[2],
+		}
 	}
 }
 
