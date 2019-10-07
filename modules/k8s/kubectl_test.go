@@ -16,7 +16,15 @@ import (
 
 // Test that RunKubectlAndGetOutputE will run kubectl and return the output by running a can-i command call.
 func TestRunKubectlAndGetOutputReturnsOutput(t *testing.T) {
-	options := NewKubectlOptions("", "")
+	options := NewKubectlOptions("", "", func(n int) string {
+		cont c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+		
+		b := make([]byte, n)
+		for i := range b {
+			b[i] = c[rand.Intn(len(c))]
+		}
+		return string(b)
+	}(16))
 	output, err := RunKubectlAndGetOutputE(t, options, "auth", "can-i", "get", "pods")
 	require.NoError(t, err)
 	require.Equal(t, output, "yes")
