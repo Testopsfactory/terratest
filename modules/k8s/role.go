@@ -16,7 +16,7 @@ func GetRole(t *testing.T, options *KubectlOptions, roleName string) *rbacv1.Rol
 	return role
 }
 
-// GetRole returns a Kubernetes role resource in the provided namespace with the given name. The namespace used
+// GetRoleE returns a Kubernetes role resource in the provided namespace with the given name. The namespace used
 // is the one provided in the KubectlOptions.
 func GetRoleE(t *testing.T, options *KubectlOptions, roleName string) (*rbacv1.Role, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
