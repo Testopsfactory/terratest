@@ -16,6 +16,7 @@ func NewKubectlOptions(contextName string, configPath string, namespace string) 
 			ContextName: contextName,
 			ConfigPath:  configPath,
 			Namespace:   namespace,
+			Env: map[string]string{},
 		}
 }
 
