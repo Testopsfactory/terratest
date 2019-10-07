@@ -13,11 +13,11 @@ type KubectlOptions struct {
 // NewKubectlOptions will return a pointer to new instance of KubectlOptions with the configured options
 func NewKubectlOptions(contextName string, configPath string, namespace string) *KubectlOptions {
 	return &KubectlOptions{
-			ContextName: contextName,
-			ConfigPath:  configPath,
-			Namespace:   namespace,
-			Env: map[string]string{},
-		}
+		ContextName: contextName,
+		ConfigPath:  configPath,
+		Namespace:   namespace,
+		Env:         map[string]string{},
+	}
 }
 
 // GetConfigPath will return a sensible default if the config path is not set on the options.
