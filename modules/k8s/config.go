@@ -28,7 +28,7 @@ func LoadConfigFromPath(path string) clientcmd.ClientConfig {
 	return config
 }
 
-// LoadApiClientConfig will load a ClientConfig object from a file path that points to a location on disk containing a
+// LoadApiClientConfigE will load a ClientConfig object from a file path that points to a location on disk containing a
 // kubectl config, with the requested context loaded.
 func LoadApiClientConfigE(configPath string, contextName string) (*restclient.Config, error) {
 	overrides := clientcmd.ConfigOverrides{}
@@ -161,7 +161,7 @@ func CopyHomeKubeConfigToTemp(t *testing.T) string {
 	return path
 }
 
-// CopyHomeKubeConfigToTemp will copy the kubeconfig in the home directory to a temp file.
+// CopyHomeKubeConfigToTempE will copy the kubeconfig in the home directory to a temp file.
 func CopyHomeKubeConfigToTempE(t *testing.T) (string, error) {
 	configPath, err := KubeConfigPathFromHomeDirE()
 	if err != nil {

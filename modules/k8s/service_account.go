@@ -24,7 +24,7 @@ func GetServiceAccount(t *testing.T, options *KubectlOptions, serviceAccountName
 	return serviceAccount
 }
 
-// GetServiceAccount returns a Kubernetes service account resource in the provided namespace with the given name. The
+// GetServiceAccountE returns a Kubernetes service account resource in the provided namespace with the given name. The
 // namespace used is the one provided in the KubectlOptions.
 func GetServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccountName string) (*corev1.ServiceAccount, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
@@ -58,7 +58,7 @@ func CreateServiceAccountE(t *testing.T, options *KubectlOptions, serviceAccount
 	return err
 }
 
-// GetServiceAccountWithAuthTokenE will retrieve the ServiceAccount token from the cluster so it can be used to
+// GetServiceAccountAuthToken will retrieve the ServiceAccount token from the cluster so it can be used to
 // authenticate requests as that ServiceAccount. This will fail the test if there is an error.
 func GetServiceAccountAuthToken(t *testing.T, kubectlOptions *KubectlOptions, serviceAccountName string) string {
 	token, err := GetServiceAccountAuthTokenE(t, kubectlOptions, serviceAccountName)
@@ -66,7 +66,7 @@ func GetServiceAccountAuthToken(t *testing.T, kubectlOptions *KubectlOptions, se
 	return token
 }
 
-// GetServiceAccountWithAuthTokenE will retrieve the ServiceAccount token from the cluster so it can be used to
+// GetServiceAccountAuthTokenE will retrieve the ServiceAccount token from the cluster so it can be used to
 // authenticate requests as that ServiceAccount.
 func GetServiceAccountAuthTokenE(t *testing.T, kubectlOptions *KubectlOptions, serviceAccountName string) (string, error) {
 	// Wait for the TokenController to provision a ServiceAccount token

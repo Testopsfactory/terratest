@@ -203,12 +203,12 @@ func findAwsNodeHostnameE(t *testing.T, node corev1.Node, awsIDUri *url.URL) (st
 		return "", err
 	}
 
-	publicIp, containsIp := ipMap[instanceID]
-	if !containsIp {
+	publicIP, containsIP := ipMap[instanceID]
+	if !containsIP {
 		// return default hostname
 		return findDefaultNodeHostnameE(node)
 	}
-	return publicIp, nil
+	return publicIP, nil
 }
 
 // findDefaultNodeHostname returns the hostname recorded on the Kubernetes node object.

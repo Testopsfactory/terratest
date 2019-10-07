@@ -31,7 +31,9 @@ var globalMutex sync.Mutex
 type KubeResourceType int
 
 const (
+	// ResourceTypePod is a k8s pod kind identifier
 	ResourceTypePod KubeResourceType = iota
+	// ResourceTypeService is a k8s service kind identifier
 	ResourceTypeService
 )
 
