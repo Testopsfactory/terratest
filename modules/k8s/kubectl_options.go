@@ -16,13 +16,13 @@ func NewKubectlOptions(opts ...string) *KubectlOptions {
 	case len(opts) = 2:
 		return &KubectlOptions{
 			ContextName: opts[0],
-			ConfigPath: opts[1],
-		}
-	case len(opts) > 2:
-		return &KubectlOptions{
-			ContextName: opts[0],
 			ConfigPath:  opts[1],
 			Namespace:   opts[2],
+		}
+	default:
+		return &KubectlOptions{
+			ContextName: opts[0],
+			ConfigPath: opts[1],
 		}
 	}
 }
