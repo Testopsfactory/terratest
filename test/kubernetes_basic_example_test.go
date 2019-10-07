@@ -28,18 +28,18 @@ func TestKubernetesBasicExample(t *testing.T) {
 	kubeResourcePath, err := filepath.Abs("../examples/kubernetes-basic-example/nginx-deployment.yml")
 	require.NoError(t, err)
 
-	// Setup the kubectl config and context. Here we choose to use the defaults, which is:
-	// - HOME/.kube/config for the kubectl config file
-	// - Current context of the kubectl config file
-	options := k8s.NewKubectlOptions("", "")
-
 	// To ensure we can reuse the resource config on the same cluster to test different scenarios, we setup a unique
 	// namespace for the resources for this test.
 	// Note that namespaces must be lowercase.
 	namespaceName := fmt.Sprintf("kubernetes-basic-example-%s", strings.ToLower(random.UniqueId()))
+
+	// Setup the kubectl config and context. Here we choose to use the defaults, which is:
+	// - HOME/.kube/config for the kubectl config file
+	// - Current context of the kubectl config file
+	// - Random namespace
+	options := k8s.NewKubectlOptions("", "", namespaceName)
+
 	k8s.CreateNamespace(t, options, namespaceName)
-	// Make sure we set the namespace on the options
-	options.Namespace = namespaceName
 	// ... and make sure to delete the namespace at the end of the test
 	defer k8s.DeleteNamespace(t, options, namespaceName)
 
