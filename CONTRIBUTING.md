@@ -3,12 +3,77 @@
 Contributions to this repo are very welcome! We follow a fairly standard [pull request
 process](https://help.github.com/articles/about-pull-requests/) for contributions, subject to the following guidelines:
 
+1. [Types of contributions](#types-of-contributions)
 1. [File a GitHub issue](#file-a-github-issue)
 1. [Update the documentation](#update-the-documentation)
 1. [Update the tests](#update-the-tests)
 1. [Update the code](#update-the-code)
 1. [Create a pull request](#create-a-pull-request)
 1. [Merge and release](#merge-and-release)
+
+## Types of contributions
+
+Broadly speaking, Terratest contains two types of helper functions:
+
+1. Integrations with external tools
+1. Infrastructure and validation helpers
+   
+We accept different types of contributions for each of these two types of helper functions, as described next.
+
+### Integrations with external tools
+
+These are helper functions that integrate with various DevOps tools—e.g., Terraform, Docker, Packer, and 
+Kubernetes—that you can use to deploy infrastructure in your automated tests. Examples: 
+
+* `terraform.InitAndApply`: run `terraform init` and `terraform apply`. 
+* `packer.BuildArtifacts`: run `packer build`.
+* `shell.RunCommandAndGetOutput`: run an arbitrary shell command and return `stdout` and `stderr` as a string.
+
+Here are the guidelines for contributions with external tools:
+
+1. **Fixes and improvements to existing integrations**: All bug fixes and new features for existing tool integrations 
+   are very welcome!  
+
+1. **New integrations**: Before contributing an integration with a totally new tool, please file a GitHub issue to 
+   discuss with us if it's something we are interested in supporting and maintaining. For example, we may be open to 
+   new integrations with Docker and Kubernetes tools, but we may not be open to integrations with Chef or Puppet, as
+   there are already testing tools available for them.
+      
+### Infrastructure and validation helpers
+
+These are helper functions for creating, destroying, and validating infrastructure directly via API calls or SDKs. 
+Examples:
+
+* `http_helper.HttpGetWithRetry`: make an HTTP request, retrying until you get a certain expected response.
+* `ssh.CheckSshCommand`: SSH to a server and execute a command.
+* `aws.CreateS3Bucket`: create an S3 bucket.
+* `aws.GetPrivateIpsOfEc2Instances`:  use the AWS APIs to fetch IPs of some EC2 instances.          
+
+The number of possible such helpers is nearly infinite, so to avoid Terratest becoming a gigantic, sprawling library 
+we ask that contributions for new infrastructure helpers are limited to:
+
+1. **Clouds**: we currently only support three major public clouds (AWS, GCP, Azure) and Kubernetes.
+
+1. **Complexity**: we ask that you only contribute infrastructure and validation helpers for code that is relatively
+   complex to do from scratch. For example, a helper that merely wraps an existing function in the AWS or GCP SDK is
+   not a great choice, as the wrapper isn't contributing much value, but is bloating the Terratest API. On the other
+   hand, a helper that expose simple APIs for complex logic are great contributions: `ssh.CheckSshCommand` is a great
+   example of this, as it provides a simple one-line interface for dozens of lines of complicated SSH logic.   
+
+1. **Popularity**: Terratest should only contain helpers for common use cases that come up again and again in the 
+   course of testing. We don't want to bloat the library with lots of esoteric helpers for rarely used tools, so 
+   here's a quick litmus test: (a) Is this helper something you've used once or twice in your own tests, or is it 
+   something you're using over and over again? (b) Does this helper only apply to some use case specific to your 
+   company or is it likely that many other Terratest users are hitting this use case over and over again too?
+
+1. **Creating infrastructure**: we try to keep helper functions that create infrastructure (e.g., use the AWS SDK to 
+   create an S3 bucket or EC2 instance) to a minimum, as those functions typically require maintaining state (so that 
+   they are idempotent and can clean up that infrastructure at the end of the test) and dealing with asynchronous and 
+   eventually consistent cloud APIs. This can be surprisingly complicated, so we typically recommend using a tool like 
+   Terraform, which already handles all that complexity, to create any infrastructure you need at test time, and 
+   running Terratest's built-in `terraform` helpers as necessary. If you're considering contributing a function that
+   creates infrastructure directly (e.g., using a cloud provider's APIs), please file a GitHub issue to explain why
+   such a function would be a better choice than using a tool like Terraform.   
 
 ## File a GitHub issue
 
