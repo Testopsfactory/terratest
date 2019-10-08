@@ -52,12 +52,12 @@ Examples:
 The number of possible such helpers is nearly infinite, so to avoid Terratest becoming a gigantic, sprawling library 
 we ask that contributions for new infrastructure helpers are limited to:
 
-1. **Clouds**: we currently only support three major public clouds (AWS, GCP, Azure) and Kubernetes.
+1. **Platforms**: we currently only support three major public clouds (AWS, GCP, Azure) and Kubernetes.
 
 1. **Complexity**: we ask that you only contribute infrastructure and validation helpers for code that is relatively
    complex to do from scratch. For example, a helper that merely wraps an existing function in the AWS or GCP SDK is
    not a great choice, as the wrapper isn't contributing much value, but is bloating the Terratest API. On the other
-   hand, a helper that expose simple APIs for complex logic are great contributions: `ssh.CheckSshCommand` is a great
+   hand, helpers that expose simple APIs for complex logic are great contributions: `ssh.CheckSshCommand` is a great
    example of this, as it provides a simple one-line interface for dozens of lines of complicated SSH logic.   
 
 1. **Popularity**: Terratest should only contain helpers for common use cases that come up again and again in the 
