@@ -35,7 +35,7 @@ func TestRemoteChartInstall(t *testing.T) {
 
 	// Use default kubectl options to create a new namespace for this test, and then update the namespace for kubectl
 	kubectlOptions := k8s.NewKubectlOptions("", "", namespaceName)
-	
+
 	defer k8s.DeleteNamespace(t, kubectlOptions, namespaceName)
 	k8s.CreateNamespace(t, kubectlOptions, namespaceName)
 
