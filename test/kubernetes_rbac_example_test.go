@@ -55,7 +55,7 @@ func TestKubernetesRBACExample(t *testing.T) {
 		serviceAccountName,
 		token,
 	))
-	serviceAccountKubectlOptions := k8s.NewKubectlOptions(serviceAccountName, tmpConfigPath)
+	serviceAccountKubectlOptions := k8s.NewKubectlOptions(serviceAccountName, tmpConfigPath, namespaceName)
 
 	// At this point all requests made with serviceAccountKubectlOptions will be auth'd as that ServiceAccount. So let's
 	// verify that! We will check:
