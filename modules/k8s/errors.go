@@ -59,7 +59,7 @@ func (err PodNotAvailable) Error() string {
 	return fmt.Sprintf("Pod %s is not available", err.pod.Name)
 }
 
-// NewPodNotAvailableError returnes a PodNodAvailable struct when Kubernetes deems a pod is not available
+// NewPodNotAvailableError returnes a PodNotAvailable struct when Kubernetes deems a pod is not available
 func NewPodNotAvailableError(pod *corev1.Pod) PodNotAvailable {
 	return PodNotAvailable{pod}
 }
