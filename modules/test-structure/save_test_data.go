@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
@@ -206,10 +205,17 @@ func LoadTestData(t *testing.T, path string, value interface{}) {
 
 // IsTestDataPresent returns true if a file exists at $path and the test data there is non-empty.
 func IsTestDataPresent(t *testing.T, path string) bool {
-	bytes, err := ioutil.ReadFile(path)
-	if err != nil && strings.Contains(err.Error(), "no such file or directory") {
+	exists, err := files.FileExistsE(path)
+	if err != nil {
+		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
+	}
+	if !exists {
 		return false
-	} else if err != nil {
+	}
+
+	bytes, err := ioutil.ReadFile(path)
+
+	if err != nil {
 		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)
 	}
 
