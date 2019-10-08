@@ -282,3 +282,30 @@ func CleanupTestData(t *testing.T, path string) {
 		logger.Logf(t, "%s does not exist. Nothing to cleanup.", path)
 	}
 }
+
+// CleanupTestData cleans up the .test-data folder inside the given folder.
+// If deleteParent is true, CleanupTestDataFolder will also delete the given folder.
+func CleanupTestDataFolder(t *testing.T, path string, deleteParent bool) {
+	if deleteParent {
+		deleteFolder(t, path)
+	} else {
+		testDataPath := filepath.Join(path, ".test-data")
+		deleteFolder(t, testDataPath)
+	}
+}
+
+// cleanupTestDataFolder deletes the given folder.
+func deleteFolder(t *testing.T, path string) {
+	exists, err := files.FileExistsE(path)
+	if err != nil {
+		t.Fatalf("Failed to clean up test data folder at %s: %v", path, err)
+	}
+
+	if exists {
+		if err := os.RemoveAll(path); err != nil {
+			t.Fatalf("Failed to clean up test data folder at %s: %v", path, err)
+		}
+	} else {
+		logger.Logf(t, "%s does not exist. Nothing to cleanup", path)
+	}
+}
