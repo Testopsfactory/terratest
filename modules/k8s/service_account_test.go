@@ -42,7 +42,7 @@ func TestGetServiceAccountWithAuthTokenGetsTokenThatCanBeUsedForAuth(t *testing.
 	// Now validate auth as service account. This is a bit tricky because we don't have an API endpoint in k8s that
 	// tells you who you are, so we will rely on the self subject access review and see if we have access to the
 	// kube-system namespace.
-	serviceAccountOptions := NewKubectlOptions(serviceAccountName, tmpConfigPath)
+	serviceAccountOptions := NewKubectlOptions(serviceAccountName, tmpConfigPath, namespaceName)
 	action := authv1.ResourceAttributes{
 		Namespace: "kube-system",
 		Verb:      "list",

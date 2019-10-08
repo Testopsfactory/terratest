@@ -27,16 +27,17 @@ func TestRemoteChartInstall(t *testing.T) {
 
 	helmChart := "stable/chartmuseum"
 
-	// Use default kubectl options to create a new namespace for this test, and then update the namespace for kubectl
-	kubectlOptions := k8s.NewKubectlOptions("", "")
 	namespaceName := fmt.Sprintf(
 		"%s-%s",
 		strings.ToLower(t.Name()),
 		strings.ToLower(random.UniqueId()),
 	)
+
+	// Use default kubectl options to create a new namespace for this test, and then update the namespace for kubectl
+	kubectlOptions := k8s.NewKubectlOptions("", "", namespaceName)
+	
 	defer k8s.DeleteNamespace(t, kubectlOptions, namespaceName)
 	k8s.CreateNamespace(t, kubectlOptions, namespaceName)
-	kubectlOptions.Namespace = namespaceName
 
 	// Override service type to node port
 	options := &Options{
