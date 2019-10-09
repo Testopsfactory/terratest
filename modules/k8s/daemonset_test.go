@@ -1,3 +1,10 @@
+// +build kubernetes
+
+// NOTE: we have build tags to differentiate kubernetes tests from non-kubernetes tests. This is done because minikube
+// is heavy and can interfere with docker related tests in terratest. Specifically, many of the tests start to fail with
+// `connection refused` errors from `minikube`. To avoid overloading the system, we run the kubernetes tests and helm
+// tests separately from the others. This may not be necessary if you have a sufficiently powerful machine.  We
+// recommend at least 4 cores and 16GB of RAM if you want to run all the tests together.
 package k8s
 
 import (
@@ -30,8 +37,8 @@ func TestGetDaemonSetEReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
 
-	daemonSet := GetDaemonSet(t, options, "fluentd-elasticsearch")
-	require.Equal(t, daemonSet.Name, "fluentd-elasticsearch")
+	daemonSet := GetDaemonSet(t, options, "sample-ds")
+	require.Equal(t, daemonSet.Name, "sample-ds")
 	require.Equal(t, daemonSet.Namespace, uniqueID)
 }
 
@@ -49,7 +56,7 @@ func TestListDaemonSetsReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 	require.Equal(t, len(daemonSets), 1)
 
 	daemonSet := daemonSets[0]
-	require.Equal(t, daemonSet.Name, "fluentd-elasticsearch")
+	require.Equal(t, daemonSet.Name, "sample-ds")
 	require.Equal(t, daemonSet.Namespace, uniqueID)
 }
 
@@ -62,44 +69,24 @@ metadata:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: fluentd-elasticsearch
+  name: sample-ds
   namespace: %s
   labels:
-    k8s-app: fluentd-logging
+    k8s-app: sample-ds
 spec:
   selector:
     matchLabels:
-      name: fluentd-elasticsearch
+      name: sample-ds
   template:
     metadata:
       labels:
-        name: fluentd-elasticsearch
+        name: sample-ds
     spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
-      - name: fluentd-elasticsearch
-        image: gcr.io/fluentd-elasticsearch/fluentd:v2.5.1
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
-        volumeMounts:
-        - name: varlog
-          mountPath: /var/log
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
-          readOnly: true
-      terminationGracePeriodSeconds: 30
-      volumes:
-      - name: varlog
-        hostPath:
-          path: /var/log
-      - name: varlibdockercontainers
-        hostPath:
-          path: /var/lib/docker/containers
-
+      - name: alpine
+        image: alpine:3.8
+        command: ['sh', '-c', 'echo Hello Terratest! && sleep 99999']
 `
