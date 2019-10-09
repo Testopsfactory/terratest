@@ -52,7 +52,9 @@ Examples:
 The number of possible such helpers is nearly infinite, so to avoid Terratest becoming a gigantic, sprawling library 
 we ask that contributions for new infrastructure helpers are limited to:
 
-1. **Platforms**: we currently only support three major public clouds (AWS, GCP, Azure) and Kubernetes.
+1. **Platforms**: we currently only support three major public clouds (AWS, GCP, Azure) and Kubernetes. There is some
+   code contributed earlier for other platforms (e.g., OCI), but until we have the time/resources to support those 
+   platforms fully, we will only accept contributions for the major public clouds and Kubernetes.
 
 1. **Complexity**: we ask that you only contribute infrastructure and validation helpers for code that is relatively
    complex to do from scratch. For example, a helper that merely wraps an existing function in the AWS or GCP SDK is
