@@ -1,10 +1,11 @@
 package k8s
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 // ListDaemonSets will look for daemonsets in the given namespace that match the given filters and return them. This will
