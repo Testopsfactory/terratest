@@ -16,7 +16,7 @@ func GetSecret(t *testing.T, options *KubectlOptions, secretName string) *corev1
 	return secret
 }
 
-// GetSecret returns a Kubernetes secret resource in the provided namespace with the given name. The namespace used
+// GetSecretE returns a Kubernetes secret resource in the provided namespace with the given name. The namespace used
 // is the one provided in the KubectlOptions.
 func GetSecretE(t *testing.T, options *KubectlOptions, secretName string) (*corev1.Secret, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)

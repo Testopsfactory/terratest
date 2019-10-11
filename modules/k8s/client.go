@@ -19,7 +19,7 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 
-	options := NewKubectlOptions("", kubeConfigPath)
+	options := NewKubectlOptions("", kubeConfigPath, "default")
 	return GetKubernetesClientFromOptionsE(t, options)
 }
 

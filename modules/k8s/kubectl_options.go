@@ -2,7 +2,7 @@ package k8s
 
 import "testing"
 
-// Represents common options necessary to specify for all Kubectl calls
+// KubectlOptions represents common options necessary to specify for all Kubectl calls
 type KubectlOptions struct {
 	ContextName string
 	ConfigPath  string
@@ -10,10 +10,13 @@ type KubectlOptions struct {
 	Env         map[string]string
 }
 
-func NewKubectlOptions(contextName string, configPath string) *KubectlOptions {
+// NewKubectlOptions will return a pointer to new instance of KubectlOptions with the configured options
+func NewKubectlOptions(contextName string, configPath string, namespace string) *KubectlOptions {
 	return &KubectlOptions{
 		ContextName: contextName,
 		ConfigPath:  configPath,
+		Namespace:   namespace,
+		Env:         map[string]string{},
 	}
 }
 
