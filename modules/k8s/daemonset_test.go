@@ -22,7 +22,7 @@ import (
 func TestGetDaemonSetEReturnsErrorForNonExistantDaemonSet(t *testing.T) {
 	t.Parallel()
 
-	options := NewKubectlOptions("", "")
+	options := NewKubectlOptions("", "", "")
 	_, err := GetDaemonSetE(t, options, "sample-ds")
 	require.Error(t, err)
 }
@@ -31,8 +31,7 @@ func TestGetDaemonSetEReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 	t.Parallel()
 
 	uniqueID := strings.ToLower(random.UniqueId())
-	options := NewKubectlOptions("", "")
-	options.Namespace = uniqueID
+	options := NewKubectlOptions("", "", uniqueID)
 	configData := fmt.Sprintf(EXAMPLE_DAEMONSET_YAML_TEMPLATE, uniqueID, uniqueID)
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
@@ -46,8 +45,7 @@ func TestListDaemonSetsReturnsCorrectServiceInCorrectNamespace(t *testing.T) {
 	t.Parallel()
 
 	uniqueID := strings.ToLower(random.UniqueId())
-	options := NewKubectlOptions("", "")
-	options.Namespace = uniqueID
+	options := NewKubectlOptions("", "", uniqueID)
 	configData := fmt.Sprintf(EXAMPLE_DAEMONSET_YAML_TEMPLATE, uniqueID, uniqueID)
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
