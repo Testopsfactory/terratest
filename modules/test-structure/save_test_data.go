@@ -311,7 +311,7 @@ func cleanupTestDataFolder(t *testing.T, path string) error {
 	}
 
 	if !exists {
-		logger.Logf(t, "%s does not exist. Nothing to cleanup", path)
+		logger.Logf(t, "%s does not exist. Nothing to cleanup.", path)
 		return nil
 	}
 	if err := os.RemoveAll(path); err != nil {
