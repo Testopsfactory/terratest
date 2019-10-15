@@ -285,25 +285,15 @@ func CleanupTestData(t *testing.T, path string) {
 }
 
 // CleanupTestDataFolder cleans up the .test-data folder inside the given folder.
-// If deleteParent is true, CleanupTestDataFolder will also delete the given folder.
 // If there are any errors, fail the test.
-func CleanupTestDataFolder(t *testing.T, path string, deleteParent bool) {
-	err := CleanupTestDataFolderE(t, path, deleteParent)
+func CleanupTestDataFolder(t *testing.T, path string) {
+	err := CleanupTestDataFolderE(t, path)
 	require.NoError(t, err)
 }
 
 // CleanupTestDataFolderE cleans up the .test-data folder inside the given folder.
-// If deleteParent is true, CleanupTestDataFolder will also delete the given folder.
-func CleanupTestDataFolderE(t *testing.T, path string, deleteParent bool) error {
-	if !deleteParent {
-		path = filepath.Join(path, ".test-data")
-	}
-
-	return cleanupTestDataFolder(t, path)
-}
-
-// cleanupTestDataFolder deletes the given folder.
-func cleanupTestDataFolder(t *testing.T, path string) error {
+func CleanupTestDataFolderE(t *testing.T, path string) error {
+	path = filepath.Join(path, ".test-data")
 	exists, err := files.FileExistsE(path)
 	if err != nil {
 		logger.Logf(t, "Failed to clean up test data folder at %s: %v", path, err)
