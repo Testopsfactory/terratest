@@ -14,6 +14,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/packer"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/require"
 )
 
 // SaveTerraformOptions serializes and saves TerraformOptions into the given folder. This allows you to create TerraformOptions during setup
@@ -281,4 +282,32 @@ func CleanupTestData(t *testing.T, path string) {
 	} else {
 		logger.Logf(t, "%s does not exist. Nothing to cleanup.", path)
 	}
+}
+
+// CleanupTestDataFolder cleans up the .test-data folder inside the given folder.
+// If there are any errors, fail the test.
+func CleanupTestDataFolder(t *testing.T, path string) {
+	err := CleanupTestDataFolderE(t, path)
+	require.NoError(t, err)
+}
+
+// CleanupTestDataFolderE cleans up the .test-data folder inside the given folder.
+func CleanupTestDataFolderE(t *testing.T, path string) error {
+	path = filepath.Join(path, ".test-data")
+	exists, err := files.FileExistsE(path)
+	if err != nil {
+		logger.Logf(t, "Failed to clean up test data folder at %s: %v", path, err)
+		return err
+	}
+
+	if !exists {
+		logger.Logf(t, "%s does not exist. Nothing to cleanup.", path)
+		return nil
+	}
+	if err := os.RemoveAll(path); err != nil {
+		logger.Logf(t, "Failed to clean up test data folder at %s: %v", path, err)
+		return err
+	}
+
+	return nil
 }
