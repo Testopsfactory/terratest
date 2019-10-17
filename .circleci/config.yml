@@ -4,11 +4,11 @@ defaults: &defaults
     image: "ubuntu-1604:201903-01"
   environment:
     GRUNTWORK_INSTALLER_VERSION: v0.0.21
-    MODULE_CI_VERSION: v0.14.1
+    MODULE_CI_VERSION: v0.16.0-alpha.1
     TERRAFORM_VERSION: 0.11.11
     TERRAGRUNT_VERSION: v0.18.3
     PACKER_VERSION: 1.3.3
-    GOLANG_VERSION: 1.11
+    GOLANG_VERSION: 1.13
     K8S_VERSION: v1.10.0  # Same as EKS
     HELM_VERSION: v2.12.2
     KUBECONFIG: /home/circleci/.kube/config
@@ -34,11 +34,9 @@ install_gruntwork_utils: &install_gruntwork_utils
     gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
     gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
     configure-environment-for-gruntwork-module \
-      --circle-ci-2-machine-executor \
       --terraform-version ${TERRAFORM_VERSION} \
       --terragrunt-version ${TERRAGRUNT_VERSION} \
       --packer-version ${PACKER_VERSION} \
-      --use-go-dep \
       --go-version ${GOLANG_VERSION} \
       --go-src-path ./
 
@@ -51,16 +49,16 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - dep-{{ checksum "Gopkg.lock" }}
+          - gomod-{{ checksum "go.sum" }}
 
       # Install gruntwork utilities
       - run:
           <<: *install_gruntwork_utils
 
       - save_cache:
-          key: dep-{{ checksum "Gopkg.lock" }}
+          key: gomod-{{ checksum "go.sum" }}
           paths:
-          - ./vendor
+          - $HOME/go/src/
 
       # Run pre-commit hooks and fail the build if any hook finds required changes.
       - run: go get golang.org/x/tools/cmd/goimports
@@ -73,9 +71,7 @@ jobs:
       # during a failure.
       - run:
           command: |
-            cd ~/.go_workspace/src/github.com/gruntwork-io/terratest
             GO_ENABLED=0 build-go-binaries \
-              --circle-ci-2 \
               --app-name terratest_log_parser \
               --src-path ./cmd/terratest_log_parser \
               --dest-path ./cmd/bin \
