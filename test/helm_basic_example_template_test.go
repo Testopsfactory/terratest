@@ -10,7 +10,6 @@
 package test
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -20,6 +19,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/helm"
 	"github.com/gruntwork-io/terratest/modules/k8s"
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
@@ -43,7 +43,7 @@ func TestHelmBasicExampleTemplateRenderedDeployment(t *testing.T) {
 
 	// Set up the namespace; confirm that the template renders the expected value for the namespace.
 	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
-	fmt.Printf("Namespace: %s\n", namespaceName)
+	logger.Logf(t, "Namespace: %s\n", namespaceName)
 
 	// Setup the args. For this test, we will set the following input values:
 	// - containerImageRepo=nginx
