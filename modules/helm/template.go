@@ -36,6 +36,9 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, templateFi
 	// Now construct the args
 	// We first construct the template args
 	args := []string{}
+	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
+		args = append(args, "--namespace", options.KubectlOptions.Namespace)
+	}
 	args, err = getValuesArgsE(t, options, args...)
 	if err != nil {
 		return "", err
