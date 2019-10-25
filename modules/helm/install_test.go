@@ -52,7 +52,7 @@ func TestRemoteChartInstall(t *testing.T) {
 		"chartmuseum-%s",
 		strings.ToLower(random.UniqueId()),
 	)
-	Install(t, options, helmChart, releaseName)
+	defer Delete(t, options, releaseName, true)
 
 	// Test if helm.install will return an error if the chart version is incorrect
 	options.Version = "notValidVersion.0.0.0"
