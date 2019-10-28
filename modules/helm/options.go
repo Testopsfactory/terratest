@@ -12,4 +12,5 @@ type Options struct {
 	KubectlOptions *k8s.KubectlOptions // KubectlOptions to control how to authenticate to kubernetes cluster. `nil` => use defaults.
 	HomePath       string              // The path to the helm home to use when calling out to helm. Empty string means use default ($HOME/.helm).
 	EnvVars        map[string]string   // Environment variables to set when running helm
+	Version        string              // Version of chart
 }

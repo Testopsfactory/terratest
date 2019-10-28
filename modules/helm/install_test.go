@@ -19,6 +19,7 @@ import (
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/stretchr/testify/require"
 )
 
 // Test that we can install a remote chart (e.g stable/chartmuseum)
@@ -53,7 +54,14 @@ func TestRemoteChartInstall(t *testing.T) {
 		strings.ToLower(random.UniqueId()),
 	)
 	defer Delete(t, options, releaseName, true)
-	Install(t, options, helmChart, releaseName)
+
+	// Test if helm.install will return an error if the chart version is incorrect
+	options.Version = "notValidVersion.0.0.0"
+	require.Error(t, InstallE(t, options, helmChart, releaseName))
+
+	// Fix chart version and retry install
+	options.Version = "2.3.0"
+	require.NoError(t, InstallE(t, options, helmChart, releaseName))
 
 	// Get pod and wait for it to be avaialable
 	// To get the pod, we need to filter it using the labels that the helm chart creates
