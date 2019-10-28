@@ -61,8 +61,8 @@ func TestRemoteChartInstall(t *testing.T) {
 
 	// Fix chart version and retry install
 	options.Version = "2.3.0"
-	require.NoError(t, InstallE(t, options, helmChart, releaseName))	
-	
+	require.NoError(t, InstallE(t, options, helmChart, releaseName))
+
 	// Get pod and wait for it to be avaialable
 	// To get the pod, we need to filter it using the labels that the helm chart creates
 	filters := metav1.ListOptions{
