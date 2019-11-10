@@ -1,10 +1,11 @@
 package docker
 
 import (
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 // RunOptions defines options that can be passed to the 'docker run' command.
