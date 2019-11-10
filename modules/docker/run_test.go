@@ -17,5 +17,5 @@ func TestRun(t *testing.T) {
 	}
 
 	out := Run(t, "alpine:3.7", options)
-	require.Contains(t, "Hello, World!", out)
+	require.Contains(t, out, "Hello, World!")
 }
