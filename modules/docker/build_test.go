@@ -21,5 +21,5 @@ func TestBuild(t *testing.T) {
 	Build(t, "../../test/fixtures/docker", options)
 
 	out := Run(t, tag, &RunOptions{Remove: true})
-	require.Equal(t, text, out)
+	require.Contains(t, text, out)
 }
