@@ -9,9 +9,16 @@ import (
 
 // BuildOptions defines options that can be passed to the 'docker build' command.
 type BuildOptions struct {
-	File      string
-	Tags      []string
+	// Tags for the Docker image
+	Tags []string
+
+	// Build args to pass the 'docker build' command
 	BuildArgs []string
+
+	// Custom CLI options that will be passed as-is to the 'docker build' command. This is an "escape hatch" that allows
+	// Terratest to not have to support every single command-line option offered by the 'docker build' command, and
+	// solely focus on the most important ones.
+	OtherOptions []string
 }
 
 // Build runs the 'docker build' command at the given path with the given options and fails the test if there are any
@@ -22,7 +29,7 @@ func Build(t *testing.T, path string, options *BuildOptions) {
 
 // BuildE runs the 'docker build' command at the given path with the given options and returns any errors.
 func BuildE(t *testing.T, path string, options *BuildOptions) error {
-	logger.Logf(t, "Running Docker build on Dockerfile %s", options.File)
+	logger.Logf(t, "Running 'docker build' in %s", path)
 
 	args, err := formatDockerBuildArgs(path, options)
 	if err != nil {
@@ -42,16 +49,16 @@ func BuildE(t *testing.T, path string, options *BuildOptions) error {
 func formatDockerBuildArgs(path string, options *BuildOptions) ([]string, error) {
 	args := []string{"build"}
 
-	if options.File != "" {
-		args = append(args, "--file", options.File)
-	}
-
 	for _, tag := range options.Tags {
 		args = append(args, "--tag", tag)
 	}
 
 	for _, arg := range options.BuildArgs {
 		args = append(args, "--build-arg", arg)
+	}
+
+	for _, opt := range options.OtherOptions {
+		args = append(args, opt)
 	}
 
 	args = append(args, path)
