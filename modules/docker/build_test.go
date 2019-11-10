@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -17,4 +18,7 @@ func TestBuild(t *testing.T) {
 	}
 
 	Build(t, "../../test/fixtures/docker", options)
+
+	out := Run(t, tag, &RunOptions{Remove: true})
+	require.Equal(t, text, out)
 }
