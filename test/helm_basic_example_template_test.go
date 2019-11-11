@@ -37,6 +37,7 @@ func TestHelmBasicExampleTemplateRenderedDeployment(t *testing.T) {
 
 	// Path to the helm chart we will test
 	helmChartPath, err := filepath.Abs("../examples/helm-basic-example")
+	releaseName := "helm-basic"
 	require.NoError(t, err)
 
 	// Since we aren't deploying any resources, there is no need to setup kubectl authentication or helm home.
@@ -60,7 +61,7 @@ func TestHelmBasicExampleTemplateRenderedDeployment(t *testing.T) {
 	// we want to assert that the template renders without any errors.
 	// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
 	// arg to demonstrate how to select individual templates to render.
-	output := helm.RenderTemplate(t, options, helmChartPath, []string{"templates/deployment.yaml"})
+	output := helm.RenderTemplate(t, options, helmChartPath, releaseName, []string{"templates/deployment.yaml"})
 
 	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
 	// ensure the Deployment resource is rendered correctly.
@@ -83,6 +84,7 @@ func TestHelmBasicExampleTemplateRequiredTemplateArgs(t *testing.T) {
 
 	// Path to the helm chart we will test
 	helmChartPath, err := filepath.Abs("../examples/helm-basic-example")
+	releaseName := "helm-basic"
 	require.NoError(t, err)
 
 	// Since we aren't deploying any resources, there is no need to setup kubectl authentication, helm home, or
@@ -122,7 +124,7 @@ func TestHelmBasicExampleTemplateRequiredTemplateArgs(t *testing.T) {
 
 			// Now we try rendering the template, but verify we get an error
 			options := &helm.Options{SetValues: testCase.values}
-			_, err := helm.RenderTemplateE(t, options, helmChartPath, []string{})
+			_, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{})
 			require.Error(t, err)
 		})
 	}
