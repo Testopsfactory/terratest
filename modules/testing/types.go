@@ -23,12 +23,6 @@ type TestingT interface {
 	Error(args ...interface{})
 	// Errorf is equivalent to Logf followed by Fail.
 	Errorf(format string, args ...interface{})
-	// Logf formats its arguments according to the format, analogous to Printf, and
-	// records the text in the error log. A final newline is added if not provided. For
-	// tests, the text will be printed only if the test fails or the -test.v flag is
-	// set. For benchmarks, the text is always printed to avoid having performance
-	// depend on the value of the -test.v flag.
-	Logf(format string, args ...interface{})
 	// Name returns the name of the running test or benchmark.
 	Name() string
 }
