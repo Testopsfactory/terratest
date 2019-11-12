@@ -144,14 +144,14 @@ func GetSubnetsForVpcE(t testing.TestingT, vpcID string, region string) ([]Subne
 }
 
 // IsPublicSubnet returns True if the subnet identified by the given id in the provided region is public.
-func IsPublicSubnet(t *testing.T, subnetId string, region string) bool {
+func IsPublicSubnet(t testing.TestingT, subnetId string, region string) bool {
 	isPublic, err := IsPublicSubnetE(t, subnetId, region)
 	require.NoError(t, err)
 	return isPublic
 }
 
 // IsPublicSubnetE returns True if the subnet identified by the given id in the provided region is public.
-func IsPublicSubnetE(t *testing.T, subnetId string, region string) (bool, error) {
+func IsPublicSubnetE(t testing.TestingT, subnetId string, region string) (bool, error) {
 	subnetIdFilterName := "association.subnet-id"
 
 	subnetIdFilter := ec2.Filter{
