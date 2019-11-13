@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"fmt"
+
 	"github.com/gruntwork-io/terratest/modules/testing"
 )
 

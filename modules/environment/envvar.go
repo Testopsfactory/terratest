@@ -1,8 +1,9 @@
 package environment
 
 import (
-	"github.com/gruntwork-io/terratest/modules/testing"
 	"os"
+
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetFirstNonEmptyEnvVarOrFatal returns the first non-empty environment variable from envVarNames, or throws a fatal
