@@ -2,7 +2,6 @@ package aws
 
 import (
 	"os"
-	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"

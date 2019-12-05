@@ -3,7 +3,6 @@ package aws
 import (
 	"database/sql"
 	"fmt"
-	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -209,7 +208,7 @@ func NewRdsClient(t testing.TestingT, region string) *rds.RDS {
 }
 
 // NewRdsClientE creates an RDS client.
-func NewRdsClientE(t testing.TestingT, Region string) (*rds.RDS, error) {
+func NewRdsClientE(t testing.TestingT, region string) (*rds.RDS, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
 		return nil, err

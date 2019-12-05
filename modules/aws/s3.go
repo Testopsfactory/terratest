@@ -3,7 +3,6 @@ package aws
 import (
 	"bytes"
 	"strings"
-	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
