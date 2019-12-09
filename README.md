@@ -21,11 +21,15 @@ variety of helper functions and patterns for common infrastructure testing tasks
 - Running shell commands
 - And much more
 
+For an introduction to Terratest, including unit tests, integration tests, end-to-end tests, dependency injection, test 
+parallelism, retries, error handling, and static analysis, see the talk [Automated Testing for Terraform, Docker, 
+Packer, Kubernetes, and More](https://www.infoq.com/presentations/automated-testing-terraform-docker-packer/) and the
+blog post [Open sourcing Terratest: a swiss army knife for testing infrastructure 
+code](https://blog.gruntwork.io/open-sourcing-terratest-a-swiss-army-knife-for-testing-infrastructure-code-5d883336fcd5).
+
 Terratest was developed at [Gruntwork](https://gruntwork.io/) to help maintain the [Infrastructure as Code
-Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 250,000 lines of code written
-in Terraform, Go, Python, and Bash, and is used in production by hundreds of companies. See [Open sourcing Terratest: a
-swiss army knife for testing infrastructure code](https://blog.gruntwork.io/open-sourcing-terratest-a-swiss-army-knife-for-testing-infrastructure-code-5d883336fcd5)
-for more info.
+Library](https://gruntwork.io/infrastructure-as-code-library/), which contains over 300,000 lines of code written
+in Terraform, Go, Python, and Bash, and is used in production by hundreds of companies. 
 
 
 
@@ -67,48 +71,48 @@ validateServerIsWorking(t, terraformOptions)
 
 ### Install requirements
 
-Terratest uses the Go testing framework. To use terratest, you need to install:
+Terratest uses the Go testing framework. To use Terratest, you need to install:
 
 - [Go](https://golang.org/) (requires version >=1.13)
 
 
 ### Setting up your project
 
-1. In the project folder, create three subfolders:
-    1. `modules`: This folder should contain your terraform modules that will be tested.
-    1. `examples`: This folder should contain examples of how to use the modules. These should be self-contained
-       deployable examples. Meaning, it should provision all the resources that are necessary to run the modules in the
-       `modules` folder.
-    1. `test`: This folder should contain your terratest code.
-1. Copy the [basic terraform
-   example](https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-basic-example) into the `examples`
-   folder.
-1. Copy the [basic terraform example
-   test](https://github.com/gruntwork-io/terratest/blob/master/test/terraform_basic_example_test.go) into the `test`
-   folder.
-1. In the `test` folder, run `go mod init MODULE_NAME` to get a new `go.mod` file. Then run `go mod tidy` to download
-   terratest.
+The easiest way to get started with Terratest is to copy one of the examples and its corresponding tests from this 
+repo. This quick start section uses a Terraform example, but check out the [Examples](#examples) section for other 
+types of infrastructure code you can test (e.g., Packer, Kubernetes, etc).
 
-Now you should be able to run the example test. To run the test:
+1. Create an `examples` and `test` folder.
 
-1. Change your working directory to the `test` folder.
-1. Each time you want to run the tests, use `go test -v -timeout 90m .`
-    - Note that `go` has a default test timeout of 10 minutes. With infrastructure testing, your tests will surpass the
-      10 minutes very easily. To extend the timeout, you can pass in the `-timeout` option, which takes a `go` duration
-      string (e.g `10m` for 10 minutes or `1h` for 1 hour). In the above command, we use the `-timeout` option to
-      override to a 90 minute timeout.
-    - When you hit the timeout, Go automatically exits the test, **skipping all cleanup routines**. This is problematic
-      for infrastructure testing because it will skip your deferred infrastructure cleanup steps (i.e `terraform
-      destroy`), leaving behind the infrastructure that was spun up. So it is important to use a longer timeout
-      everytime you run the tests.
-    - See the [Cleanup section](#cleanup) for more information on how to setup robust clean up procedures in the face of
-      test timeouts and instabilities.
+1. Copy all the files from the [basic terraform example](/examples/terraform-basic-example) into the `examples` folder. 
+
+1. Copy the [basic terraform example test](/test/terraform_basic_example_test.go) into the `test` folder. 
+
+1. To configure dependencies, run: 
+
+    ```bash
+    cd test
+    go mod init "<MODULE_NAME>"
+    ```
+
+    Where `<MODULE_NAME>` is the name of your module, typically in the format 
+    `github.com/<YOUR_USERNAME>/<YOUR_REPO_NAME>`.
+
+1. To run the tests:
+
+    ```bash
+    cd test
+    go test -v -timeout 30m
+    ```
+
+    *(See [Timeouts and logging](#timeouts-and-logging) for why the `-timeout` parameter is used.)*
 
 
 ### Installing the utility binaries
 
 Terratest also ships utility binaries that you can use to improve the debugging experience (see [Debugging interleaved
-test output](#debugging-interleaved-test-output)). The compiled binaries are shipped separately from the library in the [Releases page](https://github.com/gruntwork-io/terratest/releases).
+test output](#debugging-interleaved-test-output)). The compiled binaries are shipped separately from the library in the 
+[Releases page](https://github.com/gruntwork-io/terratest/releases).
 
 To install a binary, download the version that matches your platform and place it somewhere on your `PATH`. For example
 to install version 0.13.13 of `terratest_log_parser`:
@@ -237,7 +241,8 @@ Terratest's [modules folder](/modules) and how they can help you test different 
 
 ## GoDoc
 
-You can find the GoDoc for Terratest here: https://godoc.org/github.com/gruntwork-io/terratest. This will let you see the methods and types within each package.
+You can find the GoDoc for Terratest here: https://godoc.org/github.com/gruntwork-io/terratest. This will let you see 
+the methods and types within each package.
 
 
 
@@ -255,6 +260,7 @@ That means that most of the tests are going to be integration tests that deploy 
 the tests effective at catching real-world bugs, but it also makes them much slower and more brittle. In this section,
 we'll outline some best practices to minimize the downsides of this sort of testing.
 
+1.  [Unit tests, integration tests, end-to-end tests](#unit-tests-integration-tests-end-to-end-tests)
 1.  [Testing environment](#testing-environment)
 1.  [Namespacing](#namespacing)
 1.  [Cleanup](#cleanup)
@@ -264,6 +270,13 @@ we'll outline some best practices to minimize the downsides of this sort of test
 1.  [Error handling](#error-handling)
 1.  [Iterating locally using Docker](#iterating-locally-using-docker)
 1.  [Iterating locally using test stages](#iterating-locally-using-test-stages)
+
+
+### Unit tests, integration tests, end-to-end tests
+
+For an introduction to Terratest, including unit tests, integration tests, end-to-end tests, dependency injection, test 
+parallelism, retries, error handling, and static analysis, see the talk [Automated Testing for Terraform, Docker, 
+Packer, Kubernetes, and More](https://www.infoq.com/presentations/automated-testing-terraform-docker-packer/).
 
 
 ### Testing environment
@@ -334,9 +347,10 @@ leftover resources.
 
 ### Timeouts and logging
 
-Go's package testing has a default timeout of 10 minutes, after which it forcibly kills your tests (even your cleanup
-code won't run!). It's not uncommon for infrastructure tests to take longer than 10 minutes, so you'll want to increase
-this timeout:
+Go's package testing has a default timeout of 10 minutes, after which it forcibly kills your tests—even your cleanup
+code won't run!. It's not uncommon for infrastructure tests to take longer than 10 minutes, so you'll almost always 
+want to increase the timeout by using the `-timeout` option, which takes a `go` duration string (e.g `10m` for 10 
+minutes or `1h` for 1 hour):
 
 ```bash
 go test -timeout 30m
@@ -366,6 +380,9 @@ difficulties with CI servers and debugging. The workaround is to tell Go to test
 ```bash
 go test -timeout 30m -p 1 ./...
 ```
+
+See the [Cleanup section](#cleanup) for more information on how to setup robust clean up procedures in the face of
+test timeouts and instabilities.
 
 
 ### Debugging interleaved test output
