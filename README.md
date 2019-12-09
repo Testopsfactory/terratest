@@ -348,7 +348,7 @@ leftover resources.
 ### Timeouts and logging
 
 Go's package testing has a default timeout of 10 minutes, after which it forcibly kills your tests—even your cleanup
-code won't run!. It's not uncommon for infrastructure tests to take longer than 10 minutes, so you'll almost always 
+code won't run! It's not uncommon for infrastructure tests to take longer than 10 minutes, so you'll almost always 
 want to increase the timeout by using the `-timeout` option, which takes a `go` duration string (e.g `10m` for 10 
 minutes or `1h` for 1 hour):
 
