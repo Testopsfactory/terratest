@@ -1,8 +1,6 @@
 package k8s
 
 import (
-	"testing"
-
 	"k8s.io/client-go/kubernetes"
 
 	// The following line loads the gcp plugin which is required to authenticate against GKE clusters.
