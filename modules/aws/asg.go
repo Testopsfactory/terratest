@@ -116,9 +116,8 @@ func WaitForCapacityE(
 			}
 			if capacityInfo.CurrentCapacity != capacityInfo.DesiredCapacity {
 				return "", NewAsgCapacityNotMetError(asgName, capacityInfo.DesiredCapacity, capacityInfo.CurrentCapacity)
-			} else {
-				return fmt.Sprintf("ASG %s is now at desired capacity %d", asgName, capacityInfo.DesiredCapacity), nil
 			}
+			return fmt.Sprintf("ASG %s is now at desired capacity %d", asgName, capacityInfo.DesiredCapacity), nil
 		},
 	)
 	logger.Log(t, msg)
