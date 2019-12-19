@@ -151,8 +151,8 @@ func formatPackerArgs(options *Options) []string {
 		args = append(args, "-var", fmt.Sprintf("%s=%s", key, value))
 	}
 
-	for _, file_path := range options.VarFiles {
-		args = append(args, "-var-file", file_path)
+	for _, filePath := range options.VarFiles {
+		args = append(args, "-var-file", filePath)
 	}
 
 	if options.Only != "" {
