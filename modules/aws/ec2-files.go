@@ -10,6 +10,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/ssh"
 )
 
+// RemoteFileSpecification describes which files you want to copy from your instances
 type RemoteFileSpecification struct {
 	AsgNames               []string            //ASGs where our instances will be
 	RemotePathToFileFilter map[string][]string //A map of the files to fetch, where the keys are directories on the remote host and the values are filters for what files to fetch from the directory. The filters support bash-style wildcards.
