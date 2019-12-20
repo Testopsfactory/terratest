@@ -337,9 +337,8 @@ func AssertS3BucketVersioningExistsE(t *testing.T, region string, bucketName str
 
 	if status == "Enabled" {
 		return nil
-	} else {
-		return NewBucketVersioningNotEnabledError(bucketName, region, status)
 	}
+	return NewBucketVersioningNotEnabledError(bucketName, region, status)
 }
 
 // AssertS3BucketPolicyExists checks if the given S3 bucket has a resource policy attached and returns an error if it does not
@@ -357,9 +356,8 @@ func AssertS3BucketPolicyExistsE(t *testing.T, region string, bucketName string)
 
 	if policy == "" {
 		return NewNoBucketPolicyError(bucketName, region, policy)
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // NewS3Client creates an S3 client.
