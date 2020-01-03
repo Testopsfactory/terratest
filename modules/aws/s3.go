@@ -185,7 +185,7 @@ func DeleteS3BucketE(t *testing.T, region string, name string) error {
 	return err
 }
 
-// EmptyS3BucketE removes the contents of an S3 bucket in the given region with the given name.
+// EmptyS3Bucket removes the contents of an S3 bucket in the given region with the given name.
 func EmptyS3Bucket(t *testing.T, region string, name string) {
 	err := EmptyS3BucketE(t, region, name)
 	require.NoError(t, err)
