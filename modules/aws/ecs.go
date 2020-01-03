@@ -70,6 +70,7 @@ func CreateEcsClusterE(t *testing.T, region string, name string) (*ecs.Cluster, 
 	return cluster.Cluster, nil
 }
 
+// DeleteEcsCluster deletes existing ECS cluster in the given region.
 func DeleteEcsCluster(t *testing.T, region string, cluster *ecs.Cluster) {
 	err := DeleteEcsClusterE(t, region, cluster)
 	require.NoError(t, err)
