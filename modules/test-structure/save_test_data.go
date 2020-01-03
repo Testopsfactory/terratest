@@ -176,7 +176,7 @@ func SaveTestData(t testing.TestingT, path string, value interface{}) {
 		t.Fatalf("Failed to convert value %s to JSON: %v", path, err)
 	}
 
-	logger.Logf("Marshalled JSON: %s", string(bytes))
+	logger.Logf(t, "Marshalled JSON: %s", string(bytes))
 
 	parentDir := filepath.Dir(path)
 	if err := os.MkdirAll(parentDir, 0777); err != nil {
