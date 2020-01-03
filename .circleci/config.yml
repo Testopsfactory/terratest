@@ -72,9 +72,6 @@ jobs:
             pre-commit install
             pre-commit run --all-files
 
-      # verify that the testing.TestingT interface is used instead of testing.T
-      - run: grep -Rw "*testing\.T" modules | grep -v _test.go
-
       # Build any binaries that need to be built
       # We always want to build the binaries, because we will use the terratest_log_parser to parse out the test output
       # during a failure.
