@@ -4,16 +4,39 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/gruntwork-io/terratest/modules/collections"
 )
+
+// TerraformDefaultLockingStatus - The terratest default command lock status (backwards compatibility)
+var TerraformCommandsWithLockSupport = []string{
+	"plan",
+	"apply",
+	"destroy",
+	"init",
+	"refresh",
+	"taint",
+	"untaint",
+	"import",
+}
 
 // FormatArgs converts the inputs to a format palatable to terraform. This includes converting the given vars to the
 // format the Terraform CLI expects (-var key=value).
 func FormatArgs(options *Options, args ...string) []string {
 	var terraformArgs []string
+	commandType := args[0]
+	lockSupported := collections.ListContains(TerraformCommandsWithLockSupport, commandType)
+
 	terraformArgs = append(terraformArgs, args...)
 	terraformArgs = append(terraformArgs, FormatTerraformVarsAsArgs(options.Vars)...)
 	terraformArgs = append(terraformArgs, FormatTerraformArgs("-var-file", options.VarFiles)...)
 	terraformArgs = append(terraformArgs, FormatTerraformArgs("-target", options.Targets)...)
+
+	if lockSupported {
+		// If command supports locking, handle lock arguments
+		terraformArgs = append(terraformArgs, FormatTerraformLockAsArgs(options.Lock, options.LockTimeout)...)
+	}
+
 	return terraformArgs
 }
 
@@ -21,6 +44,17 @@ func FormatArgs(options *Options, args ...string) []string {
 // -var key=value).
 func FormatTerraformVarsAsArgs(vars map[string]interface{}) []string {
 	return formatTerraformArgs(vars, "-var", true)
+}
+
+// FormatTerraformLockAsArgs formats the lock and lock-timeout variables
+// -lock, -lock-timeout
+func FormatTerraformLockAsArgs(lockCheck bool, lockTimeout string) []string {
+	lockArgs := []string{fmt.Sprintf("-lock=%v", lockCheck)}
+	if lockTimeout != "" {
+		lockTimeoutValue := fmt.Sprintf("%s=%s", "-lock-timeout", lockTimeout)
+		lockArgs = append(lockArgs, lockTimeoutValue)
+	}
+	return lockArgs
 }
 
 // FormatTerraformArgs will format multiple args with the arg name (e.g. "-var-file", []string{"foo.tfvars", "bar.tfvars"})
