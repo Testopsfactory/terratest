@@ -68,7 +68,7 @@ func PlanExitCode(t *testing.T, options *Options) int {
 
 // PlanExitCodeE runs terraform plan with the given options and returns the detailed exitcode.
 func PlanExitCodeE(t *testing.T, options *Options) (int, error) {
-	return GetExitCodeForTerraformCommandE(t, options, FormatArgs(options, "plan", "-input=false", "-lock=true", "-detailed-exitcode")...)
+	return GetExitCodeForTerraformCommandE(t, options, FormatArgs(options, "plan", "-input=false", "-detailed-exitcode")...)
 }
 
 // TgPlanAllExitCode runs terragrunt plan-all with the given options and returns the detailed exitcode.
