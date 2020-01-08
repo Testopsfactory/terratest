@@ -49,9 +49,7 @@ func formatDockerStopArgs(containers []string, options *StopOptions) ([]string, 
 		args = append(args, "--time", strconv.Itoa(options.Time))
 	}
 
-	for _, container := range containers {
-		args = append(args, container)
-	}
+	args = append(args, containers...)
 
 	return args, nil
 }
