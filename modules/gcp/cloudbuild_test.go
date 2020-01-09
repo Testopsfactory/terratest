@@ -59,9 +59,8 @@ func TestCreateBuild(t *testing.T) {
 		Images: []string{imagePath},
 	}
 
+	// CreateBuild blocks until the build is complete
 	b := CreateBuild(t, projectID, build)
-
-	// TODO - Wait for the build to complete
 
 	// TODO - Delete the GCR image
 
