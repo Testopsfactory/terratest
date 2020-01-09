@@ -8,6 +8,7 @@ import (
 	"time"
 
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func TestStop(t *testing.T) {
 
 	// choosing a unique port since 80 may not fly well on test machines
 	port := "13030"
-	testURL := strings.Join([]string{"http://localhost", port}, ":")
+	testURL := "http://localhost:" + port
 
 	// for testing the stopping of a docker container
 	// we got to run a container first and then stop it
@@ -27,22 +28,27 @@ func TestStop(t *testing.T) {
 		Detach:       true,
 		Name:         name,
 		Remove:       true,
-		OtherOptions: []string{"-p", strings.Join([]string{port, "80"}, ":")},
+		OtherOptions: []string{"-p", port + ":80"},
 	}
 	Run(t, "nginx:1.17-alpine", runOpts)
 
 	// verify nginx is running
-	tlsConfig := &tls.Config{}
-	statusCode, _ := http_helper.HttpGet(t, testURL, tlsConfig)
-	require.Equal(t, 200, statusCode)
+	http_helper.HttpGetWithRetryWithCustomValidation(t, testURL, &tls.Config{}, 60, 2*time.Second, verifyNginxIsUp)
 
 	// try to stop it now
-	stopOpts := &StopOptions{}
-	out := Stop(t, []string{name}, stopOpts)
+	out := Stop(t, []string{name}, &StopOptions{})
 	require.Contains(t, out, name)
 
 	// verify nginx is down
-	statusCode, _, err := http_helper.HttpGetE(t, testURL, tlsConfig)
-	require.NotEmpty(t, err)
+	// run a docker ps with name filter
+	command := shell.Command{
+		Command: "docker",
+		Args:    []string{"ps", "-q", "--filter", "name=" + name},
+	}
+	output := shell.RunCommandAndGetStdOut(t, command)
+	require.Empty(t, output)
+}
 
+func verifyNginxIsUp(statusCode int, body string) bool {
+	return statusCode == 200 && strings.Contains(body, "nginx!")
 }
