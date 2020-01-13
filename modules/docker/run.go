@@ -58,7 +58,7 @@ func Run(t *testing.T, image string, options *RunOptions) string {
 	return out
 }
 
-// Run runs the 'docker run' command on the given image with the given options and return stdout/stderr, or any error.
+// RunE runs the 'docker run' command on the given image with the given options and return stdout/stderr, or any error.
 func RunE(t *testing.T, image string, options *RunOptions) (string, error) {
 	logger.Logf(t, "Running 'docker run' on image '%s'", image)
 
