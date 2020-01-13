@@ -17,7 +17,7 @@ func TestCreateBuild(t *testing.T) {
 	t.Parallel()
 	// This test performs the following steps:
 	//
-	// 1. Creates a tarball with single Dockerfile
+	// 1. Creates a tarball with a single Dockerfile
 	// 2. Creates a GCS bucket
 	// 3. Uploads the tarball to the GCS Bucket
 	// 4. Triggers a build using the Cloud Build API
@@ -64,7 +64,10 @@ func TestCreateBuild(t *testing.T) {
 	b := CreateBuild(t, projectID, build)
 
 	// Delete the pushed build images
-	for _, image := range b.GetImages() {
+	// We could just use the `b` struct above, but we want to explicitly test
+	// the `GetBuild` method.
+	b2 := GetBuild(t, projectID, b.GetId())
+	for _, image := range b2.GetImages() {
 		DeleteGCRRepo(t, image)
 	}
 
