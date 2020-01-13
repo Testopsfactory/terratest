@@ -15,13 +15,14 @@ import (
 
 func TestCreateBuild(t *testing.T) {
 	t.Parallel()
-	// TODO
-
-	// 1. Create tarball with single Dockerfile
-	// 2. Create GCS bucket
-	// 3. Upload tarball to GCS Bucket
-	// 4. Create new build
-	// 4. Trigger a build using the Cloud Build API
+	// This test performs the following steps:
+	//
+	// 1. Creates a tarball with single Dockerfile
+	// 2. Creates a GCS bucket
+	// 3. Uploads the tarball to the GCS Bucket
+	// 4. Triggers a build using the Cloud Build API
+	// 5. Untags and deletes all pushed Build images
+	// 6. Deletes the GCS bucket
 
 	// Create and add some files to the archive.
 	tarball := createSampleAppTarball(t)
@@ -62,30 +63,13 @@ func TestCreateBuild(t *testing.T) {
 	// CreateBuild blocks until the build is complete
 	b := CreateBuild(t, projectID, build)
 
-	// TODO - Delete the GCR image
+	// Delete the pushed build images
+	for _, image := range b.GetImages() {
+		DeleteGCRRepo(t, image)
+	}
 
 	// Empty the storage bucket so we can delete it
 	defer EmptyStorageBucket(t, gsBucketName)
-}
-
-func TestGetBuild(t *testing.T) {
-	t.Parallel()
-}
-
-func TestGetBuilds(t *testing.T) {
-	t.Parallel()
-}
-
-func TestGetBuildsForTrigger(t *testing.T) {
-	t.Parallel()
-}
-
-func createCloudBuildTrigger(t *testing.T, projectID string) {
-
-}
-
-func destroyCloudBuildTrigger(t *testing.T, projectID string) {
-
 }
 
 func createSampleAppTarball(t *testing.T) *bytes.Reader {
