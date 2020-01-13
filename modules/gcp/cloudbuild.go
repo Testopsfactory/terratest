@@ -10,27 +10,6 @@ import (
 	cloudbuildpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
 
-// NewCloudBuildService creates a new Cloud Build service, which is used to make Cloud Build API calls.
-func NewCloudBuildService(t *testing.T) *cloudbuild.Client {
-	service, err := NewCloudBuildServiceE(t)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return service
-}
-
-// NewCloudBuildServiceE creates a new Cloud Build service, which is used to make Cloud Build API calls.
-func NewCloudBuildServiceE(t *testing.T) (*cloudbuild.Client, error) {
-	ctx := context.Background()
-
-	service, err := cloudbuild.NewClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return service, nil
-}
-
 // CreateBuild creates a new build blocking until the operation is complete.
 func CreateBuild(t *testing.T, projectID string, build *cloudbuildpb.Build) *cloudbuildpb.Build {
 	out, err := CreateBuildE(t, projectID, build)
@@ -162,4 +141,25 @@ func GetBuildsForTriggerE(t *testing.T, projectID string, triggerID string) ([]*
 	}
 
 	return filteredBuilds, nil
+}
+
+// NewCloudBuildService creates a new Cloud Build service, which is used to make Cloud Build API calls.
+func NewCloudBuildService(t *testing.T) *cloudbuild.Client {
+	service, err := NewCloudBuildServiceE(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return service
+}
+
+// NewCloudBuildServiceE creates a new Cloud Build service, which is used to make Cloud Build API calls.
+func NewCloudBuildServiceE(t *testing.T) (*cloudbuild.Client, error) {
+	ctx := context.Background()
+
+	service, err := cloudbuild.NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return service, nil
 }
