@@ -1,7 +1,7 @@
 package azure
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-06-01/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
 )
 
 // GetSubscriptionClient is a helper function that will setup an Azure Subscription client on your behalf

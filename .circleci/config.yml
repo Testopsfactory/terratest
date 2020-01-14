@@ -106,6 +106,8 @@ jobs:
       # kubernetes_test build steps.
       - run: mkdir -p /tmp/logs
       - run: run-go-tests --packages "-p 1 -tags=special -run TestRunCommandWithHugeLineOutput ./modules/shell"
+      # check we can compile the azure code, but don't actually run the tests
+      - run: run-go-tests --packages "-p 1 -tags=azure -run IDontExist ./modules/azure"
       - run: run-go-tests --packages "-p 1 ./..." | tee /tmp/logs/test_output.log
 
       - run:
