@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	cloudbuild "cloud.google.com/go/cloudbuild/apiv1/v2"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 	cloudbuildpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
@@ -13,9 +14,7 @@ import (
 // CreateBuild creates a new build blocking until the operation is complete.
 func CreateBuild(t *testing.T, projectID string, build *cloudbuildpb.Build) *cloudbuildpb.Build {
 	out, err := CreateBuildE(t, projectID, build)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -49,9 +48,7 @@ func CreateBuildE(t *testing.T, projectID string, build *cloudbuildpb.Build) (*c
 // GetBuild gets the given build.
 func GetBuild(t *testing.T, projectID string, buildID string) *cloudbuildpb.Build {
 	out, err := GetBuildE(t, projectID, buildID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -80,9 +77,7 @@ func GetBuildE(t *testing.T, projectID string, buildID string) (*cloudbuildpb.Bu
 // GetBuilds gets the list of builds for a given project.
 func GetBuilds(t *testing.T, projectID string) []*cloudbuildpb.Build {
 	out, err := GetBuildsE(t, projectID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -120,9 +115,7 @@ func GetBuildsE(t *testing.T, projectID string) ([]*cloudbuildpb.Build, error) {
 // GetBuildsForTrigger gets a list of builds for a specific cloud build trigger.
 func GetBuildsForTrigger(t *testing.T, projectID string, triggerID string) []*cloudbuildpb.Build {
 	out, err := GetBuildsForTriggerE(t, projectID, triggerID)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -146,9 +139,7 @@ func GetBuildsForTriggerE(t *testing.T, projectID string, triggerID string) ([]*
 // NewCloudBuildService creates a new Cloud Build service, which is used to make Cloud Build API calls.
 func NewCloudBuildService(t *testing.T) *cloudbuild.Client {
 	service, err := NewCloudBuildServiceE(t)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return service
 }
 

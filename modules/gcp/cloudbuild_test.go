@@ -10,6 +10,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/stretchr/testify/require"
 	cloudbuildpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
 
@@ -88,25 +89,24 @@ MAINTAINER Rob Morgan (rob@gruntwork.io)
 		Mode: 0600,
 		Size: int64(len(file)),
 	}
-	if err := tw.WriteHeader(hdr); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := tw.Write([]byte(file)); err != nil {
-		t.Fatal(err)
-	}
-	if err := tw.Close(); err != nil {
-		t.Fatal(err)
-	}
+
+	err := tw.WriteHeader(hdr)
+	require.NoError(t, err)
+
+	_, werr := tw.Write([]byte(file))
+	require.NoError(t, werr)
+
+	cerr := tw.Close()
+	require.NoError(t, cerr)
 
 	// gzip the tar archive
 	var zbuf bytes.Buffer
 	gzw := gzip.NewWriter(&zbuf)
-	if _, err := gzw.Write(buf.Bytes()); err != nil {
-		t.Fatal(err)
-	}
-	if err := gzw.Close(); err != nil {
-		t.Fatal(err)
-	}
+	_, gwerr := gzw.Write(buf.Bytes())
+	require.NoError(t, gwerr)
+
+	gcerr := gzw.Close()
+	require.NoError(t, gcerr)
 
 	// return the compressed buffer
 	return bytes.NewReader(zbuf.Bytes())

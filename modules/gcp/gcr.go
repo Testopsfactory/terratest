@@ -2,21 +2,19 @@ package gcp
 
 import (
 	"fmt"
-
 	"testing"
 
 	gcrname "github.com/google/go-containerregistry/pkg/name"
 	gcrgoogle "github.com/google/go-containerregistry/pkg/v1/google"
 	gcrremote "github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/stretchr/testify/require"
 )
 
 // DeleteGCRRepo deletes a GCR repository including all tagged images
 func DeleteGCRRepo(t *testing.T, repo string) {
 	err := DeleteGCRRepoE(t, repo)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DeleteGCRRepoE deletes a GCR repository including all tagged images
@@ -61,9 +59,7 @@ func DeleteGCRRepoE(t *testing.T, repo string) error {
 // DeleteGCRImageRef deletes a single repo image ref/digest
 func DeleteGCRImageRef(t *testing.T, ref string) {
 	err := DeleteGCRImageRefE(t, ref)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DeleteGCRImageRefE deletes a single repo image ref/digest
