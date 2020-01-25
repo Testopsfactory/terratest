@@ -19,3 +19,5 @@ vendor
 
 # OS X
 .DS_Store
+# Intermediate file for testing
+kubeconfig
