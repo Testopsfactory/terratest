@@ -1,3 +1,7 @@
+provider "azurerm" {
+  version = "=1.31.0"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A RESOURCE GROUP
 # See test/terraform_azure_example_test.go for how to write automated tests for this code.
@@ -9,8 +13,7 @@ resource "azurerm_resource_group" "main" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY A VIRTUAL NETWORK RESOURCES
-# See test/terraform_azure_example_test.go for how to write automated tests for this code.
+# DEPLOY VIRTUAL NETWORK RESOURCES
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "main" {
@@ -41,7 +44,6 @@ resource "azurerm_network_interface" "main" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A VIRTUAL MACHINE RUNNING UBUNTU
-# See test/terraform_azure_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine" "main" {
