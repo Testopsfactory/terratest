@@ -1,9 +1,10 @@
 package test
 
 import (
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/docker"
 	"github.com/magiconair/properties/assert"
-	"testing"
 )
 
 func TestDockerHelloWorldExample(t *testing.T) {
