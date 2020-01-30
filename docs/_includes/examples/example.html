@@ -49,9 +49,7 @@
       data-target="{{ file_name | replace: '.', '-' | replace: ' ', '-' }}"
       data-url="{{ site.github_api_url }}{{ file.url }}"
       >
-      <pre>
-<code class="language-{{ prism_lang }}">Loading...</code>
-      </pre>
+      <pre><code class="language-{{ prism_lang }}">Loading...</code></pre>
       <div class="example__file-link">
         <p>See source code:</p>
         <a href="https://{{ site.repository }}/tree/master{{ file.url }}">{{ site.repository }}{{ file.url }}</a>
