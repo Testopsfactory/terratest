@@ -2,17 +2,17 @@ package aws
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/stretchr/testify/require"
 )
 
 // InvokeFunction invokes a lambda function.
 func InvokeFunction(t *testing.T, region, functionName string, payload interface{}) []byte {
 	out, err := InvokeFunctionE(t, region, functionName, payload)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
@@ -32,38 +32,37 @@ func InvokeFunctionE(t *testing.T, region, functionName string, payload interfac
 
 		if err != nil {
 			return nil, err
-		} else {
-			invokeInput.Payload = payloadJson
 		}
+		invokeInput.Payload = payloadJson
 	}
 
 	out, err := lambdaClient.Invoke(invokeInput)
+	require.NoError(t, err)
 	if err != nil {
 		return nil, err
 	}
 
 	if out.FunctionError != nil {
-		return out.Payload, &FunctionError{Message: *out.FunctionError, StatusCode: *out.StatusCode}
+		return out.Payload, &FunctionError{Message: *out.FunctionError, StatusCode: *out.StatusCode, Payload: out.Payload}
 	}
 
-	return out.Payload, err
+	return out.Payload, nil
 }
 
 type FunctionError struct {
 	Message    string
 	StatusCode int64
+	Payload    []byte
 }
 
 func (err *FunctionError) Error() string {
-	return err.Message
+	return fmt.Sprintf("%s error invoking lambda function: %v", err.Message, err.Payload)
 }
 
 // NewLambdaClient creates a new Lambda client.
 func NewLambdaClient(t *testing.T, region string) *lambda.Lambda {
 	client, err := NewLambdaClientE(t, region)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return client
 }
 
