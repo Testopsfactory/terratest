@@ -33,7 +33,6 @@ func TestKubernetesBasicExample(t *testing.T) {
 	// Note that namespaces must be lowercase.
 	namespaceName := fmt.Sprintf("kubernetes-basic-example-%s", strings.ToLower(random.UniqueId()))
 
-
 	// website::tag::2::Setup the kubectl config and context.
 	// Here we choose to use the defaults, which is:
 	// - HOME/.kube/config for the kubectl config file

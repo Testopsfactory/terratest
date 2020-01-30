@@ -2,9 +2,10 @@ package test
 
 import (
 	"fmt"
-	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"testing"
 	"time"
+
+	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )

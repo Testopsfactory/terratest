@@ -21,3 +21,8 @@ code[class*="language-"], pre[class*="language-"] {
 .token.regex, .token.important, .token.variable {
   color: #ea1473;
 }
+
+
+.highlight pre[class*="language-"] {
+  line-height: 25px;
+}

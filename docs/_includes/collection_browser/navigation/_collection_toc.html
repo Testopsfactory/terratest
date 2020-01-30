@@ -71,8 +71,12 @@
         {% capture doc_id %}{{ doc.title | downcase | downcase | replace: ' ', '-' | replace: ':', ''}}{% endcapture %}
         {% assign doc_url = doc.url %}
         {% if doc.redirect_to %}
-          {% assign doc_url = doc.redirect_to %}
+          {% assign doc_url = doc.redirect_to.first %}
         {% endif %}
+        {% capture doc_url_prefix %}{{ doc_url | slice: 0, 4 }}{% endcapture %}
+        {% unless doc_url_prefix == "http" %}
+          {% capture doc_url %}{{ site.baseurl }}{{ doc_url }}{% endcapture %}
+        {% endunless %}
         {% capture target_blank %}{% endcapture %}
         {% if doc.target_blank %}
           {% capture target_blank %}{:target="_blank"}{% endcapture %}
@@ -86,7 +90,7 @@
     aria-expanded='false'
     aria-controls='{{ doc_id }}-{{ cat_id }}'>
   <span class='arrow-icon glyphicon glyphicon-triangle-bottom'></span>
-  </span>[{{ doc.title }}]({{ site.baseurl }}{{ doc_url }}){{ target_blank }}{% endcapture %}
+  </span>[{{ doc.title }}]({{ doc_url }}){{ target_blank }}{% endcapture %}
 
         {% comment %}
           =============== B2: Find headings in doc and add to nav ================
