@@ -1,125 +1,92 @@
-- id: terraform-http-basic
-  name: HTTP Basic
+- id: terraform-hello-world
+  name: Hello, World
   image: /assets/img/logos/terraform-logo.png
   files:
     - name: main.tf
-      url: /examples/terraform-basic-example/main.tf
+      url: /examples/terraform-hello-world-example/main.tf
       prism_lang: hcl
-    - name: outputs.tf
-      url: /examples/terraform-basic-example/outputs.tf
-      prism_lang: hcl
-    - name: variables.tf
-      url: /examples/terraform-basic-example/variables.tf
-      prism_lang: hcl
-    - name: varfile.tfvars
-      url: /examples/terraform-basic-example/varfile.tfvars
-      prism_lang: hcl
-    - name: terraform_basic_example_test.go
-      url: /test/terraform_basic_example_test.go
+    - name: terraform_hello_world_example_test.go
+      url: /test/terraform_hello_world_example_test.go
       prism_lang: go
       default: true
   learn_more:
-    - name: HTTP Terraform Basic
-      url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-basic-example
+    - name: Terraform Hello, World
+      url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-hello-world-example
 
-- id: packer-basic
-  name: Basic
+- id: packer-hello-world
+  name: Hello, World
   image: /assets/img/logos/packer-logo.png
   files:
     - name: build.json
-      url: /examples/packer-basic-example/build.json
+      url: /examples/packer-hello-world-example/build.json
       prism_lang: json
-    - name: packer_basic_example_test.go
-      url: /test/packer_basic_example_test.go
+    - name: packer_hello_world_example_test.go
+      url: /test/packer_hello_world_example_test.go
       prism_lang: go
       default: true
   learn_more:
-    - name: Packer Basic Example
-      url: https://github.com/gruntwork-io/terratest/tree/master/examples/packer-basic-example
+    - name: Packer Hello, World
+      url: https://github.com/gruntwork-io/terratest/tree/master/examples/packer-hello-world-example
 
-- id: packer-docker
-  name: Packer Docker
+- id: docker-hello-world
+  name: Hello, World
   image: /assets/img/logos/docker-logo.png
   files:
-    - name: docker-compose.yml
-      url: /examples/packer-docker-example/docker-compose.yml
-      prism_lang: yml
-    - name: build.json
-      url: /examples/packer-docker-example/build.json
-      prism_lang: json
-    - name: app.rb
-      url: /examples/packer-docker-example/app.rb
-      prism_lang: ruby
-    - name: configure-sinatra-app.sh
-      url: /examples/packer-docker-example/configure-sinatra-app.sh
-      prism_lang: bash
-    - name: .env
-      url: /examples/packer-docker-example/.env
-      prism_lang: bash
-    - name: packer_docker_example_test.go
-      url: /test/packer_docker_example_test.go
+    - name: Dockerfile
+      url: /examples/docker-hello-world-example/Dockerfile
+      prism_lang: docker
+    - name: docker_hello_world_example_test.go
+      url: /test/docker_hello_world_example_test.go
       prism_lang: go
       default: true
   learn_more:
-    - name: Packer Docker Example
-      url: https://github.com/gruntwork-io/terratest/tree/master/examples/packer-docker-example
+    - name: Docker Hello, World
+      url: https://github.com/gruntwork-io/terratest/tree/master/examples/docker-hello-world-example
 
-- id: kubernetes-basic
-  name: Basic
+- id: kubernetes-hello-world
+  name: Hello, World
   image: /assets/img/logos/kubernetes-logo.png
   files:
-    - name: nginx-deployment.yml
-      url: /examples/kubernetes-basic-example/nginx-deployment.yml
-      prism_lang: yml
-    - name: kubernetes_basic_example_test.go
-      url: /test/kubernetes_basic_example_test.go
+    - name: hello-world-deployment.yml
+      url: /examples/kubernetes-hello-world-example/hello-world-deployment.yml
+      prism_lang: yaml
+    - name: kubernetes_hello_world_example_test.go
+      url: /test/kubernetes_hello_world_example_test.go
       prism_lang: go
       default: true
   learn_more:
-    - name: Kubernetes Basic Example
-      url: https://github.com/gruntwork-io/terratest/tree/master/examples/kubernetes-basic-example
+    - name: Kubernetes Hello, World
+      url: https://github.com/gruntwork-io/terratest/tree/master/examples/kubernetes-hello-world-example
 
-- id: aws-basic
-  name: AWS Basic
+- id: aws-hello-world
+  name: Hello, World
   image: /assets/img/logos/aws-logo.png
   files:
     - name: main.tf
-      url: /examples/terraform-aws-example/main.tf
+      url: /examples/terraform-aws-hello-world-example/main.tf
       prism_lang: hcl
-    - name: outputs.tf
-      url: /examples/terraform-aws-example/outputs.tf
-      prism_lang: hcl
-    - name: variables.tf
-      url: /examples/terraform-aws-example/variables.tf
-      prism_lang: hcl
-    - name: terraform_aws_example_test.go
-      url: /test/terraform_aws_example_test.go
+    - name: terraform_aws_hello_world_example_test.go
+      url: /test/terraform_aws_hello_world_example_test.go
       prism_lang: go
       default: true
   learn_more:
-    - name: Terraform AWS Example
-      url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-aws-example
+    - name: AWS Hello, World
+      url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-aws-hello-world-example
 
-- id: gcp-basic
-  name: GCP Basic
+- id: gcp-hello-world
+  name: Hello, World
   image: /assets/img/logos/gcp-logo.png
   files:
     - name: main.tf
-      url: /examples/terraform-gcp-example/main.tf
+      url: /examples/terraform-gcp-hello-world-example/main.tf
       prism_lang: hcl
-    - name: outputs.tf
-      url: /examples/terraform-gcp-example/outputs.tf
-      prism_lang: hcl
-    - name: variables.tf
-      url: /examples/terraform-gcp-example/variables.tf
-      prism_lang: hcl
-    - name: terraform_gcp_example_test.go
-      url: /test/terraform_gcp_example_test.go
+    - name: terraform_gcp_hello_world_example_test.go
+      url: /test/terraform_gcp_hello_world_example_test.go
       prism_lang: go
       default: true
   learn_more:
-    - name: Terraform GCP Example
-      url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-gcp-example
+    - name: GCP Hello, World
+      url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-gcp-hello-world-example
 
 - id: azure-basic
   name: Azure Basic
@@ -133,9 +100,6 @@
       prism_lang: hcl
     - name: variables.tf
       url: /examples/terraform-azure-example/variables.tf
-      prism_lang: hcl
-    - name: provider.tf
-      url: /examples/terraform-azure-example/provider.tf
       prism_lang: hcl
     - name: terraform_azure_example_test.go
       url: /test/terraform_azure_example_test.go
