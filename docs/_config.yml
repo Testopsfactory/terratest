@@ -26,7 +26,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   Terratest is a Go library that provides patterns and helper functions for
   testing infrastructure, with 1st-class support for Terraform, Packer, Docker,
   Kubernetes, AWS, GCP, and more.
-baseurl: "/terratest" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 full_company_name: "Gruntwork, Inc"
 thumbnail_path: "/assets/img/terratest-thumbnail.png"
 repository: "github.com/gruntwork-io/terratest"
