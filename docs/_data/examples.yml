@@ -1,5 +1,5 @@
 - id: terraform-hello-world
-  name: Hello, World
+  name: Terraform Hello, World Example
   image: /assets/img/logos/terraform-logo.png
   files:
     - url: /examples/terraform-hello-world-example/main.tf
@@ -10,7 +10,7 @@
       url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-hello-world-example
 
 - id: packer-hello-world
-  name: Hello, World
+  name: Packer Hello, World Example
   image: /assets/img/logos/packer-logo.png
   files:
     - url: /examples/packer-hello-world-example/build.json
@@ -21,7 +21,7 @@
       url: https://github.com/gruntwork-io/terratest/tree/master/examples/packer-hello-world-example
 
 - id: docker-hello-world
-  name: Hello, World
+  name: Docker Hello, World Example
   image: /assets/img/logos/docker-logo.png
   files:
     - url: /examples/docker-hello-world-example/Dockerfile
@@ -33,7 +33,7 @@
       url: https://github.com/gruntwork-io/terratest/tree/master/examples/docker-hello-world-example
 
 - id: kubernetes-hello-world
-  name: Hello, World
+  name: Kubernetes Hello, World Example
   image: /assets/img/logos/kubernetes-logo.png
   files:
     - url: /examples/kubernetes-hello-world-example/hello-world-deployment.yml
@@ -44,7 +44,7 @@
       url: https://github.com/gruntwork-io/terratest/tree/master/examples/kubernetes-hello-world-example
 
 - id: aws-hello-world
-  name: Hello, World
+  name: AWS Hello, World Example
   image: /assets/img/logos/aws-logo.png
   files:
     - url: /examples/terraform-aws-hello-world-example/main.tf
@@ -55,7 +55,7 @@
       url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-aws-hello-world-example
 
 - id: gcp-hello-world
-  name: Hello, World
+  name: GCP Hello, World Example
   image: /assets/img/logos/gcp-logo.png
   files:
     - url: /examples/terraform-gcp-hello-world-example/main.tf
@@ -66,7 +66,7 @@
       url: https://github.com/gruntwork-io/terratest/tree/master/examples/terraform-gcp-hello-world-example
 
 - id: azure-basic
-  name: Azure Basic
+  name: Azure Hello, World Example
   image: /assets/img/logos/azure-logo.png
   files:
     - url: /examples/terraform-azure-example/main.tf
