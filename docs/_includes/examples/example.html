@@ -6,8 +6,15 @@
       {% if file.default %}
         {% assign assign_class = 'active' %}
       {% endif %}
-      <div class="tab {{ assign_class }}" data-target="#example__code-{{ include.example.id }}-{{ file.name | replace: '.', '-' | replace: ' ', '-' }}">
-        <label>{{ file.name }}</label>
+
+      {% assign url_split = file.url | split: '/' %}
+      {% assign file_name = url_split.last %}
+      {% if file.name %}
+        {% assign file_name = file.name %}
+      {% endif %}
+
+      <div class="tab {{ assign_class }}" data-target="#example__code-{{ include.example.id }}-{{ file_name | replace: '.', '-' | replace: ' ', '-' }}">
+        <label>{{ file_name }}</label>
       </div>
     {% endfor %}
   </div>
@@ -17,19 +24,37 @@
     {% if file.default %}
       {% assign assign_class = 'active' %}
     {% endif %}
+
+    {% assign url_split = file.url | split: '/' %}
+    {% assign file_name = url_split.last %}
+    {% if file.name %}
+      {% assign file_name = file.name %}
+    {% endif %}
+
+    {% assign prism_lang = '' %}
+    {% assign file_name_splitted = file.url | split: '.' %}
+    {% if site.data.prism_extends[file_name_splitted.last] %}
+      {% assign prism_lang = site.data.prism_extends[file_name_splitted.last] %}
+    {% elsif file_name_splitted.last %}
+      {% assign prism_lang = file_name_splitted.last %}
+    {% endif %}
+    {% if file.prism_lang %}
+      {% assign prism_lang = file.prism_lang %}
+    {% endif %}
+
     <div
-      id="example__code-{{ include.example.id }}-{{ file.name | replace: '.', '-' | replace: ' ', '-' }}"
+      id="example__code-{{ include.example.id }}-{{ file_name | replace: '.', '-' | replace: ' ', '-' }}"
       class="examples__code examples__code--example {{ assign_class }}"
       data-example="{{ include.example.id }}"
-      data-target="{{ file.name | replace: '.', '-' | replace: ' ', '-' }}"
+      data-target="{{ file_name | replace: '.', '-' | replace: ' ', '-' }}"
       data-url="{{ site.github_api_url }}{{ file.url }}"
       >
       <pre>
-<code class="language-{{ file.prism_lang }}">Loading...</code>
+<code class="language-{{ prism_lang }}">Loading...</code>
       </pre>
       <div class="example__file-link">
         <p>See source code:</p>
-        <a href="https://{{ site.repository }}/tree/master/{{ file.url }}">{{ site.repository }}{{ file.url }}</a>
+        <a href="https://{{ site.repository }}/tree/master{{ file.url }}">{{ site.repository }}{{ file.url }}</a>
       </div>
     </div>
   {% endfor %}

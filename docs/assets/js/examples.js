@@ -2,7 +2,7 @@
 ---
 $(document).ready(function () {
 
-  const CODE_LINE_HEIGHT = 16
+  const CODE_LINE_HEIGHT = 20
   const CODE_BLOCK_PADDING = 10
 
   window.examples = {
@@ -33,7 +33,14 @@ $(document).ready(function () {
   // Open example and scroll to examples section when user clicks on
   // tech in the header
   $('.link-to-test-with-terratest').on('click', function() {
-    openExample('index_page', $(this).data('target'))
+    // Find any containting the keyword from data-target
+    const found = $('.navs .examples__nav-item[data-id*="'+$(this).data('target')+'"]')
+    if (found && found.length > 0) {
+      openExample('index_page', $(found[0]).data('id'))
+    } else {
+      // RESCUE: If none found, open any (first available):
+      openExample('index_page', $($('.navs .examples__nav-item')[0]).data('id'))
+    }
     scrollToTests()
   })
 
@@ -97,9 +104,10 @@ $(document).ready(function () {
       if (!$activeCodeSnippet.data('loaded')) {
         try {
           const response = await fetch($activeCodeSnippet.data('url'))
-          const content = await response.text()
+          let content = await response.text()
           $activeCodeSnippet.attr('data-loaded', true)
           findTags(content, exampleTarget, fileId)
+          content = content.replace(/^.*website::tag.*\n?/mg, '')
           $activeCodeSnippet.find('code').text(content)
           Prism.highlightAll()
         } catch(err) {
@@ -147,7 +155,7 @@ $(document).ready(function () {
     const fileId = activeCode.data('target')
 
     window.examples.tags[exampleTarget][fileId].map( function(v,k) {
-      const top = (CODE_LINE_HEIGHT * v.line) + CODE_BLOCK_PADDING;
+      const top = (CODE_LINE_HEIGHT * (v.line - k)) + CODE_BLOCK_PADDING;
       const elToAppend =
         '<div class="code-popup-handler" style="top: '+top+'px" data-step="'+v.step+'">' +
           v.step +

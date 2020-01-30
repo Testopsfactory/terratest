@@ -121,7 +121,7 @@
 
         &.active {
           display: flex;
-          z-index: 1;
+          z-index: 10;
         }
       }
 
@@ -209,6 +209,7 @@
         border-top-left-radius: 0;
         code {
           font-size: 11px;
+          line-height: 20px;
         }
       }
 
@@ -296,10 +297,11 @@
 .code-popup-handler {
   position: absolute;
   right: 0px;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   color: #fff;
-  margin-right: -15px;
+  margin-right: -14px;
+  margin-top: -16px;
   border-radius: 50%;
   font-weight: bold;
   font-family: 'Source Sans Pro', sans-serif;
@@ -315,13 +317,13 @@
   .shadow-bg-1 {
     z-index: -1;
     position: absolute;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     opacity: 0.2;
     top: 50%;
-    margin-top: -19px;
+    margin-top: -17px;
     left: 50%;
-    margin-left: -19px;
+    margin-left: -17px;
     background: #068ee4;
     border-radius: 50%;
   }
@@ -329,13 +331,13 @@
   .shadow-bg-2 {
     z-index: -2;
     position: absolute;
-    width: 46px;
-    height: 46px;
+    width: 40px;
+    height: 40px;
     opacity: 0.2;
     top: 50%;
-    margin-top: -23px;
+    margin-top: -20px;
     left: 50%;
-    margin-left: -23px;
+    margin-left: -20px;
     background: #068ee4;
     border-radius: 50%;
   }
