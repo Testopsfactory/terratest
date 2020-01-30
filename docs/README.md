@@ -39,7 +39,7 @@ Clone or fork Terratest [repository](https://github.com/gruntwork-io/terratest).
     bundle exec jekyll serve
     ```
 
-6. Open [http://localhost:4000/terratest/](http://localhost:4000/terratest/) in your web browser.
+6. Open [http://localhost:4000/](http://localhost:4000/) in your web browser.
 
 # Deployment
 
