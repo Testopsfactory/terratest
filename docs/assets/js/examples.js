@@ -166,10 +166,10 @@ $(document).ready(function () {
       ) {
         scaleClass = 'sm-scale'
       }
-      
+
       const elToAppend =
         '<div class="code-popup-handler '+scaleClass+'" style="top: '+top+'px" data-step="'+v.step+'">' +
-          v.step +
+          '<span class="number">' + v.step + '</span>' +
           '<div class="shadow-bg-1"></div><div class="shadow-bg-2"></div>' +
           '<div class="popup">' +
             '<div class="left-border"></div>' +

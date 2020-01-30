@@ -302,19 +302,24 @@
   color: #fff;
   margin-right: -14px;
   margin-top: -16px;
-  border-radius: 50%;
-  font-weight: bold;
-  font-family: 'Source Sans Pro', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: $secondary-gradient-start-color;
-  background: -webkit-linear-gradient(-45deg, $secondary-gradient-start-color, $secondary-gradient-stop-color);
-  background: linear-gradient(135deg, $secondary-gradient-start-color, $secondary-gradient-stop-color);
   cursor: pointer;
   z-index: 1;
 
-  &.sm-scale {
+  .number {
+    border-radius: 50%;
+    font-weight: bold;
+    font-family: 'Source Sans Pro', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $secondary-gradient-start-color;
+    background: -webkit-linear-gradient(-45deg, $secondary-gradient-start-color, $secondary-gradient-stop-color);
+    background: linear-gradient(135deg, $secondary-gradient-start-color, $secondary-gradient-stop-color);
+  }
+
+  &.sm-scale .number,
+  &.sm-scale .shadow-bg-1,
+  &.sm-scale .shadow-bg-2 {
     transform: scale(0.88);
   }
 
@@ -385,9 +390,11 @@
 
   &.active {
     transform: scale(1.2);
-    background: $primary-gradient-start-color;
-    background: -webkit-linear-gradient(0deg, $primary-gradient-start-color, $primary-gradient-stop-color);
-    background: linear-gradient(90deg, $primary-gradient-start-color, $primary-gradient-stop-color);
+    .number {
+      background: $primary-gradient-start-color;
+      background: -webkit-linear-gradient(0deg, $primary-gradient-start-color, $primary-gradient-stop-color);
+      background: linear-gradient(90deg, $primary-gradient-start-color, $primary-gradient-stop-color);
+    }
 
     .shadow-bg-1, .shadow-bg-2 {
       display: none;
@@ -402,7 +409,9 @@
   }
 
   &.active.sm-scale {
-    transform: scale(0.92);
+    .number {
+      transform: scale(0.92);
+    }
   }
 }
 
