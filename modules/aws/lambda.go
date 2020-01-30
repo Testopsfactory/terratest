@@ -1,14 +1,15 @@
 package aws
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/lambda"
 )
 
 // InvokeFunction invokes a lambda function.
-func InvokeFunction(t *testing.T, region, functionName string) FunctionResult {
-	out, err := InvokeFunctionE(t, region, functionName)
+func InvokeFunction(t *testing.T, region, functionName string, payload interface{}) []byte {
+	out, err := InvokeFunctionE(t, region, functionName, payload)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,37 +17,45 @@ func InvokeFunction(t *testing.T, region, functionName string) FunctionResult {
 }
 
 // InvokeFunctionE invokes a lambda function.
-func InvokeFunctionE(t *testing.T, region, functionName string) (FunctionResult, error) {
+func InvokeFunctionE(t *testing.T, region, functionName string, payload interface{}) ([]byte, error) {
 	lambdaClient, err := NewLambdaClientE(t, region)
 	if err != nil {
-		return FunctionResult{}, err
+		return nil, err
 	}
 
 	invokeInput := &lambda.InvokeInput{
 		FunctionName: &functionName,
 	}
 
-	out, err := lambdaClient.Invoke(invokeInput)
-	if err != nil {
-		return FunctionResult{}, err
+	if payload != nil {
+		payloadJson, err := json.Marshal(payload)
+
+		if err != nil {
+			return nil, err
+		} else {
+			invokeInput.Payload = payloadJson
+		}
 	}
 
-	result := FunctionResult{
-		Payload:    out.Payload,
-		StatusCode: *out.StatusCode,
+	out, err := lambdaClient.Invoke(invokeInput)
+	if err != nil {
+		return nil, err
 	}
 
 	if out.FunctionError != nil {
-		result.FunctionError = *out.FunctionError
+		return out.Payload, &FunctionError{Message: *out.FunctionError, StatusCode: *out.StatusCode}
 	}
 
-	return result, err
+	return out.Payload, err
 }
 
-type FunctionResult struct {
-	FunctionError string
-	Payload       []byte
-	StatusCode    int64
+type FunctionError struct {
+	Message    string
+	StatusCode int64
+}
+
+func (err *FunctionError) Error() string {
+	return err.Message
 }
 
 // NewLambdaClient creates a new Lambda client.
