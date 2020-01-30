@@ -2,7 +2,7 @@
 ---
 $(document).ready(function () {
 
-  const CODE_LINE_HEIGHT = 20
+  const CODE_LINE_HEIGHT = 22
   const CODE_BLOCK_PADDING = 10
 
   window.examples = {
@@ -143,8 +143,8 @@ $(document).ready(function () {
 
   function findLineNumber(content, text) {
     let tagIndex = content.indexOf(text)
-    var tempString = content.substring(0, tagIndex)
-    var lineNumber = tempString.split('\n').length
+    let tempString = content.substring(0, tagIndex)
+    let lineNumber = tempString.split('\n').length
     return lineNumber
   }
 
@@ -153,11 +153,22 @@ $(document).ready(function () {
     const activeCode = $('.examples__block.active .examples__code.active')
     const exampleTarget = activeCode.data('example')
     const fileId = activeCode.data('target')
+    const tagsLen = window.examples.tags[exampleTarget][fileId].length
 
     window.examples.tags[exampleTarget][fileId].map( function(v,k) {
       const top = (CODE_LINE_HEIGHT * (v.line - k)) + CODE_BLOCK_PADDING;
+
+      // If two pop-ups are close to each other, add CSS class that will scale them down
+      let scaleClass = ''
+      if (
+        (k > 0 && Math.abs(v.line - window.examples.tags[exampleTarget][fileId][k-1].line) < 3 )
+        || (k < tagsLen - 1 && Math.abs(v.line - window.examples.tags[exampleTarget][fileId][k+1].line) < 3 )
+      ) {
+        scaleClass = 'sm-scale'
+      }
+      
       const elToAppend =
-        '<div class="code-popup-handler" style="top: '+top+'px" data-step="'+v.step+'">' +
+        '<div class="code-popup-handler '+scaleClass+'" style="top: '+top+'px" data-step="'+v.step+'">' +
           v.step +
           '<div class="shadow-bg-1"></div><div class="shadow-bg-2"></div>' +
           '<div class="popup">' +

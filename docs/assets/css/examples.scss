@@ -209,7 +209,7 @@
         border-top-left-radius: 0;
         code {
           font-size: 11px;
-          line-height: 20px;
+          line-height: 22px;
         }
       }
 
@@ -314,6 +314,10 @@
   cursor: pointer;
   z-index: 1;
 
+  &.sm-scale {
+    transform: scale(0.88);
+  }
+
   .shadow-bg-1 {
     z-index: -1;
     position: absolute;
@@ -395,6 +399,10 @@
       left: 50px;
       top: 0;
     }
+  }
+
+  &.active.sm-scale {
+    transform: scale(0.92);
   }
 }
 
