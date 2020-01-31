@@ -16,3 +16,6 @@ vendor
 
 # rbenv
 .ruby-version
+
+# OS X
+.DS_Store
