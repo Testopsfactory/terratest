@@ -1,6 +1,6 @@
 # Terraform Lambda Example
 
-This folder contains a very simple Terraform module to demonstrate how you can use Terratest to deploy a lambda function
+This folder contains a Terraform module to demonstrate how you can use Terratest to deploy a lambda function
 for your Terraform code. This module takes in an input variable called `function_name`, and uses the function name as
 an identifier for the lambda and associated resources (e.g. IAM role).
 

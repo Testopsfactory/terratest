@@ -10,7 +10,7 @@ provider "archive" {
 data "archive_file" "zip" {
   type        = "zip"
   source_dir  = "${path.module}/src"
-  output_path = "/tmp/.${var.function_name}.zip"
+  output_path = "${path.module}/${var.function_name}.zip"
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -23,17 +23,16 @@ resource "aws_lambda_function" "lambda" {
 }
 
 resource "aws_iam_role" "lambda" {
-  name = var.function_name
-  assume_role_policy = jsonencode({
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-    Version : "2012-10-17"
-  })
+  name               = var.function_name
+  assume_role_policy = data.aws_iam_policy_document.policy.json
+}
+
+data "aws_iam_policy_document" "policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+  }
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // An example of how to test the Terraform module in examples/terraform-aws-lambda-example using Terratest.
@@ -52,7 +53,8 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 	response, err := aws.InvokeFunctionE(t, awsRegion, functionName, ExampleFunctionPayload{ShouldFail: true, Echo: "hi!"})
 
 	// Function-specific errors have their own special return
-	functionError := err.(*aws.FunctionError)
+	functionError, ok := err.(*aws.FunctionError)
+	require.True(t, ok)
 
 	// Make sure the function-specific error comes back
 	assert.Contains(t, string(functionError.Payload), "Failed to handle")
