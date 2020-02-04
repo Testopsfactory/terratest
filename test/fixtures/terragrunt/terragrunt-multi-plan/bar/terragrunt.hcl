@@ -1,6 +1,8 @@
 terraform {
   source = "..//bar"
-  arguments = [
-    "-var-file=terraform.tfvars"
-  ]
+  extra_arguments "common_vars" {
+    arguments = [
+      "-var-file=terraform.tfvars"
+    ]
+  }
 }
