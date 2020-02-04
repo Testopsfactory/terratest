@@ -40,3 +40,8 @@ variable "example_map" {
   default     = {}
 }
 
+variable "example_any" {
+  description = "An example variable that is can be anything"
+  type        = any
+  default     = null
+}

@@ -14,3 +14,6 @@ output "example_map" {
   value = var.example_map
 }
 
+output "example_any" {
+  value = var.example_any
+}
