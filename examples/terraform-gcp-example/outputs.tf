@@ -1,5 +1,5 @@
-output "instance_id" {
-  value = google_compute_instance.example.instance_id
+output "instance_name" {
+  value = google_compute_instance.example.name
 }
 
 output "public_ip" {
