@@ -7,6 +7,7 @@ terraform {
   required_version = ">= 0.12"
 }
 
+
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A REGIONAL MANAGED INSTANCE GROUP
 # See test/terraform_gcp_ig_example_test.go for how to write automated tests for this code.
@@ -19,7 +20,10 @@ resource "google_compute_region_instance_group_manager" "example" {
 
   name               = "${var.cluster_name}-ig"
   base_instance_name = var.cluster_name
-  instance_template  = google_compute_instance_template.example.self_link
+  version {
+    name              = "terratest"
+    instance_template = google_compute_instance_template.example.self_link
+  }
 
   target_size = var.cluster_size
 }
