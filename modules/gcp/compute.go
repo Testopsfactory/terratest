@@ -595,22 +595,21 @@ func NewComputeServiceE(t *testing.T) (*compute.Service, error) {
 
 	var client *http.Client
 
-	_, retryErr := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		var clientErr error
-		client, clientErr = google.DefaultClient(ctx, compute.CloudPlatformScope)
-		return "", clientErr
+	msg, retryErr := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
+		rawClient, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
+		if err != nil {
+			return "Error retrieving default GCP client", err
+		}
+		client = rawClient
+		return "Successfully retrieved default GCP client", nil
 	})
+	logger.Logf(t, msg)
 
 	if retryErr != nil {
 		return nil, retryErr
 	}
 
-	service, err := compute.New(client)
-	if err != nil {
-		return nil, err
-	}
-
-	return service, nil
+	return compute.New(client)
 }
 
 // NewInstancesService creates a new InstancesService service, which is used to make a subset of GCE API calls.
