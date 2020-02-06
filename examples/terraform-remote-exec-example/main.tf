@@ -77,13 +77,11 @@ resource "null_resource" "example_provisioner" {
   }
 
   // copy our example script to the server
-  // copy our example script to the server
   provisioner "file" {
     source      = "files/get-public-ip.sh"
     destination = "/tmp/get-public-ip.sh"
   }
 
-  // change permissions to executable and pipe its output into a new file
   // change permissions to executable and pipe its output into a new file
   provisioner "remote-exec" {
     inline = [
