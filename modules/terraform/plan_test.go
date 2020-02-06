@@ -73,8 +73,9 @@ func TestPlanWithExitCodeWithFailure(t *testing.T) {
 		TerraformDir: testFolder,
 	}
 
-	_, getExitCodeErr := InitAndPlanWithExitCodeE(t, options)
-	require.Error(t, getExitCodeErr)
+	exitCode, getExitCodeErr := InitAndPlanWithExitCodeE(t, options)
+	require.NoError(t, getExitCodeErr)
+	require.Equal(t, exitCode, 1)
 }
 
 func TestTgPlanAllNoError(t *testing.T) {

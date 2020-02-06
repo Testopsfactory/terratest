@@ -70,41 +70,19 @@ func OutputListE(t *testing.T, options *Options, key string) ([]string, error) {
 		return nil, err
 	}
 
-	if outputMap, isMap := output.(map[string]interface{}); isMap {
-		return parseListOutputTerraform11OrOlder(outputMap, key)
-	} else if outputList, isList := output.([]interface{}); isList {
-		return parseListOutputTerraform12OrNewer(outputList, key)
+	if outputList, isList := output.([]interface{}); isList {
+		return parseListOutputTerraform(outputList, key)
 	}
 
 	return nil, UnexpectedOutputType{Key: key, ExpectedType: "map or list", ActualType: reflect.TypeOf(output).String()}
 }
 
 // Parse a list output in the format it is returned by Terraform 0.12 and newer versions
-func parseListOutputTerraform12OrNewer(outputList []interface{}, key string) ([]string, error) {
+func parseListOutputTerraform(outputList []interface{}, key string) ([]string, error) {
 	list := []string{}
 
 	for _, item := range outputList {
 		list = append(list, fmt.Sprintf("%v", item))
-	}
-
-	return list, nil
-}
-
-// Parse a list output in the format it is returned by Terraform 0.11 and older versions
-func parseListOutputTerraform11OrOlder(outputMap map[string]interface{}, key string) ([]string, error) {
-	value, containsValue := outputMap["value"]
-	if !containsValue {
-		return nil, OutputKeyNotFound(key)
-	}
-
-	list := []string{}
-	switch t := value.(type) {
-	case []interface{}:
-		for _, item := range t {
-			list = append(list, fmt.Sprintf("%v", item))
-		}
-	default:
-		return nil, OutputValueNotList{Value: value}
 	}
 
 	return list, nil
@@ -129,21 +107,6 @@ func OutputMapE(t *testing.T, options *Options, key string) (map[string]string, 
 	outputMap := map[string]interface{}{}
 	if err := json.Unmarshal([]byte(out), &outputMap); err != nil {
 		return nil, err
-	}
-
-	// Terraform 0.11 or older return an object where the value we want is under the key "value". Terraform 0.12 and
-	// older return the value we want directly.
-	value, containsValue := outputMap["value"]
-	_, containsSensitive := outputMap["sensitive"]
-	_, containsType := outputMap["type"]
-	if containsValue && containsSensitive && containsType {
-		// Handle Terraform 0.11 and older
-		valueMap, ok := value.(map[string]interface{})
-		if !ok {
-			return nil, OutputValueNotMap{Value: value}
-		}
-
-		outputMap = valueMap
 	}
 
 	resultMap := make(map[string]string)

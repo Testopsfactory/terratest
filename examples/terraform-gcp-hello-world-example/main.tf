@@ -1,5 +1,5 @@
 provider "google" {
-  region      = "us-east1"
+  region = "us-east1"
 }
 
 # website::tag::1:: Deploy a cloud instance
