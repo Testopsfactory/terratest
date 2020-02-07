@@ -3,8 +3,10 @@
 # Define these secrets as environment variables
 # ---------------------------------------------------------------------------------------------------------------------
 
-# AWS_ACCESS_KEY_ID
-# AWS_SECRET_ACCESS_KEY
+# ARM_CLIENT_ID
+# ARM_CLIENT_SECRET
+# ARM_SUBSCRIPTION_ID
+# ARM_TENANT_ID
 
 # ---------------------------------------------------------------------------------------------------------------------
 # REQUIRED PARAMETERS
