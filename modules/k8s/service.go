@@ -112,6 +112,7 @@ func GetServiceEndpoint(t *testing.T, options *KubectlOptions, service *corev1.S
 // - For NodePort service type, identify the public IP of the node (if it exists, otherwise return the bound hostname),
 //   and the assigned node port for the provided service port, and return the URL that maps to node ip and node port.
 // - For LoadBalancer service type, return the publicly accessible hostname of the load balancer.
+//   If the hostname is empty, it will return the public IP of the LoadBalancer.
 // - All other service types are not supported.
 func GetServiceEndpointE(t *testing.T, options *KubectlOptions, service *corev1.Service, servicePort int) (string, error) {
 	switch service.Spec.Type {
@@ -133,6 +134,9 @@ func GetServiceEndpointE(t *testing.T, options *KubectlOptions, service *corev1.
 		ingress := service.Status.LoadBalancer.Ingress
 		if len(ingress) == 0 {
 			return "", NewServiceNotAvailableError(service)
+		}
+		if ingress[0].Hostname == "" {
+			return fmt.Sprintf("%s:%d", ingress[0].IP, servicePort), nil
 		}
 		// Load Balancer service type will map directly to service port
 		return fmt.Sprintf("%s:%d", ingress[0].Hostname, servicePort), nil
