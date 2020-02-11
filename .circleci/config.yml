@@ -61,10 +61,13 @@ jobs:
           - $HOME/go/src/
 
       # Run pre-commit hooks and fail the build if any hook finds required changes.
-      - run: go get golang.org/x/tools/cmd/goimports
-      - run: pip install pre-commit==1.11.2
-      - run: pre-commit install
-      - run: pre-commit run --all-files
+      - run:
+          name: run precommit
+          command: |
+            go get golang.org/x/tools/cmd/goimports
+            pip install pre-commit==1.11.2 cfgv==2.0.1
+            pre-commit install
+            pre-commit run --all-files
 
       # Build any binaries that need to be built
       # We always want to build the binaries, because we will use the terratest_log_parser to parse out the test output
