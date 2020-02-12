@@ -65,6 +65,9 @@ jobs:
           name: run precommit
           command: |
             go get golang.org/x/tools/cmd/goimports
+            # Oct 26, 2019: Install the last known working version of pre-commit. Also, we have to pin the version of a
+            # transitive dependency that is being pulled in (cfgv) which released a new version that is no longer compatible
+            # with any python < 3.6.
             pip install pre-commit==1.11.2 cfgv==2.0.1
             pre-commit install
             pre-commit run --all-files
