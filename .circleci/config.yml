@@ -10,7 +10,7 @@ defaults: &defaults
     PACKER_VERSION: 1.5.1
     GOLANG_VERSION: 1.13
     K8S_VERSION: v1.10.0  # Same as EKS
-    HELM_VERSION: v2.12.2
+    HELM_VERSION: v3.1.1
     KUBECONFIG: /home/circleci/.kube/config
 
 
@@ -22,9 +22,6 @@ install_helm: &install_helm
     tar -xvf helm.tar.gz
     chmod +x linux-amd64/helm
     sudo mv linux-amd64/helm /usr/local/bin/
-
-    # Deploy Tiller
-    helm init --wait
 
 
 install_gruntwork_utils: &install_gruntwork_utils
