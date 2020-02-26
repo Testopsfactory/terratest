@@ -36,7 +36,6 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, releaseNam
 	// Now construct the args
 	// We first construct the template args
 	args := []string{}
-	args = append(args, "--name", releaseName)
 	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
 		args = append(args, "--namespace", options.KubectlOptions.Namespace)
 	}
@@ -53,10 +52,10 @@ func RenderTemplateE(t *testing.T, options *Options, chartDir string, releaseNam
 
 		// Note: we only get the abs template file path to check it actually exists, but the `helm template` command
 		// expects the relative path from the chart.
-		args = append(args, "-x", templateFile)
+		args = append(args, "--show-only", templateFile)
 	}
-	// ... and add the chart at the end as the command expects
-	args = append(args, chartDir)
+	// ... and add the name and chart at the end as the command expects
+	args = append(args, releaseName, chartDir)
 
 	// Finally, call out to helm template command
 	return RunHelmCommandAndGetOutputE(t, options, "template", args...)

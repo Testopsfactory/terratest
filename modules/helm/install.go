@@ -42,7 +42,7 @@ func InstallE(t *testing.T, options *Options, chart string, releaseName string) 
 	if err != nil {
 		return err
 	}
-	args = append(args, "-n", releaseName, chart)
+	args = append(args, releaseName, chart)
 	_, err = RunHelmCommandAndGetOutputE(t, options, "install", args...)
 	return err
 }
