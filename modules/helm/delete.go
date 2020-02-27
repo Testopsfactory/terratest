@@ -19,9 +19,7 @@ func DeleteE(t *testing.T, options *Options, releaseName string, purge bool) err
 	if !purge {
 		args = append(args, "--keep-history")
 	}
-	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
-		args = append(args, "--namespace", options.KubectlOptions.Namespace)
-	}
+	args = append(args, getNamespaceArgs(options)...)
 	args = append(args, releaseName)
 	_, err := RunHelmCommandAndGetOutputE(t, options, "delete", args...)
 	return err

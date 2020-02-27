@@ -24,6 +24,14 @@ func getCommonArgs(options *Options, args ...string) []string {
 	return args
 }
 
+// getNamespaceArgs returns the args to append for the namespace, if set in the helm Options struct.
+func getNamespaceArgs(options *Options) []string {
+	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
+		return []string{"--namespace", options.KubectlOptions.Namespace}
+	}
+	return []string{}
+}
+
 // getValuesArgsE computes the args to pass in for setting values
 func getValuesArgsE(t *testing.T, options *Options, args ...string) ([]string, error) {
 	args = append(args, formatSetValuesAsArgs(options.SetValues, "--set")...)
