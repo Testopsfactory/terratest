@@ -32,9 +32,7 @@ func InstallE(t *testing.T, options *Options, chart string, releaseName string) 
 	// Declare err here so that we can update args later
 	var err error
 	args := []string{}
-	if options.KubectlOptions != nil && options.KubectlOptions.Namespace != "" {
-		args = append(args, "--namespace", options.KubectlOptions.Namespace)
-	}
+	args = append(args, getNamespaceArgs(options)...)
 	if options.Version != "" {
 		args = append(args, "--version", options.Version)
 	}
@@ -42,7 +40,7 @@ func InstallE(t *testing.T, options *Options, chart string, releaseName string) 
 	if err != nil {
 		return err
 	}
-	args = append(args, "-n", releaseName, chart)
+	args = append(args, releaseName, chart)
 	_, err = RunHelmCommandAndGetOutputE(t, options, "install", args...)
 	return err
 }

@@ -16,9 +16,10 @@ func Delete(t *testing.T, options *Options, releaseName string, purge bool) {
 // as well so that the release name can be reused.
 func DeleteE(t *testing.T, options *Options, releaseName string, purge bool) error {
 	args := []string{}
-	if purge {
-		args = append(args, "--purge")
+	if !purge {
+		args = append(args, "--keep-history")
 	}
+	args = append(args, getNamespaceArgs(options)...)
 	args = append(args, releaseName)
 	_, err := RunHelmCommandAndGetOutputE(t, options, "delete", args...)
 	return err
