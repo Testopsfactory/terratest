@@ -1,12 +1,12 @@
 package k8s
 
-import "testing"
+import "github.com/gruntwork-io/terratest/modules/testing"
 
 // IsMinikubeE returns true if the underlying kubernetes cluster is Minikube. This is determined by getting the
 // associated nodes and checking if:
 // - there is only one node
 // - the node is named "minikube"
-func IsMinikubeE(t *testing.T, options *KubectlOptions) (bool, error) {
+func IsMinikubeE(t testing.TestingT, options *KubectlOptions) (bool, error) {
 	nodes, err := GetNodesE(t, options)
 	if err != nil {
 		return false, err

@@ -2,23 +2,23 @@ package gcp
 
 import (
 	"fmt"
-	"testing"
 
 	gcrname "github.com/google/go-containerregistry/pkg/name"
 	gcrgoogle "github.com/google/go-containerregistry/pkg/v1/google"
 	gcrremote "github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
 // DeleteGCRRepo deletes a GCR repository including all tagged images
-func DeleteGCRRepo(t *testing.T, repo string) {
+func DeleteGCRRepo(t testing.TestingT, repo string) {
 	err := DeleteGCRRepoE(t, repo)
 	require.NoError(t, err)
 }
 
 // DeleteGCRRepoE deletes a GCR repository including all tagged images
-func DeleteGCRRepoE(t *testing.T, repo string) error {
+func DeleteGCRRepoE(t testing.TestingT, repo string) error {
 	// create a new auther for the API calls
 	auther, err := gcrgoogle.NewEnvAuthenticator()
 	if err != nil {
@@ -57,13 +57,13 @@ func DeleteGCRRepoE(t *testing.T, repo string) error {
 }
 
 // DeleteGCRImageRef deletes a single repo image ref/digest
-func DeleteGCRImageRef(t *testing.T, ref string) {
+func DeleteGCRImageRef(t testing.TestingT, ref string) {
 	err := DeleteGCRImageRefE(t, ref)
 	require.NoError(t, err)
 }
 
 // DeleteGCRImageRefE deletes a single repo image ref/digest
-func DeleteGCRImageRefE(t *testing.T, ref string) error {
+func DeleteGCRImageRefE(t testing.TestingT, ref string) error {
 	name, err := gcrname.ParseReference(ref)
 	if err != nil {
 		return fmt.Errorf("Failed to parse reference %s. Got error: %v", ref, err)

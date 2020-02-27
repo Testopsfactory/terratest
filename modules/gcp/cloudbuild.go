@@ -3,23 +3,23 @@ package gcp
 import (
 	"context"
 	"fmt"
-	"testing"
 
 	cloudbuild "cloud.google.com/go/cloudbuild/apiv1/v2"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 	cloudbuildpb "google.golang.org/genproto/googleapis/devtools/cloudbuild/v1"
 )
 
 // CreateBuild creates a new build blocking until the operation is complete.
-func CreateBuild(t *testing.T, projectID string, build *cloudbuildpb.Build) *cloudbuildpb.Build {
+func CreateBuild(t testing.TestingT, projectID string, build *cloudbuildpb.Build) *cloudbuildpb.Build {
 	out, err := CreateBuildE(t, projectID, build)
 	require.NoError(t, err)
 	return out
 }
 
 // CreateBuildE creates a new build blocking until the operation is complete.
-func CreateBuildE(t *testing.T, projectID string, build *cloudbuildpb.Build) (*cloudbuildpb.Build, error) {
+func CreateBuildE(t testing.TestingT, projectID string, build *cloudbuildpb.Build) (*cloudbuildpb.Build, error) {
 	ctx := context.Background()
 
 	service, err := NewCloudBuildServiceE(t)
@@ -46,14 +46,14 @@ func CreateBuildE(t *testing.T, projectID string, build *cloudbuildpb.Build) (*c
 }
 
 // GetBuild gets the given build.
-func GetBuild(t *testing.T, projectID string, buildID string) *cloudbuildpb.Build {
+func GetBuild(t testing.TestingT, projectID string, buildID string) *cloudbuildpb.Build {
 	out, err := GetBuildE(t, projectID, buildID)
 	require.NoError(t, err)
 	return out
 }
 
 // GetBuildE gets the given build.
-func GetBuildE(t *testing.T, projectID string, buildID string) (*cloudbuildpb.Build, error) {
+func GetBuildE(t testing.TestingT, projectID string, buildID string) (*cloudbuildpb.Build, error) {
 	ctx := context.Background()
 
 	service, err := NewCloudBuildServiceE(t)
@@ -75,14 +75,14 @@ func GetBuildE(t *testing.T, projectID string, buildID string) (*cloudbuildpb.Bu
 }
 
 // GetBuilds gets the list of builds for a given project.
-func GetBuilds(t *testing.T, projectID string) []*cloudbuildpb.Build {
+func GetBuilds(t testing.TestingT, projectID string) []*cloudbuildpb.Build {
 	out, err := GetBuildsE(t, projectID)
 	require.NoError(t, err)
 	return out
 }
 
 // GetBuildsE gets the list of builds for a given project.
-func GetBuildsE(t *testing.T, projectID string) ([]*cloudbuildpb.Build, error) {
+func GetBuildsE(t testing.TestingT, projectID string) ([]*cloudbuildpb.Build, error) {
 	ctx := context.Background()
 
 	service, err := NewCloudBuildServiceE(t)
@@ -113,14 +113,14 @@ func GetBuildsE(t *testing.T, projectID string) ([]*cloudbuildpb.Build, error) {
 }
 
 // GetBuildsForTrigger gets a list of builds for a specific cloud build trigger.
-func GetBuildsForTrigger(t *testing.T, projectID string, triggerID string) []*cloudbuildpb.Build {
+func GetBuildsForTrigger(t testing.TestingT, projectID string, triggerID string) []*cloudbuildpb.Build {
 	out, err := GetBuildsForTriggerE(t, projectID, triggerID)
 	require.NoError(t, err)
 	return out
 }
 
 // GetBuildsForTriggerE gets a list of builds for a specific cloud build trigger.
-func GetBuildsForTriggerE(t *testing.T, projectID string, triggerID string) ([]*cloudbuildpb.Build, error) {
+func GetBuildsForTriggerE(t testing.TestingT, projectID string, triggerID string) ([]*cloudbuildpb.Build, error) {
 	builds, err := GetBuildsE(t, projectID)
 	if err != nil {
 		return nil, fmt.Errorf("GetBuildsE.ListBuilds(%s) got error: %v", projectID, err)
@@ -137,14 +137,14 @@ func GetBuildsForTriggerE(t *testing.T, projectID string, triggerID string) ([]*
 }
 
 // NewCloudBuildService creates a new Cloud Build service, which is used to make Cloud Build API calls.
-func NewCloudBuildService(t *testing.T) *cloudbuild.Client {
+func NewCloudBuildService(t testing.TestingT) *cloudbuild.Client {
 	service, err := NewCloudBuildServiceE(t)
 	require.NoError(t, err)
 	return service
 }
 
 // NewCloudBuildServiceE creates a new Cloud Build service, which is used to make Cloud Build API calls.
-func NewCloudBuildServiceE(t *testing.T) (*cloudbuild.Client, error) {
+func NewCloudBuildServiceE(t testing.TestingT) (*cloudbuild.Client, error) {
 	ctx := context.Background()
 
 	service, err := cloudbuild.NewClient(ctx)
