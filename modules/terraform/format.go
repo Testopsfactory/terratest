@@ -3,6 +3,7 @@ package terraform
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/gruntwork-io/terratest/modules/collections"
@@ -184,10 +185,7 @@ func primitiveToHclString(value interface{}, isNested bool) string {
 	switch v := value.(type) {
 
 	case bool:
-		if v {
-			return "1"
-		}
-		return "0"
+		return strconv.FormatBool(v)
 
 	case string:
 		// If string is nested in a larger data structure (e.g. list of string, map of string), ensure value is quoted
