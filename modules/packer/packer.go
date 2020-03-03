@@ -26,6 +26,8 @@ type Options struct {
 	RetryableErrors    map[string]string // If packer build fails with one of these (transient) errors, retry. The keys are a regexp to match against the error and the message is what to display to a user if that error is matched.
 	MaxRetries         int               // Maximum number of times to retry errors matching RetryableErrors
 	TimeBetweenRetries time.Duration     // The amount of time to wait between retries
+	WorkingDir         string            // The directory to run packer in
+	OutputMaxLineSize  int               // The max line size of stdout and stderr (in bytes)
 }
 
 // BuildArtifacts can take a map of identifierName <-> Options and then parallelize
@@ -90,9 +92,11 @@ func BuildArtifactE(t *testing.T, options *Options) (string, error) {
 	logger.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
 
 	cmd := shell.Command{
-		Command: "packer",
-		Args:    formatPackerArgs(options),
-		Env:     options.Env,
+		Command:           "packer",
+		Args:              formatPackerArgs(options),
+		Env:               options.Env,
+		WorkingDir:        options.WorkingDir,
+		OutputMaxLineSize: options.OutputMaxLineSize,
 	}
 
 	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
