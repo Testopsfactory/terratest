@@ -127,7 +127,7 @@ func TestWebServer(t *testing.T) {
   text := "Hello, World"
   retries := 15
   sleep := 5 * time.Second
-  http_helper.HttpGetWithRetry(t, url, status, text, retries, sleep)
+  http_helper.HttpGetWithRetry(t, url, nil, status, text, retries, sleep)
 }
 ```
 
