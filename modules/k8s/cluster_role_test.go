@@ -9,11 +9,12 @@
 package k8s
 
 import (
-	"github.com/gruntwork-io/terratest/modules/testing"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetClusterRoleEReturnsErrorForNonExistantClusterRole(t testing.TestingT) {
+func TestGetClusterRoleEReturnsErrorForNonExistantClusterRole(t *testing.T) {
 	t.Parallel()
 
 	options := NewKubectlOptions("", "", "default")
@@ -21,7 +22,7 @@ func TestGetClusterRoleEReturnsErrorForNonExistantClusterRole(t testing.TestingT
 	require.Error(t, err)
 }
 
-func TestGetClusterRoleEReturnsCorrectClusterRoleInCorrectNamespace(t testing.TestingT) {
+func TestGetClusterRoleEReturnsCorrectClusterRoleInCorrectNamespace(t *testing.T) {
 	t.Parallel()
 
 	options := NewKubectlOptions("", "", "default")
