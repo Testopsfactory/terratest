@@ -3,10 +3,10 @@ package http_helper
 import (
 	"crypto/tls"
 	"sync"
-	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 type GetResponse struct {
@@ -19,7 +19,7 @@ type GetResponse struct {
 // to stream the responses for each check.
 // Note that the channel has a buffer of 1000, after which it will start to drop the send events
 func ContinuouslyCheckUrl(
-	t *testing.T,
+	t testing.TestingT,
 	url string,
 	stopChecking <-chan bool,
 	sleepBetweenChecks time.Duration,

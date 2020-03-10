@@ -2,11 +2,11 @@ package azure
 
 import (
 	"context"
-	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // Reference for region list: https://azure.microsoft.com/en-us/global-infrastructure/locations/
@@ -64,7 +64,7 @@ var stableRegions = []string{
 // further restrict the stable region list using approvedRegions and forbiddenRegions. We consider stable regions to be
 // those that have been around for at least 1 year.
 // Note that regions in the approvedRegions list that are not considered stable are ignored.
-func GetRandomStableRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string, subscriptionID string) string {
+func GetRandomStableRegion(t testing.TestingT, approvedRegions []string, forbiddenRegions []string, subscriptionID string) string {
 	regionsToPickFrom := stableRegions
 	if len(approvedRegions) > 0 {
 		regionsToPickFrom = collections.ListIntersection(regionsToPickFrom, approvedRegions)
@@ -78,7 +78,7 @@ func GetRandomStableRegion(t *testing.T, approvedRegions []string, forbiddenRegi
 // GetRandomRegion gets a randomly chosen Azure region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the Azure APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
-func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []string, subscriptionID string) string {
+func GetRandomRegion(t testing.TestingT, approvedRegions []string, forbiddenRegions []string, subscriptionID string) string {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -95,7 +95,7 @@ func GetRandomRegion(t *testing.T, approvedRegions []string, forbiddenRegions []
 // GetRandomRegionE gets a randomly chosen Azure region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the Azure APIs and pick one of those. If
 // forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
-func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions []string, subscriptionID string) (string, error) {
+func GetRandomRegionE(t testing.TestingT, approvedRegions []string, forbiddenRegions []string, subscriptionID string) (string, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -120,7 +120,7 @@ func GetRandomRegionE(t *testing.T, approvedRegions []string, forbiddenRegions [
 }
 
 // GetAllAzureRegions gets the list of Azure regions available in this subscription.
-func GetAllAzureRegions(t *testing.T, subscriptionID string) []string {
+func GetAllAzureRegions(t testing.TestingT, subscriptionID string) []string {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -137,7 +137,7 @@ func GetAllAzureRegions(t *testing.T, subscriptionID string) []string {
 }
 
 // GetAllAzureRegionsE gets the list of Azure regions available in this subscription.
-func GetAllAzureRegionsE(t *testing.T, subscriptionID string) ([]string, error) {
+func GetAllAzureRegionsE(t testing.TestingT, subscriptionID string) ([]string, error) {
 	logger.Log(t, "Looking up all Azure regions available in this account")
 
 	// Validate Azure subscription ID

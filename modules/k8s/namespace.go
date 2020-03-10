@@ -1,8 +1,7 @@
 package k8s
 
 import (
-	"testing"
-
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,12 +9,12 @@ import (
 
 // CreateNamespace will create a new Kubernetes namespace on the cluster targeted by the provided options. This will
 // fail the test if there is an error in creating the namespace.
-func CreateNamespace(t *testing.T, options *KubectlOptions, namespaceName string) {
+func CreateNamespace(t testing.TestingT, options *KubectlOptions, namespaceName string) {
 	require.NoError(t, CreateNamespaceE(t, options, namespaceName))
 }
 
 // CreateNamespaceE will create a new Kubernetes namespace on the cluster targeted by the provided options.
-func CreateNamespaceE(t *testing.T, options *KubectlOptions, namespaceName string) error {
+func CreateNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName string) error {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return err
@@ -32,7 +31,7 @@ func CreateNamespaceE(t *testing.T, options *KubectlOptions, namespaceName strin
 
 // GetNamespace will query the Kubernetes cluster targeted by the provided options for the requested namespace. This will
 // fail the test if there is an error in getting the namespace or if the namespace doesn't exist.
-func GetNamespace(t *testing.T, options *KubectlOptions, namespaceName string) *corev1.Namespace {
+func GetNamespace(t testing.TestingT, options *KubectlOptions, namespaceName string) *corev1.Namespace {
 	namespace, err := GetNamespaceE(t, options, namespaceName)
 	require.NoError(t, err)
 	require.NotNil(t, namespace)
@@ -40,7 +39,7 @@ func GetNamespace(t *testing.T, options *KubectlOptions, namespaceName string) *
 }
 
 // GetNamespaceE will query the Kubernetes cluster targeted by the provided options for the requested namespace.
-func GetNamespaceE(t *testing.T, options *KubectlOptions, namespaceName string) (*corev1.Namespace, error) {
+func GetNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName string) (*corev1.Namespace, error) {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return nil, err
@@ -51,12 +50,12 @@ func GetNamespaceE(t *testing.T, options *KubectlOptions, namespaceName string) 
 
 // DeleteNamespace will delete the requested namespace from the Kubernetes cluster targeted by the provided options. This will
 // fail the test if there is an error in creating the namespace.
-func DeleteNamespace(t *testing.T, options *KubectlOptions, namespaceName string) {
+func DeleteNamespace(t testing.TestingT, options *KubectlOptions, namespaceName string) {
 	require.NoError(t, DeleteNamespaceE(t, options, namespaceName))
 }
 
 // DeleteNamespaceE will delete the requested namespace from the Kubernetes cluster targeted by the provided options.
-func DeleteNamespaceE(t *testing.T, options *KubectlOptions, namespaceName string) error {
+func DeleteNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName string) error {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return err

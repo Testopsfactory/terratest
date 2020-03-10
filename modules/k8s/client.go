@@ -1,8 +1,6 @@
 package k8s
 
 import (
-	"testing"
-
 	"k8s.io/client-go/kubernetes"
 
 	// The following line loads the gcp plugin which is required to authenticate against GKE clusters.
@@ -10,10 +8,11 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetKubernetesClientE returns a Kubernetes API client that can be used to make requests.
-func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
+func GetKubernetesClientE(t testing.TestingT) (*kubernetes.Clientset, error) {
 	kubeConfigPath, err := GetKubeConfigPathE(t)
 	if err != nil {
 		return nil, err
@@ -24,7 +23,7 @@ func GetKubernetesClientE(t *testing.T) (*kubernetes.Clientset, error) {
 }
 
 // GetKubernetesClientFromOptionsE returns a Kubernetes API client given a configured KubectlOptions object.
-func GetKubernetesClientFromOptionsE(t *testing.T, options *KubectlOptions) (*kubernetes.Clientset, error) {
+func GetKubernetesClientFromOptionsE(t testing.TestingT, options *KubectlOptions) (*kubernetes.Clientset, error) {
 	var err error
 
 	kubeConfigPath, err := options.GetConfigPath(t)

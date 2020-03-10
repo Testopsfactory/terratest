@@ -1,10 +1,9 @@
 package docker
 
 import (
-	"testing"
-
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,12 +23,12 @@ type BuildOptions struct {
 
 // Build runs the 'docker build' command at the given path with the given options and fails the test if there are any
 // errors.
-func Build(t *testing.T, path string, options *BuildOptions) {
+func Build(t testing.TestingT, path string, options *BuildOptions) {
 	require.NoError(t, BuildE(t, path, options))
 }
 
 // BuildE runs the 'docker build' command at the given path with the given options and returns any errors.
-func BuildE(t *testing.T, path string, options *BuildOptions) error {
+func BuildE(t testing.TestingT, path string, options *BuildOptions) error {
 	logger.Logf(t, "Running 'docker build' in %s", path)
 
 	args, err := formatDockerBuildArgs(path, options)

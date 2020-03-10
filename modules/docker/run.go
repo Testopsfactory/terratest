@@ -1,10 +1,9 @@
 package docker
 
 import (
-	"testing"
-
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,14 +51,14 @@ type RunOptions struct {
 
 // Run runs the 'docker run' command on the given image with the given options and return stdout/stderr. This method
 // fails the test if there are any errors.
-func Run(t *testing.T, image string, options *RunOptions) string {
+func Run(t testing.TestingT, image string, options *RunOptions) string {
 	out, err := RunE(t, image, options)
 	require.NoError(t, err)
 	return out
 }
 
 // RunE runs the 'docker run' command on the given image with the given options and return stdout/stderr, or any error.
-func RunE(t *testing.T, image string, options *RunOptions) (string, error) {
+func RunE(t testing.TestingT, image string, options *RunOptions) (string, error) {
 	logger.Logf(t, "Running 'docker run' on image '%s'", image)
 
 	args, err := formatDockerRunArgs(image, options)

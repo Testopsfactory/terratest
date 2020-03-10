@@ -4,11 +4,12 @@ package git
 import (
 	"os/exec"
 	"strings"
-	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
 // GetCurrentBranchName retrieves the current branch name.
-func GetCurrentBranchName(t *testing.T) string {
+func GetCurrentBranchName(t testing.TestingT) string {
 	out, err := GetCurrentBranchNameE(t)
 	if err != nil {
 		t.Fatal(err)
@@ -17,7 +18,7 @@ func GetCurrentBranchName(t *testing.T) string {
 }
 
 // GetCurrentBranchNameE retrieves the current branch name.
-func GetCurrentBranchNameE(t *testing.T) (string, error) {
+func GetCurrentBranchNameE(t testing.TestingT) (string, error) {
 	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
 	bytes, err := cmd.Output()
 	if err != nil {

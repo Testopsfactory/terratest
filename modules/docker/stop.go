@@ -2,10 +2,10 @@ package docker
 
 import (
 	"strconv"
-	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,14 +17,14 @@ type StopOptions struct {
 
 // Stop runs the 'docker stop' command for the given containers and return the stdout/stderr. This method fails
 // the test if there are any errors
-func Stop(t *testing.T, containers []string, options *StopOptions) string {
+func Stop(t testing.TestingT, containers []string, options *StopOptions) string {
 	out, err := StopE(t, containers, options)
 	require.NoError(t, err)
 	return out
 }
 
 // StopE runs the 'docker stop' command for the given containers and returns any errors.
-func StopE(t *testing.T, containers []string, options *StopOptions) (string, error) {
+func StopE(t testing.TestingT, containers []string, options *StopOptions) (string, error) {
 	logger.Logf(t, "Running 'docker stop' on containers '%s'", containers)
 
 	args, err := formatDockerStopArgs(containers, options)
