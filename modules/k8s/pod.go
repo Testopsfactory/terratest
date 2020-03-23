@@ -137,5 +137,10 @@ func WaitUntilPodAvailableE(t testing.TestingT, options *KubectlOptions, podName
 
 // IsPodAvailable returns true if the pod is running.
 func IsPodAvailable(pod *corev1.Pod) bool {
-	return pod.Status.Phase == corev1.PodRunning
+	for _, containerStatus := range pod.Status.ContainerStatuses {
+		if !containerStatus.Ready && !*containerStatus.Started {
+			return false
+		}
+	}
+	return true
 }

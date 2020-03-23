@@ -82,6 +82,18 @@ func TestWaitUntilPodAvailableReturnsSuccessfully(t *testing.T) {
 	WaitUntilPodAvailable(t, options, "nginx-pod", 60, 1*time.Second)
 }
 
+func TestWaitUntilPodWithMultipleContainersAvailableReturnsSuccessfully(t *testing.T) {
+	t.Parallel()
+
+	uniqueID := strings.ToLower(random.UniqueId())
+	options := NewKubectlOptions("", "", uniqueID)
+	configData := fmt.Sprintf(EXAMPLE_POD_WITH_MULTIPLE_CONTAINERS_YAML_TEMPLATE, uniqueID, uniqueID)
+	defer KubectlDeleteFromString(t, options, configData)
+	KubectlApplyFromString(t, options, configData)
+
+	WaitUntilPodAvailable(t, options, "nginx-pod", 60, 1*time.Second)
+}
+
 const EXAMPLE_POD_YAML_TEMPLATE = `---
 apiVersion: v1
 kind: Namespace
@@ -96,6 +108,13 @@ metadata:
 spec:
   containers:
   - name: nginx
+    image: nginx:1.15.7
+    ports:
+    - containerPort: 80
+`
+
+const EXAMPLE_POD_WITH_MULTIPLE_CONTAINERS_YAML_TEMPLATE = EXAMPLE_POD_YAML_TEMPLATE + `
+  - name: nginx-two
     image: nginx:1.15.7
     ports:
     - containerPort: 80
