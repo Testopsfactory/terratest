@@ -145,5 +145,5 @@ func IsPodAvailable(pod *corev1.Pod) bool {
 			return false
 		}
 	}
-	return true
+	return pod.Status.Phase == corev1.PodRunning
 }
