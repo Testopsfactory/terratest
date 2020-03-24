@@ -101,13 +101,13 @@ func WaitUntilNumPodsCreatedE(
 	return nil
 }
 
-// WaitUntilPodAvailable waits until the pod is running, retrying the check for the specified amount of times, sleeping
+// WaitUntilPodAvailable waits until all of the containers within the pod are ready and started, retrying the check for the specified amount of times, sleeping
 // for the provided duration between each try. This will fail the test if there is an error or if the check times out.
 func WaitUntilPodAvailable(t testing.TestingT, options *KubectlOptions, podName string, retries int, sleepBetweenRetries time.Duration) {
 	require.NoError(t, WaitUntilPodAvailableE(t, options, podName, retries, sleepBetweenRetries))
 }
 
-// WaitUntilPodAvailableE waits until the pod is running, retrying the check for the specified amount of times, sleeping
+// WaitUntilPodAvailableE waits until all of the containers within the pod are ready and started, retrying the check for the specified amount of times, sleeping
 // for the provided duration between each try.
 func WaitUntilPodAvailableE(t testing.TestingT, options *KubectlOptions, podName string, retries int, sleepBetweenRetries time.Duration) error {
 	statusMsg := fmt.Sprintf("Wait for pod %s to be provisioned.", podName)
@@ -135,7 +135,15 @@ func WaitUntilPodAvailableE(t testing.TestingT, options *KubectlOptions, podName
 	return nil
 }
 
-// IsPodAvailable returns true if the pod is running.
+// IsPodAvailable returns true if the all of the containers within the pod are ready and started
 func IsPodAvailable(pod *corev1.Pod) bool {
+	for _, containerStatus := range pod.Status.ContainerStatuses {
+		isContainerStarted := containerStatus.Started
+		isContainerReady := containerStatus.Ready
+
+		if !isContainerReady && isContainerStarted != nil && !*isContainerStarted {
+			return false
+		}
+	}
 	return pod.Status.Phase == corev1.PodRunning
 }
