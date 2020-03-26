@@ -38,7 +38,22 @@ func FormatArgs(options *Options, args ...string) []string {
 		terraformArgs = append(terraformArgs, FormatTerraformLockAsArgs(options.Lock, options.LockTimeout)...)
 	}
 
+	// The out arg should be last in the terraformArgs slice. Some commands use it as an input (e.g. show, apply)
+	terraformArgs = append(terraformArgs, FormatTerraformOutAsArgs(commandType, options.Out)...)
+
 	return terraformArgs
+}
+
+// FormatTerraformOutAsArgs formats the given variables as command-line args for Terraform (e.g. of the format
+// -out=/some/path/to/plan.out or /some/path/to/plan.out).
+func FormatTerraformOutAsArgs(commandType string, outPath string) []string {
+	if outPath == "" {
+		return nil
+	}
+	if commandType == "plan" {
+		return []string{fmt.Sprintf("%s=%s", "-out", outPath)}
+	}
+	return []string{outPath}
 }
 
 // FormatTerraformVarsAsArgs formats the given variables as command-line args for Terraform (e.g. of the format

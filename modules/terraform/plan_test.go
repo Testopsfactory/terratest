@@ -36,6 +36,27 @@ func TestInitAndPlanWithNoError(t *testing.T) {
 	require.Contains(t, out, "No changes. Infrastructure is up-to-date.")
 }
 
+func TestInitAndPlanWithOutput(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-basic-configuration", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+		Out:          testFolder + "/plan.out",
+		Vars: map[string]interface{}{
+			"cnt": 1,
+		},
+	}
+
+	out, err := InitAndPlanE(t, options)
+	require.NoError(t, err)
+	require.Contains(t, out, "1 to add, 0 to change, 0 to destroy.")
+	require.Contains(t, out, "This plan was saved to: "+options.Out)
+	require.FileExistsf(t, options.Out, "Plan file was not created")
+}
+
 func TestPlanWithExitCodeWithNoChanges(t *testing.T) {
 	t.Parallel()
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
