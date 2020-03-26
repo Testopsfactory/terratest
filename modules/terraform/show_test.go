@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -8,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShow(t *testing.T) {
+func TestShowWithInlinePlan(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-basic-configuration", t.Name())
@@ -38,9 +39,19 @@ func TestShow(t *testing.T) {
 
 	// Unmarshal the plan into golang types for deeper inspection
 	planObject := jsonplan.Unmarshal(t, planJSON)
-	resourceChanges := planObject.ResourceChanges
 
-	for _, resourceChange := range resourceChanges {
+	for _, resourceChange := range planObject.ResourceChanges {
 		require.Contains(t, resourceChange.Change.Actions, "create")
 	}
+}
+
+func TestShowBasicPlanJSON(t *testing.T) {
+	t.Parallel()
+
+	planJSON, err := ioutil.ReadFile("../../test/fixtures/terraform-basic-json/plan.json")
+	require.NoError(t, err)
+
+	// Unmarshal the plan into golang types for deeper inspection
+	planObject := jsonplan.Unmarshal(t, string(planJSON))
+	require.Contains(t, planObject, "create")
 }
