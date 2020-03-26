@@ -9,7 +9,8 @@ import (
 	"github.com/gruntwork-io/terratest/modules/collections"
 )
 
-// TerraformDefaultLockingStatus - The terratest default command lock status (backwards compatibility)
+// TerraformCommandsWithLockSupport is a list of all the Terraform commands that
+// can obtain locks on Terraform state
 var TerraformCommandsWithLockSupport = []string{
 	"plan",
 	"apply",
@@ -39,14 +40,14 @@ func FormatArgs(options *Options, args ...string) []string {
 	}
 
 	// The out arg should be last in the terraformArgs slice. Some commands use it as an input (e.g. show, apply)
-	terraformArgs = append(terraformArgs, FormatTerraformOutAsArgs(commandType, options.Out)...)
+	terraformArgs = append(terraformArgs, FormatTerraformOutAsArg(commandType, options.Out)...)
 
 	return terraformArgs
 }
 
-// FormatTerraformOutAsArgs formats the given variables as command-line args for Terraform (e.g. of the format
+// FormatTerraformOutAsArg formats the out variable as a command-line arg for Terraform (e.g. of the format
 // -out=/some/path/to/plan.out or /some/path/to/plan.out).
-func FormatTerraformOutAsArgs(commandType string, outPath string) []string {
+func FormatTerraformOutAsArg(commandType string, outPath string) []string {
 	if outPath == "" {
 		return nil
 	}

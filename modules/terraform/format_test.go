@@ -25,7 +25,7 @@ func TestFormatTerraformOutAsArgs(t *testing.T) {
 
 	for _, testCase := range testCases {
 		checkResultWithRetry(t, 100, testCase.expected, fmt.Sprintf("FormatTerraformOutAsArgs(%v)", testCase.out), func() interface{} {
-			return FormatTerraformOutAsArgs(testCase.command, testCase.out)
+			return FormatTerraformOutAsArg(testCase.command, testCase.out)
 		})
 	}
 }

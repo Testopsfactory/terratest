@@ -23,10 +23,10 @@ func TestShow(t *testing.T) {
 	}
 
 	out := InitAndPlan(t, options)
-	require.Contains(t, out, "1 to add, 0 to change, 0 to destroy.")
 	require.Contains(t, out, "This plan was saved to: "+options.Out)
 	require.FileExistsf(t, options.Out, "Plan file was not created")
 
+	// show command does not accept Vars
 	options = &Options{
 		TerraformDir: testFolder,
 		Out:          testFolder + "/plan.out",
