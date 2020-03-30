@@ -50,9 +50,9 @@ it should be free, but you are completely responsible for all Azure charges.
 
 
 ## Check Go Dependencies
-This was tested with **go1.14.1**.
+This was tested with **go1.14.1**.  We have included a sample **go.mod** to correspond with the go test, but these steps will include details on how to generate the file and dependencies.
 
-Review the **go.mod** file:
+Suppose we create a new **go.mod** file using `go mod init terratest-module` may generate a file that includes the following dependencies:
 
 ```go
 module terratest-module
@@ -66,7 +66,9 @@ require (
 )
 ```
 
-In this case, the dependency for the **azure-sdk-for-go** needs to match what's used in the Go source test.  We should update go.mod to use the appropriate azure-sdk-for-go:
+In this case, the dependency for the **azure-sdk-for-go** (`github.com/Azure/azure-sdk-for-go v40.6.0+incompatible // indirect`) needs to match what's used in the Go source test.
+
+We should update go.mod to use the appropriate azure-sdk-for-go:
 
 ```go
 module terratest-module
