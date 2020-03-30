@@ -133,7 +133,7 @@ type result struct {
 
 // CheckSsmCommandE checks that you can run the given command on the given instance through AWS SSM. Returns the stdout, stderr and an error if one occurs.
 func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) (string, string, error) {
-	logger.Logf(t, "Running command %s on %s", command, instanceID)
+	logger.Logf(t, "Running command '%s' on EC2 instance with ID '%s'", command, instanceID)
 
 	timeBetweenRetries := 2 * time.Second
 	maxRetries := int(timeout.Seconds() / timeBetweenRetries.Seconds())
