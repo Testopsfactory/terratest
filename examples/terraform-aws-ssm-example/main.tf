@@ -1,22 +1,27 @@
 provider "aws" {
-  region = "us-east-2"
+  region = var.region
+}
+
+data "aws_iam_policy_document" "example" {
+  version = "2012-10-17"
+
+  statement {
+    sid = "1"
+
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_iam_role" "example" {
-  name = "example"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-        Effect = "Allow"
-      }
-    ]
-  })
+  name_prefix        = "example"
+  assume_role_policy = data.aws_iam_policy_document.example.json
 }
 
 resource "aws_iam_role_policy_attachment" "example-ssm" {
@@ -25,28 +30,23 @@ resource "aws_iam_role_policy_attachment" "example-ssm" {
 }
 
 resource "aws_iam_instance_profile" "example" {
-  name = "example"
-  role = aws_iam_role.example.name
+  name_prefix = "example"
+  role        = aws_iam_role.example.name
+}
+
+data "aws_ami" "amazon-linux-2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
+  }
 }
 
 resource "aws_instance" "example" {
-  ami                         = "ami-04100f1cdba76b497"
+  ami                         = data.aws_ami.amazon-linux-2.id
   instance_type               = "t2.micro"
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.example.name
-
-  # website::tag::1:: When the instance boots, install the SSM agent.
-  user_data = <<-EOF
-    #!/bin/bash
-    mkdir /tmp/ssm
-    curl https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/debian_amd64/amazon-ssm-agent.deb -o /tmp/ssm/amazon-ssm-agent.deb
-    sudo dpkg -i /tmp/ssm/amazon-ssm-agent.deb
-    rm -rf /tmp/ssm
-    sudo systemctl enable amazon-ssm-agent
-  EOF
-}
-
-# website::tag::2:: Output the instance's public IP address.
-output "instance_id" {
-  value = aws_instance.example.id
 }

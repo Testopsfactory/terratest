@@ -1,7 +1,6 @@
 package aws
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"time"
@@ -82,22 +81,23 @@ func WaitForSsmInstanceE(t testing.TestingT, awsRegion, instanceID string, timeo
 	maxRetries := int(timeout.Seconds() / timeBetweenRetries.Seconds())
 	description := fmt.Sprintf("Waiting for %s to appear in the SSM inventory", instanceID)
 
+	key := aws.String("AWS:InstanceInformation.InstanceId")
+	filterType := aws.String("Equal")
+	values := aws.StringSlice([]string{instanceID})
 	_, err := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		client := NewSsmClient(t, awsRegion)
-		key := "AWS:InstanceInformation.InstanceId"
-		filterType := "Equal"
 		req, resp := client.GetInventoryRequest(&ssm.GetInventoryInput{
 			Filters: []*ssm.InventoryFilter{
 				{
-					Key:    &key,
-					Type:   &filterType,
-					Values: []*string{&instanceID},
+					Key:    key,
+					Type:   filterType,
+					Values: values,
 				},
 			},
 		})
 
 		if err := req.Send(); err != nil {
-			return "", nil
+			return "", err
 		}
 
 		if len(resp.Entities) != 1 {
@@ -112,9 +112,8 @@ func WaitForSsmInstanceE(t testing.TestingT, awsRegion, instanceID string, timeo
 
 // WaitForSsmInstance waits until the instance get registered to the SSM inventory.
 func WaitForSsmInstance(t testing.TestingT, awsRegion, instanceID string, timeout time.Duration) {
-	if err := WaitForSsmInstanceE(t, awsRegion, instanceID, timeout); err != nil {
-		t.Fatalf("failed to find %s in the SSM store: %s", instanceID, err.Error())
-	}
+	err := WaitForSsmInstanceE(t, awsRegion, instanceID, timeout)
+	require.NoError(t, err)
 }
 
 // CheckSsmCommand checks that you can run the given command on the given instance through AWS SSM. Returns stdout and stderr.
@@ -165,11 +164,8 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 		"bad status: InProgress": "bad status: InProgress",
 		"bad status: Delayed":    "bad status: Delayed",
 	}
-	out, err := retry.DoWithRetryableErrorsE(t, description, retryableErrors, maxRetries, timeBetweenRetries, func() (string, error) {
-		client, err := NewSsmClientE(t, awsRegion)
-		if err != nil {
-			return "", err
-		}
+	var stdout, stderr string
+	_, err = retry.DoWithRetryableErrorsE(t, description, retryableErrors, maxRetries, timeBetweenRetries, func() (string, error) {
 		req, resp := client.GetCommandInvocationRequest(&ssm.GetCommandInvocationInput{
 			CommandId:  resp.Command.CommandId,
 			InstanceId: &instanceID,
@@ -179,37 +175,28 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 		}
 
 		// Remove the SSM prefix from stderr
-		stdErr := *resp.StandardErrorContent
+		stderr = aws.StringValue(resp.StandardErrorContent)
 		prefix := regexp.MustCompile(`/var/lib/amazon/ssm/.*/_script\.sh: line 1: `)
-		stdErr = prefix.ReplaceAllString(stdErr, "")
+		stderr = prefix.ReplaceAllString(stderr, "")
 
-		b, err := json.Marshal(result{
-			Stdout: *resp.StandardOutputContent,
-			Stderr: stdErr,
-		})
-		if err != nil {
-			return "", err
+		stdout = aws.StringValue(resp.StandardOutputContent)
+
+		status := aws.StringValue(resp.Status)
+
+		if status == "Success" {
+			return "", nil
 		}
 
-		if *resp.Status == "Success" {
-			return string(b), nil
+		if status == "Failed" {
+			return "", fmt.Errorf("Failed")
 		}
 
-		if *resp.Status == "Failed" {
-			return string(b), fmt.Errorf("Failed")
-		}
-
-		return "", fmt.Errorf("bad status: %s", *resp.Status)
+		return "", fmt.Errorf("bad status: %s", status)
 	})
-	var r result
-	unmarshallErr := json.Unmarshal([]byte(out), &r)
-	if unmarshallErr != nil {
-		return "", "", unmarshallErr
-	}
 
 	if err != nil {
-		return r.Stdout, r.Stderr, err.(retry.FatalError).Underlying
+		return stdout, stderr, err.(retry.FatalError).Underlying
 	}
 
-	return r.Stdout, r.Stderr, nil
+	return stdout, stderr, nil
 }
