@@ -41,5 +41,59 @@ it should be free, but you are completely responsible for all Azure charges.
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`.
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
-1. `dep ensure`
+1. `go mod init terratest-module`
+1. `go build terraform_azure_example_test.go`
+1. Make sure to [check the depedencies](#check-go-dependencies) match in the go.mod file and in the test Go file.
 1. `go test -v -run TestTerraformAzureExample`
+
+
+
+
+## Check Go Dependencies
+This was tested with **go1.14.1**.
+
+Review the **go.mod** file:
+
+```go
+module terratest-module
+
+go 1.14
+
+require (
+	github.com/Azure/azure-sdk-for-go v40.6.0+incompatible // indirect
+	github.com/gruntwork-io/terratest v0.26.1 // indirect
+	github.com/stretchr/testify v1.5.1 // indirect
+)
+```
+
+In this case, the dependency for the **azure-sdk-for-go** needs to match what's used in the Go source test.  We should update go.mod to use the appropriate azure-sdk-for-go:
+
+```go
+module terratest-module
+
+go 1.14
+
+require (
+	github.com/Azure/azure-sdk-for-go v38.1.0+incompatible
+	github.com/gruntwork-io/terratest v0.26.1 // indirect
+	github.com/stretchr/testify v1.5.1 // indirect
+)
+```
+
+We should check that **azure-sdk-for-go dependency** in the import section for the go test.
+```go
+import (
+	"testing"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/gruntwork-io/terratest/modules/azure"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
+)
+```
+
+If we make changes to either the **go.mod** or the **go test file**, we should make sure that the go build command works still:
+
+```powershell
+go build terraform_azure_example_test.go
+```
