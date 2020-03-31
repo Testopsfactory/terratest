@@ -16,10 +16,6 @@ demonstration purposes. For slightly more complicated, real-world examples of Te
 money. The resources are all part of the [Azure Free Account](https://azure.microsoft.com/en-us/free/), so if you haven't used that up,
 it should be free, but you are completely responsible for all Azure charges.
 
-
-
-
-
 ## Running this module manually
 
 1. Sign up for [Azure](https://azure.microsoft.com/).
@@ -29,9 +25,6 @@ it should be free, but you are completely responsible for all Azure charges.
 1. Run `terraform init`.
 1. Run `terraform apply`.
 1. When you're done, run `terraform destroy`.
-
-
-
 
 ## Running automated tests against this module
 
@@ -46,25 +39,19 @@ it should be free, but you are completely responsible for all Azure charges.
 1. `go build terraform_azure_example_test.go`
 1. `go test -v -run TestTerraformAzureExample`
 
-
-
-
 ## Check Go Dependencies
 
-The /azure-sdk-for-go version must match the version in the terratest mod.go file.  
+Check that the `github.com/Azure/azure-sdk-for-go` version in your generated `go.mod` for this test matches the version in the terratest [go.mod](https://github.com/gruntwork-io/terratest/blob/master/go.mod) file.  
 
-> This was tested with **go1.14.1**.  We have included a sample [/test/go.mod](/test/go.mod) which corresponds with [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go).
+> This was tested with **go1.14.1**.
 
 ### Check Azure-sdk-for-go version
 
-Let's make sure [/test/go.mod](/test/go.mod) includes the appropriate [azure-sdk-for-go version](https://github.com/Azure/azure-sdk-for-go/releases/tag/v38.1.0):
+Let's make sure [go.mod](https://github.com/gruntwork-io/terratest/blob/master/go.mod) includes the appropriate [azure-sdk-for-go version](https://github.com/Azure/azure-sdk-for-go/releases/tag/v38.1.0):
 
 ```go
-module github.com/my-repo/terratest/terratest-module
-
-go 1.14
-
 require (
+    ...
     github.com/Azure/azure-sdk-for-go v38.1.0+incompatible
     ...
 )
@@ -79,7 +66,7 @@ import (
 )
 ```
 
-If we make changes to either the **go.mod** or the **go test file**, we should make sure that the go build command works still:
+If we make changes to either the **go.mod** or the **go test file**, we should make sure that the go build command works still.
 
 ```powershell
 go build terraform_azure_example_test.go
@@ -104,4 +91,3 @@ Note, in a Windows environment, these should be set as **system environment vari
 [System.Environment]::SetEnvironmentVariable("ARM_SUBSCRIPTION_ID",$your_subscription_id,[System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable("ARM_TENANT_ID",$your_tenant_id,[System.EnvironmentVariableTarget]::Machine)
 ```
-
