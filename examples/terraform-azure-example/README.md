@@ -43,8 +43,8 @@ it should be free, but you are completely responsible for all Azure charges.
 1. `cd test`
 1. `go mod init github.com/<yourrepo>/terratest-module`
 1. `go build terraform_azure_example_test.go`
-1. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in the go.mod file and in the test Go file.
-1. [Check environment variables](#check-environment-variables).
+1. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go).
+1. [Review environment variables](#review-environment-variables).
 1. `go test -v -run TestTerraformAzureExample`
 
 
@@ -52,52 +52,31 @@ it should be free, but you are completely responsible for all Azure charges.
 
 ## Check Go Dependencies
 
-Check that the /azure-sdk-for-go version must match the version in the terratest mod.go file.  
+The /azure-sdk-for-go version must match the version in the terratest mod.go file.  
 
-> This was tested with **go1.14.1**.  We have included a sample **go.mod** to correspond with the terraform_azure_Example_test.go test, but these steps will include details on how to generate the go module and include matching dependencies.
+> This was tested with **go1.14.1**.  We have included a sample [/test/go.mod](/test/go.mod) which corresponds with the [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go) test.
 
-### Creating a new go.mod file
+### Check Azure-sdk-for-go version
 
-Suppose we create a new **go.mod** file using `go mod init github.com/<yourrepo>/terratest-module` which may generate a file that includes the following dependencies:
+Let's make sure [/test/go.mod](/test/go.mod) includes the appropriate [azure-sdk-for-go version](https://github.com/Azure/azure-sdk-for-go/releases/tag/v38.1.0):
 
 ```go
-module github.com/my-repo/terratest-module
+module github.com/my-repo/terratest/terratest-module
 
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v40.6.0+incompatible // indirect
-	github.com/gruntwork-io/terratest v0.26.1 // indirect
-	github.com/stretchr/testify v1.5.1 // indirect
+    github.com/Azure/azure-sdk-for-go v38.1.0+incompatible
+    ...
 )
 ```
 
-In this case, the version for the /azure-sdk-for-go version must match the version in the terratest mod.go file.
-
-We should update **go.mod** to use the appropriate **azure-sdk-for-go version**:
-
-```go
-module github.com/my-repo/terratest-module
-
-go 1.14
-
-require (
-	github.com/Azure/azure-sdk-for-go v38.1.0+incompatible
-	github.com/gruntwork-io/terratest v0.26.1 // indirect
-	github.com/stretchr/testify v1.5.1 // indirect
-)
-```
-
-We should check the corresponding **azure-sdk-for-go version** in the import section for the go test.
+We should check that [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go) includes the corresponding [azure-sdk-for-go package](https://github.com/Azure/azure-sdk-for-go/tree/master/services/compute/mgmt/2019-07-01/compute):
 
 ```go
 import (
-	"testing"
-
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/gruntwork-io/terratest/modules/azure"
-	"github.com/gruntwork-io/terratest/modules/terraform"
-	"github.com/stretchr/testify/assert"
+    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+    ...
 )
 ```
 
@@ -107,9 +86,9 @@ If we make changes to either the **go.mod** or the **go test file**, we should m
 go build terraform_azure_example_test.go
 ```
 
-## Check Environment Variables
+## Review Environment Variables
 
-As part of configuring terraform for Azure, we'll want to check that we have the appropriate [credentials](https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fterraform%2Ftoc.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#set-up-terraform-access-to-azure) and also that we set the [environment variables](https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fterraform%2Ftoc.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#configure-terraform-environment-variables) on the testing host.
+As part of configuring terraform for Azure, we'll want to check that we have set the appropriate [credentials](https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fterraform%2Ftoc.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#set-up-terraform-access-to-azure) and also that we set the [environment variables](https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fterraform%2Ftoc.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#configure-terraform-environment-variables) on the testing host.
 
 ```bash
 export ARM_CLIENT_ID=your_app_id
@@ -118,7 +97,7 @@ export ARM_SUBSCRIPTION_ID=your_subscription_id
 export ARM_TENANT_ID=your_tenant_id
 ```
 
-Note, in a Windows environment, these should be set as **system environment variables**.  We can use a PowerShell console with administrative rights:
+Note, in a Windows environment, these should be set as **system environment variables**.  We can use a PowerShell console with administrative rights to update these environment variables:
 
 ```powershell
 [System.Environment]::SetEnvironmentVariable("ARM_CLIENT_ID",$your_app_id,
