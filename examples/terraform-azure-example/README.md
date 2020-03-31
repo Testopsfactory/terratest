@@ -41,10 +41,9 @@ it should be free, but you are completely responsible for all Azure charges.
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`.
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
-1. `go mod init github.com/<yourrepo>/terratest-module`
-1. `go build terraform_azure_example_test.go`
 1. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go).
 1. [Review environment variables](#review-environment-variables).
+1. `go build terraform_azure_example_test.go`
 1. `go test -v -run TestTerraformAzureExample`
 
 
