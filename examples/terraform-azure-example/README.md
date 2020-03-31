@@ -54,7 +54,7 @@ it should be free, but you are completely responsible for all Azure charges.
 
 The /azure-sdk-for-go version must match the version in the terratest mod.go file.  
 
-> This was tested with **go1.14.1**.  We have included a sample [/test/go.mod](/test/go.mod) which corresponds with the [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go) test.
+> This was tested with **go1.14.1**.  We have included a sample [/test/go.mod](/test/go.mod) which corresponds with [test/terraform_azure_example_test.go](/test/terraform_azure_example_test.go).
 
 ### Check Azure-sdk-for-go version
 
@@ -100,8 +100,7 @@ export ARM_TENANT_ID=your_tenant_id
 Note, in a Windows environment, these should be set as **system environment variables**.  We can use a PowerShell console with administrative rights to update these environment variables:
 
 ```powershell
-[System.Environment]::SetEnvironmentVariable("ARM_CLIENT_ID",$your_app_id,
-[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable("ARM_CLIENT_ID",$your_app_id,[System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable("ARM_CLIENT_SECRET",$your_password,[System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable("ARM_SUBSCRIPTION_ID",$your_subscription_id,[System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable("ARM_TENANT_ID",$your_tenant_id,[System.EnvironmentVariableTarget]::Machine)
