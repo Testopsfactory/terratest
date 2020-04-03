@@ -148,8 +148,9 @@ func TestAssertS3BucketPolicyExists(t *testing.T) {
 
 func testEmptyBucket(t *testing.T, s3Client *s3.S3, region string, s3BucketName string) {
 	expectedFileCount := rand.Intn(10000)
-
 	logger.Logf(t, "Uploading %s files to bucket %s", strconv.Itoa(expectedFileCount), s3BucketName)
+
+	deleted := 0
 
 	// Upload expectedFileCount files
 	for i := 1; i <= expectedFileCount; i++ {
@@ -167,6 +168,17 @@ func testEmptyBucket(t *testing.T, s3Client *s3.S3, region string, s3BucketName 
 		_, err := uploader.Upload(params)
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		if i < 10 {
+			_, err := s3Client.DeleteObject(&s3.DeleteObjectInput{
+				Bucket: aws.String(s3BucketName),
+				Key:    aws.String(key),
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			deleted++
 		}
 
 		if i != 0 && i%100 == 0 {
@@ -199,7 +211,7 @@ func testEmptyBucket(t *testing.T, s3Client *s3.S3, region string, s3BucketName 
 		listObjectsParams.ContinuationToken = bucketObjects.NextContinuationToken
 	}
 
-	require.Equal(t, expectedFileCount, actualCount)
+	require.Equal(t, expectedFileCount-deleted, actualCount)
 
 	//empty bucket
 	logger.Logf(t, "Emptying bucket %s", s3BucketName)
