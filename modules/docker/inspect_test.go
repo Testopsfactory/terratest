@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"fmt"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
 	"strconv"
@@ -31,6 +32,27 @@ func TestInspect(t *testing.T) {
 	require.Equal(t, name, c.Name)
 	require.IsType(t, time.Time{}, c.Created)
 	require.Equal(t, true, c.Running)
+}
+
+func TestInspectWithExposedPort(t *testing.T) {
+	t.Parallel()
+
+	// choosing an unique high port to avoid conflict on test machines
+	port := 13031
+
+	options := &RunOptions{
+		Detach: true,
+		OtherOptions:         []string{fmt.Sprintf("-p=%d:80", port)},
+	}
+
+	id := Run(t, image, options)
+	defer removeContainer(t, id)
+
+	c := Inspect(t, id)
+
+	require.NotEmptyf(t, c.Ports, "Container's exposed ports should not be empty")
+	require.EqualValues(t, 80, c.Ports[0].ContainerPort)
+	require.EqualValues(t, port, c.Ports[0].HostPort)
 }
 
 func removeContainer(t *testing.T, id string) {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,6 +19,13 @@ type InspectOutput struct {
 		Running  bool
 		ExitCode uint8
 		Error    string
+	}
+	NetworkSettings struct {
+		Ports map[string][]struct {
+			HostIp   string
+			HostPort string
+		}
+	}
 }
 
 type ContainerInspect struct {
@@ -28,6 +36,13 @@ type ContainerInspect struct {
 	Running  bool
 	ExitCode uint8
 	Error    string
+	Ports    []Port
+}
+
+type Port struct {
+	HostPort      uint16
+	ContainerPort uint16
+	Protocol      string
 }
 
 // Inspect runs the 'docker inspect {container id} command and returns a ContainerInspect
@@ -59,6 +74,7 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 // transformContainerPorts converts Docker' inspect output JSON into a more friendly and testable format
 func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
 	name := strings.TrimLeft(c.Name, "/")
+	ports := transformContainerPorts(t, c)
 	created, err := time.Parse(time.RFC3339Nano, c.Created)
 	require.NoError(t, err)
 
@@ -70,7 +86,45 @@ func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
 		Running:  c.State.Running,
 		ExitCode: c.State.ExitCode,
 		Error:    c.State.Error,
+		Ports:    ports,
 	}
 
 	return inspect
+}
+
+// transformContainerPorts converts Docker's ports from the following json into a more testable format
+// {
+//   "80/tcp": [
+//     {
+// 	     "HostIp": ""
+//       "HostPort": "8080"
+//     }
+//   ]
+// }
+func transformContainerPorts(t *testing.T, c inspectOutput) []Port {
+	var ports []Port
+
+	cPorts := c.NetworkSettings.Ports
+
+	for k, pb := range cPorts {
+		split := strings.Split(k, "/")
+
+		containerPort, err := strconv.ParseUint(split[0], 10, 16)
+		require.NoError(t, err)
+
+		protocol := split[1]
+
+		for _, p := range pb {
+			hostPort, err := strconv.ParseUint(p.HostPort, 10, 16)
+			require.NoError(t, err)
+
+			ports = append(ports, Port{
+				HostPort:      uint16(hostPort),
+				ContainerPort: uint16(containerPort),
+				Protocol:      protocol,
+			})
+		}
+	}
+
+	return ports
 }
