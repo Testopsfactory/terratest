@@ -3,27 +3,34 @@ package docker
 import (
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
+	"strconv"
 	"testing"
+	"time"
 )
+
+const image = "nginx:1.17-alpine"
 
 func TestInspect(t *testing.T) {
 	t.Parallel()
 
-	cName := "foobar" // @TODO: Generate random string to avoid name conflicts
-	cImage := "alpine:3.6"
+	// append timestamp to container name to allow running tests in parallel
+	name := "inspect-test-" + strconv.FormatInt(time.Now().UnixNano(), 10)
 
+	// running the container detached to allow inspection while it is running
 	options := &RunOptions{
 		Detach: true,
-		Name: cName,
-		OtherOptions:         []string{"--expose=80", "--publish-all"},
+		Name:   name,
 	}
 
-	id := Run(t, cImage, options)
+	id := Run(t, image, options)
 	defer removeContainer(t, id)
 
-	container := Inspect(t, id)
+	c := Inspect(t, id)
 
-	require.Equal(t, "foobar", container.Name)
+	require.Equal(t, id, c.ID)
+	require.Equal(t, name, c.Name)
+	require.IsType(t, time.Time{}, c.Created)
+	require.Equal(t, true, c.Running)
 }
 
 func removeContainer(t *testing.T, id string) {

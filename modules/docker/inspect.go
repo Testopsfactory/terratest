@@ -6,20 +6,32 @@ import (
 	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+	"time"
 )
 
 type InspectOutput struct {
-	Id string
+	Id      string
 	Created string
-	Name string
+	Name    string
+	State   struct {
+		Status   string
+		Running  bool
+		ExitCode uint8
+		Error    string
 }
-
 
 type ContainerInspect struct {
-	ID string
-	Name string
+	ID       string
+	Name     string
+	Created  time.Time
+	Status   string
+	Running  bool
+	ExitCode uint8
+	Error    string
 }
 
+// Inspect runs the 'docker inspect {container id} command and returns a ContainerInspect
+// struct, converted from the output JSON
 func Inspect(t *testing.T, id string) ContainerInspect {
 	// @TODO: Validate if id is a valid containerID
 
@@ -39,11 +51,25 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 		return ContainerInspect{}
 	}
 
-	container := containers[0]
+	c := containers[0]
+
+	return transformContainer(t, c)
+}
+
+// transformContainerPorts converts Docker' inspect output JSON into a more friendly and testable format
+func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
+	name := strings.TrimLeft(c.Name, "/")
+	created, err := time.Parse(time.RFC3339Nano, c.Created)
+	require.NoError(t, err)
 
 	inspect := ContainerInspect{
-		ID: container.Id,
-		Name: strings.TrimLeft(container.Name, "/"),
+		ID:       c.Id,
+		Name:     name,
+		Created:  created,
+		Status:   c.State.Status,
+		Running:  c.State.Running,
+		ExitCode: c.State.ExitCode,
+		Error:    c.State.Error,
 	}
 
 	return inspect
