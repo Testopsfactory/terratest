@@ -10,7 +10,51 @@ import (
 	"time"
 )
 
-// inspectOutput defines options that will be returned by docker inspect command, in JSON format.
+// ContainerInspect defines the output of the Inspect method, with the options returned by 'docker inspect'
+// converted into a more friendly and testable interface
+type ContainerInspect struct {
+	// ID of the inspected container
+	ID       string
+
+	// Name of the inspected container
+	Name     string
+
+	// time.Time that the container was created
+	Created  time.Time
+
+	// String representing the container's status
+	Status   string
+
+	// Whether the container is currently running or not
+	Running  bool
+
+	// Container's exit code
+	ExitCode uint8
+
+	// String with the container's error message, if there is any
+	Error    string
+
+	// Ports exposed by the container
+	Ports    []Port
+
+	// Volume bindings made to the container
+	Binds    []VolumeBind
+}
+
+// Port represents a single port mapping exported by the container
+type Port struct {
+	HostPort      uint16
+	ContainerPort uint16
+	Protocol      string
+}
+
+// VolumeBind represents a single volume binding made to the container
+type VolumeBind struct {
+	Source      string
+	Destination string
+}
+
+// inspectOutput defines options that will be returned by 'docker inspect', in JSON format.
 // Not all options are included here, only the ones that we might need
 type inspectOutput struct {
 	Id      string
@@ -33,30 +77,7 @@ type inspectOutput struct {
 	}
 }
 
-type ContainerInspect struct {
-	ID       string
-	Name     string
-	Created  time.Time
-	Status   string
-	Running  bool
-	ExitCode uint8
-	Error    string
-	Ports    []Port
-	Binds    []VolumeBind
-}
-
-type Port struct {
-	HostPort      uint16
-	ContainerPort uint16
-	Protocol      string
-}
-
-type VolumeBind struct {
-	Source      string
-	Destination string
-}
-
-// Inspect runs the 'docker inspect {container id} command and returns a ContainerInspect
+// Inspect runs the 'docker inspect {container id}' command and returns a ContainerInspect
 // struct, converted from the output JSON
 func Inspect(t *testing.T, id string) ContainerInspect {
 	// @TODO: Validate if id is a valid containerID
@@ -82,7 +103,7 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 	return transformContainer(t, c)
 }
 
-// transformContainerPorts converts Docker' inspect output JSON into a more friendly and testable format
+// transformContainerPorts converts 'docker inspect' output JSON into a more friendly and testable format
 func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
 	name := strings.TrimLeft(c.Name, "/")
 	ports := transformContainerPorts(t, c)
@@ -144,7 +165,7 @@ func transformContainerPorts(t *testing.T, c inspectOutput) []Port {
 }
 
 // transformContainerVolumes converts Docker's volume bindings from the
-// format "/foo/bar:/foo/baz" into a more testable one:
+// format "/foo/bar:/foo/baz" into a more testable one
 func transformContainerVolumes(t *testing.T, c inspectOutput) []VolumeBind {
 	binds := c.HostConfig.Binds
 	volumes := make([]VolumeBind, 0, len(binds))
