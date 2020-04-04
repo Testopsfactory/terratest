@@ -2,8 +2,10 @@ package docker
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -77,10 +79,19 @@ type inspectOutput struct {
 	}
 }
 
-// Inspect runs the 'docker inspect {container id}' command and returns a ContainerInspect
-// struct, converted from the output JSON
 func Inspect(t *testing.T, id string) ContainerInspect {
-	// @TODO: Validate if id is a valid containerID
+	out, err := InspectE(t, id)
+	require.NoError(t, err)
+	return out
+}
+
+// InspectE runs the 'docker inspect {container id}' command and returns a ContainerInspect
+// struct, converted from the output JSON, along with any errors
+func InspectE(t *testing.T, id string) (ContainerInspect, error) {
+	match, _ := regexp.MatchString("[[:alnum:]]", id)
+	if !match {
+		return ContainerInspect{}, fmt.Errorf("%s is not a valid container ID", id)
+	}
 
 	cmd := shell.Command{
 		Command: "docker",
@@ -88,19 +99,23 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 	}
 
 	out, err := shell.RunCommandAndGetOutputE(t, cmd)
-	require.NoError(t, err)
+	if err != nil {
+		return ContainerInspect{}, err
+	}
 
 	var containers []inspectOutput
 	err = json.Unmarshal([]byte(out), &containers)
-	require.NoError(t, err)
+	if err != nil {
+		return ContainerInspect{}, err
+	}
 
 	if len(containers) == 0 {
-		return ContainerInspect{}
+		return ContainerInspect{}, nil
 	}
 
 	c := containers[0]
 
-	return transformContainer(t, c)
+	return transformContainer(t, c), nil
 }
 
 // transformContainerPorts converts 'docker inspect' output JSON into a more friendly and testable format

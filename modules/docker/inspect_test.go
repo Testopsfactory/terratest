@@ -73,6 +73,11 @@ func TestInspectWithMappedVolumes(t *testing.T) {
 	require.Equal(t, "/foo/bar", c.Binds[0].Destination)
 }
 
+func TestInspectWithInvalidContainerID(t *testing.T) {
+	_, err := InspectE(t, "This is not a valid container ID")
+	require.Error(t, err)
+}
+
 func removeContainer(t *testing.T, id string) {
 	cmd := shell.Command{
 		Command: "docker",
