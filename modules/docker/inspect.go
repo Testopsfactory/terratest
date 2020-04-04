@@ -10,7 +10,9 @@ import (
 	"time"
 )
 
-type InspectOutput struct {
+// inspectOutput defines options that will be returned by docker inspect command, in JSON format.
+// Not all options are included here, only the ones that we might need
+type inspectOutput struct {
 	Id      string
 	Created string
 	Name    string
@@ -67,7 +69,7 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 	out, err := shell.RunCommandAndGetOutputE(t, cmd)
 	require.NoError(t, err)
 
-	var containers []InspectOutput
+	var containers []inspectOutput
 	err = json.Unmarshal([]byte(out), &containers)
 	require.NoError(t, err)
 
