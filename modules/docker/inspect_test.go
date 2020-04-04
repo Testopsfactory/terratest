@@ -55,6 +55,24 @@ func TestInspectWithExposedPort(t *testing.T) {
 	require.EqualValues(t, port, c.Ports[0].HostPort)
 }
 
+func TestInspectWithMappedVolumes(t *testing.T) {
+	t.Parallel()
+
+	options := &RunOptions{
+		Detach: true,
+		Volumes: []string{"/tmp:/foo/bar"},
+	}
+
+	id := Run(t, image, options)
+	defer removeContainer(t, id)
+
+	c := Inspect(t, id)
+
+	require.NotEmptyf(t, c.Binds, "Container's mapped volumes should not be empty")
+	require.Equal(t, "/tmp", c.Binds[0].Source)
+	require.Equal(t, "/foo/bar", c.Binds[0].Destination)
+}
+
 func removeContainer(t *testing.T, id string) {
 	cmd := shell.Command{
 		Command: "docker",

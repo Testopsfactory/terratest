@@ -26,6 +26,9 @@ type InspectOutput struct {
 			HostPort string
 		}
 	}
+	HostConfig struct {
+		Binds []string
+	}
 }
 
 type ContainerInspect struct {
@@ -37,12 +40,18 @@ type ContainerInspect struct {
 	ExitCode uint8
 	Error    string
 	Ports    []Port
+	Binds    []VolumeBind
 }
 
 type Port struct {
 	HostPort      uint16
 	ContainerPort uint16
 	Protocol      string
+}
+
+type VolumeBind struct {
+	Source      string
+	Destination string
 }
 
 // Inspect runs the 'docker inspect {container id} command and returns a ContainerInspect
@@ -75,6 +84,8 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
 	name := strings.TrimLeft(c.Name, "/")
 	ports := transformContainerPorts(t, c)
+	volumes := transformContainerVolumes(t, c)
+
 	created, err := time.Parse(time.RFC3339Nano, c.Created)
 	require.NoError(t, err)
 
@@ -87,6 +98,7 @@ func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
 		ExitCode: c.State.ExitCode,
 		Error:    c.State.Error,
 		Ports:    ports,
+		Binds:    volumes,
 	}
 
 	return inspect
@@ -127,4 +139,28 @@ func transformContainerPorts(t *testing.T, c inspectOutput) []Port {
 	}
 
 	return ports
+}
+
+// transformContainerVolumes converts Docker's volume bindings from the
+// format "/foo/bar:/foo/baz" into a more testable one:
+func transformContainerVolumes(t *testing.T, c inspectOutput) []VolumeBind {
+	binds := c.HostConfig.Binds
+	volumes := make([]VolumeBind, 0, len(binds))
+
+	for _, b := range binds {
+		var source, dest string
+
+		split := strings.Split(b, ":")
+
+		// Considering it a named volume
+		source = split[0]
+		dest = split[1]
+
+		volumes = append(volumes, VolumeBind{
+			Source:      source,
+			Destination: dest,
+		})
+	}
+
+	return volumes
 }
