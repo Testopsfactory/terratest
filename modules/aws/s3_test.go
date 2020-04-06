@@ -170,6 +170,7 @@ func testEmptyBucket(t *testing.T, s3Client *s3.S3, region string, s3BucketName 
 			t.Fatal(err)
 		}
 
+		// Delete the first 10 files to be able to test if all files, including delete markers are deleted
 		if i < 10 {
 			_, err := s3Client.DeleteObject(&s3.DeleteObjectInput{
 				Bucket: aws.String(s3BucketName),
