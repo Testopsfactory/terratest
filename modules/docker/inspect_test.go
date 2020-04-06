@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const image = "nginx:1.17-alpine"
+const dockerInspectTestImage = "nginx:1.17-alpine"
 
 func TestInspect(t *testing.T) {
 	t.Parallel()
@@ -23,7 +23,7 @@ func TestInspect(t *testing.T) {
 		Name:   name,
 	}
 
-	id := Run(t, image, options)
+	id := Run(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
 	c := Inspect(t, id)
@@ -45,7 +45,7 @@ func TestInspectWithExposedPort(t *testing.T) {
 		OtherOptions:         []string{fmt.Sprintf("-p=%d:80", port)},
 	}
 
-	id := Run(t, image, options)
+	id := Run(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
 	c := Inspect(t, id)
@@ -94,7 +94,7 @@ func runWithVolume(t *testing.T, volume string) ContainerInspect {
 		Volumes: []string{volume},
 	}
 
-	id := Run(t, image, options)
+	id := Run(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
 	return Inspect(t, id)
