@@ -109,28 +109,28 @@ func InspectE(t *testing.T, id string) (ContainerInspect, error) {
 		return ContainerInspect{}, nil
 	}
 
-	c := containers[0]
+	container := containers[0]
 
-	return transformContainer(t, c), nil
+	return transformContainer(t, container), nil
 }
 
 // transformContainerPorts converts 'docker inspect' output JSON into a more friendly and testable format
-func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
-	name := strings.TrimLeft(c.Name, "/")
-	ports := transformContainerPorts(t, c)
-	volumes := transformContainerVolumes(t, c)
+func transformContainer(t *testing.T, container inspectOutput) ContainerInspect {
+	name := strings.TrimLeft(container.Name, "/")
+	ports := transformContainerPorts(t, container)
+	volumes := transformContainerVolumes(t, container)
 
-	created, err := time.Parse(time.RFC3339Nano, c.Created)
+	created, err := time.Parse(time.RFC3339Nano, container.Created)
 	require.NoError(t, err)
 
 	inspect := ContainerInspect{
-		ID:       c.Id,
+		ID:       container.Id,
 		Name:     name,
 		Created:  created,
-		Status:   c.State.Status,
-		Running:  c.State.Running,
-		ExitCode: c.State.ExitCode,
-		Error:    c.State.Error,
+		Status:   container.State.Status,
+		Running:  container.State.Running,
+		ExitCode: container.State.ExitCode,
+		Error:    container.State.Error,
 		Ports:    ports,
 		Binds:    volumes,
 	}
@@ -147,21 +147,21 @@ func transformContainer(t *testing.T, c inspectOutput) ContainerInspect {
 //     }
 //   ]
 // }
-func transformContainerPorts(t *testing.T, c inspectOutput) []Port {
+func transformContainerPorts(t *testing.T, container inspectOutput) []Port {
 	var ports []Port
 
-	cPorts := c.NetworkSettings.Ports
+	cPorts := container.NetworkSettings.Ports
 
-	for k, pb := range cPorts {
-		split := strings.Split(k, "/")
+	for key, portBinding := range cPorts {
+		split := strings.Split(key, "/")
 
 		containerPort, err := strconv.ParseUint(split[0], 10, 16)
 		require.NoError(t, err)
 
 		protocol := split[1]
 
-		for _, p := range pb {
-			hostPort, err := strconv.ParseUint(p.HostPort, 10, 16)
+		for _, port := range portBinding {
+			hostPort, err := strconv.ParseUint(port.HostPort, 10, 16)
 			require.NoError(t, err)
 
 			ports = append(ports, Port{
@@ -177,14 +177,14 @@ func transformContainerPorts(t *testing.T, c inspectOutput) []Port {
 
 // transformContainerVolumes converts Docker's volume bindings from the
 // format "/foo/bar:/foo/baz" into a more testable one
-func transformContainerVolumes(t *testing.T, c inspectOutput) []VolumeBind {
-	binds := c.HostConfig.Binds
+func transformContainerVolumes(t *testing.T, container inspectOutput) []VolumeBind {
+	binds := container.HostConfig.Binds
 	volumes := make([]VolumeBind, 0, len(binds))
 
-	for _, b := range binds {
+	for _, bind := range binds {
 		var source, dest string
 
-		split := strings.Split(b, ":")
+		split := strings.Split(bind, ":")
 
 		// Considering it a named volume
 		source = split[0]
