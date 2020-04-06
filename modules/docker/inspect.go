@@ -2,10 +2,8 @@ package docker
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -88,11 +86,6 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 // InspectE runs the 'docker inspect {container id}' command and returns a ContainerInspect
 // struct, converted from the output JSON, along with any errors
 func InspectE(t *testing.T, id string) (ContainerInspect, error) {
-	match, _ := regexp.MatchString("[[:alnum:]]", id)
-	if !match {
-		return ContainerInspect{}, fmt.Errorf("%s is not a valid container ID", id)
-	}
-
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    []string{"container", "inspect", id},
