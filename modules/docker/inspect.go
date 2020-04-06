@@ -197,8 +197,13 @@ func transformContainerVolumes(container inspectOutput) []VolumeBind {
 
 		split := strings.Split(bind, ":")
 
-		source = split[0]
-		dest = split[1]
+		// Considering it as an unbound volume
+		dest = split[0]
+
+		if len(split) == 2 {
+			source = split[0]
+			dest = split[1]
+		}
 
 		volumes = append(volumes, VolumeBind{
 			Source:      source,

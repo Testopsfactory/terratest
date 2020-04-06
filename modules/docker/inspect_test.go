@@ -55,27 +55,49 @@ func TestInspectWithExposedPort(t *testing.T) {
 	require.EqualValues(t, port, c.Ports[0].HostPort)
 }
 
-func TestInspectWithMappedVolumes(t *testing.T) {
+func TestInspectWithHostVolume(t *testing.T) {
 	t.Parallel()
 
-	options := &RunOptions{
-		Detach: true,
-		Volumes: []string{"/tmp:/foo/bar"},
-	}
+	c := runWithVolume(t, "/tmp:/foo/bar")
 
-	id := Run(t, image, options)
-	defer removeContainer(t, id)
-
-	c := Inspect(t, id)
-
-	require.NotEmptyf(t, c.Binds, "Container's mapped volumes should not be empty")
+	require.NotEmptyf(t, c.Binds, "Container's host volumes should not be empty")
 	require.Equal(t, "/tmp", c.Binds[0].Source)
+	require.Equal(t, "/foo/bar", c.Binds[0].Destination)
+}
+
+func TestInspectWithAnonymousVolume(t *testing.T) {
+	t.Parallel()
+
+	c := runWithVolume(t, "/foo/bar")
+
+	require.Empty(t, c.Binds, "Container's host volumes be empty when using an anonymous volume")
+}
+
+func TestInspectWithNamedVolume(t *testing.T) {
+	t.Parallel()
+
+	c := runWithVolume(t, "foobar:/foo/bar")
+
+	require.NotEmptyf(t, c.Binds, "Container's host volumes should not be empty")
+	require.Equal(t, "foobar", c.Binds[0].Source)
 	require.Equal(t, "/foo/bar", c.Binds[0].Destination)
 }
 
 func TestInspectWithInvalidContainerID(t *testing.T) {
 	_, err := InspectE(t, "This is not a valid container ID")
 	require.Error(t, err)
+}
+
+func runWithVolume(t *testing.T, volume string) ContainerInspect {
+	options := &RunOptions{
+		Detach: true,
+		Volumes: []string{volume},
+	}
+
+	id := Run(t, image, options)
+	defer removeContainer(t, id)
+
+	return Inspect(t, id)
 }
 
 func removeContainer(t *testing.T, id string) {
