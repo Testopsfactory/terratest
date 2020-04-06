@@ -2,9 +2,9 @@ package docker
 
 import (
 	"fmt"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
-	"strconv"
 	"testing"
 	"time"
 )
@@ -15,7 +15,7 @@ func TestInspect(t *testing.T) {
 	t.Parallel()
 
 	// append timestamp to container name to allow running tests in parallel
-	name := "inspect-test-" + strconv.FormatInt(time.Now().UnixNano(), 10)
+	name := "inspect-test-" + random.UniqueId()
 
 	// running the container detached to allow inspection while it is running
 	options := &RunOptions{
