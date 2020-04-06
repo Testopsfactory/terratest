@@ -77,9 +77,12 @@ type inspectOutput struct {
 	}
 }
 
+// Inspect runs the 'docker inspect {container id}' command and returns a ContainerInspect
+// struct, converted from the output JSON, along with any errors
 func Inspect(t *testing.T, id string) ContainerInspect {
 	out, err := InspectE(t, id)
 	require.NoError(t, err)
+
 	return out
 }
 
