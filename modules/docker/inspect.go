@@ -2,6 +2,7 @@ package docker
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
 	"strconv"
@@ -103,6 +104,10 @@ func InspectE(t *testing.T, id string) (*ContainerInspect, error) {
 	err = json.Unmarshal([]byte(out), &containers)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(containers) == 0 {
+		return nil, fmt.Errorf("no container found with ID %s", id)
 	}
 
 	container := containers[0]
