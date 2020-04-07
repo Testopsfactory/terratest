@@ -1,4 +1,5 @@
 defaults: &defaults
+  resource_class: large
   machine:
     enabled: true
     image: "ubuntu-1604:201903-01"
