@@ -14,31 +14,31 @@ import (
 // converted into a more friendly and testable interface
 type ContainerInspect struct {
 	// ID of the inspected container
-	ID       string
+	ID string
 
 	// Name of the inspected container
-	Name     string
+	Name string
 
 	// time.Time that the container was created
-	Created  time.Time
+	Created time.Time
 
 	// String representing the container's status
-	Status   string
+	Status string
 
 	// Whether the container is currently running or not
-	Running  bool
+	Running bool
 
 	// Container's exit code
 	ExitCode uint8
 
 	// String with the container's error message, if there is any
-	Error    string
+	Error string
 
 	// Ports exposed by the container
-	Ports    []Port
+	Ports []Port
 
 	// Volume bindings made to the container
-	Binds    []VolumeBind
+	Binds []VolumeBind
 }
 
 // Port represents a single port mapping exported by the container

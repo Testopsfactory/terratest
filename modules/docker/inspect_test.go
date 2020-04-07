@@ -41,8 +41,8 @@ func TestInspectWithExposedPort(t *testing.T) {
 	port := 13031
 
 	options := &RunOptions{
-		Detach: true,
-		OtherOptions:         []string{fmt.Sprintf("-p=%d:80", port)},
+		Detach:       true,
+		OtherOptions: []string{fmt.Sprintf("-p=%d:80", port)},
 	}
 
 	id := Run(t, dockerInspectTestImage, options)
@@ -95,7 +95,7 @@ func TestInspectWithUnknownContainerID(t *testing.T) {
 
 func runWithVolume(t *testing.T, volume string) *ContainerInspect {
 	options := &RunOptions{
-		Detach: true,
+		Detach:  true,
 		Volumes: []string{volume},
 	}
 
