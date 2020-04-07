@@ -167,7 +167,10 @@ func transformContainerPorts(container inspectOutput) ([]Port, error) {
 			return []Port{}, err
 		}
 
-		protocol := split[1]
+		var protocol string
+		if len(split) > 1 {
+			protocol = split[1]
+		}
 
 		for _, port := range portBinding {
 			hostPort, err := strconv.ParseUint(port.HostPort, 10, 16)
