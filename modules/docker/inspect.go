@@ -105,10 +105,6 @@ func InspectE(t *testing.T, id string) (ContainerInspect, error) {
 		return ContainerInspect{}, err
 	}
 
-	if len(containers) == 0 {
-		return ContainerInspect{}, nil
-	}
-
 	container := containers[0]
 
 	return transformContainer(t, container)
