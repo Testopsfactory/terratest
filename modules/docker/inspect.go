@@ -79,7 +79,7 @@ type inspectOutput struct {
 
 // Inspect runs the 'docker inspect {container id}' command and returns a ContainerInspect
 // struct, converted from the output JSON, along with any errors
-func Inspect(t *testing.T, id string) ContainerInspect {
+func Inspect(t *testing.T, id string) *ContainerInspect {
 	out, err := InspectE(t, id)
 	require.NoError(t, err)
 
@@ -88,7 +88,7 @@ func Inspect(t *testing.T, id string) ContainerInspect {
 
 // InspectE runs the 'docker inspect {container id}' command and returns a ContainerInspect
 // struct, converted from the output JSON, along with any errors
-func InspectE(t *testing.T, id string) (ContainerInspect, error) {
+func InspectE(t *testing.T, id string) (*ContainerInspect, error) {
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    []string{"container", "inspect", id},
@@ -96,13 +96,13 @@ func InspectE(t *testing.T, id string) (ContainerInspect, error) {
 
 	out, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err != nil {
-		return ContainerInspect{}, err
+		return nil, err
 	}
 
 	var containers []inspectOutput
 	err = json.Unmarshal([]byte(out), &containers)
 	if err != nil {
-		return ContainerInspect{}, err
+		return nil, err
 	}
 
 	container := containers[0]
@@ -111,19 +111,19 @@ func InspectE(t *testing.T, id string) (ContainerInspect, error) {
 }
 
 // transformContainerPorts converts 'docker inspect' output JSON into a more friendly and testable format
-func transformContainer(t *testing.T, container inspectOutput) (ContainerInspect, error) {
+func transformContainer(t *testing.T, container inspectOutput) (*ContainerInspect, error) {
 	name := strings.TrimLeft(container.Name, "/")
 
 	ports, err := transformContainerPorts(container)
 	if err != nil {
-		return ContainerInspect{}, err
+		return nil, err
 	}
 
 	volumes := transformContainerVolumes(container)
 
 	created, err := time.Parse(time.RFC3339Nano, container.Created)
 	if err != nil {
-		return ContainerInspect{}, err
+		return nil, err
 	}
 
 	inspect := ContainerInspect{
@@ -138,7 +138,7 @@ func transformContainer(t *testing.T, container inspectOutput) (ContainerInspect
 		Binds:    volumes,
 	}
 
-	return inspect, nil
+	return &inspect, nil
 }
 
 // transformContainerPorts converts Docker's ports from the following json into a more testable format
@@ -160,7 +160,7 @@ func transformContainerPorts(container inspectOutput) ([]Port, error) {
 
 		containerPort, err := strconv.ParseUint(split[0], 10, 16)
 		if err != nil {
-			return []Port{}, err
+			return nil, err
 		}
 
 		var protocol string
@@ -171,7 +171,7 @@ func transformContainerPorts(container inspectOutput) ([]Port, error) {
 		for _, port := range portBinding {
 			hostPort, err := strconv.ParseUint(port.HostPort, 10, 16)
 			if err != nil {
-				return []Port{}, err
+				return nil, err
 			}
 
 			ports = append(ports, Port{

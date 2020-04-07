@@ -93,7 +93,7 @@ func TestInspectWithUnknownContainerID(t *testing.T) {
 	require.Error(t, err)
 }
 
-func runWithVolume(t *testing.T, volume string) ContainerInspect {
+func runWithVolume(t *testing.T, volume string) *ContainerInspect {
 	options := &RunOptions{
 		Detach: true,
 		Volumes: []string{volume},
