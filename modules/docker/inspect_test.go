@@ -108,7 +108,7 @@ func runWithVolume(t *testing.T, volume string) *ContainerInspect {
 func removeContainer(t *testing.T, id string) {
 	cmd := shell.Command{
 		Command: "docker",
-		Args:    []string{"container", "rm", "-f", id},
+		Args:    []string{"container", "rm", "--force", id},
 	}
 
 	shell.RunCommand(t, cmd)
