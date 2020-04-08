@@ -24,7 +24,7 @@ func TestTerraformAwsSsmExample(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	instanceID := terraform.Output(t, terraformOptions, "instance_id")
-	timeout, _ := time.ParseDuration("3m")
+	timeout := 3 * time.Minute
 
 	aws.WaitForSsmInstance(t, region, instanceID, timeout)
 
@@ -32,7 +32,9 @@ func TestTerraformAwsSsmExample(t *testing.T) {
 	require.Equal(t, stdout, "Hello, World\n")
 	require.Equal(t, stderr, "")
 
-	_, _, err := aws.CheckSsmCommandE(t, region, instanceID, "false", timeout)
+	stdout, stderr, err := aws.CheckSsmCommandE(t, region, instanceID, "cat /wrong/file", timeout)
 	require.Error(t, err)
 	require.Equal(t, err.Error(), "Failed")
+	require.Equal(t, "cat: /wrong/file: No such file or directory\nfailed to run commands: exit status 1", stderr)
+	require.Equal(t, "", stdout)
 }

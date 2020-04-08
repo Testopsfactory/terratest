@@ -2,7 +2,6 @@ package aws
 
 import (
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -164,10 +163,6 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 		"bad status: InProgress": "bad status: InProgress",
 		"bad status: Delayed":    "bad status: Delayed",
 	}
-	prefix, err := regexp.Compile(`/var/lib/amazon/ssm/.*/_script\.sh: line 1: `)
-	if err != nil {
-		return "", "", err
-	}
 	var stdout, stderr string
 	_, err = retry.DoWithRetryableErrorsE(t, description, retryableErrors, maxRetries, timeBetweenRetries, func() (string, error) {
 		req, resp := client.GetCommandInvocationRequest(&ssm.GetCommandInvocationInput{
@@ -180,7 +175,6 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 
 		// Remove the SSM prefix from stderr
 		stderr = aws.StringValue(resp.StandardErrorContent)
-		stderr = prefix.ReplaceAllString(stderr, "")
 
 		stdout = aws.StringValue(resp.StandardOutputContent)
 
