@@ -3,12 +3,13 @@ package docker
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gruntwork-io/terratest/modules/shell"
-	"github.com/stretchr/testify/require"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gruntwork-io/terratest/modules/shell"
+	"github.com/stretchr/testify/require"
 )
 
 // ContainerInspect defines the output of the Inspect method, with the options returned by 'docker inspect'

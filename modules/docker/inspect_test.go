@@ -2,11 +2,12 @@ package docker
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 const dockerInspectTestImage = "nginx:1.17-alpine"
