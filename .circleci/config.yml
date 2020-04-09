@@ -9,10 +9,13 @@ defaults: &defaults
     TERRAGRUNT_VERSION: v0.21.11
     PACKER_VERSION: 1.5.1
     GOLANG_VERSION: 1.13
-    K8S_VERSION: v1.10.0  # Same as EKS
+    K8S_VERSION: v1.15.0  # Same as EKS
+    MINIKUBE_VERSION: v1.9.2
     HELM_VERSION: v3.1.1
     KUBECONFIG: /home/circleci/.kube/config
 
+setup_minikube: &setup_minikube
+  command: setup-minikube --k8s-version "$K8S_VERSION" --minikube-version "$MINIKUBE_VERSION"
 
 install_helm: &install_helm
   name: install helm
@@ -141,7 +144,7 @@ jobs:
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
 
       - run:
-          command: setup-minikube
+          <<: *setup_minikube
 
       # Run the Kubernetes tests. These tests are run because the kubernetes build tag is included, and we explicitly
       # select the kubernetes tests
@@ -177,7 +180,7 @@ jobs:
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
 
       - run:
-          command: setup-minikube
+          <<: *setup_minikube
 
       - run:
           <<: *install_helm
