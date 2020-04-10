@@ -96,7 +96,7 @@ func InspectE(t *testing.T, id string) (*ContainerInspect, error) {
 		Args:    []string{"container", "inspect", id},
 	}
 
-	out, err := shell.RunCommandAndGetOutputE(t, cmd)
+	out, err := shell.RunCommandAndGetStdOutE(t, cmd)
 	if err != nil {
 		return nil, err
 	}
