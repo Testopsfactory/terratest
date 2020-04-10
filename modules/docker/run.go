@@ -74,6 +74,28 @@ func RunE(t testing.TestingT, image string, options *RunOptions) (string, error)
 	return shell.RunCommandAndGetOutputE(t, cmd)
 }
 
+func RunAndGetID(t testing.TestingT, image string, options *RunOptions) string {
+	out, err := RunAndGetIDE(t, image, options)
+	require.NoError(t, err)
+	return out
+}
+
+func RunAndGetIDE(t testing.TestingT, image string, options *RunOptions) (string, error) {
+	logger.Logf(t, "Running 'docker run' on image '%s', returning stdout", image)
+
+	args, err := formatDockerRunArgs(image, options)
+	if err != nil {
+		return "", err
+	}
+
+	cmd := shell.Command{
+		Command: "docker",
+		Args:    args,
+	}
+
+	return shell.RunCommandAndGetStdOutE(t, cmd)
+}
+
 // formatDockerRunArgs formats the arguments for the 'docker run' command.
 func formatDockerRunArgs(image string, options *RunOptions) ([]string, error) {
 	args := []string{"run"}
