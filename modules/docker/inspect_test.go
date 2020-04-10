@@ -24,7 +24,13 @@ func TestInspect(t *testing.T) {
 		Name:   name,
 	}
 
-	id := Run(t, dockerInspectTestImage, options)
+	// remove the local image if it exists to force Docker to pull it
+	_ = shell.RunCommandE(t, shell.Command{
+		Command: "docker",
+		Args:    []string{"rmi", dockerInspectTestImage},
+	})
+
+	id := RunAndGetID(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
 	c := Inspect(t, id)
@@ -46,7 +52,7 @@ func TestInspectWithExposedPort(t *testing.T) {
 		OtherOptions: []string{fmt.Sprintf("-p=%d:80", port)},
 	}
 
-	id := Run(t, dockerInspectTestImage, options)
+	id := RunAndGetID(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
 	c := Inspect(t, id)
@@ -85,11 +91,15 @@ func TestInspectWithNamedVolume(t *testing.T) {
 }
 
 func TestInspectWithInvalidContainerID(t *testing.T) {
+	t.Parallel()
+
 	_, err := InspectE(t, "This is not a valid container ID")
 	require.Error(t, err)
 }
 
 func TestInspectWithUnknownContainerID(t *testing.T) {
+	t.Parallel()
+
 	_, err := InspectE(t, "abcde123456")
 	require.Error(t, err)
 }
@@ -100,7 +110,7 @@ func runWithVolume(t *testing.T, volume string) *ContainerInspect {
 		Volumes: []string{volume},
 	}
 
-	id := Run(t, dockerInspectTestImage, options)
+	id := RunAndGetID(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
 	return Inspect(t, id)
