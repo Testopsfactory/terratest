@@ -59,7 +59,7 @@ func RunTerraformCommand(t testing.TestingT, additionalOptions *Options, args ..
 func RunTerraformCommandE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	cmd := generateCommand(additionalOptions, args...)
+	cmd := generateCommand(options, args...)
 	description := fmt.Sprintf("%s %v", options.TerraformBinary, args)
 	return retry.DoWithRetryableErrorsE(t, description, options.RetryableTerraformErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		return shell.RunCommandAndGetOutputE(t, cmd)
@@ -71,7 +71,7 @@ func RunTerraformCommandE(t testing.TestingT, additionalOptions *Options, additi
 func RunTerraformCommandAndGetStdoutE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (string, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	cmd := generateCommand(additionalOptions, args...)
+	cmd := generateCommand(options, args...)
 	description := fmt.Sprintf("%s %v", options.TerraformBinary, args)
 	return retry.DoWithRetryableErrorsE(t, description, options.RetryableTerraformErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		return shell.RunCommandAndGetStdOutE(t, cmd)
@@ -92,7 +92,7 @@ func GetExitCodeForTerraformCommandE(t testing.TestingT, additionalOptions *Opti
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
 	logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
-	cmd := generateCommand(additionalOptions, args...)
+	cmd := generateCommand(options, args...)
 	_, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err == nil {
 		return DefaultSuccessExitCode, nil
