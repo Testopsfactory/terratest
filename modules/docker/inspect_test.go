@@ -24,12 +24,6 @@ func TestInspect(t *testing.T) {
 		Name:   name,
 	}
 
-	// remove the local image if it exists to force Docker to pull it
-	_ = shell.RunCommandE(t, shell.Command{
-		Command: "docker",
-		Args:    []string{"rmi", dockerInspectTestImage},
-	})
-
 	id := RunAndGetID(t, dockerInspectTestImage, options)
 	defer removeContainer(t, id)
 
