@@ -74,6 +74,32 @@ func RunE(t testing.TestingT, image string, options *RunOptions) (string, error)
 	return shell.RunCommandAndGetOutputE(t, cmd)
 }
 
+// RunAndGetID runs the 'docker run' command on the given image with the given options and returns the container ID
+// that is returned in stdout. This method fails the test if there are any errors.
+func RunAndGetID(t testing.TestingT, image string, options *RunOptions) string {
+	out, err := RunAndGetIDE(t, image, options)
+	require.NoError(t, err)
+	return out
+}
+
+// RunAndGetIDE runs the 'docker run' command on the given image with the given options and returns the container ID
+// that is returned in stdout, or any error.
+func RunAndGetIDE(t testing.TestingT, image string, options *RunOptions) (string, error) {
+	logger.Logf(t, "Running 'docker run' on image '%s', returning stdout", image)
+
+	args, err := formatDockerRunArgs(image, options)
+	if err != nil {
+		return "", err
+	}
+
+	cmd := shell.Command{
+		Command: "docker",
+		Args:    args,
+	}
+
+	return shell.RunCommandAndGetStdOutE(t, cmd)
+}
+
 // formatDockerRunArgs formats the arguments for the 'docker run' command.
 func formatDockerRunArgs(image string, options *RunOptions) ([]string, error) {
 	args := []string{"run"}
