@@ -12,11 +12,10 @@ import (
 
 func generateCommand(options *Options, args ...string) shell.Command {
 	cmd := shell.Command{
-		Command:           options.TerraformBinary,
-		Args:              args,
-		WorkingDir:        options.TerraformDir,
-		Env:               options.EnvVars,
-		OutputMaxLineSize: options.OutputMaxLineSize,
+		Command:    options.TerraformBinary,
+		Args:       args,
+		WorkingDir: options.TerraformDir,
+		Env:        options.EnvVars,
 	}
 	return cmd
 }

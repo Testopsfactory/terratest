@@ -19,11 +19,10 @@ import (
 
 // Command is a simpler struct for defining commands than Go's built-in Cmd.
 type Command struct {
-	Command           string            // The command to run
-	Args              []string          // The args to pass to the command
-	WorkingDir        string            // The working directory
-	Env               map[string]string // Additional environment variables to set
-	OutputMaxLineSize int               // The max line size of stdout and stderr (in bytes)
+	Command    string            // The command to run
+	Args       []string          // The args to pass to the command
+	WorkingDir string            // The working directory
+	Env        map[string]string // Additional environment variables to set
 }
 
 // RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
@@ -106,7 +105,7 @@ func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout
 		return err
 	}
 
-	if err := readStdoutAndStderr(t, stdout, stderr, storedStdout, storedStderr, command.OutputMaxLineSize); err != nil {
+	if err := readStdoutAndStderr(t, stdout, stderr, storedStdout, storedStderr); err != nil {
 		return err
 	}
 
@@ -119,45 +118,66 @@ func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout
 
 // This function captures stdout and stderr into the given variables while still printing it to the stdout and stderr
 // of this Go program
-func readStdoutAndStderr(t testing.TestingT, stdout io.ReadCloser, stderr io.ReadCloser, storedStdout *[]string, storedStderr *[]string, maxLineSize int) error {
-	stdoutScanner := bufio.NewScanner(stdout)
-	stderrScanner := bufio.NewScanner(stderr)
-
-	if maxLineSize > 0 {
-		stdoutScanner.Buffer(make([]byte, maxLineSize), maxLineSize)
-		stderrScanner.Buffer(make([]byte, maxLineSize), maxLineSize)
-	}
+func readStdoutAndStderr(t testing.TestingT, stdout io.ReadCloser, stderr io.ReadCloser, storedStdout *[]string, storedStderr *[]string) error {
+	stdoutReader := bufio.NewReader(stdout)
+	stderrReader := bufio.NewReader(stderr)
 
 	wg := &sync.WaitGroup{}
 	mutex := &sync.Mutex{}
+
 	wg.Add(2)
-	go readData(t, stdoutScanner, wg, mutex, storedStdout)
-	go readData(t, stderrScanner, wg, mutex, storedStderr)
+	var stdoutErr, stderrErr error
+	go func() {
+		defer wg.Done()
+		stdoutErr = readData(t, stdoutReader, mutex, storedStdout)
+	}()
+	go func() {
+		defer wg.Done()
+		stderrErr = readData(t, stderrReader, mutex, storedStderr)
+	}()
 	wg.Wait()
 
-	if err := stdoutScanner.Err(); err != nil {
-		return err
+	if stdoutErr != nil {
+		return stdoutErr
 	}
-
-	if err := stderrScanner.Err(); err != nil {
-		return err
+	if stderrErr != nil {
+		return stderrErr
 	}
 
 	return nil
 }
 
-func readData(t testing.TestingT, scanner *bufio.Scanner, wg *sync.WaitGroup, mutex *sync.Mutex, allOutput *[]string) {
-	defer wg.Done()
-	for scanner.Scan() {
-		logTextAndAppendToOutput(t, mutex, scanner.Text(), allOutput)
-	}
-}
+func readData(t testing.TestingT, reader *bufio.Reader, mutex *sync.Mutex, allOutput *[]string) error {
+	var line string
+	var err error
+	for {
+		line, err = reader.ReadString('\n')
 
-func logTextAndAppendToOutput(t testing.TestingT, mutex *sync.Mutex, text string, allOutput *[]string) {
-	defer mutex.Unlock()
-	logger.Log(t, text)
-	mutex.Lock()
-	*allOutput = append(*allOutput, text)
+		// remove newline, our output is in a slice,
+		// one element per line.
+		line = strings.TrimSuffix(line, "\n")
+
+		// only return early if the line does not have
+		// any contents. We could have a line that does
+		// not not have a newline before io.EOF, we still
+		// need to add it to the output.
+		if len(line) == 0 && err == io.EOF {
+			break
+		}
+
+		logger.Log(t, line)
+		mutex.Lock()
+		*allOutput = append(*allOutput, line)
+		mutex.Unlock()
+
+		if err != nil {
+			break
+		}
+	}
+	if err != io.EOF {
+		return err
+	}
+	return nil
 }
 
 // GetExitCodeForRunCommandError tries to read the exit code for the error object returned from running a shell command. This is a bit tricky to do

@@ -57,7 +57,7 @@ echo_stderr
 	}
 
 	out := RunCommandAndGetOutput(t, cmd)
-	assert.Equal(t, strings.TrimSpace(out), expectedText)
+	assert.Equal(t, expectedText, strings.TrimSpace(out))
 }
 
 func TestRunCommandAndGetOutputConcurrency(t *testing.T) {
@@ -93,6 +93,6 @@ wait
 	out := RunCommandAndGetOutput(t, cmd)
 	stdoutReg := regexp.MustCompile(uniqueStdout)
 	stderrReg := regexp.MustCompile(uniqueStderr)
-	assert.Equal(t, len(stdoutReg.FindAllString(out, -1)), 500)
-	assert.Equal(t, len(stderrReg.FindAllString(out, -1)), 500)
+	assert.Equal(t, 500, len(stdoutReg.FindAllString(out, -1)))
+	assert.Equal(t, 500, len(stderrReg.FindAllString(out, -1)))
 }
