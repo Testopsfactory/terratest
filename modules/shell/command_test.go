@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strings"
@@ -95,4 +96,32 @@ wait
 	stderrReg := regexp.MustCompile(uniqueStderr)
 	assert.Equal(t, 500, len(stdoutReg.FindAllString(out, -1)))
 	assert.Equal(t, 500, len(stderrReg.FindAllString(out, -1)))
+}
+
+func TestRunCommandWithHugeLineOutput(t *testing.T) {
+	t.Parallel()
+
+	// generate a ~100KB line
+	bashCode := fmt.Sprintf(`
+for i in {0..35000}
+do
+  echo -n foo
+done
+echo
+`)
+
+	cmd := Command{
+		Command: "bash",
+		Args:    []string{"-c", bashCode},
+	}
+
+	out, err := RunCommandAndGetOutputE(t, cmd)
+	assert.NoError(t, err)
+
+	var buffer bytes.Buffer
+	for i := 0; i <= 35000; i++ {
+		buffer.WriteString("foo")
+	}
+
+	assert.Equal(t, out, buffer.String())
 }
