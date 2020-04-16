@@ -23,6 +23,10 @@ type Command struct {
 	Args       []string          // The args to pass to the command
 	WorkingDir string            // The working directory
 	Env        map[string]string // Additional environment variables to set
+	// Use the specified logger for the command's output. Use
+	//   logger.With(logger.Discard)
+	// to not print the output while executing the command.
+	Log *logger.Loggers
 }
 
 // RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
@@ -59,8 +63,9 @@ func RunCommandAndGetOutputE(t testing.TestingT, command Command) (string, error
 	return output, err
 }
 
-// RunCommandAndGetStdOut runs a shell command and returns solely its stdout (but not stderr) as a string. The stdout
-// and stderr of that command will also be printed to the stdout and stderr of this Go program to make debugging easier.
+// RunCommandAndGetStdOut runs a shell command and returns solely its stdout (but
+// not stderr) as a string. The stdout and stderr of that command will also be
+// printed to the stdout and stderr of this Go program to make debugging easier.
 // If there are any errors, fail the test.
 func RunCommandAndGetStdOut(t testing.TestingT, command Command) string {
 	output, err := RunCommandAndGetStdOutE(t, command)
@@ -79,11 +84,12 @@ func RunCommandAndGetStdOutE(t testing.TestingT, command Command) (string, error
 	return output, err
 }
 
-// runCommandAndStoreOutputE runs a shell command and stores each line from stdout and stderr in the given
-// storedStdout and storedStderr variables, respectively. The stdout and stderr of that command will also
-// be printed to the stdout and stderr of this Go program to make debugging easier.
+// runCommandAndStoreOutputE runs a shell command and stores each line from stdout
+// and stderr in the given storedStdout and storedStderr variables, respectively.
+// Depending on the logger, the stdout and stderr of that command will also be
+// printed to the stdout and stderr of this Go program to make debugging easier.
 func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout *[]string, storedStderr *[]string) error {
-	logger.Logf(t, "Running command %s with args %s", command.Command, command.Args)
+	command.Log.Logf(t, "Running command %s with args %s", command.Command, command.Args)
 
 	cmd := exec.Command(command.Command, command.Args...)
 	cmd.Dir = command.WorkingDir
@@ -105,7 +111,7 @@ func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout
 		return err
 	}
 
-	if err := readStdoutAndStderr(t, stdout, stderr, storedStdout, storedStderr); err != nil {
+	if err := readStdoutAndStderr(t, command.Log.Logf, stdout, stderr, storedStdout, storedStderr); err != nil {
 		return err
 	}
 
@@ -118,7 +124,7 @@ func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout
 
 // This function captures stdout and stderr into the given variables while still printing it to the stdout and stderr
 // of this Go program
-func readStdoutAndStderr(t testing.TestingT, stdout io.ReadCloser, stderr io.ReadCloser, storedStdout *[]string, storedStderr *[]string) error {
+func readStdoutAndStderr(t testing.TestingT, logf logger.LogFunc, stdout, stderr io.ReadCloser, storedStdout, storedStderr *[]string) error {
 	stdoutReader := bufio.NewReader(stdout)
 	stderrReader := bufio.NewReader(stderr)
 
@@ -129,11 +135,11 @@ func readStdoutAndStderr(t testing.TestingT, stdout io.ReadCloser, stderr io.Rea
 	var stdoutErr, stderrErr error
 	go func() {
 		defer wg.Done()
-		stdoutErr = readData(t, stdoutReader, mutex, storedStdout)
+		stdoutErr = readData(t, logf, stdoutReader, mutex, storedStdout)
 	}()
 	go func() {
 		defer wg.Done()
-		stderrErr = readData(t, stderrReader, mutex, storedStderr)
+		stderrErr = readData(t, logf, stderrReader, mutex, storedStderr)
 	}()
 	wg.Wait()
 
@@ -147,7 +153,7 @@ func readStdoutAndStderr(t testing.TestingT, stdout io.ReadCloser, stderr io.Rea
 	return nil
 }
 
-func readData(t testing.TestingT, reader *bufio.Reader, mutex *sync.Mutex, allOutput *[]string) error {
+func readData(t testing.TestingT, logf logger.LogFunc, reader *bufio.Reader, mutex *sync.Mutex, allOutput *[]string) error {
 	var line string
 	var err error
 	for {
@@ -165,7 +171,7 @@ func readData(t testing.TestingT, reader *bufio.Reader, mutex *sync.Mutex, allOu
 			break
 		}
 
-		logger.Log(t, line)
+		logf(t, line)
 		mutex.Lock()
 		*allOutput = append(*allOutput, line)
 		mutex.Unlock()
