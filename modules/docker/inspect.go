@@ -41,6 +41,9 @@ type ContainerInspect struct {
 
 	// Volume bindings made to the container
 	Binds []VolumeBind
+
+	// Health check
+	Health HealthCheck
 }
 
 // Port represents a single port mapping exported by the container
@@ -56,6 +59,32 @@ type VolumeBind struct {
 	Destination string
 }
 
+// HealthCheck represents the current health history of the container
+type HealthCheck struct {
+	// Health check status
+	Status string
+
+	// Current count of failing health checks
+	FailingStreak uint8
+
+	// Log of failures
+	Log []HealthLog
+}
+
+// HealthLog represents the output of a single Health check of the container
+type HealthLog struct {
+	// Start time of health check
+	Start string
+
+	// End time of health check
+	End string
+	
+	// Exit code of health check
+	ExitCode uint8
+	
+	// Output of health check
+	Output string
+}
 // inspectOutput defines options that will be returned by 'docker inspect', in JSON format.
 // Not all options are included here, only the ones that we might need
 type inspectOutput struct {
@@ -63,6 +92,11 @@ type inspectOutput struct {
 	Created string
 	Name    string
 	State   struct {
+		Health   struct {
+			Status        string
+			FailingStreak uint8
+			Log           []HealthLog
+		}
 		Status   string
 		Running  bool
 		ExitCode uint8
@@ -142,6 +176,11 @@ func transformContainer(t *testing.T, container inspectOutput) (*ContainerInspec
 		Error:    container.State.Error,
 		Ports:    ports,
 		Binds:    volumes,
+		Health: HealthCheck{
+			Status: container.State.Health.Status,
+			FailingStreak: container.State.Health.FailingStreak,
+			Log: container.State.Health.Log,
+		},
 	}
 
 	return &inspect, nil
