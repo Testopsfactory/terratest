@@ -19,6 +19,9 @@ type BuildOptions struct {
 	// Terratest to not have to support every single command-line option offered by the 'docker build' command, and
 	// solely focus on the most important ones.
 	OtherOptions []string
+
+	// Set one or more loggers that should be used. See the logger package for more info.
+	Log *logger.Loggers
 }
 
 // Build runs the 'docker build' command at the given path with the given options and fails the test if there are any
@@ -29,7 +32,7 @@ func Build(t testing.TestingT, path string, options *BuildOptions) {
 
 // BuildE runs the 'docker build' command at the given path with the given options and returns any errors.
 func BuildE(t testing.TestingT, path string, options *BuildOptions) error {
-	logger.Logf(t, "Running 'docker build' in %s", path)
+	options.Log.Logf(t, "Running 'docker build' in %s", path)
 
 	args, err := formatDockerBuildArgs(path, options)
 	if err != nil {
@@ -39,6 +42,7 @@ func BuildE(t testing.TestingT, path string, options *BuildOptions) error {
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    args,
+		Log:     options.Log,
 	}
 
 	_, buildErr := shell.RunCommandAndGetOutputE(t, cmd)
@@ -57,9 +61,7 @@ func formatDockerBuildArgs(path string, options *BuildOptions) ([]string, error)
 		args = append(args, "--build-arg", arg)
 	}
 
-	for _, opt := range options.OtherOptions {
-		args = append(args, opt)
-	}
+	args = append(args, options.OtherOptions...)
 
 	args = append(args, path)
 

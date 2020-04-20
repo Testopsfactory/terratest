@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/stretchr/testify/require"
 )
@@ -94,6 +95,8 @@ func InspectE(t *testing.T, id string) (*ContainerInspect, error) {
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    []string{"container", "inspect", id},
+		// inspect is a short-running command, don't print the output.
+		Log: logger.With(logger.Discard),
 	}
 
 	out, err := shell.RunCommandAndGetStdOutE(t, cmd)

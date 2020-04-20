@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/gruntwork-io/terratest/modules/testing"
 )
@@ -9,6 +10,8 @@ import (
 type Options struct {
 	WorkingDir string
 	EnvVars    map[string]string
+	// Set one or more loggers that should be used. See the logger package for more info.
+	Log *logger.Loggers
 }
 
 // RunDockerCompose runs docker-compose with the given arguments and options and return stdout/stderr.
@@ -29,6 +32,7 @@ func RunDockerComposeE(t testing.TestingT, options *Options, args ...string) (st
 		Args:       append([]string{"--project-name", t.Name()}, args...),
 		WorkingDir: options.WorkingDir,
 		Env:        options.EnvVars,
+		Log:        options.Log,
 	}
 
 	return shell.RunCommandAndGetOutputE(t, cmd)
