@@ -11,10 +11,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/stretchr/testify/require"
 )
 
 // Command is a simpler struct for defining commands than Go's built-in Cmd.
@@ -27,44 +26,46 @@ type Command struct {
 	Logger *logger.Logger
 }
 
-// RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
+// RunCommand runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself. If
+// there are any errors, fail the test.
 func RunCommand(t testing.TestingT, command Command) {
 	err := RunCommandE(t, command)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
-// RunCommandE runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself.
+// RunCommandE runs a shell command and redirects its stdout and stderr to the stdout of the atomic script itself. Any
+// returned error will be of type ErrWithCmdOutput, containing the output streams and the underlying error.
 func RunCommandE(t testing.TestingT, command Command) error {
-	_, err := RunCommandAndGetOutputE(t, command)
-	return err
+	output, err := runCommand(t, command)
+	if err != nil {
+		return &ErrWithCmdOutput{err, output}
+	}
+	return nil
 }
 
-// RunCommandAndGetOutput runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of that command will also
-// be printed to the stdout and stderr of this Go program to make debugging easier.
+// RunCommandAndGetOutput runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of
+// that command will also be logged with Command.Log to make debugging easier. If there are any errors, fail the test.
 func RunCommandAndGetOutput(t testing.TestingT, command Command) string {
 	out, err := RunCommandAndGetOutputE(t, command)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	return out
 }
 
-// RunCommandAndGetOutputE runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of that command will also
-// be printed to the stdout and stderr of this Go program to make debugging easier.
+// RunCommandAndGetOutputE runs a shell command and returns its stdout and stderr as a string. The stdout and stderr of
+// that command will also be logged with Command.Log to make debugging easier. Any returned error will be of type
+// ErrWithCmdOutput, containing the output streams and the underlying error.
 func RunCommandAndGetOutputE(t testing.TestingT, command Command) (string, error) {
-	allOutput := []string{}
-	err := runCommandAndStoreOutputE(t, command, &allOutput, &allOutput)
+	output, err := runCommand(t, command)
+	if err != nil {
+		return output.Combined(), &ErrWithCmdOutput{err, output}
+	}
 
-	output := strings.Join(allOutput, "\n")
-	return output, err
+	return output.Combined(), nil
 }
 
-// RunCommandAndGetStdOut runs a shell command and returns solely its stdout (but
-// not stderr) as a string. The stdout and stderr of that command will also be
-// printed to the stdout and stderr of this Go program to make debugging easier.
-// If there are any errors, fail the test.
+// RunCommandAndGetStdOut runs a shell command and returns solely its stdout (but not stderr) as a string. The stdout and
+// stderr of that command will also be logged with Command.Log to make debugging easier. If there are any errors, fail
+// the test.
 func RunCommandAndGetStdOut(t testing.TestingT, command Command) string {
 	output, err := RunCommandAndGetStdOutE(t, command)
 	require.NoError(t, err)
@@ -73,20 +74,29 @@ func RunCommandAndGetStdOut(t testing.TestingT, command Command) string {
 
 // RunCommandAndGetStdOutE runs a shell command and returns solely its stdout (but not stderr) as a string. The stdout
 // and stderr of that command will also be printed to the stdout and stderr of this Go program to make debugging easier.
+// Any returned error will be of type ErrWithCmdOutput, containing the output streams and the underlying error.
 func RunCommandAndGetStdOutE(t testing.TestingT, command Command) (string, error) {
-	stdout := []string{}
-	stderr := []string{}
-	err := runCommandAndStoreOutputE(t, command, &stdout, &stderr)
+	output, err := runCommand(t, command)
+	if err != nil {
+		return output.Stdout(), &ErrWithCmdOutput{err, output}
+	}
 
-	output := strings.Join(stdout, "\n")
-	return output, err
+	return output.Stdout(), nil
 }
 
-// runCommandAndStoreOutputE runs a shell command and stores each line from stdout
-// and stderr in the given storedStdout and storedStderr variables, respectively.
-// Depending on the logger, the stdout and stderr of that command will also be
-// printed to the stdout and stderr of this Go program to make debugging easier.
-func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout *[]string, storedStderr *[]string) error {
+type ErrWithCmdOutput struct {
+	Underlying error
+	Output     *output
+}
+
+func (e *ErrWithCmdOutput) Error() string {
+	return fmt.Sprintf("error while running command: %v; %s", e.Underlying, e.Output.Stderr())
+}
+
+// runCommand runs a shell command and stores each line from stdout and stderr in Output. Depending on the logger, the
+// stdout and stderr of that command will also be printed to the stdout and stderr of this Go program to make debugging
+// easier.
+func runCommand(t testing.TestingT, command Command) (*output, error) {
 	command.Logger.Logf(t, "Running command %s with args %s", command.Command, command.Args)
 
 	cmd := exec.Command(command.Command, command.Args...)
@@ -96,66 +106,63 @@ func runCommandAndStoreOutputE(t testing.TestingT, command Command, storedStdout
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := readStdoutAndStderr(t, command.Logger, stdout, stderr, storedStdout, storedStderr); err != nil {
-		return err
+	output, err := readStdoutAndStderr(t, command.Logger, stdout, stderr)
+	if err != nil {
+		return output, err
 	}
 
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return output, cmd.Wait()
 }
 
 // This function captures stdout and stderr into the given variables while still printing it to the stdout and stderr
 // of this Go program
-func readStdoutAndStderr(t testing.TestingT, log *logger.Logger, stdout, stderr io.ReadCloser, storedStdout, storedStderr *[]string) error {
+func readStdoutAndStderr(t testing.TestingT, log *logger.Logger, stdout, stderr io.ReadCloser) (*output, error) {
+	out := newOutput()
 	stdoutReader := bufio.NewReader(stdout)
 	stderrReader := bufio.NewReader(stderr)
 
 	wg := &sync.WaitGroup{}
-	mutex := &sync.Mutex{}
 
 	wg.Add(2)
 	var stdoutErr, stderrErr error
 	go func() {
 		defer wg.Done()
-		stdoutErr = readData(t, log, stdoutReader, mutex, storedStdout)
+		stdoutErr = readData(t, log, stdoutReader, out.stdout)
 	}()
 	go func() {
 		defer wg.Done()
-		stderrErr = readData(t, log, stderrReader, mutex, storedStderr)
+		stderrErr = readData(t, log, stderrReader, out.stderr)
 	}()
 	wg.Wait()
 
 	if stdoutErr != nil {
-		return stdoutErr
+		return out, stdoutErr
 	}
 	if stderrErr != nil {
-		return stderrErr
+		return out, stderrErr
 	}
 
-	return nil
+	return out, nil
 }
 
-func readData(t testing.TestingT, log *logger.Logger, reader *bufio.Reader, mutex *sync.Mutex, allOutput *[]string) error {
+func readData(t testing.TestingT, log *logger.Logger, reader *bufio.Reader, writer io.StringWriter) error {
 	var line string
-	var err error
+	var readErr error
 	for {
-		line, err = reader.ReadString('\n')
+		line, readErr = reader.ReadString('\n')
 
 		// remove newline, our output is in a slice,
 		// one element per line.
@@ -165,21 +172,21 @@ func readData(t testing.TestingT, log *logger.Logger, reader *bufio.Reader, mute
 		// any contents. We could have a line that does
 		// not not have a newline before io.EOF, we still
 		// need to add it to the output.
-		if len(line) == 0 && err == io.EOF {
+		if len(line) == 0 && readErr == io.EOF {
 			break
 		}
 
 		log.Logf(t, line)
-		mutex.Lock()
-		*allOutput = append(*allOutput, line)
-		mutex.Unlock()
+		if _, err := writer.WriteString(line); err != nil {
+			return err
+		}
 
-		if err != nil {
+		if readErr != nil {
 			break
 		}
 	}
-	if err != io.EOF {
-		return err
+	if readErr != io.EOF {
+		return readErr
 	}
 	return nil
 }
@@ -187,6 +194,10 @@ func readData(t testing.TestingT, log *logger.Logger, reader *bufio.Reader, mute
 // GetExitCodeForRunCommandError tries to read the exit code for the error object returned from running a shell command. This is a bit tricky to do
 // in a way that works across platforms.
 func GetExitCodeForRunCommandError(err error) (int, error) {
+	if errWithOutput, ok := err.(*ErrWithCmdOutput); ok {
+		err = errWithOutput.Underlying
+	}
+
 	// http://stackoverflow.com/a/10385867/483528
 	if exitErr, ok := err.(*exec.ExitError); ok {
 		// The program has exited with an exit code != 0
