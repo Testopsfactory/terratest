@@ -92,6 +92,53 @@ func TestOutputNotMapError(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestOutputListOfMaps(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-listofmaps", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+	out := OutputListOfMaps(t, options, "list_of_maps")
+
+	expectedLen := 2
+	expectedMap1 := map[string]string{
+		"one":   "one",
+		"two":   "two",
+		"three": "three",
+	}
+
+	expectedMap2 := map[string]string{
+		"one":   "uno",
+		"two":   "dos",
+		"three": "tres",
+	}
+
+	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
+	require.Equal(t, out[0], expectedMap1, "First map should be %q, got %q", expectedMap1, out[0])
+	require.Equal(t, out[1], expectedMap2, "First map should be %q, got %q", expectedMap2, out[1])
+}
+
+func TestOutputNotListOfMapsError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-listofmaps", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+	_, err = OutputMapE(t, options, "not_list_of_maps")
+
+	require.Error(t, err)
+}
+
 func TestOutputsForKeys(t *testing.T) {
 	t.Parallel()
 

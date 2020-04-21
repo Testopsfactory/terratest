@@ -49,6 +49,42 @@ func OutputRequiredE(t testing.TestingT, options *Options, key string) (string, 
 	return out, nil
 }
 
+// OutputListOfMaps calls terraform output for the given variable and returns its value as a list of maps.
+// If the output value is not a list of maps, then it fails the test.
+func OutputListOfMaps(t testing.TestingT, options *Options, key string) []map[string]string {
+	out, err := OutputListOfMapsE(t, options, key)
+	require.NoError(t, err)
+	return out
+}
+
+// OutputListOfMapsE calls terraform output for the given variable and returns its value as a list of maps.
+// If the output value is not a list of maps, then it returns an error.
+func OutputListOfMapsE(t testing.TestingT, options *Options, key string) ([]map[string]string, error) {
+	out, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
+	if err != nil {
+		return nil, err
+	}
+
+	var output []map[string]interface{}
+	if err := json.Unmarshal([]byte(out), &output); err != nil {
+		return nil, err
+	}
+
+	listofMaps := []map[string]string{}
+
+	for _, child := range output {
+		childMap := make(map[string]string)
+
+		for k, v := range child {
+			childMap[k] = fmt.Sprintf("%v", v)
+		}
+
+		listofMaps = append(listofMaps, childMap)
+	}
+
+	return listofMaps, nil
+}
+
 // OutputList calls terraform output for the given variable and returns its value as a list.
 // If the output value is not a list type, then it fails the test.
 func OutputList(t testing.TestingT, options *Options, key string) []string {
