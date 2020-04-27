@@ -54,6 +54,10 @@ func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, rele
 		// expects the relative path from the chart.
 		args = append(args, "--show-only", templateFile)
 	}
+	// deal with --api-versions
+	for _, api := range options.ApiVersions {
+		args = append(args, "--api-versions", api)
+	}
 	// ... and add the name and chart at the end as the command expects
 	args = append(args, releaseName, chartDir)
 

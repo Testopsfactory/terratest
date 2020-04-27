@@ -13,4 +13,5 @@ type Options struct {
 	HomePath       string              // The path to the helm home to use when calling out to helm. Empty string means use default ($HOME/.helm).
 	EnvVars        map[string]string   // Environment variables to set when running helm
 	Version        string              // Version of chart
+	ApiVersions    []string            // List of api-versions to use with the helm template command
 }
