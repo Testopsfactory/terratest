@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strings"
@@ -57,7 +58,7 @@ echo_stderr
 	}
 
 	out := RunCommandAndGetOutput(t, cmd)
-	assert.Equal(t, strings.TrimSpace(out), expectedText)
+	assert.Equal(t, expectedText, strings.TrimSpace(out))
 }
 
 func TestRunCommandAndGetOutputConcurrency(t *testing.T) {
@@ -93,6 +94,34 @@ wait
 	out := RunCommandAndGetOutput(t, cmd)
 	stdoutReg := regexp.MustCompile(uniqueStdout)
 	stderrReg := regexp.MustCompile(uniqueStderr)
-	assert.Equal(t, len(stdoutReg.FindAllString(out, -1)), 500)
-	assert.Equal(t, len(stderrReg.FindAllString(out, -1)), 500)
+	assert.Equal(t, 500, len(stdoutReg.FindAllString(out, -1)))
+	assert.Equal(t, 500, len(stderrReg.FindAllString(out, -1)))
+}
+
+func TestRunCommandWithHugeLineOutput(t *testing.T) {
+	t.Parallel()
+
+	// generate a ~100KB line
+	bashCode := fmt.Sprintf(`
+for i in {0..35000}
+do
+  echo -n foo
+done
+echo
+`)
+
+	cmd := Command{
+		Command: "bash",
+		Args:    []string{"-c", bashCode},
+	}
+
+	out, err := RunCommandAndGetOutputE(t, cmd)
+	assert.NoError(t, err)
+
+	var buffer bytes.Buffer
+	for i := 0; i <= 35000; i++ {
+		buffer.WriteString("foo")
+	}
+
+	assert.Equal(t, out, buffer.String())
 }
