@@ -101,12 +101,17 @@ func parseMap(m map[string]interface{}) (map[string]interface{}, error) {
 	return result, nil
 }
 
+// OutputMapOfObjects calls terraform output for the given variable and returns its value as a map of lists/maps.
+// If the output value is not a map of lists/maps, then it fails the test.
 func OutputMapOfObjects(t testing.TestingT, options *Options, key string) map[string]interface{} {
 	out, err := OutputMapOfObjectsE(t, options, key)
 	require.NoError(t, err)
 	return out
 }
 
+// OutputMapOfObjectsE calls terraform output for the given variable and returns its value as a map of lists/maps.
+// Also returns an error object if an error was generated.
+// If the output value is not a map of lists/maps, then it fails the test.
 func OutputMapOfObjectsE(t testing.TestingT, options *Options, key string) (map[string]interface{}, error) {
 	out, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
 
@@ -131,16 +136,17 @@ func OutputMapOfObjectsE(t testing.TestingT, options *Options, key string) (map[
 	return result, nil
 }
 
-// OutputListOfObjects calls terraform output for the given variable and returns its value as a list of maps.
-// If the output value is not a list of maps, then it fails the test.
+// OutputListOfObjects calls terraform output for the given variable and returns its value as a list of maps/lists.
+// If the output value is not a list of maps/lists, then it fails the test.
 func OutputListOfObjects(t testing.TestingT, options *Options, key string) []map[string]interface{} {
 	out, err := OutputListOfObjectsE(t, options, key)
 	require.NoError(t, err)
 	return out
 }
 
-// OutputListOfObjectsE calls terraform output for the given variable and returns its value as a list of maps.
-// If the output value is not a list of maps, then it returns an error.
+// OutputListOfObjectsE calls terraform output for the given variable and returns its value as a list of maps/lists.
+// Also returns an error object if an error was generated.
+// If the output value is not a list of maps/lists, then it fails the test.
 func OutputListOfObjectsE(t testing.TestingT, options *Options, key string) ([]map[string]interface{}, error) {
 	out, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
 
