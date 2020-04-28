@@ -92,10 +92,10 @@ func TestOutputNotMapError(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestOutputListOfMaps(t *testing.T) {
+func TestOutputMapOfObjects(t *testing.T) {
 	t.Parallel()
 
-	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-listofmaps", t.Name())
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-mapofobjects", t.Name())
 	require.NoError(t, err)
 
 	options := &Options{
@@ -103,19 +103,83 @@ func TestOutputListOfMaps(t *testing.T) {
 	}
 
 	InitAndApply(t, options)
-	out := OutputListOfMaps(t, options, "list_of_maps")
+	out := OutputMapOfObjects(t, options, "map_of_objects")
 
-	expectedLen := 2
-	expectedMap1 := map[string]string{
-		"one":   "one",
-		"two":   "two",
-		"three": "three",
+	nestedMap1 := map[string]interface{}{
+		"four": 4,
+		"five": "five",
 	}
 
-	expectedMap2 := map[string]string{
-		"one":   "uno",
-		"two":   "dos",
-		"three": "tres",
+	nestedList1 := []map[string]interface{}{
+		map[string]interface{}{
+			"six":   6,
+			"seven": "seven",
+		},
+	}
+
+	expectedMap1 := map[string]interface{}{
+		"one":       1,
+		"two":       "two",
+		"three":     "three",
+		"nest":      nestedMap1,
+		"nest_list": nestedList1,
+	}
+
+	require.Equal(t, expectedMap1, out)
+}
+
+func TestOutputNotMapOfObjectsError(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-mapofobjects", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+	_, err = OutputMapOfObjectsE(t, options, "not_map_of_objects")
+
+	require.Error(t, err)
+}
+
+func TestOutputListOfObjects(t *testing.T) {
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-listofobjects", t.Name())
+	require.NoError(t, err)
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+	out := OutputListOfObjects(t, options, "list_of_maps")
+
+	expectedLen := 2
+	nestedMap1 := map[string]interface{}{
+		"four": 4,
+		"five": "five",
+	}
+	nestedList1 := []map[string]interface{}{
+		map[string]interface{}{
+			"four": 4,
+			"five": "five",
+		},
+	}
+	expectedMap1 := map[string]interface{}{
+		"one":   1,
+		"two":   "two",
+		"three": "three",
+		"more":  nestedMap1,
+	}
+
+	expectedMap2 := map[string]interface{}{
+		"one":   "one",
+		"two":   2,
+		"three": 3,
+		"more":  nestedList1,
 	}
 
 	require.Len(t, out, expectedLen, "Output should contain %d items", expectedLen)
@@ -123,10 +187,10 @@ func TestOutputListOfMaps(t *testing.T) {
 	require.Equal(t, out[1], expectedMap2, "First map should be %q, got %q", expectedMap2, out[1])
 }
 
-func TestOutputNotListOfMapsError(t *testing.T) {
+func TestOutputNotListOfObjectsError(t *testing.T) {
 	t.Parallel()
 
-	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-listofmaps", t.Name())
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-listofobjects", t.Name())
 	require.NoError(t, err)
 
 	options := &Options{
@@ -134,7 +198,7 @@ func TestOutputNotListOfMapsError(t *testing.T) {
 	}
 
 	InitAndApply(t, options)
-	_, err = OutputMapE(t, options, "not_list_of_maps")
+	_, err = OutputListOfObjectsE(t, options, "not_list_of_maps")
 
 	require.Error(t, err)
 }

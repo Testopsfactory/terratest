@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -49,40 +50,123 @@ func OutputRequiredE(t testing.TestingT, options *Options, key string) (string, 
 	return out, nil
 }
 
-// OutputListOfMaps calls terraform output for the given variable and returns its value as a list of maps.
-// If the output value is not a list of maps, then it fails the test.
-func OutputListOfMaps(t testing.TestingT, options *Options, key string) []map[string]string {
-	out, err := OutputListOfMapsE(t, options, key)
+func parseListOfMaps(l []interface{}) ([]map[string]interface{}, error) {
+	var result []map[string]interface{}
+
+	for _, v := range l {
+		m, err := parseMap(v.(map[string]interface{}))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, m)
+	}
+
+	return result, nil
+
+}
+
+// parseMap takes a map of interfaces and parses the types. Is also recursive for nested objects.
+func parseMap(m map[string]interface{}) (map[string]interface{}, error) {
+
+	var result map[string]interface{}
+	result = make(map[string]interface{})
+
+	for k, v := range m {
+		switch v.(type) {
+		case map[string]interface{}:
+			nestedMap, err := parseMap(v.(map[string]interface{}))
+			if err != nil {
+				return nil, err
+			}
+			result[k] = nestedMap
+		case []interface{}:
+			nestedList, err := parseListOfMaps(v.([]interface{}))
+			if err != nil {
+				return nil, err
+			}
+			result[k] = nestedList
+		default:
+			// Test for int conversion
+			testInt, err := strconv.ParseInt((fmt.Sprintf("%v", v)), 10, 0)
+			if err == nil {
+				result[k] = int(testInt)
+				continue
+			}
+
+			result[k] = fmt.Sprintf("%v", v)
+		}
+
+	}
+
+	return result, nil
+}
+
+func OutputMapOfObjects(t testing.TestingT, options *Options, key string) map[string]interface{} {
+	out, err := OutputMapOfObjectsE(t, options, key)
 	require.NoError(t, err)
 	return out
 }
 
-// OutputListOfMapsE calls terraform output for the given variable and returns its value as a list of maps.
-// If the output value is not a list of maps, then it returns an error.
-func OutputListOfMapsE(t testing.TestingT, options *Options, key string) ([]map[string]string, error) {
+func OutputMapOfObjectsE(t testing.TestingT, options *Options, key string) (map[string]interface{}, error) {
 	out, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var output map[string]interface{}
+
+	if err := json.Unmarshal([]byte(out), &output); err != nil {
+		return nil, err
+	}
+
+	var result map[string]interface{}
+
+	result, err = parseMap(output)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// OutputListOfObjects calls terraform output for the given variable and returns its value as a list of maps.
+// If the output value is not a list of maps, then it fails the test.
+func OutputListOfObjects(t testing.TestingT, options *Options, key string) []map[string]interface{} {
+	out, err := OutputListOfObjectsE(t, options, key)
+	require.NoError(t, err)
+	return out
+}
+
+// OutputListOfObjectsE calls terraform output for the given variable and returns its value as a list of maps.
+// If the output value is not a list of maps, then it returns an error.
+func OutputListOfObjectsE(t testing.TestingT, options *Options, key string) ([]map[string]interface{}, error) {
+	out, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
+
 	if err != nil {
 		return nil, err
 	}
 
 	var output []map[string]interface{}
+
 	if err := json.Unmarshal([]byte(out), &output); err != nil {
 		return nil, err
 	}
 
-	listofMaps := []map[string]string{}
+	var result []map[string]interface{}
 
-	for _, child := range output {
-		childMap := make(map[string]string)
+	for _, m := range output {
+		newMap, err := parseMap(m)
 
-		for k, v := range child {
-			childMap[k] = fmt.Sprintf("%v", v)
+		if err != nil {
+			return nil, err
 		}
 
-		listofMaps = append(listofMaps, childMap)
+		result = append(result, newMap)
 	}
 
-	return listofMaps, nil
+	return result, nil
 }
 
 // OutputList calls terraform output for the given variable and returns its value as a list.
