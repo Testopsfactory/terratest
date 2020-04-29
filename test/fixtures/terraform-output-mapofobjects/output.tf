@@ -1,8 +1,10 @@
 output "map_of_objects" {
   value = {
-    one   = 1
-    two   = "two"
-    three = "three"
+    somebool  = true
+    somefloat = 1.1
+    one       = 1
+    two       = "two"
+    three     = "three"
     nest = {
       four = 4
       five = "five"

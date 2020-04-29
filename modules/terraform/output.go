@@ -85,14 +85,18 @@ func parseMap(m map[string]interface{}) (map[string]interface{}, error) {
 				return nil, err
 			}
 			result[k] = nestedList
-		default:
-			// Test for int conversion
+		case bool:
+			result[k] = v
+		case float64:
+			// Test for int conversion as well. If it can be an int it will be.
 			testInt, err := strconv.ParseInt((fmt.Sprintf("%v", v)), 10, 0)
 			if err == nil {
 				result[k] = int(testInt)
-				continue
+			} else {
+				result[k] = v
 			}
-
+		default:
+			// Anything else will be stored in a string
 			result[k] = fmt.Sprintf("%v", v)
 		}
 

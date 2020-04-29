@@ -118,6 +118,8 @@ func TestOutputMapOfObjects(t *testing.T) {
 	}
 
 	expectedMap1 := map[string]interface{}{
+		"somebool":  true,
+		"somefloat": 1.1,
 		"one":       1,
 		"two":       "two",
 		"three":     "three",
