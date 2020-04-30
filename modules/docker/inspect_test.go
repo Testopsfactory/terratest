@@ -98,6 +98,50 @@ func TestInspectWithUnknownContainerID(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestInspectReturnsCorrectHealthCheckWhenStarting(t *testing.T) {
+	t.Parallel()
+
+	c := runWithHealthCheck(t, "service nginx status", time.Second, 0)
+
+	require.Equal(t, "starting", c.Health.Status)
+	require.Equal(t, uint8(0), c.Health.FailingStreak)
+	require.Emptyf(t, c.Health.Log, "Mising log of health check runs")
+}
+
+func TestInspectReturnsCorrectHealthCheckWhenUnhealthy(t *testing.T) {
+	t.Parallel()
+
+	c := runWithHealthCheck(t, "service nginx status", time.Second, 5 * time.Second)
+
+	require.Equal(t, "unhealthy", c.Health.Status)
+	require.NotEqual(t, uint8(0), c.Health.FailingStreak)
+	require.NotEmptyf(t, c.Health.Log, "Mising log of health check runs")
+	require.Equal(t, uint8(0x7f), c.Health.Log[0].ExitCode)
+	require.Equal(t, "/bin/sh: service nginx status: not found\n", c.Health.Log[0].Output)
+}
+
+func runWithHealthCheck(t *testing.T, check string, frequency time.Duration, delay time.Duration) *ContainerInspect {
+	// append timestamp to container name to allow running tests in parallel
+	name := "inspect-test-" + random.UniqueId()
+
+	// running the container detached to allow inspection while it is running
+	options := &RunOptions{
+		Detach: true,
+		Name:   name,
+		OtherOptions: []string {
+			fmt.Sprintf("--health-cmd='%s'", check),
+			fmt.Sprintf("--health-interval=%s", frequency),
+		},
+	}
+
+	id := RunAndGetID(t, dockerInspectTestImage, options)
+	defer removeContainer(t, id)
+
+	time.Sleep(delay)
+
+	return Inspect(t, id)
+}
+
 func runWithVolume(t *testing.T, volume string) *ContainerInspect {
 	options := &RunOptions{
 		Detach:  true,
