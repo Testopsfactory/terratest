@@ -92,11 +92,7 @@ type inspectOutput struct {
 	Created string
 	Name    string
 	State   struct {
-		Health   struct {
-			Status        string
-			FailingStreak uint8
-			Log           []HealthLog
-		}
+		Health   HealthCheck
 		Status   string
 		Running  bool
 		ExitCode uint8
