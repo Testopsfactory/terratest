@@ -111,7 +111,7 @@ func TestInspectReturnsCorrectHealthCheckWhenStarting(t *testing.T) {
 func TestInspectReturnsCorrectHealthCheckWhenUnhealthy(t *testing.T) {
 	t.Parallel()
 
-	c := runWithHealthCheck(t, "service nginx status", time.Second, 5 * time.Second)
+	c := runWithHealthCheck(t, "service nginx status", time.Second, 5*time.Second)
 
 	require.Equal(t, "unhealthy", c.Health.Status)
 	require.NotEqual(t, uint8(0), c.Health.FailingStreak)
@@ -128,7 +128,7 @@ func runWithHealthCheck(t *testing.T, check string, frequency time.Duration, del
 	options := &RunOptions{
 		Detach: true,
 		Name:   name,
-		OtherOptions: []string {
+		OtherOptions: []string{
 			fmt.Sprintf("--health-cmd='%s'", check),
 			fmt.Sprintf("--health-interval=%s", frequency),
 		},

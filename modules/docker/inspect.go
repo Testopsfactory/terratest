@@ -78,13 +78,14 @@ type HealthLog struct {
 
 	// End time of health check
 	End string
-	
+
 	// Exit code of health check
 	ExitCode uint8
-	
+
 	// Output of health check
 	Output string
 }
+
 // inspectOutput defines options that will be returned by 'docker inspect', in JSON format.
 // Not all options are included here, only the ones that we might need
 type inspectOutput struct {
@@ -173,9 +174,9 @@ func transformContainer(t *testing.T, container inspectOutput) (*ContainerInspec
 		Ports:    ports,
 		Binds:    volumes,
 		Health: HealthCheck{
-			Status: container.State.Health.Status,
+			Status:        container.State.Health.Status,
 			FailingStreak: container.State.Health.FailingStreak,
-			Log: container.State.Health.Log,
+			Log:           container.State.Health.Log,
 		},
 	}
 
