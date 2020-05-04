@@ -50,6 +50,8 @@ func OutputRequiredE(t testing.TestingT, options *Options, key string) (string, 
 	return out, nil
 }
 
+// parseListOfMaps takes a list of maps and parses the types.
+// It is mainly a wrapper for parseMap to support lists.
 func parseListOfMaps(l []interface{}) ([]map[string]interface{}, error) {
 	var result []map[string]interface{}
 
@@ -65,7 +67,17 @@ func parseListOfMaps(l []interface{}) ([]map[string]interface{}, error) {
 
 }
 
-// parseMap takes a map of interfaces and parses the types. Is also recursive for nested objects.
+// parseMap takes a map of interfaces and parses the types.
+// It is recursive which allows it to support complex nested structures.
+// At this time, this function uses https://golang.org/pkg/strconv/#ParseInt
+// to determine if a number should be a float or an int. For this reason, if you are
+// expecting a float with a zero as the "tenth" you will need to manually convert
+// the return value to a float.
+//
+// This function exists to map return values of the terraform outputs to intuitive
+// types. ie, if you are expecting a value of "1" you are implicitly expecting an int.
+//
+// This also allows the work to be executed recursively to support complex data types.
 func parseMap(m map[string]interface{}) (map[string]interface{}, error) {
 
 	var result map[string]interface{}
