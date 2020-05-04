@@ -85,7 +85,7 @@ func parseMap(m map[string]interface{}) (map[string]interface{}, error) {
 				return nil, err
 			}
 			result[k] = nestedList
-		case int, float64:
+		case float64:
 			testInt, err := strconv.ParseInt((fmt.Sprintf("%v", vt)), 10, 0)
 			if err == nil {
 				result[k] = int(testInt)
