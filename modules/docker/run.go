@@ -48,8 +48,8 @@ type RunOptions struct {
 	// solely focus on the most important ones.
 	OtherOptions []string
 
-	// Set one or more loggers that should be used. See the logger package for more info.
-	Log *logger.Loggers
+	// Set a logger that should be used. See the logger package for more info.
+	Logger *logger.Logger
 }
 
 // Run runs the 'docker run' command on the given image with the given options and return stdout/stderr. This method
@@ -62,7 +62,7 @@ func Run(t testing.TestingT, image string, options *RunOptions) string {
 
 // RunE runs the 'docker run' command on the given image with the given options and return stdout/stderr, or any error.
 func RunE(t testing.TestingT, image string, options *RunOptions) (string, error) {
-	options.Log.Logf(t, "Running 'docker run' on image '%s'", image)
+	options.Logger.Logf(t, "Running 'docker run' on image '%s'", image)
 
 	args, err := formatDockerRunArgs(image, options)
 	if err != nil {
@@ -72,7 +72,7 @@ func RunE(t testing.TestingT, image string, options *RunOptions) (string, error)
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    args,
-		Log:     options.Log,
+		Logger:  options.Logger,
 	}
 
 	return shell.RunCommandAndGetOutputE(t, cmd)
@@ -89,7 +89,7 @@ func RunAndGetID(t testing.TestingT, image string, options *RunOptions) string {
 // RunAndGetIDE runs the 'docker run' command on the given image with the given options and returns the container ID
 // that is returned in stdout, or any error.
 func RunAndGetIDE(t testing.TestingT, image string, options *RunOptions) (string, error) {
-	options.Log.Logf(t, "Running 'docker run' on image '%s', returning stdout", image)
+	options.Logger.Logf(t, "Running 'docker run' on image '%s', returning stdout", image)
 
 	args, err := formatDockerRunArgs(image, options)
 	if err != nil {
@@ -99,7 +99,7 @@ func RunAndGetIDE(t testing.TestingT, image string, options *RunOptions) (string
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    args,
-		Log:     options.Log,
+		Logger:  options.Logger,
 	}
 
 	return shell.RunCommandAndGetStdOutE(t, cmd)

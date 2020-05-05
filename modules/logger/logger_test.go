@@ -21,41 +21,25 @@ func TestDoLog(t *testing.T) {
 	assert.Regexp(t, fmt.Sprintf("^%s .+? [[:word:]]+.go:[0-9]+: %s$", t.Name(), text), strings.TrimSpace(buffer.String()))
 }
 
-func TestVersion(t *testing.T) {
-	t.Parallel()
+type customLogger struct {
+	logs []string
+}
 
-	cases := []struct {
-		version      string
-		hasStreaming bool
-	}{
-		{"go1.14", true},
-		{"go1.14.1", true},
-		{"go1.13.5", false},
-		{"go1.15", true},
-		{"ae0365fab0", false}, // simulate some commit ID
-	}
-
-	for _, test := range cases {
-		assert.Equal(t, test.hasStreaming, hasStreamingLogf(test.version))
-	}
+func (c *customLogger) Logf(t tftesting.TestingT, format string, args ...interface{}) {
+	c.logs = append(c.logs, fmt.Sprintf(format, args...))
 }
 
 func TestCustomLogger(t *testing.T) {
-	var logs []string
-	customLogf := func(t tftesting.TestingT, format string, args ...interface{}) {
-		logs = append(logs, fmt.Sprintf(format, args...))
-	}
+	Logf(t, "this should be logged with the default logger")
 
-	Logf(t, "this should be logged with legacylogger or testing.T if go >=1.14")
-	var l *Loggers
+	var l *Logger
+	l.Logf(t, "this should be logged with the default logger too")
 
-	l.Logf(t, "this should be logged with legacylogger or testing.T if go >=1.14")
-	l = With()
-	l.Logf(t, "this should be logged with legacylogger or testing.T if go >=1.14")
+	l = New(nil)
+	l.Logf(t, "this should be logged with the default logger too!")
 
-	// try all loggers, though this may spam the output a bit.
-	l = With(customLogf, Logger, TestingT, Discard)
-
+	c := &customLogger{}
+	l = New(c)
 	l.Logf(t, "log output 1")
 	l.Logf(t, "log output 2")
 
@@ -63,8 +47,8 @@ func TestCustomLogger(t *testing.T) {
 		l.Logf(t, "subtest log")
 	})
 
-	assert.Len(t, logs, 3)
-	assert.Equal(t, "log output 1", logs[0])
-	assert.Equal(t, "log output 2", logs[1])
-	assert.Equal(t, "subtest log", logs[2])
+	assert.Len(t, c.logs, 3)
+	assert.Equal(t, "log output 1", c.logs[0])
+	assert.Equal(t, "log output 2", c.logs[1])
+	assert.Equal(t, "subtest log", c.logs[2])
 }

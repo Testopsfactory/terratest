@@ -96,7 +96,7 @@ func InspectE(t *testing.T, id string) (*ContainerInspect, error) {
 		Command: "docker",
 		Args:    []string{"container", "inspect", id},
 		// inspect is a short-running command, don't print the output.
-		Log: logger.With(logger.Discard),
+		Logger: logger.Discard,
 	}
 
 	out, err := shell.RunCommandAndGetStdOutE(t, cmd)

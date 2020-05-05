@@ -10,8 +10,8 @@ import (
 type Options struct {
 	WorkingDir string
 	EnvVars    map[string]string
-	// Set one or more loggers that should be used. See the logger package for more info.
-	Log *logger.Loggers
+	// Set a logger that should be used. See the logger package for more info.
+	Logger *logger.Logger
 }
 
 // RunDockerCompose runs docker-compose with the given arguments and options and return stdout/stderr.
@@ -32,7 +32,7 @@ func RunDockerComposeE(t testing.TestingT, options *Options, args ...string) (st
 		Args:       append([]string{"--project-name", t.Name()}, args...),
 		WorkingDir: options.WorkingDir,
 		Env:        options.EnvVars,
-		Log:        options.Log,
+		Logger:     options.Logger,
 	}
 
 	return shell.RunCommandAndGetOutputE(t, cmd)

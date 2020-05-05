@@ -15,7 +15,7 @@ func generateCommand(options *Options, args ...string) shell.Command {
 		Args:       args,
 		WorkingDir: options.TerraformDir,
 		Env:        options.EnvVars,
-		Log:        options.Log,
+		Logger:     options.Logger,
 	}
 	return cmd
 }
@@ -90,7 +90,7 @@ func GetExitCodeForTerraformCommand(t testing.TestingT, additionalOptions *Optio
 func GetExitCodeForTerraformCommandE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (int, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	additionalOptions.Log.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
+	additionalOptions.Logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
 	cmd := generateCommand(options, args...)
 	_, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err == nil {

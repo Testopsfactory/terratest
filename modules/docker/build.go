@@ -20,8 +20,8 @@ type BuildOptions struct {
 	// solely focus on the most important ones.
 	OtherOptions []string
 
-	// Set one or more loggers that should be used. See the logger package for more info.
-	Log *logger.Loggers
+	// Set a logger that should be used. See the logger package for more info.
+	Logger *logger.Logger
 }
 
 // Build runs the 'docker build' command at the given path with the given options and fails the test if there are any
@@ -32,7 +32,7 @@ func Build(t testing.TestingT, path string, options *BuildOptions) {
 
 // BuildE runs the 'docker build' command at the given path with the given options and returns any errors.
 func BuildE(t testing.TestingT, path string, options *BuildOptions) error {
-	options.Log.Logf(t, "Running 'docker build' in %s", path)
+	options.Logger.Logf(t, "Running 'docker build' in %s", path)
 
 	args, err := formatDockerBuildArgs(path, options)
 	if err != nil {
@@ -42,7 +42,7 @@ func BuildE(t testing.TestingT, path string, options *BuildOptions) error {
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    args,
-		Log:     options.Log,
+		Logger:  options.Logger,
 	}
 
 	_, buildErr := shell.RunCommandAndGetOutputE(t, cmd)

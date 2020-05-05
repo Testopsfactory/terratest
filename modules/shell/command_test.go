@@ -90,7 +90,7 @@ wait
 	cmd := Command{
 		Command: "bash",
 		Args:    []string{"-c", bashCode},
-		Log:     logger.With(logger.Discard),
+		Logger:  logger.Discard,
 	}
 
 	out := RunCommandAndGetOutput(t, cmd)
@@ -115,7 +115,7 @@ echo
 	cmd := Command{
 		Command: "bash",
 		Args:    []string{"-c", bashCode},
-		Log:     logger.With(logger.Discard), // don't print that line to stdout
+		Logger:  logger.Discard, // don't print that line to stdout
 	}
 
 	out, err := RunCommandAndGetOutputE(t, cmd)

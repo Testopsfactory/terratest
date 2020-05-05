@@ -14,5 +14,5 @@ type Options struct {
 	HomePath       string              // The path to the helm home to use when calling out to helm. Empty string means use default ($HOME/.helm).
 	EnvVars        map[string]string   // Environment variables to set when running helm
 	Version        string              // Version of chart
-	Log            *logger.Loggers     // Set one or more loggers that should be used. See the logger package for more info.
+	Logger         *logger.Logger      // Set a non-default logger that should be used. See the logger package for more info.
 }

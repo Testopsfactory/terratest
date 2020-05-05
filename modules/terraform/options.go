@@ -25,5 +25,5 @@ type Options struct {
 	NoColor                  bool                   // Whether the -no-color flag will be set for any Terraform command or not
 	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
 	NoStderr                 bool                   // Disable stderr redirection
-	Log                      *logger.Loggers        // Set one or more loggers that should be used. See the logger package for more info.
+	Logger                   *logger.Logger         // Set a non-default logger that should be used. See the logger package for more info.
 }

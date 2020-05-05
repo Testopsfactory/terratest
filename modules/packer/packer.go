@@ -27,7 +27,7 @@ type Options struct {
 	MaxRetries         int               // Maximum number of times to retry errors matching RetryableErrors
 	TimeBetweenRetries time.Duration     // The amount of time to wait between retries
 	WorkingDir         string            // The directory to run packer in
-	Log                *logger.Loggers
+	Logger             *logger.Logger    // If set, use a non-default logger
 }
 
 // BuildArtifacts can take a map of identifierName <-> Options and then parallelize
@@ -89,7 +89,7 @@ func BuildArtifact(t testing.TestingT, options *Options) string {
 
 // BuildArtifactE builds the given Packer template and return the generated Artifact ID.
 func BuildArtifactE(t testing.TestingT, options *Options) (string, error) {
-	options.Log.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
+	options.Logger.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
 
 	cmd := shell.Command{
 		Command:    "packer",
