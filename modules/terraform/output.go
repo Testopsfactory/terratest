@@ -80,8 +80,7 @@ func parseListOfMaps(l []interface{}) ([]map[string]interface{}, error) {
 // This also allows the work to be executed recursively to support complex data types.
 func parseMap(m map[string]interface{}) (map[string]interface{}, error) {
 
-	var result map[string]interface{}
-	result = make(map[string]interface{})
+	result := make(map[string]interface{})
 
 	for k, v := range m {
 		switch vt := v.(type) {
@@ -137,15 +136,7 @@ func OutputMapOfObjectsE(t testing.TestingT, options *Options, key string) (map[
 		return nil, err
 	}
 
-	var result map[string]interface{}
-
-	result, err = parseMap(output)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return parseMap(output)
 }
 
 // OutputListOfObjects calls terraform output for the given variable and returns its value as a list of maps/lists.
