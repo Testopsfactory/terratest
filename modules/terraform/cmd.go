@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gruntwork-io/terratest/modules/collections"
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -16,6 +15,7 @@ func generateCommand(options *Options, args ...string) shell.Command {
 		Args:       args,
 		WorkingDir: options.TerraformDir,
 		Env:        options.EnvVars,
+		Logger:     options.Logger,
 	}
 	return cmd
 }
@@ -90,7 +90,7 @@ func GetExitCodeForTerraformCommand(t testing.TestingT, additionalOptions *Optio
 func GetExitCodeForTerraformCommandE(t testing.TestingT, additionalOptions *Options, additionalArgs ...string) (int, error) {
 	options, args := GetCommonOptions(additionalOptions, additionalArgs...)
 
-	logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
+	additionalOptions.Logger.Logf(t, "Running %s with args %v", options.TerraformBinary, args)
 	cmd := generateCommand(options, args...)
 	_, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err == nil {

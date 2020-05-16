@@ -61,6 +61,7 @@ func RunHelmCommandAndGetOutputE(t testing.TestingT, options *Options, cmd strin
 		Args:       args,
 		WorkingDir: ".",
 		Env:        options.EnvVars,
+		Logger:     options.Logger,
 	}
 	return shell.RunCommandAndGetOutputE(t, helmCmd)
 }

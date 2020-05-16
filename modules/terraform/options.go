@@ -3,6 +3,7 @@ package terraform
 import (
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/ssh"
 )
 
@@ -24,4 +25,5 @@ type Options struct {
 	NoColor                  bool                   // Whether the -no-color flag will be set for any Terraform command or not
 	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
 	NoStderr                 bool                   // Disable stderr redirection
+	Logger                   *logger.Logger         // Set a non-default logger that should be used. See the logger package for more info.
 }

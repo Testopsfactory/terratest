@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
@@ -89,6 +90,7 @@ wait
 	cmd := Command{
 		Command: "bash",
 		Args:    []string{"-c", bashCode},
+		Logger:  logger.Discard,
 	}
 
 	out := RunCommandAndGetOutput(t, cmd)
@@ -113,6 +115,7 @@ echo
 	cmd := Command{
 		Command: "bash",
 		Args:    []string{"-c", bashCode},
+		Logger:  logger.Discard, // don't print that line to stdout
 	}
 
 	out, err := RunCommandAndGetOutputE(t, cmd)
