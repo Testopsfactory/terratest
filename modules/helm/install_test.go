@@ -62,17 +62,7 @@ func TestRemoteChartInstall(t *testing.T) {
 	// Fix chart version and retry install
 	options.Version = "2.3.0"
 	require.NoError(t, InstallE(t, options, helmChart, releaseName))
-
-	// Get pod and wait for it to be avaialable
-	// To get the pod, we need to filter it using the labels that the helm chart creates
-	filters := metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("app=chartmuseum,release=%s", releaseName),
-	}
-	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, 1, 30, 10*time.Second)
-	pods := k8s.ListPods(t, kubectlOptions, filters)
-	for _, pod := range pods {
-		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, 30, 10*time.Second)
-	}
+	waitForRemoteChartPods(t, kubectlOptions, releaseName, 1)
 
 	// Verify service is accessible. Wait for it to become available and then hit the endpoint.
 	// Service name is RELEASE_NAME-CHART_NAME
@@ -94,4 +84,17 @@ func TestRemoteChartInstall(t *testing.T) {
 			return statusCode == 200
 		},
 	)
+}
+
+func waitForRemoteChartPods(t *testing.T, kubectlOptions *k8s.KubectlOptions, releaseName string, podCount int) {
+	// Get pod and wait for it to be avaialable
+	// To get the pod, we need to filter it using the labels that the helm chart creates
+	filters := metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("app=chartmuseum,release=%s", releaseName),
+	}
+	k8s.WaitUntilNumPodsCreated(t, kubectlOptions, filters, podCount, 30, 10*time.Second)
+	pods := k8s.ListPods(t, kubectlOptions, filters)
+	for _, pod := range pods {
+		k8s.WaitUntilPodAvailable(t, kubectlOptions, pod.Name, 30, 10*time.Second)
+	}
 }
