@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"context"
+
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -22,5 +24,5 @@ func GetSecretE(t testing.TestingT, options *KubectlOptions, secretName string) 
 	if err != nil {
 		return nil, err
 	}
-	return clientset.CoreV1().Secrets(options.Namespace).Get(secretName, metav1.GetOptions{})
+	return clientset.CoreV1().Secrets(options.Namespace).Get(context.Background(), secretName, metav1.GetOptions{})
 }

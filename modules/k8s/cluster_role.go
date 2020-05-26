@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"context"
+
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -20,5 +22,5 @@ func GetClusterRoleE(t testing.TestingT, options *KubectlOptions, roleName strin
 	if err != nil {
 		return nil, err
 	}
-	return clientset.RbacV1().ClusterRoles().Get(roleName, metav1.GetOptions{})
+	return clientset.RbacV1().ClusterRoles().Get(context.Background(), roleName, metav1.GetOptions{})
 }

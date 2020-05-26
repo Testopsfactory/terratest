@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"context"
+
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +24,7 @@ func ListDaemonSetsE(t testing.TestingT, options *KubectlOptions, filters metav1
 	if err != nil {
 		return nil, err
 	}
-	resp, err := clientset.AppsV1().DaemonSets(options.Namespace).List(filters)
+	resp, err := clientset.AppsV1().DaemonSets(options.Namespace).List(context.Background(), filters)
 	if err != nil {
 		return nil, err
 	}
@@ -43,5 +45,5 @@ func GetDaemonSetE(t testing.TestingT, options *KubectlOptions, daemonSetName st
 	if err != nil {
 		return nil, err
 	}
-	return clientset.AppsV1().DaemonSets(options.Namespace).Get(daemonSetName, metav1.GetOptions{})
+	return clientset.AppsV1().DaemonSets(options.Namespace).Get(context.Background(), daemonSetName, metav1.GetOptions{})
 }
