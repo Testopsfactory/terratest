@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -27,7 +28,7 @@ func ListIngressesE(t testing.TestingT, options *KubectlOptions, filters metav1.
 	if err != nil {
 		return nil, err
 	}
-	resp, err := clientset.ExtensionsV1beta1().Ingresses(options.Namespace).List(filters)
+	resp, err := clientset.ExtensionsV1beta1().Ingresses(options.Namespace).List(context.Background(), filters)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func GetIngressE(t testing.TestingT, options *KubectlOptions, ingressName string
 	if err != nil {
 		return nil, err
 	}
-	return clientset.ExtensionsV1beta1().Ingresses(options.Namespace).Get(ingressName, metav1.GetOptions{})
+	return clientset.ExtensionsV1beta1().Ingresses(options.Namespace).Get(context.Background(), ingressName, metav1.GetOptions{})
 }
 
 // IsIngressAvailable returns true if the Ingress endpoint is provisioned and available.

@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -36,7 +37,7 @@ func GetNodesByFilterE(t testing.TestingT, options *KubectlOptions, filter metav
 		return nil, err
 	}
 
-	nodes, err := clientset.CoreV1().Nodes().List(filter)
+	nodes, err := clientset.CoreV1().Nodes().List(context.Background(), filter)
 	if err != nil {
 		return nil, err
 	}

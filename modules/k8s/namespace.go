@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"context"
+
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -25,7 +27,7 @@ func CreateNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName
 			Name: namespaceName,
 		},
 	}
-	_, err = clientset.CoreV1().Namespaces().Create(&namespace)
+	_, err = clientset.CoreV1().Namespaces().Create(context.Background(), &namespace, metav1.CreateOptions{})
 	return err
 }
 
@@ -45,7 +47,7 @@ func GetNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName st
 		return nil, err
 	}
 
-	return clientset.CoreV1().Namespaces().Get(namespaceName, metav1.GetOptions{})
+	return clientset.CoreV1().Namespaces().Get(context.Background(), namespaceName, metav1.GetOptions{})
 }
 
 // DeleteNamespace will delete the requested namespace from the Kubernetes cluster targeted by the provided options. This will
@@ -61,5 +63,5 @@ func DeleteNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName
 		return err
 	}
 
-	return clientset.CoreV1().Namespaces().Delete(namespaceName, &metav1.DeleteOptions{})
+	return clientset.CoreV1().Namespaces().Delete(context.Background(), namespaceName, metav1.DeleteOptions{})
 }
