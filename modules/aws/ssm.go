@@ -137,14 +137,12 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 	if err != nil {
 		return "", "", err
 	}
-	comment := "Terratest SSM"
-	documentName := "AWS-RunShellScript"
 	req, resp := client.SendCommandRequest(&ssm.SendCommandInput{
-		Comment:      &comment,
-		DocumentName: &documentName,
-		InstanceIds:  []*string{&instanceID},
+		Comment:      aws.String("Terratest SSM"),
+		DocumentName: aws.String("AWS-RunShellScript"),
+		InstanceIds:  aws.StringSlice([]string{instanceID}),
 		Parameters: map[string][]*string{
-			"commands": []*string{&command},
+			"commands": aws.StringSlice([]string{command}),
 		},
 	})
 	if err := req.Send(); err != nil {
