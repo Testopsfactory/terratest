@@ -11,7 +11,7 @@ import (
 
 func TestTerraformAwsSsmExample(t *testing.T) {
 	t.Parallel()
-	region := aws.GetRandomStableRegion(t, []string{}, []string{})
+	region := aws.GetRandomStableRegion(t, nil, nil)
 
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../examples/terraform-aws-ssm-example",
