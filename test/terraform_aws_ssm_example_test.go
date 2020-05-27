@@ -35,7 +35,7 @@ func TestTerraformAwsSsmExample(t *testing.T) {
 
 	result, err := aws.CheckSsmCommandE(t, region, instanceID, "cat /wrong/file", timeout)
 	require.Error(t, err)
-	require.Equal(t, err.Error(), "Failed")
+	require.Equal(t, "Failed", err.Error())
 	require.Equal(t, "cat: /wrong/file: No such file or directory\nfailed to run commands: exit status 1", result.Stderr)
 	require.Equal(t, "", result.Stdout)
 	require.Equal(t, int64(1), result.ExitCode)
