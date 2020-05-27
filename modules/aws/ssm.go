@@ -116,9 +116,7 @@ func WaitForSsmInstance(t testing.TestingT, awsRegion, instanceID string, timeou
 // CheckSsmCommand checks that you can run the given command on the given instance through AWS SSM. Returns stdout and stderr.
 func CheckSsmCommand(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) (string, string) {
 	stdout, stderr, err := CheckSsmCommandE(t, awsRegion, instanceID, command, timeout)
-	if err != nil {
-		t.Fatalf("failed to execute '%s' on %s (%v):]\n  stdout: %#v\n  stderr: %#v", command, instanceID, err, stdout, stderr)
-	}
+	require.NoErrorf(t, err, "failed to execute '%s' on %s (%v):]\n  stdout: %#v\n  stderr: %#v", command, instanceID, err, stdout, stderr)
 	return stdout, stderr
 }
 
