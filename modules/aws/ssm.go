@@ -80,20 +80,18 @@ func WaitForSsmInstanceE(t testing.TestingT, awsRegion, instanceID string, timeo
 	maxRetries := int(timeout.Seconds() / timeBetweenRetries.Seconds())
 	description := fmt.Sprintf("Waiting for %s to appear in the SSM inventory", instanceID)
 
-	key := aws.String("AWS:InstanceInformation.InstanceId")
-	filterType := aws.String("Equal")
-	values := aws.StringSlice([]string{instanceID})
+	input := &ssm.GetInventoryInput{
+		Filters: []*ssm.InventoryFilter{
+			{
+				Key:    aws.String("AWS:InstanceInformation.InstanceId"),
+				Type:   aws.String("Equal"),
+				Values: aws.StringSlice([]string{instanceID}),
+			},
+		},
+	}
 	_, err := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		client := NewSsmClient(t, awsRegion)
-		req, resp := client.GetInventoryRequest(&ssm.GetInventoryInput{
-			Filters: []*ssm.InventoryFilter{
-				{
-					Key:    key,
-					Type:   filterType,
-					Values: values,
-				},
-			},
-		})
+		req, resp := client.GetInventoryRequest(input)
 
 		if err := req.Send(); err != nil {
 			return "", err
