@@ -113,20 +113,22 @@ func WaitForSsmInstance(t testing.TestingT, awsRegion, instanceID string, timeou
 	require.NoError(t, err)
 }
 
-// CheckSsmCommand checks that you can run the given command on the given instance through AWS SSM. Returns stdout and stderr.
-func CheckSsmCommand(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) (string, string) {
-	stdout, stderr, err := CheckSsmCommandE(t, awsRegion, instanceID, command, timeout)
-	require.NoErrorf(t, err, "failed to execute '%s' on %s (%v):]\n  stdout: %#v\n  stderr: %#v", command, instanceID, err, stdout, stderr)
-	return stdout, stderr
+// CheckSsmCommand checks that you can run the given command on the given instance through AWS SSM.
+func CheckSsmCommand(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) *CommandOutput {
+	result, err := CheckSsmCommandE(t, awsRegion, instanceID, command, timeout)
+	require.NoErrorf(t, err, "failed to execute '%s' on %s (%v):]\n  stdout: %#v\n  stderr: %#v", command, instanceID, err, result.Stdout, result.Stderr)
+	return result
 }
 
-type result struct {
-	Stdout string
-	Stderr string
+// CommandOutput contains the result of the SSM command.
+type CommandOutput struct {
+	Stdout   string
+	Stderr   string
+	ExitCode int64
 }
 
-// CheckSsmCommandE checks that you can run the given command on the given instance through AWS SSM. Returns the stdout, stderr and an error if one occurs.
-func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) (string, string, error) {
+// CheckSsmCommandE checks that you can run the given command on the given instance through AWS SSM. Returns the result and an error if one occurs.
+func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) (*CommandOutput, error) {
 	logger.Logf(t, "Running command '%s' on EC2 instance with ID '%s'", command, instanceID)
 
 	timeBetweenRetries := 2 * time.Second
@@ -135,7 +137,7 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 	// Now that we know the instance in the SSM inventory, we can send the command
 	client, err := NewSsmClientE(t, awsRegion)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	req, resp := client.SendCommandRequest(&ssm.SendCommandInput{
 		Comment:      aws.String("Terratest SSM"),
@@ -146,7 +148,7 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 		},
 	})
 	if err := req.Send(); err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	// Wait for the result
@@ -157,7 +159,8 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 		"bad status: InProgress": "bad status: InProgress",
 		"bad status: Delayed":    "bad status: Delayed",
 	}
-	var stdout, stderr string
+
+	result := &CommandOutput{}
 	_, err = retry.DoWithRetryableErrorsE(t, description, retryableErrors, maxRetries, timeBetweenRetries, func() (string, error) {
 		req, resp := client.GetCommandInvocationRequest(&ssm.GetCommandInvocationInput{
 			CommandId:  resp.Command.CommandId,
@@ -167,10 +170,9 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 			return "", err
 		}
 
-		// Remove the SSM prefix from stderr
-		stderr = aws.StringValue(resp.StandardErrorContent)
-
-		stdout = aws.StringValue(resp.StandardOutputContent)
+		result.Stderr = aws.StringValue(resp.StandardErrorContent)
+		result.Stdout = aws.StringValue(resp.StandardOutputContent)
+		result.ExitCode = aws.Int64Value(resp.ResponseCode)
 
 		status := aws.StringValue(resp.Status)
 
@@ -179,15 +181,15 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 		}
 
 		if status == ssm.CommandInvocationStatusFailed {
-			return "", fmt.Errorf("Failed")
+			return "", fmt.Errorf(aws.StringValue(resp.StatusDetails))
 		}
 
 		return "", fmt.Errorf("bad status: %s", status)
 	})
 
 	if err != nil {
-		return stdout, stderr, err.(retry.FatalError).Underlying
+		return result, err.(retry.FatalError).Underlying
 	}
 
-	return stdout, stderr, nil
+	return result, nil
 }
