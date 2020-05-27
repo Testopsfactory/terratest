@@ -174,11 +174,11 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 
 		status := aws.StringValue(resp.Status)
 
-		if status == "Success" {
+		if status == ssm.CommandInvocationStatusSuccess {
 			return "", nil
 		}
 
-		if status == "Failed" {
+		if status == ssm.CommandInvocationStatusFailed {
 			return "", fmt.Errorf("Failed")
 		}
 
