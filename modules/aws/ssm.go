@@ -188,7 +188,10 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 	})
 
 	if err != nil {
-		return result, err.(retry.FatalError).Underlying
+		if underlyingErr, ok := err.(retry.FatalError); ok {
+			return result, underlyingErr
+		}
+		return result, fmt.Errorf("Unexpected error: %v", err)
 	}
 
 	return result, nil
