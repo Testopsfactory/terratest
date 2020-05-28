@@ -37,7 +37,7 @@ resource "aws_iam_role" "example" {
   assume_role_policy = data.aws_iam_policy_document.example.json
 }
 
-resource "aws_iam_role_policy_attachment" "example-ssm" {
+resource "aws_iam_role_policy_attachment" "example_ssm" {
   role       = aws_iam_role.example.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
 }
@@ -47,7 +47,7 @@ resource "aws_iam_instance_profile" "example" {
   role        = aws_iam_role.example.name
 }
 
-data "aws_ami" "amazon-linux-2" {
+data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
 
@@ -62,7 +62,7 @@ data "aws_ami" "amazon-linux-2" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_instance" "example" {
-  ami                         = data.aws_ami.amazon-linux-2.id
+  ami                         = data.aws_ami.amazon_linux_2.id
   instance_type               = "t2.micro"
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.example.name
