@@ -91,9 +91,9 @@ func WaitForSsmInstanceE(t testing.TestingT, awsRegion, instanceID string, timeo
 	}
 	_, err := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
 		client := NewSsmClient(t, awsRegion)
-		req, resp := client.GetInventoryRequest(input)
+		resp, err := client.GetInventory(input)
 
-		if err := req.Send(); err != nil {
+		if err != nil {
 			return "", err
 		}
 
@@ -139,7 +139,7 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 	if err != nil {
 		return nil, err
 	}
-	req, resp := client.SendCommandRequest(&ssm.SendCommandInput{
+	resp, err := client.SendCommand(&ssm.SendCommandInput{
 		Comment:      aws.String("Terratest SSM"),
 		DocumentName: aws.String("AWS-RunShellScript"),
 		InstanceIds:  aws.StringSlice([]string{instanceID}),
@@ -147,7 +147,7 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 			"commands": aws.StringSlice([]string{command}),
 		},
 	})
-	if err := req.Send(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -162,11 +162,12 @@ func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string,
 
 	result := &CommandOutput{}
 	_, err = retry.DoWithRetryableErrorsE(t, description, retryableErrors, maxRetries, timeBetweenRetries, func() (string, error) {
-		req, resp := client.GetCommandInvocationRequest(&ssm.GetCommandInvocationInput{
+		resp, err := client.GetCommandInvocation(&ssm.GetCommandInvocationInput{
 			CommandId:  resp.Command.CommandId,
 			InstanceId: &instanceID,
 		})
-		if err := req.Send(); err != nil {
+
+		if err != nil {
 			return "", err
 		}
 
