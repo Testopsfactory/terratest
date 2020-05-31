@@ -3,7 +3,9 @@
   image: /assets/img/logos/terraform-logo.png
   files:
     - url: /examples/terraform-hello-world-example/main.tf
+      id: terraform_code
     - url: /test/terraform_hello_world_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: Terraform Hello, World
@@ -14,7 +16,9 @@
   image: /assets/img/logos/packer-logo.png
   files:
     - url: /examples/packer-hello-world-example/build.json
+      id: packer_code
     - url: /test/packer_hello_world_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: Packer Hello, World
@@ -25,8 +29,10 @@
   image: /assets/img/logos/docker-logo.png
   files:
     - url: /examples/docker-hello-world-example/Dockerfile
+      id: docker_code
       prism_lang: docker
     - url: /test/docker_hello_world_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: Docker Hello, World
@@ -37,7 +43,9 @@
   image: /assets/img/logos/kubernetes-logo.png
   files:
     - url: /examples/kubernetes-hello-world-example/hello-world-deployment.yml
+      id: k8s_code
     - url: /test/kubernetes_hello_world_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: Kubernetes Hello, World
@@ -48,7 +56,9 @@
   image: /assets/img/logos/aws-logo.png
   files:
     - url: /examples/terraform-aws-hello-world-example/main.tf
+      id: terraform_code
     - url: /test/terraform_aws_hello_world_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: AWS Hello, World
@@ -59,7 +69,9 @@
   image: /assets/img/logos/gcp-logo.png
   files:
     - url: /examples/terraform-gcp-hello-world-example/main.tf
+      id: terraform_code
     - url: /test/terraform_gcp_hello_world_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: GCP Hello, World
@@ -70,9 +82,13 @@
   image: /assets/img/logos/azure-logo.png
   files:
     - url: /examples/terraform-azure-example/main.tf
+      id: terraform_main_code
     - url: /examples/terraform-azure-example/outputs.tf
+      id: terraform_output_code
     - url: /examples/terraform-azure-example/variables.tf
+      id: terraform_var_code
     - url: /test/terraform_azure_example_test.go
+      id: test_code
       default: true
   learn_more:
     - name: Terraform Azure Example
