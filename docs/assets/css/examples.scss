@@ -450,6 +450,18 @@
   }
 }
 
+.examples__container.quick-start-examples {
+  padding: 0;
+
+  .examples__nav {
+    display: none;
+  }
+
+  .examples__code {
+    margin-bottom: 30px;
+  }
+}
+
 .examples__container.wide {
   .examples__block {
     .examples__code {
