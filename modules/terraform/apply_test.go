@@ -3,9 +3,8 @@ package terraform
 import (
 	"testing"
 
-	"github.com/magiconair/properties/assert"
-
 	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
