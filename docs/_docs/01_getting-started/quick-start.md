@@ -7,6 +7,9 @@ tags: ["quick-start"]
 order: 101
 nav_title: Documentation
 nav_title_link: /docs/
+custom_js:
+  - examples
+  - prism
 ---
 
 ## Requirements
@@ -59,91 +62,91 @@ The basic usage pattern for writing automated tests with Terratest is to:
 To make this sort of testing easier, Terratest provides a variety of helper functions and patterns for common infrastructure testing tasks, such as testing Terraform code, testing Packer templates, testing Docker images, executing commands on servers over SSH, making HTTP requests, working with AWS APIs, and so on.
 
 
-## Example #1: Terraform
-Let’s say you have the following (simplified) [Terraform](https://www.terraform.io/) code to deploy a web server in AWS (if you’re new to Terraform, check out our [Comprehensive Guide to Terraform](https://blog.gruntwork.io/a-comprehensive-guide-to-terraform-b3d32832baca)):
+## Example #1: Terraform "Hello, World"
 
-```hcl
-provider "aws" {
-  region = "us-east-1"
-}
-
-resource "aws_instance" "web_server" {
-  ami                    = "ami-43a15f3e" # Ubuntu 16.04
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = ["${aws_security_group.web_server.id}"]
-  # Run a "Hello, World" web server on port 8080
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p 8080 &
-              EOF  
-}
-
-# Allow the web app to receive requests on port 8080
-resource "aws_security_group" "web_server" {
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-output "url" {
-  value = "http://${aws_instance.web_server.public_ip}:8080"
-}
-```
-
-The code above deploys an [EC2 Instance](https://aws.amazon.com/ec2/) that is running an Ubuntu [Amazon Machine Image (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). To keep this example simple, we specify a [User Data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-api-cli) script that, while the server is booting, fires up a dirt-simple web server that returns “Hello, World” on port 8080.
-
+Let's start with the simplest possible [Terraform](https://www.terraform.io/) code, which just outputs the text, 
+"Hello, World" (if you’re new to Terraform, check out our [Comprehensive Guide to 
+Terraform](https://blog.gruntwork.io/a-comprehensive-guide-to-terraform-b3d32832baca)): 
+ 
+{% include examples/explorer.html example_id='terraform-hello-world' file_id='terraform_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+ 
 How can you test this code to be confident it works correctly? Well, let’s think about how you would test it manually:
 
-1. Run `terraform init` and `terraform apply` to deploy into your AWS account.
-1. When `apply` finishes, the `url` output variable will show the URL of the web server.
-1. Open `url` in your web browser and make sure it says “Hello, World”. It can take 1–2 minutes for the server to boot up, so you may have to retry a few times.
-1. When you’re done testing, run `terraform destroy` to clean everything up.
-
+1. Run `terraform init` and `terraform apply` to execute the code.
+1. When `apply` finishes, check that the output variable says, "Hello, World".
+1. When you're done testing, run `terraform destroy` to clean everything up.
+ 
 Using Terratest, you can write an automated test that performs the exact same steps! Here’s what the code looks like:
-
-```go
-func TestWebServer(t *testing.T) {
-  terraformOptions := &terraform.Options {
-    // The path to where your Terraform code is located
-    TerraformDir: "../web-server",
-  }
-
-  // At the end of the test, run `terraform destroy`
-  defer terraform.Destroy(t, terraformOptions)
-
-  // Run `terraform init` and `terraform apply`
-  terraform.InitAndApply(t, terraformOptions)
-
-  // Run `terraform output` to get the value of an output variable
-  url := terraform.Output(t, terraformOptions, "url")
-
-  // Verify that we get back a 200 OK with the expected text. It
-  // takes ~1 min for the Instance to boot, so retry a few times.
-  status := 200
-  text := "Hello, World"
-  retries := 15
-  sleep := 5 * time.Second
-  http_helper.HttpGetWithRetry(t, url, nil, status, text, retries, sleep)
-}
-```
-
-The code above does all the steps we mentioned above, including running `terraform init`, `terraform apply`, making HTTP requests to the web server (retrying up to 15 times with 5 seconds between retries), and running `terraform destroy` (using [`defer`](https://blog.golang.org/defer-panic-and-recover) to run it at the end of the test, whether the test succeeds or fails). If you put this code in a file called `web_server_test.go`, you can run it by executing `go test`, and you’ll see output that looks like this (truncated for readability):
+ 
+{% include examples/explorer.html example_id='terraform-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+ 
+This code does all the steps we mentioned above, including running `terraform init`, `terraform apply`, reading the 
+output variable using `terraform output`, checking its value is what we expect, and running `terraform destroy` 
+(using [`defer`](https://blog.golang.org/defer-panic-and-recover) to run it at the end of the test, whether the test 
+succeeds or fails). If you put this code in a file called `terraform_hello_world_example_test.go`, you can run it by 
+executing `go test`, and you’ll see output that looks like this (truncated for readability):
 
 ```
 $ go test -v
-=== RUN   TestWebServer
+=== RUN   TestTerraformHelloWorldExample
+Running command terraform with args [init]
+Initializing provider plugins...
+[...]
+Terraform has been successfully initialized!
+[...]
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+Outputs:
+hello_world = "Hello, World!"
+[...]
+Running command terraform with args [destroy -force -input=false]
+[...]
+Destroy complete! Resources: 2 destroyed.
+--- PASS: TestTerraformHelloWorldExample (149.36s)
+```
+
+Success! 
+
+## Example #2: Terraform and AWS
+
+Let's now try out a more realistic Terraform example. Here is some Terraform code that deploys a simple web server in 
+AWS:
+
+{% include examples/explorer.html example_id='aws-hello-world' file_id='terraform_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+
+The code above deploys an [EC2 Instance](https://aws.amazon.com/ec2/) that is running an Ubuntu 
+[Amazon Machine Image (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). To keep this example 
+simple, we specify a [User Data](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#user-data-api-cli) 
+script that, while the server is booting, fires up a dirt-simple web server that returns “Hello, World” on port 8080.
+
+How can you test this code to be confident it works correctly? Well, let’s again think about how you would test it 
+manually:
+
+1. Run `terraform init` and `terraform apply` to deploy the web server into your AWS account.
+1. When `apply` finishes, get the IP of the web server by reading the `public_ip` output variable.
+1. Open the IP in your web browser with port 8080 and make sure it says “Hello, World”. Note that it can take 1–2 
+   minutes for the server to boot up, so you may have to retry a few times.
+1. When you’re done testing, run `terraform destroy` to clean everything up.
+
+Here's how we can automate the steps above using Terratest:
+
+{% include examples/explorer.html example_id='aws-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+
+This test code runs `terraform init` and `terraform apply`, reads the server IP using `terraform output`, makes HTTP 
+requests to the web server (including plenty of retries to account for the server taking time to boot), checks the HTTP
+response is what we expect, and then runs `terraform destroy` at the end. If you put this code in a file called 
+`terraform_aws_hello_world_example_test.go`, you can run just this test by passing the `-run` argument to `go test` as 
+follows:
+
+```
+$ go test -v -run TestTerraformAwsHelloWorldExample -timeout 30m
+=== RUN   TestTerraformAwsHelloWorldExample
 Running command terraform with args [init]
 Initializing provider plugins...
 [...]
 Terraform has been successfully initialized!
 [...]
 Running command terraform with args [apply -auto-approve]
-aws_instance.web_server: Creating...
-  ami:                               "" => "ami-43a15f3e"
+aws_instance.example: Creating...
   associate_public_ip_address:       "" => "<computed>"
   availability_zone:                 "" => "<computed>"
   ephemeral_block_device.#:          "" => "<computed>"
@@ -152,7 +155,7 @@ aws_instance.web_server: Creating...
 [...]
 Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
 Outputs:
-url = http://52.67.41.31:8080
+public_ip = 52.67.41.31
 [...]
 Making an HTTP GET call to URL http://52.67.41.31:8080
 dial tcp 52.67.41.31:8080: getsockopt: connection refused.
@@ -166,142 +169,75 @@ Success!
 Running command terraform with args [destroy -force -input=false]
 [...]
 Destroy complete! Resources: 2 destroyed.
---- PASS: TestWebServer (149.36s)
+--- PASS: TestTerraformAwsHelloWorldExample (149.36s)
 ```
 
-Success! Now, every time you make a change to this Terraform code, the test code can run and make sure your web server works as expected.
+Success! Now, every time you make a change to this Terraform code, the test code can run and make sure your web server 
+works as expected.
 
-## Example #2: Packer
+Note that in the `go test` command above, we set `-timeout 30m`. This is because Go sets a default test time out of 10
+minutes, and if your test take longer than that to run, Go will panic, and kill the test code part way through. This is
+not only annoying, but also prevents the clean up code from running (the `terraform destroy`), leaving you with lots of
+resources hanging in your AWS account. To prevent this, we always recommend setting a high test timeout; the test above
+doesn't actually take anywhere near 30 minutes (typical runtime is ~3 minutes), but we give lots of extra buffer to be
+extra sure that the test always has a chance to finish cleanly. 
 
-The Terraform code in example #1 shoved all the web server code into User Data, which is fine for demonstration and learning purposes, but not what you’d actually do in the real world. For example, let’s say you wanted to run a [Node.js](https://nodejs.org/en/) app, such as the one below in `server.js`, which listens on port 8080 and responds to requests with “Hello, World”:
+## Example #3: Docker
 
-```js
-const http = require('http');
-const hostname = '0.0.0.0';
-const port = 8080;
+You can use Terratest for testing a variety of infrastructure code and not Terraform. For example, you can use it to 
+test your [Docker](https://www.docker.com/) images:
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World!\n');
-});
+{% include examples/explorer.html example_id='docker-hello-world' file_id='docker_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-```
+The `Dockerfile` above creates a simple Docker image that uses Ubuntu 18.04 as a base and writes the text "Hello, World!" 
+to a text file. At this point, you should already know the drill. First, let's think through how you'd test this 
+`Dockerfile` manually:
 
-How can you run this Node.js app on an EC2 Instance? One option is to use [Packer](https://www.packer.io/) to create a custom AMI that has this app installed. Here’s a Packer template that installs Node.js and `server.js` on top of Ubuntu:
+1. Run `docker build` to build the Docker image.
+1. Run the image via `docker run`.
+1. Check that the running Docker container has a text file with the text "Hello, World!" in it.
 
-```js
-{
-  "builders": [{
-    "ami_name": "node-example-{{isotime | clean_ami_name}}",
-    "instance_type": "t2.micro",
-    "region": "us-east-1",
-    "type": "amazon-ebs",
-    "source_ami": "ami-43a15f3e",
-    "ssh_username": "ubuntu"
-  }],
-  "provisioners": [{
-    "type": "shell",
-    "inline": [
-      "curl https://deb.nodesource.com/setup_8.x | sudo -E bash -",
-      "sudo apt-get install -y nodejs"
-    ]
-  },{
-    "type": "file",
-    "source": "{{template_dir}}/server.js",
-    "destination": "/home/ubuntu/server.js"
-  }]
-}
-```
+Here's how you can use Terratest to automate this process:  
 
-If you put the code above into `web-server.json`, you can create an AMI by running `packer build web-server.json`:
+{% include examples/explorer.html example_id='docker-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
-```
-$ packer build web-server.json
-==> amazon-ebs: Prevalidating AMI Name...
-==> amazon-ebs: Creating temporary security group for instance...
-==> amazon-ebs: Authorizing access to port 22 ...
-==> amazon-ebs: Launching a source AWS instance...
-[...]
-Build 'amazon-ebs' finished.
-==> Builds finished. The artifacts of successful builds are:
---> amazon-ebs: AMIs were created:
-us-east-1: ami-3505b64a
-```
+Instead of using Terraform helpers, this test code uses Terratest's Docker helpers to run `docker build`, `docker run`,
+and check the contents of the text file. As before, you can run this test using `go test`!
 
-At the end of your build, you get a new AMI ID. Let’s update the Terraform code from example #1 to expose an `ami_id` variable that lets you specify the AMI to deploy and update the User Data script to run the Node.js app:
+## Example #4: Kubernetes
 
-```js
-provider "aws" {
-  region = "us-east-1"
-}
+Terratest also provides helpers for testing your [Kubernetes](https://kubernetes.io/) code. For example, here's a 
+Kubernetes manifest you might want to test:
 
-resource "aws_instance" "web_server" {
-  ami                    = "${var.ami_id}"
-  instance_type          = "t2.micro"
-  vpc_security_group_ids = ["${aws_security_group.web_server.id}"]
-  # Run the Node app
-  user_data = <<-EOF
-              #!/bin/bash
-              nohup node /home/ubuntu/server.js &
-              EOF  
-}
+{% include examples/explorer.html example_id='kubernetes-hello-world' file_id='k8s_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
-# Allow the web app to receive requests on port 8080
-resource "aws_security_group" "web_server" {
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+This manifest deploys the [Docker training webapp](https://hub.docker.com/r/training/webapp/), a simple app that 
+responds with the text "Hello, World!", as a Kubernetes Deployment and exposes it to the outside world on port 5000 
+using a `LoadBalancer`.
 
-variable "ami_id" {
-  description = "The ID of the AMI to deploy"
-}
+To test this code manually, you would:
 
-output "url" {
-  value = "http://${aws_instance.web_server.public_ip}:8080"
-}
-```
+1. Run `kubectl apply` to deploy the Docker training webapp.
+1. Use the Kubernetes APIs to figure out the endpoint to hit for the load balancer.
+1. Open the endpoint in your web browser on port 5000 and make sure it says “Hello, World”. Note that, depending on 
+   your Kubernetes cluster, it could take a minute or two for the Docker container to come p, so you may have to retry 
+   a few times.
+1. When you're done testing, run `kubectl delete` to clean everything up.
 
-_(Note: the User Data script above is still very simplified. In a real-world use case, you’d probably want to run your Node app with a process supervisor such as `systemd` and configure it to use all cores on the server using the [cluster module](https://nodejs.org/api/cluster.html))._
+Here's how you automate this process with Terratest:
 
-So how can you test this Packer template and the Terraform code? Well, if you were doing it manually, you’d:
+{% include examples/explorer.html example_id='kubernetes-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
-1. Run `packer build` to build a new AMI.
-1. Plug the AMI ID into the `ami_id` variable of the Terraform code.
-1. Test the Terraform code as before: run `terraform init`, `terraform apply`, open the web server URL in the browser, etc.
+The test code above uses Kuberenetes helpers built into Terratest to run `kubectl apply`, wait for the service to come
+up, get the service endpoint, make HTTP requests to the service (with plenty of retries), check the response is what
+we expect, and runs `kubectly delete` at the end. You run this test with `go test` as well! 
 
-Once again, you can automate this process with Terratest! To build the AMI using Packer and pass the ID of that AMI to Terraform as the `ami_id` variable, just add the following to the top of the test code from example #1:
-
-```go
-packerOptions := &packer.Options {
-    // The path to where the Packer template is located
-    Template: "../web-server/web-server.json",
-}
-
-// Build the AMI
-amiId := packer.BuildAmi(t, packerOptions)
-terraformOptions := &terraform.Options {
-    // The path to where your Terraform code is located
-    TerraformDir: "../web-server",
-    // Variables to pass to our Terraform code using -var options
-    Vars: map[string]interface{} {
-      "ami_id": amiId,
-    },
-}
-```
-
-And that’s it! The rest of the test code is exactly the same. When you run `go test`, Terratest will build your AMI, run `terraform init`, `terraform apply`, make HTTP requests to the web server, etc.
 
 ## Give it a shot!
 
-The above is just a small taste of what you can do with [Terratest](https://github.com/gruntwork-io/terratest). To learn more:
+The above is just a small taste of what you can do with [Terratest](https://github.com/gruntwork-io/terratest). To 
+learn more:
+
 1. Check out the [examples]({{site.baseurl}}/examples/) and the corresponding automated tests for those examples for fully working (and tested!) sample code.
 1. Browse through the list of [Terratest packages]({{site.baseurl}}/docs/getting-started/packages-overview/) to get a sense of all the tools available in Terratest.
 1. Read our [Testing Best Practices Guide]({{site.baseurl}}/docs/#testing-best-practices).
