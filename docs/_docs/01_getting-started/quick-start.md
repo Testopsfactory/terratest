@@ -68,7 +68,7 @@ Let's start with the simplest possible [Terraform](https://www.terraform.io/) co
 "Hello, World" (if you’re new to Terraform, check out our [Comprehensive Guide to 
 Terraform](https://blog.gruntwork.io/a-comprehensive-guide-to-terraform-b3d32832baca)): 
  
-{% include examples/explorer.html example_id='terraform-hello-world' file_id='terraform_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='terraform-hello-world' file_id='terraform_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
  
 How can you test this code to be confident it works correctly? Well, let’s think about how you would test it manually:
 
@@ -78,7 +78,7 @@ How can you test this code to be confident it works correctly? Well, let’s thi
  
 Using Terratest, you can write an automated test that performs the exact same steps! Here’s what the code looks like:
  
-{% include examples/explorer.html example_id='terraform-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='terraform-hello-world' file_id='test_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
  
 This code does all the steps we mentioned above, including running `terraform init`, `terraform apply`, reading the 
 output variable using `terraform output`, checking its value is what we expect, and running `terraform destroy` 
@@ -111,7 +111,7 @@ Success!
 Let's now try out a more realistic Terraform example. Here is some Terraform code that deploys a simple web server in 
 AWS:
 
-{% include examples/explorer.html example_id='aws-hello-world' file_id='terraform_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='aws-hello-world' file_id='terraform_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
 The code above deploys an [EC2 Instance](https://aws.amazon.com/ec2/) that is running an Ubuntu 
 [Amazon Machine Image (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html). To keep this example 
@@ -129,7 +129,7 @@ manually:
 
 Here's how we can automate the steps above using Terratest:
 
-{% include examples/explorer.html example_id='aws-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='aws-hello-world' file_id='test_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
 This test code runs `terraform init` and `terraform apply`, reads the server IP using `terraform output`, makes HTTP 
 requests to the web server (including plenty of retries to account for the server taking time to boot), checks the HTTP
@@ -187,7 +187,7 @@ extra sure that the test always has a chance to finish cleanly.
 You can use Terratest for testing a variety of infrastructure code and not Terraform. For example, you can use it to 
 test your [Docker](https://www.docker.com/) images:
 
-{% include examples/explorer.html example_id='docker-hello-world' file_id='docker_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='docker-hello-world' file_id='docker_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
 The `Dockerfile` above creates a simple Docker image that uses Ubuntu 18.04 as a base and writes the text "Hello, World!" 
 to a text file. At this point, you should already know the drill. First, let's think through how you'd test this 
@@ -199,7 +199,7 @@ to a text file. At this point, you should already know the drill. First, let's t
 
 Here's how you can use Terratest to automate this process:  
 
-{% include examples/explorer.html example_id='docker-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='docker-hello-world' file_id='test_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
 Instead of using Terraform helpers, this test code uses Terratest's Docker helpers to run `docker build`, `docker run`,
 and check the contents of the text file. As before, you can run this test using `go test`!
@@ -209,7 +209,7 @@ and check the contents of the text file. As before, you can run this test using 
 Terratest also provides helpers for testing your [Kubernetes](https://kubernetes.io/) code. For example, here's a 
 Kubernetes manifest you might want to test:
 
-{% include examples/explorer.html example_id='kubernetes-hello-world' file_id='k8s_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='kubernetes-hello-world' file_id='k8s_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
 This manifest deploys the [Docker training webapp](https://hub.docker.com/r/training/webapp/), a simple app that 
 responds with the text "Hello, World!", as a Kubernetes Deployment and exposes it to the outside world on port 5000 
@@ -226,7 +226,7 @@ To test this code manually, you would:
 
 Here's how you automate this process with Terratest:
 
-{% include examples/explorer.html example_id='kubernetes-hello-world' file_id='test_code' id='quick_start_page' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
+{% include examples/explorer.html example_id='kubernetes-hello-world' file_id='test_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true %}
 
 The test code above uses Kuberenetes helpers built into Terratest to run `kubectl apply`, wait for the service to come
 up, get the service endpoint, make HTTP requests to the service (with plenty of retries), check the response is what
