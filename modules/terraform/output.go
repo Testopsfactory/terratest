@@ -2,6 +2,7 @@ package terraform
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -56,7 +57,15 @@ func parseListOfMaps(l []interface{}) ([]map[string]interface{}, error) {
 	var result []map[string]interface{}
 
 	for _, v := range l {
-		m, err := parseMap(v.(map[string]interface{}))
+
+		asMap, isMap := v.(map[string]interface{})
+		if !isMap {
+			err := errors.New("Type switching to map[string]interface{} failed.")
+			return nil, err
+		}
+
+		m, err := parseMap(asMap)
+
 		if err != nil {
 			return nil, err
 		}
