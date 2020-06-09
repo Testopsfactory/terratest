@@ -35,7 +35,7 @@ func UpgradeE(t testing.TestingT, options *Options, chart string, releaseName st
 		return err
 	}
 
-	args = append(args, releaseName, chart)
+	args = append(args, "--install", releaseName, chart)
 	_, err = RunHelmCommandAndGetOutputE(t, options, "upgrade", args...)
 	return err
 }
