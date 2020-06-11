@@ -145,6 +145,10 @@ func TestIdempotentWithchanges(t *testing.T) {
 		NoColor:      true,
 	}
 
-	require.Panicsf(t, func() { ApplyAndIdempotent(t, options) }, "Should Fail")
+	out, err := ApplyAndIdempotentE(t, options)
+
+	_ = out
+
+	require.Error(t, err)
 
 }
