@@ -60,3 +60,17 @@ func TgApplyAllE(t testing.TestingT, options *Options) (string, error) {
 
 	return RunTerraformCommandE(t, options, FormatArgs(options, "apply-all", "-input=false", "-lock=false", "-auto-approve")...)
 }
+
+// ApplyAndIdempotent runs terraform init and apply with the given options and return stdout/stderr from the apply command. It then runs
+// plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
+// the caller is responsible for cleaning up any resources created by running apply.
+func ApplyAndIdempotent(t testing.TestingT, options *Options) string {
+
+	out, err := InitAndApplyE(t, options)
+	require.NoError(t, err)
+
+	exitCode := Plan(t, options)
+	require.Equal(t, DefaultSuccessExitCode, exitCode)
+
+	return out
+}
