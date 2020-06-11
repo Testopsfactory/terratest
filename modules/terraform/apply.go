@@ -1,6 +1,8 @@
 package terraform
 
 import (
+	"errors"
+
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -66,11 +68,27 @@ func TgApplyAllE(t testing.TestingT, options *Options) (string, error) {
 // the caller is responsible for cleaning up any resources created by running apply.
 func ApplyAndIdempotent(t testing.TestingT, options *Options) string {
 
-	out, err := InitAndApplyE(t, options)
+	out, err := ApplyAndIdempotentE(t, options)
 	require.NoError(t, err)
 
-	exitCode := Plan(t, options)
-	require.Equal(t, DefaultSuccessExitCode, exitCode)
-
 	return out
+}
+
+// ApplyAndIdempotentE runs terraform init and apply with the given options and return stdout/stderr from the apply command. It then runs
+// plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
+// the caller is responsible for cleaning up any resources created by running apply.
+func ApplyAndIdempotentE(t testing.TestingT, options *Options) (string, error) {
+	out, err := InitAndApplyE(t, options)
+
+	if err != nil {
+		return "", err
+	}
+
+	exitCode := PlanExitCode(t, options)
+
+	if exitCode != 0 {
+		return "", errors.New("terraform configuration not idempotent")
+	}
+
+	return out, nil
 }
