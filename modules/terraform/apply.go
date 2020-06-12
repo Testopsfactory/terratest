@@ -63,7 +63,7 @@ func TgApplyAllE(t testing.TestingT, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, FormatArgs(options, "apply-all", "-input=false", "-lock=false", "-auto-approve")...)
 }
 
-// ApplyAndIdempotent runs terraform init and apply with the given options and return stdout/stderr from the apply command. It then runs
+// ApplyAndIdempotent runs terraform apply with the given options and return stdout/stderr from the apply command. It then runs
 // plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
 // the caller is responsible for cleaning up any resources created by running apply.
 func ApplyAndIdempotent(t testing.TestingT, options *Options) string {
@@ -74,11 +74,11 @@ func ApplyAndIdempotent(t testing.TestingT, options *Options) string {
 	return out
 }
 
-// ApplyAndIdempotentE runs terraform init and apply with the given options and return stdout/stderr from the apply command. It then runs
+// ApplyAndIdempotentE runs terraform apply with the given options and return stdout/stderr from the apply command. It then runs
 // plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
 // the caller is responsible for cleaning up any resources created by running apply.
 func ApplyAndIdempotentE(t testing.TestingT, options *Options) (string, error) {
-	out, err := InitAndApplyE(t, options)
+	out, err := ApplyE(t, options)
 
 	if err != nil {
 		return "", err
