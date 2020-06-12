@@ -120,7 +120,7 @@ func TestTgApplyOutput(t *testing.T) {
 	assert.Equal(t, allOutputs, map[string]interface{}{"str": "str", "list": []interface{}{"a", "b", "c"}, "map": map[string]interface{}{"foo": "bar"}})
 }
 
-func TestIdempotentNochanges(t *testing.T) {
+func TestIdempotentNoChanges(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-no-error", t.Name())
@@ -131,10 +131,10 @@ func TestIdempotentNochanges(t *testing.T) {
 		NoColor:      true,
 	}
 
-	ApplyAndIdempotent(t, options)
+	InitAndApplyAndIdempotentE(t, options)
 }
 
-func TestIdempotentWithchanges(t *testing.T) {
+func TestIdempotentWithChanges(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-not-idempotent", t.Name())
@@ -145,10 +145,10 @@ func TestIdempotentWithchanges(t *testing.T) {
 		NoColor:      true,
 	}
 
-	out, err := ApplyAndIdempotentE(t, options)
+	out, err := InitAndApplyAndIdempotentE(t, options)
 
-	_ = out
-
+	require.Equal(t, out, "")
 	require.Error(t, err)
+	require.EqualError(t, err, "terraform configuration not idempotent")
 
 }
