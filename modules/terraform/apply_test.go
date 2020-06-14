@@ -150,5 +150,4 @@ func TestIdempotentWithChanges(t *testing.T) {
 	require.Equal(t, out, "")
 	require.Error(t, err)
 	require.EqualError(t, err, "terraform configuration not idempotent")
-
 }

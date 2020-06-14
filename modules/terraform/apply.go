@@ -67,7 +67,6 @@ func TgApplyAllE(t testing.TestingT, options *Options) (string, error) {
 // plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
 // the caller is responsible for cleaning up any resources created by running apply.
 func ApplyAndIdempotent(t testing.TestingT, options *Options) string {
-
 	out, err := ApplyAndIdempotentE(t, options)
 	require.NoError(t, err)
 
@@ -101,7 +100,6 @@ func ApplyAndIdempotentE(t testing.TestingT, options *Options) (string, error) {
 // plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
 // the caller is responsible for cleaning up any resources created by running apply.
 func InitAndApplyAndIdempotent(t testing.TestingT, options *Options) string {
-
 	out, err := InitAndApplyAndIdempotentE(t, options)
 	require.NoError(t, err)
 
@@ -112,11 +110,9 @@ func InitAndApplyAndIdempotent(t testing.TestingT, options *Options) string {
 // plan again and will fail the test if plan requires additional changes. Note that this method does NOT call destroy and assumes
 // the caller is responsible for cleaning up any resources created by running apply.
 func InitAndApplyAndIdempotentE(t testing.TestingT, options *Options) (string, error) {
-
 	if _, err := InitE(t, options); err != nil {
 		return "", err
 	}
 
 	return ApplyAndIdempotentE(t, options)
-
 }
