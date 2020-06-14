@@ -80,17 +80,17 @@ func ApplyAndIdempotentE(t testing.TestingT, options *Options) (string, error) {
 	out, err := ApplyE(t, options)
 
 	if err != nil {
-		return "", err
+		return out, err
 	}
 
 	exitCode, err := PlanExitCodeE(t, options)
 
 	if err != nil {
-		return "", err
+		return out, err
 	}
 
 	if exitCode != 0 {
-		return "", errors.New("terraform configuration not idempotent")
+		return out, errors.New("terraform configuration not idempotent")
 	}
 
 	return out, nil
