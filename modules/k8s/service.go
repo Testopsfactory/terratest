@@ -227,7 +227,7 @@ func findAwsNodeHostnameE(t testing.TestingT, node corev1.Node, awsIDUri *url.UR
 	}
 
 	publicIP, containsIP := ipMap[instanceID]
-	if !containsIP {
+	if !containsIP || publicIP == "" {
 		// return default hostname
 		return findDefaultNodeHostnameE(node)
 	}
