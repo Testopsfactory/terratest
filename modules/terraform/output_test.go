@@ -253,6 +253,63 @@ func TestOutputsForKeys(t *testing.T) {
 	require.Nil(t, outputNotPresentMap)
 }
 
+func TestOutputStruct(t *testing.T) {
+	type TestStruct struct {
+		Somebool    bool
+		Somefloat   float64
+		Someint     int
+		Somestring  string
+		Somemap     map[string]interface{}
+		Listmaps    []map[string]interface{}
+		Liststrings []string
+	}
+
+	t.Parallel()
+
+	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-struct", t.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := &Options{
+		TerraformDir: testFolder,
+	}
+
+	InitAndApply(t, options)
+
+	expectedObject := TestStruct{
+		Somebool:    true,
+		Somefloat:   0.1,
+		Someint:     1,
+		Somestring:  "two",
+		Somemap:     map[string]interface{}{"three": 3.0, "four": "four"},
+		Listmaps:    []map[string]interface{}{{"five": 5.0, "six": "six"}},
+		Liststrings: []string{"seven", "eight", "nine"},
+	}
+	v1 := TestStruct{}
+	OutputStruct(t, options, "object", &v1)
+
+	expectedList := []TestStruct{
+		{
+			Somebool:   true,
+			Somefloat:  0.1,
+			Someint:    1,
+			Somestring: "two",
+		},
+		{
+			Somebool:   false,
+			Somefloat:  0.3,
+			Someint:    4,
+			Somestring: "five",
+		},
+	}
+	v2 := []TestStruct{}
+	OutputStruct(t, options, "list_of_objects", &v2)
+
+	require.Equal(t, expectedObject, v1, "Object should be %q, got %q", expectedObject, v1)
+	require.Equal(t, expectedList, v2, "List should be %q, got %q", expectedList, v2)
+}
+
 func TestOutputsAll(t *testing.T) {
 	t.Parallel()
 
