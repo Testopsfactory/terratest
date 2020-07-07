@@ -281,11 +281,7 @@ func OutputStructE(t testing.TestingT, options *Options, key string, v interface
 		return err
 	}
 
-	if err := json.Unmarshal([]byte(out), &v); err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal([]byte(out), &v)
 }
 
 // OutputForKeysE calls terraform output for the given key list and returns values as a map.
