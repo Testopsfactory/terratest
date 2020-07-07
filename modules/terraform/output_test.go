@@ -254,6 +254,8 @@ func TestOutputsForKeys(t *testing.T) {
 }
 
 func TestOutputStruct(t *testing.T) {
+	t.Parallel()
+
 	type TestStruct struct {
 		Somebool    bool
 		Somefloat   float64
@@ -263,8 +265,6 @@ func TestOutputStruct(t *testing.T) {
 		Listmaps    []map[string]interface{}
 		Liststrings []string
 	}
-
-	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output-struct", t.Name())
 	if err != nil {
@@ -286,8 +286,8 @@ func TestOutputStruct(t *testing.T) {
 		Listmaps:    []map[string]interface{}{{"five": 5.0, "six": "six"}},
 		Liststrings: []string{"seven", "eight", "nine"},
 	}
-	v1 := TestStruct{}
-	OutputStruct(t, options, "object", &v1)
+	actualObject := TestStruct{}
+	OutputStruct(t, options, "object", &actualObject)
 
 	expectedList := []TestStruct{
 		{
@@ -303,11 +303,11 @@ func TestOutputStruct(t *testing.T) {
 			Somestring: "five",
 		},
 	}
-	v2 := []TestStruct{}
-	OutputStruct(t, options, "list_of_objects", &v2)
+	actualList := []TestStruct{}
+	OutputStruct(t, options, "list_of_objects", &actualList)
 
-	require.Equal(t, expectedObject, v1, "Object should be %q, got %q", expectedObject, v1)
-	require.Equal(t, expectedList, v2, "List should be %q, got %q", expectedList, v2)
+	require.Equal(t, expectedObject, actualObject, "Object should be %q, got %q", expectedObject, actualObject)
+	require.Equal(t, expectedList, actualList, "List should be %q, got %q", expectedList, actualList)
 }
 
 func TestOutputsAll(t *testing.T) {
