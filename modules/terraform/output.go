@@ -262,6 +262,28 @@ func OutputForKeys(t testing.TestingT, options *Options, keys []string) map[stri
 	return out
 }
 
+// OutputStruct calls terraform output for the given variable and stores the
+// result in the value pointed to by v. If v is nil or not a pointer, or if
+// the value returned by Terraform is not appropriate for a given target type,
+// it fails the test.
+func OutputStruct(t testing.TestingT, options *Options, key string, v interface{}) {
+	err := OutputStructE(t, options, key, v)
+	require.NoError(t, err)
+}
+
+// OutputStructE calls terraform output for the given variable and stores the
+// result in the value pointed to by v. If v is nil or not a pointer, or if
+// the value returned by Terraform is not appropriate for a given target type,
+// it returns an error.
+func OutputStructE(t testing.TestingT, options *Options, key string, v interface{}) error {
+	out, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal([]byte(out), &v)
+}
+
 // OutputForKeysE calls terraform output for the given key list and returns values as a map.
 // The returned values are of type interface{} and need to be type casted as necessary. Refer to output_test.go
 func OutputForKeysE(t testing.TestingT, options *Options, keys []string) (map[string]interface{}, error) {
