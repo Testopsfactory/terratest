@@ -263,11 +263,11 @@ func OutputForKeys(t testing.TestingT, options *Options, keys []string) map[stri
 }
 
 // OutputStruct calls terraform output for the given variable and stores the
-// result in the value pointed to by out. If out is nil or not a pointer, or if
+// result in the value pointed to by v. If v is nil or not a pointer, or if
 // the value returned by Terraform is not appropriate for a given target type,
 // it fails the test.
-func OutputStruct(t testing.TestingT, options *Options, key string, out interface{}) {
-	err := OutputStructE(t, options, key, out)
+func OutputStruct(t testing.TestingT, options *Options, key string, v interface{}) {
+	err := OutputStructE(t, options, key, v)
 	require.NoError(t, err)
 }
 
