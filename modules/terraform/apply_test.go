@@ -172,7 +172,7 @@ func TestParallelism(t *testing.T) {
 	start := time.Now()
 	Apply(t, options)
 	end := time.Now()
-	require.WithinDuration(t, end, start, 15 * time.Second)
+	require.WithinDuration(t, end, start, 15*time.Second)
 
 	// Run the second time with parallelism set to 1 and it should take at least 25 seconds
 	options.Parallelism = 1
