@@ -24,6 +24,9 @@ var commandsWithParallelism = []string{
 	"plan",
 	"apply",
 	"destroy",
+	"plan-all",
+	"apply-all",
+	"destroy-all",
 }
 
 // GetCommonOptions extracts commons terraform options
