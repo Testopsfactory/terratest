@@ -20,6 +20,12 @@ func generateCommand(options *Options, args ...string) shell.Command {
 	return cmd
 }
 
+var commandsWithParallelism = []string{
+	"plan",
+	"apply",
+	"destroy",
+}
+
 // GetCommonOptions extracts commons terraform options
 func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	if options.NoColor && !collections.ListContains(args, "-no-color") {
@@ -32,6 +38,10 @@ func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 
 	if options.TerraformBinary == "terragrunt" {
 		args = append(args, "--terragrunt-non-interactive")
+	}
+
+	if options.Parallelism > 0 && len(args) > 0 && collections.ListContains(commandsWithParallelism, args[0]) {
+		args = append(args, fmt.Sprintf("--parallelism=%d", options.Parallelism))
 	}
 
 	// if SshAgent is provided, override the local SSH agent with the socket of our in-process agent
