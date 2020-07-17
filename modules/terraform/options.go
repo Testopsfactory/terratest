@@ -35,4 +35,5 @@ type Options struct {
 	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
 	NoStderr                 bool                   // Disable stderr redirection
 	Logger                   *logger.Logger         // Set a non-default logger that should be used. See the logger package for more info.
+	Parallelism              int                    // Set the parallelism setting for Terraform
 }
