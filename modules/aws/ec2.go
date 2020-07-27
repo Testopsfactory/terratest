@@ -445,7 +445,7 @@ func instanceTypeExistsInAllAzs(instanceType string, availabilityZones []string,
 	if len(availabilityZones) == 0 || len(instanceTypeOfferings) == 0 {
 		return false
 	}
-	
+
 	for _, az := range availabilityZones {
 		if !hasOffering(instanceTypeOfferings, az, instanceType) {
 			return false
@@ -459,7 +459,7 @@ func instanceTypeExistsInAllAzs(instanceType string, availabilityZones []string,
 // instanceTypeOfferings
 func hasOffering(instanceTypeOfferings []*ec2.InstanceTypeOffering, availabilityZone string, instanceType string) bool {
 	for _, offering := range instanceTypeOfferings {
-		if (aws.StringValue(offering.InstanceType) == instanceType && aws.StringValue(offering.Location) == availabilityZone) {
+		if aws.StringValue(offering.InstanceType) == instanceType && aws.StringValue(offering.Location) == availabilityZone {
 			return true
 		}
 	}
