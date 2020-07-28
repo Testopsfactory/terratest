@@ -45,8 +45,8 @@ func run(cliContext *cli.Context) error {
 		return err
 	}
 
-	// Print the recommended instnace type to stdout
-	fmt.Println(recommendedInstanceType)
+	// Print the recommended instance type to stdout
+	fmt.Print(recommendedInstanceType)
 
 	return nil
 }
