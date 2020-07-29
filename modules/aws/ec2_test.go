@@ -49,12 +49,17 @@ func TestGetRecommendedInstanceType(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		// The following is necessary to make sure testCase's values don't
-		// get updated due to concurrency within the scope of t.Run(..) below
+		// The following is necessary to make sure testCase's values don't get updated due to concurrency within the
+		// scope of t.Run(..) below. https://golang.org/doc/faq#closures_and_goroutines
 		testCase := testCase
+
 		t.Run(fmt.Sprintf("%s-%s", testCase.region, strings.Join(testCase.instanceTypeOptions, "-")), func(t *testing.T) {
 			t.Parallel()
 			instanceType := GetRecommendedInstanceType(t, testCase.region, testCase.instanceTypeOptions)
+			// We could hard-code the expected result (e.g., as of July, 2020, we expect eu-west-1 to return t2.micro
+			// and ap-northeast-2 to return t3.micro), but the result will likely change over time, so to avoid a
+			// brittle test, we simply check that we get _one_ result. Combined with the unit test below, this hopefully
+			// is enough to be confident this function works correctly.
 			assert.Contains(t, testCase.instanceTypeOptions, instanceType)
 		})
 	}
@@ -113,9 +118,10 @@ func TestPickRecommendedInstanceTypeHappyPath(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		// The following is necessary to make sure testCase's values don't
-		// get updated due to concurrency within the scope of t.Run(..) below
+		// The following is necessary to make sure testCase's values don't get updated due to concurrency within the
+		// scope of t.Run(..) below. https://golang.org/doc/faq#closures_and_goroutines
 		testCase := testCase
+
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 
