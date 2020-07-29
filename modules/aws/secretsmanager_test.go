@@ -16,20 +16,16 @@ func TestSecretsManagerMethods(t *testing.T) {
 	description := "This is just a secrets manager test description."
 	secretValue := "This is the secret value."
 
-	secretARN, err := CreateSecretStringWithDefaultKey(t, region, description, name, secretValue)
-	require.NoError(t, err)
-
+	secretARN := CreateSecretStringWithDefaultKey(t, region, description, name, secretValue)
 	defer deleteSecret(t, region, secretARN)
 
-	storedValue, err := GetSecretValue(t, region, secretARN)
-	require.NoError(t, err)
+	storedValue := GetSecretValue(t, region, secretARN)
 	assert.Equal(t, secretValue, storedValue)
 }
 
 func deleteSecret(t *testing.T, region, id string) {
-	err := DeleteSecret(t, region, id, true)
-	require.NoError(t, err)
+	DeleteSecret(t, region, id, true)
 
-	_, err = GetSecretValue(t, region, id)
+	_, err := GetSecretValueE(t, region, id)
 	require.Error(t, err)
 }
