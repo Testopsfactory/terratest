@@ -404,7 +404,7 @@ func GetRecommendedInstanceType(t testing.TestingT, region string, instanceTypeO
 // first instance type in the list that is available in all Availability Zones (AZs) in the given region. If there's no
 // instance available in all AZs, this function exits with an error. This is useful because certain instance types,
 // such as t2.micro, are not available in some of the newer AZs, while t3.micro is not available in some of the older
-// AZs, and if you have code that needs to run on a "small" instance across all AZs in many different regions, you can
+// AZs. If you have code that needs to run on a "small" instance across all AZs in many different regions, you can
 // use this function to automatically figure out which instance type you should use.
 func GetRecommendedInstanceTypeE(t testing.TestingT, region string, instanceTypeOptions []string) (string, error) {
 	client, err := NewEc2ClientE(t, region)
