@@ -394,6 +394,7 @@ func GetLaunchPermissionsForAmiE(t testing.TestingT, awsRegion string, amiID str
 // such as t2.micro, are not available in some of the newer AZs, while t3.micro is not available in some of the older
 // AZs, and if you have code that needs to run on a "small" instance across all AZs in many different regions, you can
 // use this function to automatically figure out which instance type you should use.
+// This function will fail the test if there is an error.
 func GetRecommendedInstanceType(t testing.TestingT, region string, instanceTypeOptions []string) string {
 	out, err := GetRecommendedInstanceTypeE(t, region, instanceTypeOptions)
 	require.NoError(t, err)
@@ -411,13 +412,23 @@ func GetRecommendedInstanceTypeE(t testing.TestingT, region string, instanceType
 	if err != nil {
 		return "", err
 	}
+	return GetRecommendedInstanceTypeWithClientE(t, client, instanceTypeOptions)
+}
 
-	availabilityZones, err := getAllAvailabilityZonesE(client)
+// GetRecommendedInstanceTypeWithClientE takes in a list of EC2 instance types (e.g., "t2.micro", "t3.micro") and returns the
+// first instance type in the list that is available in all Availability Zones (AZs) in the given region. If there's no
+// instance available in all AZs, this function exits with an error. This is useful because certain instance types,
+// such as t2.micro, are not available in some of the newer AZs, while t3.micro is not available in some of the older
+// AZs. If you have code that needs to run on a "small" instance across all AZs in many different regions, you can
+// use this function to automatically figure out which instance type you should use.
+// This function expects an authenticated EC2 client from the AWS SDK Go library.
+func GetRecommendedInstanceTypeWithClientE(t testing.TestingT, ec2Client *ec2.EC2, instanceTypeOptions []string) (string, error) {
+	availabilityZones, err := getAllAvailabilityZonesE(ec2Client)
 	if err != nil {
 		return "", err
 	}
 
-	instanceTypeOfferings, err := getInstanceTypeOfferingsE(client, instanceTypeOptions)
+	instanceTypeOfferings, err := getInstanceTypeOfferingsE(ec2Client, instanceTypeOptions)
 	if err != nil {
 		return "", err
 	}
