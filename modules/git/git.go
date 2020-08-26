@@ -38,7 +38,7 @@ func GetCurrentBranchNameE(t testing.TestingT) (string, error) {
 }
 
 // GetCurrentGitRef retrieves current branch name, lightweight (non-annotated) tag or
-// if tag points to the commit function will return exact tag value.
+// if tag points to the commit exact tag value.
 func GetCurrentGitRef(t testing.TestingT) string {
 	out, err := GetCurrentGitRefE(t)
 	if err != nil {
@@ -48,7 +48,7 @@ func GetCurrentGitRef(t testing.TestingT) string {
 }
 
 // GetCurrentGitRefE retrieves current branch name, lightweight (non-annotated) tag or
-// if tag points to the commit function will return exact tag value.
+// if tag points to the commit exact tag value.
 var GetCurrentGitRefE = func(t testing.TestingT) (string, error) {
 	out, err := GetCurrentBranchNameE(t)
 
@@ -68,7 +68,7 @@ var GetCurrentGitRefE = func(t testing.TestingT) (string, error) {
 }
 
 // GetTagE retrieves lightweight (non-annotated) tag or if tag points
-// to the commit function will return exact tag value.
+// to the commit exact tag value.
 func GetTagE(t testing.TestingT) (string, error) {
 	cmd := tagExecCommand("git", "describe", "--tags")
 	bytes, err := cmd.Output()
