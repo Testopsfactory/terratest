@@ -8,6 +8,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
+// Separate variables created to be able to mock commands in tests
 var branchNameExecCommand = exec.Command
 var tagExecCommand = exec.Command
 
