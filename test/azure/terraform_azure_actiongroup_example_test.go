@@ -22,7 +22,8 @@ func TestTerraformAzureActionGroupExample(t *testing.T) {
 	_random := strings.ToLower(random.UniqueId())
 
 	expectedResourceGroupName := fmt.Sprintf("tmp-rg-%s", _random)
-	expectedAppName := fmt.Sprintf("tmp-asp-$s", _random)
+	expectedAppName := fmt.Sprintf("tmp-asp-%s", _random)
+	expectedLocation := "westus2"
 	expectedShortName := "blah"
 	expectedEmailName := "emailTestName"
 	expectedEmailAddress := "sample@test.com"
@@ -30,17 +31,18 @@ func TestTerraformAzureActionGroupExample(t *testing.T) {
 	expectedWebhookServiceUri := "http://example.com/alert"
 
 	terraformOptions := &terraform.Options{
-		TerraformDir: "../../examples/azure/terraform-azure-appserviceplan-example",
+		TerraformDir: "../../examples/azure/terraform-azure-actiongroup-example",
 		Vars: map[string]interface{}{
-			"resource-group-name": expectedResourceGroupName,
-			"appName":             expectedAppName,
-			"shortName":           expectedShortName,
-			"enableEmail":         true,
-			"emailName":           expectedEmailAddress,
-			"emailAddress":        expectedEmailAddress,
-			"enableWebHook":       true,
-			"webhookName":         expectedWebhookName,
-			"webhookServiceUri":   expectedWebhookServiceUri,
+			"resourceGroupName": expectedResourceGroupName,
+			"appName":           expectedAppName,
+			"location":          expectedLocation,
+			"shortName":         expectedShortName,
+			"enableEmail":       true,
+			"emailName":         expectedEmailName,
+			"emailAddress":      expectedEmailAddress,
+			"enableWebHook":     true,
+			"webhookName":       expectedWebhookName,
+			"webhookServiceUri": expectedWebhookServiceUri,
 		},
 	}
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
@@ -49,7 +51,8 @@ func TestTerraformAzureActionGroupExample(t *testing.T) {
 	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
 	terraform.InitAndApply(t, terraformOptions)
 
-	actionGroupId := terraform.Output(t, terraformOptions, "planids")
+	assert := assert.New(t)
+	actionGroupId := terraform.Output(t, terraformOptions, "action_group_id")
 	assert.NotNil(actionGroupId)
 	assert.Contains(actionGroupId, expectedAppName)
 

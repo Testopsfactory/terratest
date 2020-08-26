@@ -1,10 +1,8 @@
-# Terraform Azure AKS Example
+# Terraform Azure Action Group Example
 
-This folder contains a Terraform module that deploys a basic App Service Plan in [Azure](https://azure.microsoft.com/) to demonstrate how you can use Terratest to write automated tests for your Azure Terraform code. 
+This folder contains a Terraform module that deploys an [Azure Action Group](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/action-groups) in [Azure](https://azure.microsoft.com/) to demonstrate how you can use Terratest to write automated tests for your Azure Terraform code. 
 
-This module deploys a Windows [Azure App Service Plan](https://azure.microsoft.com/en-us/services/app-service/)
-
-Check out [test/azure/terraform_azure_appserviceplan_example_test.go](/test/azure/terraform/azure_appserviceplan_example_test.go) to see how you can write automated tests for this module and validate the configuration of the parameters and options. 
+Check out [test/azure/terraform_azure_actiongroup_example_test.go](/test/azure/terraform/azure_actiongroup_example_test.go) to see how you can write automated tests for this module and validate the configuration of the parameters and options. 
 
 **WARNING**: This module and the automated tests for it deploy real resources into your Azure account which can cost you money. 
 
@@ -38,7 +36,7 @@ $ terraform destroy
 1. Create [Service Principal](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) then set the value to the environment variables. 
 1. Install [Golang](https://golang.org/) version `1.13+` required. 
 1. `cd test/azure`
-1. `go test -v -timeout 60m -tags azure -run TestTerraformAzureAppServicePlan`
+1. `go test -v -timeout 60m -tags azure -run TestTerraformAzureActionGroupExample`
 
 
 ### Example
@@ -49,5 +47,5 @@ $ export ARM_SUBSCRIPTION_ID={YOUR_SUBSCRIPTION_ID}
 $ export TF_VAR_client_id={YOUR_SERVICE_PRINCIPAL_APP_ID}
 $ export TF_VAR_client_secret={YOUR_SERVICE_PRINCIPAL_PASSWORD}
 $ cd test/azure
-$ go test -v -timeout 60m -tags azure -run TestTerraformAzureAppServicePlan
+$ go test -v -timeout 60m -tags azure -run TestTerraformAzureActionGroupExample
 ```

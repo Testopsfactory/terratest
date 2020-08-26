@@ -9,6 +9,8 @@
 
 provider "azurerm" {
   features {}
+  skip_provider_registration = true
+  # To understand why ^ is here, see https://github.com/hashicorp/terraform/issues/18180
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -16,7 +18,7 @@ provider "azurerm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
+  name     = var.resourceGroupName
   location = var.location
 }
 
@@ -26,9 +28,9 @@ resource "azurerm_resource_group" "rg" {
 
 resource "azurerm_monitor_action_group" "actionGroup" {
   name                = var.appName
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = azurerm_resource_group.rg.name
   short_name          = var.shortName
-  tags                = data.azurerm_resource_group.rg.tags
+  tags                = azurerm_resource_group.rg.tags
 
   dynamic "email_receiver" {
     for_each = var.enableEmail ? ["email_receiver"] : []

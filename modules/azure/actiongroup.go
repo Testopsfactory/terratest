@@ -2,18 +2,18 @@ package azure
 
 import (
 	"context"
+	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/insights"
-	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
 // GetActionGroupResource gets the AppServicePlan.
-// planName - required to find the AppServicePlan.
+// ruleName - required to find the AppServicePlan.
 // resGroupName - use an empty string if you have the AZURE_RES_GROUP_NAME environment variable set
 // subscriptionId - use an empty string if you have the ARM_SUBSCRIPTION_ID environment variable set
-func GetActionGroupResource(t *testing.TestingT, ruleName string, resGroupName string, subscriptionID string) *insights.ActionGroupResource {
-	actionGroupResource, err := getActionGroupResourceE(ruleName)
+func GetActionGroupResource(t *testing.T, ruleName string, resGroupName string, subscriptionID string) *insights.ActionGroupResource {
+	actionGroupResource, err := getActionGroupResourceE(ruleName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
 	return actionGroupResource
@@ -30,7 +30,7 @@ func getActionGroupResourceE(ruleName string, resGroupName string, subscriptionI
 		return nil, err
 	}
 
-	actionGroup, err := client.Get(context.Background(), rgName, planName)
+	actionGroup, err := client.Get(context.Background(), rgName, ruleName)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func getActionGroupClient(subscriptionID string) (*insights.ActionGroupsClient, 
 
 	metricAlertsClient := insights.NewActionGroupsClient(subID)
 
-	authorizer, err := azure.NewAuthorizer()
+	authorizer, err := NewAuthorizer()
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-variable "resource-group-name" {
+variable "resourceGroupName" {
   type        = string
   description = "Name of the resource group that exists in Azure"
 }
@@ -6,6 +6,11 @@ variable "resource-group-name" {
 variable "appName" {
   type        = string
   description = "The base name of the application used in the naming convention."
+}
+
+variable "location" {
+  type        = string
+  description = "(Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created."
 }
 
 variable "shortName" {
