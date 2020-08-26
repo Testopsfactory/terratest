@@ -8,31 +8,36 @@ import (
 	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
+var branchNameExecCommand = exec.Command
+var tagExecCommand = exec.Command
+
 // GetCurrentBranchName retrieves the current branch name.
 func GetCurrentBranchName(t testing.TestingT) string {
 	out, err := GetCurrentBranchNameE(t)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if out == "HEAD" {
-		return ""
-	}
 	return out
 }
 
-// GetCurrentBranchNameE retrieves the current branch name. Created as variable
-// to enable mocking within the tests.
-var GetCurrentBranchNameE = func(t testing.TestingT) (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+// GetCurrentBranchNameE retrieves the current branch name.
+func GetCurrentBranchNameE(t testing.TestingT) (string, error) {
+	cmd := branchNameExecCommand("git", "rev-parse", "--abbrev-ref", "HEAD")
 	bytes, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSpace(string(bytes)), nil
+
+	name := strings.TrimSpace(string(bytes))
+	if name == "HEAD" {
+		return "", nil
+	}
+
+	return name, nil
 }
 
-// GetCurrentGitRef retrieves current branch name or most recent tag from a commit. If the tag
-// points to the commit, then only tag is returned.
+// GetCurrentGitRef retrieves current branch name, lightweight (non-annotated) tag or
+// if tag points to the commit function will return exact tag value.
 func GetCurrentGitRef(t testing.TestingT) string {
 	out, err := GetCurrentGitRefE(t)
 	if err != nil {
@@ -41,9 +46,9 @@ func GetCurrentGitRef(t testing.TestingT) string {
 	return out
 }
 
-// GetCurrentGitRefE retrieves current branch name or most recent tag from a commit. If the tag
-// points to the commit, then only tag is returned.
-func GetCurrentGitRefE(t testing.TestingT) (string, error) {
+// GetCurrentGitRefE retrieves current branch name, lightweight (non-annotated) tag or
+// if tag points to the commit function will return exact tag value.
+var GetCurrentGitRefE = func(t testing.TestingT) (string, error) {
 	out, err := GetCurrentBranchNameE(t)
 
 	if err != nil {
@@ -54,17 +59,17 @@ func GetCurrentGitRefE(t testing.TestingT) (string, error) {
 		return out, nil
 	}
 
-	out, err = GetMostRecentTagE(t)
+	out, err = GetTagE(t)
 	if err != nil {
 		return "", err
 	}
 	return out, nil
 }
 
-// GetMostRecentTagE retrieves most recent tag that is reachable from a commit. If the tag points
-// to the commit, then only the tag is returned. Created as variable to enable mocking within tests.
-var GetMostRecentTagE = func(t testing.TestingT) (string, error) {
-	cmd := exec.Command("git", "describe", "--tags")
+// GetTagE retrieves lightweight (non-annotated) tag or if tag points
+// to the commit function will return exact tag value.
+func GetTagE(t testing.TestingT) (string, error) {
+	cmd := tagExecCommand("git", "describe", "--tags")
 	bytes, err := cmd.Output()
 	if err != nil {
 		return "", err
