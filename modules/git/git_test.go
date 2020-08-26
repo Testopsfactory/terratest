@@ -41,7 +41,7 @@ func TestGetCurrentRefReturnsTagValueForEmptyBranchName(t *testing.T) {
 	assert.Equal(t, "v0.0.1", name)
 }
 
-// Mock function for branchNameExecCommand return value
+// Mock function for branchNameExecCommand
 func branchNameExecCommandMock(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestExecCommandHelper", "--", command}
 	cs = append(cs, args...)
@@ -53,7 +53,7 @@ func branchNameExecCommandMock(command string, args ...string) *exec.Cmd {
 	return cmd
 }
 
-// Mock function for tagExecCommand return value
+// Mock function for tagExecCommand
 func tagExecCommandMock(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestExecCommandHelper", "--", command}
 	cs = append(cs, args...)
