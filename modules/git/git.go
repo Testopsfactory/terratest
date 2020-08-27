@@ -12,7 +12,8 @@ import (
 var branchNameExecCommand = exec.Command
 var tagExecCommand = exec.Command
 
-// GetCurrentBranchName retrieves the current branch name.
+// GetCurrentBranchName retrieves the current branch name or
+// empty string in case of detached state.
 func GetCurrentBranchName(t testing.TestingT) string {
 	out, err := GetCurrentBranchNameE(t)
 	if err != nil {
@@ -21,7 +22,8 @@ func GetCurrentBranchName(t testing.TestingT) string {
 	return out
 }
 
-// GetCurrentBranchNameE retrieves the current branch name.
+// GetCurrentBranchNameE retrieves the current branch name or
+// empty string in case of detached state.
 func GetCurrentBranchNameE(t testing.TestingT) (string, error) {
 	cmd := branchNameExecCommand("git", "rev-parse", "--abbrev-ref", "HEAD")
 	bytes, err := cmd.Output()
