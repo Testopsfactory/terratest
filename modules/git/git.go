@@ -49,7 +49,7 @@ func GetCurrentGitRef(t testing.TestingT) string {
 
 // GetCurrentGitRefE retrieves current branch name, lightweight (non-annotated) tag or
 // if tag points to the commit exact tag value.
-var GetCurrentGitRefE = func(t testing.TestingT) (string, error) {
+func GetCurrentGitRefE(t testing.TestingT) (string, error) {
 	out, err := GetCurrentBranchNameE(t)
 
 	if err != nil {
