@@ -55,7 +55,6 @@ func TestGetCurrentRefReturnsLightTagValue(t *testing.T) {
 }
 
 func setup(tempDirName string) {
-	os.RemoveAll(tempDirName)
 	url := "https://github.com/gruntwork-io/terratest.git"
 	err := exec.Command("git", "clone", url, tempDirName).Run()
 	if err != nil {
@@ -78,11 +77,13 @@ func teardown(tempDirName string) {
 }
 
 func TestMain(m *testing.M) {
+	os.Exit(testMainWrapper(m))
+}
+
+func testMainWrapper(m *testing.M) int {
 	tempDirName := "temp_terratest_clone"
 	setup(tempDirName)
+	defer teardown(tempDirName)
 
-	code := m.Run()
-
-	teardown(tempDirName)
-	os.Exit(code)
+	return m.Run()
 }
