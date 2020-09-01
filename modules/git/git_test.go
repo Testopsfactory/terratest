@@ -1,24 +1,26 @@
 package git
 
 import (
-	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestGetCurrentBranchNameReturnsBranchName(t *testing.T) {
+func testGetCurrentBranchNameReturnsBranchName(t *testing.T) {
 	err := exec.Command("git", "checkout", "master").Run()
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	name := GetCurrentBranchName(t)
 
 	assert.Equal(t, "master", name)
 }
 
-func TestGetCurrentBranchNameReturnsEmptyForDetachedState(t *testing.T) {
+func testGetCurrentBranchNameReturnsEmptyForDetachedState(t *testing.T) {
 	err := exec.Command("git", "checkout", "v0.0.1").Run()
 	assert.Nil(t, err)
 
@@ -27,63 +29,51 @@ func TestGetCurrentBranchNameReturnsEmptyForDetachedState(t *testing.T) {
 	assert.Empty(t, name)
 }
 
-func TestGetCurrentRefReturnsBranchName(t *testing.T) {
+func testGetCurrentRefReturnsBranchName(t *testing.T) {
 	err := exec.Command("git", "checkout", "master").Run()
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	name := GetCurrentGitRef(t)
 
 	assert.Equal(t, "master", name)
 }
 
-func TestGetCurrentRefReturnsTagValue(t *testing.T) {
+func testGetCurrentRefReturnsTagValue(t *testing.T) {
 	err := exec.Command("git", "checkout", "v0.0.1").Run()
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	name := GetCurrentGitRef(t)
 
 	assert.Equal(t, "v0.0.1", name)
 }
 
-func TestGetCurrentRefReturnsLightTagValue(t *testing.T) {
+func testGetCurrentRefReturnsLightTagValue(t *testing.T) {
 	err := exec.Command("git", "checkout", "58d3ea8").Run()
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	name := GetCurrentGitRef(t)
 
 	assert.Equal(t, "v0.0.1-1-g58d3ea8", name)
 }
 
-func setup(tempDirName string) {
+func TestGitRefChecks(t *testing.T) {
+	t.Parallel()
+
+	tmpdir, err := ioutil.TempDir("", "")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpdir)
+	gitWorkDir := filepath.Join(tmpdir, "terratest")
+
 	url := "https://github.com/gruntwork-io/terratest.git"
-	err := exec.Command("git", "clone", url, tempDirName).Run()
-	if err != nil {
-		fmt.Println("Test setup - Terratest git repository clone failed")
-		os.Exit(1)
-	}
+	err = exec.Command("git", "clone", url, gitWorkDir).Run()
+	require.NoError(t, err)
 
-	err = os.Chdir(tempDirName)
-	if err != nil {
-		fmt.Println("Test setup - Change directory failed")
-		os.Exit(1)
-	}
-}
+	err = os.Chdir(gitWorkDir)
+	require.NoError(t, err)
 
-func teardown(tempDirName string) {
-	err := os.RemoveAll("../" + tempDirName + "/")
-	if err != nil {
-		fmt.Println("Test teardown - remove temp directory failed")
-	}
-}
-
-func TestMain(m *testing.M) {
-	os.Exit(testMainWrapper(m))
-}
-
-func testMainWrapper(m *testing.M) int {
-	tempDirName := "temp_terratest_clone"
-	setup(tempDirName)
-	defer teardown(tempDirName)
-
-	return m.Run()
+	t.Run("GetCurrentBranchNameReturnsBranchName", testGetCurrentBranchNameReturnsBranchName)
+	t.Run("GetCurrentBranchNameReturnsEmptyForDetachedState", testGetCurrentBranchNameReturnsEmptyForDetachedState)
+	t.Run("GetCurrentRefReturnsBranchName", testGetCurrentRefReturnsBranchName)
+	t.Run("GetCurrentRefReturnsTagValue", testGetCurrentRefReturnsTagValue)
+	t.Run("GetCurrentRefReturnsLightTagValue", testGetCurrentRefReturnsLightTagValue)
 }
