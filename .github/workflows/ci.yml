@@ -27,6 +27,7 @@ on:
       target_repository:
         description: 'Name of the official terratest repo'
         required: true
+        default: 'gruntwork-io/terratest'
       target_pr:
         description: 'PR number on the official terratest repo'
         required: true
