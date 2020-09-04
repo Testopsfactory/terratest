@@ -68,28 +68,29 @@ jobs:
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         run: |
-          az account show
           cd test
-          TEST_VERSION=`date +"%Y%m%d%H%M"`
-          export ARM_SUBSCRIPTION_ID=`az account show --query "id" --output tsv`
 
           APP_ID=`echo $AZURE_CREDENTIALS | jq -r -c ".clientId"`
-
           APP_PASSWORD=`echo $AZURE_CREDENTIALS | jq -r -c ".clientSecret"`
-
           TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r -c ".tenantId"`
 
+          # if clientId, subscriptionId, tenantId doesn't provide to the go tests
+          # by default, terratest reads them from below environment variables
           export ARM_CLIENT_ID="$APP_ID"
           export ARM_CLIENT_SECRET="$APP_PASSWORD"
-          export ARM_SUBSCRIPTION_ID="$ARM_SUBSCRIPTION_ID"
+          export ARM_SUBSCRIPTION_ID=`az account show --query "id" --output tsv`
           export ARM_TENANT_ID="$TENANT_ID"
 
+          # some resources may require ssh keys (e.g. Kubernetes, VMs, etc.)
+          # terraform will read below environment variables
+          # if those values didn't provide to the terraform explicitly
           rm -rf ssh_key*
           ssh-keygen -m PEM -t rsa -b 4096 -f ./ssh_key -q -N ""
           export TF_VAR_ssh_public_key="$PWD/ssh_key.pub"
           export TF_VAR_client_id="$APP_ID"
           export TF_VAR_client_secret="$APP_PASSWORD"
 
+          # run the actual tests under the `azure` subfolder
           go test ./azure/* -v -timeout 90m
       - name: report back the result
         if: always()
