@@ -10,10 +10,10 @@ on:
         description: 'Name of the branch'
         required: true
       target_repository:
-        description: 'Repository name of the terratest'
+        description: 'Name of the target repo'
         required: true
       target_pr:
-        description: 'PR number on the terratest repo'
+        description: 'PR number on the official terratest repo'
         required: true
 
 jobs:
