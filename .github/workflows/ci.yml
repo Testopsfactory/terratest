@@ -9,7 +9,8 @@ name: ci-workflow
   # developer creates a branch in the forked repo
   # developer does the development 😎
   # developer creates a pr
-  # this pipeline will be triggered automatically, with the following input values
+  # webhook on source repo calls a webapp when the pr has been created
+  # this pipeline will be triggered automatically by the webapp, with the following input values
     # repo: name of the forked repo (e.g. xyz/terratest)
     # branch: branch name on the forked repo (e.g. feature/adding-some-important-module)
     # target_repository: home of the target_pr, which is the source repo (gruntwork-io/terratest)
