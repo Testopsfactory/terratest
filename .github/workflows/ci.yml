@@ -110,7 +110,7 @@ jobs:
             BODY_PAYLOAD="[Microsoft CI Bot] TL;DR; success :thumbsup:\n\nYou can check the status of the CI Pipeline logs here ; https://github.com/${CURRENT_REPOSITORY}/actions/runs/$RUN_ID"
             curl --request POST --header "Authorization: token ${GITHUB_TOKEN}" --header "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${TARGET_REPOSITORY}/issues/${TARGET_PR}/comments --data "{\"body\":\"${BODY_PAYLOAD}\"}"
           # if at least one of the previous steps failed, create a comment on the PR with the "failure" information
-          elif [ "$TEST_RESULT" != "failure" ] || [ "$TEST_LINT_RESULT" != "failure" ] || [ "$MODULE_LINT_RESULT" != "failure" ]; then
+          elif [ "$TEST_RESULT" == "failure" ] || [ "$TEST_LINT_RESULT" == "failure" ] || [ "$MODULE_LINT_RESULT" == "failure" ]; then
             BODY_PAYLOAD="[Microsoft CI Bot] TL;DR; failure :facepalm:\n\nYou can check the status of the CI Pipeline logs here ; https://github.com/${CURRENT_REPOSITORY}/actions/runs/$RUN_ID"
             curl --request POST --header "Authorization: token ${GITHUB_TOKEN}" --header "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${TARGET_REPOSITORY}/issues/${TARGET_PR}/comments --data "{\"body\":\"${BODY_PAYLOAD}\"}"
           fi
