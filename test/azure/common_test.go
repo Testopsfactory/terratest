@@ -6,7 +6,6 @@
 package azure
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -17,14 +16,8 @@ import (
 func TestGetTargetAzureSubscription(t *testing.T) {
 	t.Parallel()
 
-	var id string
-	var exists bool
-
-	//Lookup ARM_SUBSCRIPTION_ID env variable, CI requires this value to run all test.
-	if id, exists = os.LookupEnv(azure.AzureSubscriptionID); !exists {
-		fmt.Printf("ARM_SUBSCRIPTION_ID environment variable not set")
-		id = ""
-	}
+	//Check that ARM_SUBSCRIPTION_ID env variable is set, CI requires this value to run all test.
+	require.NotEmpty(t, os.Getenv(azure.AzureSubscriptionID), "ARM_SUBSCRIPTION_ID environment variable not set.")
 
 	type args struct {
 		subID string
@@ -37,7 +30,7 @@ func TestGetTargetAzureSubscription(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "subIDProvidedAsArg", args: args{subID: "test"}, want: "test", wantErr: false},
-		{name: "subIDNotProvidedFallbackToEnv", args: args{subID: ""}, want: id, wantErr: false},
+		{name: "subIDNotProvidedFallbackToEnv", args: args{subID: ""}, want: os.Getenv(azure.AzureSubscriptionID), wantErr: false},
 	}
 
 	for _, tt := range tests {
