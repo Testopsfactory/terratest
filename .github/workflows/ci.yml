@@ -106,6 +106,7 @@ jobs:
           TEST_LINT_RESULT: ${{ steps.azure_test_lint.conclusion }}
           MODULE_LINT_RESULT: ${{ steps.azure_module_lint.conclusion }}
         run: |
+          # if no PR number provided, simply exit...
           [[ -z "$TARGET_PR" ]] && { echo "No PR Number provided, exiting..." ; exit 0; }
 
           # if all the previous steps finished successfully, create a comment on the PR with the "success" information
