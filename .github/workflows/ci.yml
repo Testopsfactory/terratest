@@ -27,11 +27,11 @@ on:
         required: true
       target_repository:
         description: 'Name of the official terratest repo'
-        required: true
+        required: false
         default: 'gruntwork-io/terratest'
       target_pr:
         description: 'PR number on the official terratest repo'
-        required: true
+        required: false
 
 jobs:
   ci-job:
@@ -106,6 +106,8 @@ jobs:
           TEST_LINT_RESULT: ${{ steps.azure_test_lint.conclusion }}
           MODULE_LINT_RESULT: ${{ steps.azure_module_lint.conclusion }}
         run: |
+          [[ -z "$TARGET_PR" ]] && { echo "No PR Number provided, exiting..." ; exit 0; }
+
           # if all the previous steps finished successfully, create a comment on the PR with the "success" information
           if [ "$TEST_RESULT" == "success" ] && [ "$TEST_LINT_RESULT" == "success" ] && [ "$MODULE_LINT_RESULT" == "success" ]; then
             BODY_PAYLOAD="[Microsoft CI Bot] TL;DR; success :thumbsup:\n\nYou can check the status of the CI Pipeline logs here ; https://github.com/${CURRENT_REPOSITORY}/actions/runs/$RUN_ID"
