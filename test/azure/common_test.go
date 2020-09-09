@@ -23,6 +23,7 @@ func TestGetTargetAzureSubscription(t *testing.T) {
 	//Lookup ARM_SUBSCRIPTION_ID env variable, if not set, fail test.
 	if id, exists = os.LookupEnv(azure.AzureSubscriptionID); !exists {
 		fmt.Printf("ARM_SUBSCRIPTION_ID environment variable not set")
+		id = ""
 	}
 
 	type args struct {
@@ -43,7 +44,7 @@ func TestGetTargetAzureSubscription(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := azure.GetTargetAzureSubscription(tt.args.subID)
 
-			if tt.wantErr {
+			if !exists && tt.wantErr {
 				require.Error(t, err)
 			} else {
 				require.Equal(t, tt.want, got)
