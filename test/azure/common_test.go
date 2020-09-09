@@ -20,7 +20,7 @@ func TestGetTargetAzureSubscription(t *testing.T) {
 	var id string
 	var exists bool
 
-	//Lookup ARM_SUBSCRIPTION_ID env variable, if not set, fail test.
+	//Lookup ARM_SUBSCRIPTION_ID env variable, CI requires this value to run all test.
 	if id, exists = os.LookupEnv(azure.AzureSubscriptionID); !exists {
 		fmt.Printf("ARM_SUBSCRIPTION_ID environment variable not set")
 		id = ""
@@ -37,14 +37,14 @@ func TestGetTargetAzureSubscription(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "subIDProvidedAsArg", args: args{subID: "test"}, want: "test", wantErr: false},
-		{name: "subIDNotProvided", args: args{subID: ""}, want: id, wantErr: true},
+		{name: "subIDNotProvidedFallbackToEnv", args: args{subID: ""}, want: id, wantErr: false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := azure.GetTargetAzureSubscription(tt.args.subID)
 
-			if !exists && tt.wantErr {
+			if tt.wantErr {
 				require.Error(t, err)
 			} else {
 				require.Equal(t, tt.want, got)
