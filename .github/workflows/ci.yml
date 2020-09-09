@@ -42,24 +42,25 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.branch }}
-      - name: list module files to lint
+      - name: install golangci-lint binary
         run: |
-          [ -d "modules/azure" ] && ls -li "modules/azure"
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin v1.31.0
       - name: lint modules/azure folder
         id: azure_module_lint
-        uses: golangci/golangci-lint-action@v2.2.0
-        with:
-          version: v1.30
-          working-directory: modules/azure
-      - name: list test files to lint
         run: |
-          [ -d "test/azure" ] && ls -li "test/azure"
+          # list files to be linted
+          [ -d "modules/azure" ] && ls -li "modules/azure"
+
+          # run the linter
+          ./bin/golangci-lint run ./modules/azure/ --build-tags=azure
       - name: lint test/azure folder
         id: azure_test_lint
-        uses: golangci/golangci-lint-action@v2.2.0
-        with:
-          version: v1.30
-          working-directory: test/azure
+        run: |
+          # list files to be linted
+          [ -d "test/azure" ] && ls -li "test/azure"
+
+          # run the linter
+          ./bin/golangci-lint run ./test/azure/ --build-tags=azure
       - name: login to azure cli
         uses: azure/login@v1.1
         with:
