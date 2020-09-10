@@ -60,7 +60,7 @@ jobs:
           [ -d "test/azure" ] && ls -li "test/azure"
 
           # run the linter
-          ./bin/golangci-lint run ./test/azure/ --build-tags=azure -v
+          ./bin/golangci-lint run ./test/azure/ --build-tags=azure -v --timeout 5m0s
       - name: login to azure cli
         uses: azure/login@v1.1
         with:
