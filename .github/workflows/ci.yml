@@ -127,7 +127,7 @@ jobs:
 
           if [[ -z "$BODY_PAYLOAD" ]]
           then
-                echo "BODY_PAYLOAD is empty"
+            echo "BODY_PAYLOAD is empty"
           else
             echo "Here is the target repository: ${TARGET_REPOSITORY}"
             # TARGET_REPOSITORY is in {owner}/{repo format}
