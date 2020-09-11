@@ -125,7 +125,7 @@ jobs:
 
           # if pipeline has something to report back to the PR
 
-          if [ -z "$BODY_PAYLOAD" ]
+          if [[ -z "$BODY_PAYLOAD" ]]
           then
                 echo "BODY_PAYLOAD is empty"
           else
