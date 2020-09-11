@@ -9,7 +9,9 @@
 # ------------------------------------------------------------------------------
 
 provider "azurerm" {
-  version = "1.40.0"
+  features {}
+  skip_provider_registration = true
+  # To understand why ^ is here, see https://github.com/hashicorp/terraform/issues/18180
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
