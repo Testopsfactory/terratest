@@ -3,10 +3,12 @@
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
-package azure
+package test
 
 import (
 	"testing"
+
+	"github.com/gruntwork-io/terratest/modules/azure"
 
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +26,7 @@ func TestGetTagsForVirtualMachineE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetTagsForVirtualMachineE(t, vmName, rgName, subID)
+	_, err := azure.GetTagsForVirtualMachineE(t, vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -36,7 +38,7 @@ func TestGetSizeOfVirtualMachineE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetSizeOfVirtualMachineE(t, vmName, rgName, subID)
+	_, err := azure.GetSizeOfVirtualMachineE(t, vmName, rgName, subID)
 
 	require.Error(t, err)
 }
