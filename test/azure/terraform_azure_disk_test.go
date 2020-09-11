@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerraformAzureVmExample(t *testing.T) {
+func TestTerraformAzureDiskExample(t *testing.T) {
 	t.Parallel()
 
 	// Subscription ID, leave blank if available as an Environment Var
@@ -25,7 +25,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	// Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../examples/terraform-azure-disk-example",
+		TerraformDir: "../../examples/azure/terraform-azure-disk-example",
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
@@ -44,7 +44,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	diskName := terraform.Output(t, terraformOptions, "disk_name")
 	diskType := terraform.Output(t, terraformOptions, "disk_type")
 
-	// Check the disk type
-	actualDiskType := azure.GetTypeOfDisk(t, diskName, resourceGroupName, subID)
+	// Check the Disk Type
+	actualDiskType := azure.GetDiskType(t, diskName, resourceGroupName, subID)
 	assert.Equal(t, compute.DiskStorageAccountTypes(diskType), actualDiskType)
 }
