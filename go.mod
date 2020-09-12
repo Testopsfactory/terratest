@@ -5,10 +5,10 @@ go 1.14
 require (
 	cloud.google.com/go v0.51.0
 	cloud.google.com/go/storage v1.0.0
-	github.com/Azure/azure-sdk-for-go v38.1.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.9.3
-	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
-	github.com/Azure/go-autorest/autorest/validation v0.2.0 // indirect
+	github.com/Azure/azure-sdk-for-go v46.0.0+incompatible
+	github.com/Azure/go-autorest/autorest v0.11.5
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
+	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
 	github.com/aws/aws-lambda-go v1.13.3
 	github.com/aws/aws-sdk-go v1.27.1
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -22,7 +22,7 @@ require (
 	github.com/google/go-containerregistry v0.0.0-20200110202235-f4fb41bf00a3
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.3.1 // indirect
-	github.com/gruntwork-io/gruntwork-cli v0.5.1
+	github.com/gruntwork-io/gruntwork-cli v0.7.0
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/jstemmer/go-junit-report v0.9.1
 	github.com/magiconair/properties v1.8.0
@@ -33,8 +33,8 @@ require (
 	github.com/pquerna/otp v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
-	github.com/urfave/cli v1.22.1
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
+	github.com/urfave/cli v1.22.2
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
