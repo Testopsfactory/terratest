@@ -3,7 +3,7 @@
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate
 how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys an Availability Set with two attched Virtual Machines.
 
-* A [Availability Set](https://docs.microsoft.com/en-us/azure/virtual-machines/availability) that gives the module the following:
+* An [Availability Set](https://docs.microsoft.com/en-us/azure/virtual-machines/availability) that gives the module the following:
     * `Availability Set` with the name specified in the `availability_set_name` output variable.
     * `Fault Domain Count` with the value specified in the `availability_set_fdc` output variable.
 * A [Virtual Machines](https://azure.microsoft.com/en-us/services/virtual-machines/) that gives the Availability Set the following:
