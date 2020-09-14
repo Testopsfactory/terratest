@@ -17,10 +17,10 @@ const (
 
 	// AzureEnvironmentEnvName is the name of the Azure environment to use. Set to one of the following:
 	//
-	// "AzureChinaCloud":        ChinaCloud,
-	// "AzureGermanCloud":       GermanCloud,
-	// "AzurePublicCloud":       PublicCloud,
-	// "AzureUSGovernmentCloud": USGovernmentCloud,
+	// "AzureChinaCloud":        ChinaCloud
+	// "AzureGermanCloud":       GermanCloud
+	// "AzurePublicCloud":       PublicCloud
+	// "AzureUSGovernmentCloud": USGovernmentCloud
 	AzureEnvironmentEnvName = "AZURE_ENVIRONMENT"
 )
 
