@@ -83,6 +83,8 @@ jobs:
           export ARM_SUBSCRIPTION_ID=`az account show --query "id" --output tsv`
           export ARM_TENANT_ID="$TENANT_ID"
 
+          export ARM_SKIP_PROVIDER_REGISTRATION=true
+
           # some resources may require ssh keys (e.g. Kubernetes, VMs, etc.)
           # terraform will read below environment variables
           # if those values didn't provide to the terraform explicitly

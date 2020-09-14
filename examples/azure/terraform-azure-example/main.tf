@@ -1,7 +1,5 @@
 provider "azurerm" {
   features {}
-  skip_provider_registration = true
-  # To understand why ^ is here, see https://github.com/hashicorp/terraform/issues/18180
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
