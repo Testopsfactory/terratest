@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 	"strings"
-	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 )
@@ -114,6 +113,7 @@ func convertToNsgRuleSummary(name *string, rule *network.SecurityRulePropertiesF
 	} else {
 		summary.Description = ""
 	}
+
 	summary.Name = *name
 	summary.Protocol = string(rule.Protocol)
 	summary.SourcePortRange = *rule.SourcePortRange
@@ -127,14 +127,13 @@ func convertToNsgRuleSummary(name *string, rule *network.SecurityRulePropertiesF
 }
 
 // FindRuleByName looks for a matching rule name
-func (summarizedRules *NsgRuleSummaryList) FindRuleByName(t *testing.T, name string) NsgRuleSummary {
+func (summarizedRules *NsgRuleSummaryList) FindRuleByName(name string) NsgRuleSummary {
 	for _, r := range summarizedRules.SummarizedRules {
 		if r.Name == name {
 			return r
 		}
 	}
 
-	t.Error("Supplied rule name not found")
 	return NsgRuleSummary{}
 }
 
@@ -144,7 +143,7 @@ func (summarizedRule *NsgRuleSummary) AllowsDestinationPort(port string) bool {
 		return true
 	}
 
-	low, high := parsePortRangeString(summarizedRule.DestinationPortRange)
+	low, high := ParsePortRangeString(summarizedRule.DestinationPortRange)
 	portAsInt, _ := strconv.ParseInt(port, 10, 16)
 
 	if (port == "*") && (low == 0) && (high == 65535) {
@@ -160,7 +159,7 @@ func (summarizedRule *NsgRuleSummary) AllowsSourcePort(port string) bool {
 		return true
 	}
 
-	low, high := parsePortRangeString(summarizedRule.SourcePortRange)
+	low, high := ParsePortRangeString(summarizedRule.SourcePortRange)
 	portAsInt, _ := strconv.ParseInt(port, 10, 16)
 
 	if (port == "*") && (low == 0) && (high == 65535) {
@@ -170,10 +169,15 @@ func (summarizedRule *NsgRuleSummary) AllowsSourcePort(port string) bool {
 	return ((low <= uint16(portAsInt)) && (uint16(portAsInt) <= high))
 }
 
-// parsePortRangeString decodes a range string ("2-100") or a single digit ("22") and returns
+// ParsePortRangeString decodes a range string ("2-100") or a single digit ("22") and returns
 // a tuple in [low, hi] form. Note that if a single digit is supplied, both members of the
 // return tuple will be the same value (e.g., "22" returns (22, 22))
-func parsePortRangeString(rangeString string) (low uint16, hight uint16) {
+func ParsePortRangeString(rangeString string) (low uint16, hight uint16) {
+	// Is this an asterisk?
+	if rangeString == "*" {
+		return uint16(0), uint16(65535)
+	}
+
 	// Is this a range?
 	if strings.Index(rangeString, "-") == -1 {
 		val, _ := strconv.ParseInt(rangeString, 10, 16)
