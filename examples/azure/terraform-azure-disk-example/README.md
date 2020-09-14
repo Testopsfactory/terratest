@@ -1,11 +1,6 @@
 # Terraform Azure Disk Example
 
-**_Global Note 1.b: @Element@ denotes a field to be replaced_**
-
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys the following:
-
-**_Note 2.a: Where Ms service or doc link is not available use `@Module Name@` or `@Resource Name@`._**
-**_Note 2.b: For examples with individual resources only use a single level list._**
 
 - A [managed disk](https://azure.microsoft.com/en-us/services/storage/disks)
 
@@ -67,7 +62,7 @@ require (
 If we make changes to either the **go.mod** or the **go test file**, we should make sure that the go build command works still.
 
 ```powershell
-go build terraform_azure_@module_test.go
+go build terraform_azure_disk_test.go
 ```
 
 ## Review Environment Variables
