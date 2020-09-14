@@ -18,7 +18,7 @@ func TestTerraformAzureNsgExample(t *testing.T) {
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../../examples/terraform-azure-nsg-example",
+		TerraformDir: "../../examples/azure/terraform-azure-nsg-example",
 	}
 
 	defer terraform.Destroy(t, terraformOptions)
