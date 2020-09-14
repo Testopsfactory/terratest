@@ -1,5 +1,5 @@
 provider "azurerm" {
-  version = "=2.20.0"
+  version = "~>2.20"
   features {}
 }
 
@@ -19,7 +19,7 @@ terraform {
 
 resource "azurerm_resource_group" "main" {
   name     = "${var.prefix}-resources"
-  location = "East US"
+  location = var.location
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ resource "azurerm_virtual_machine" "main" {
   location                         = azurerm_resource_group.main.location
   resource_group_name              = azurerm_resource_group.main.name
   network_interface_ids            = [azurerm_network_interface.main.id]
-  vm_size                          = "Standard_B1s"
+  vm_size                          = var.vm_size
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
 

@@ -18,6 +18,12 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "location" {
+  description = "The Azure region in which to deploy this sample"
+  type        = string
+  default     = "East US"
+}
+
 variable "hostname" {
   description = "The hostname of the new VM to be configured"
   type        = string
@@ -40,5 +46,11 @@ variable "username" {
   description = "The username to be provisioned into your VM"
   type        = string
   default     = "testadmin"
+}
+
+variable "vm_size" {
+  description = "The size of the VM to deploy"
+  type        = string
+  default     = "Standard_B1s"
 }
 
