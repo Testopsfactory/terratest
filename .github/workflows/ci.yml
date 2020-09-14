@@ -32,6 +32,10 @@ on:
       target_pr:
         description: 'PR number on the official terratest repo'
         required: false
+      skip_provider_registration:
+        description: 'When set to true, terraform will skip provider registration (see: https://www.terraform.io/docs/providers/azurerm/index.html#skip_provider_registration for more information)'
+        required: true
+        default: 'false'
 
 jobs:
   ci-job:
@@ -82,10 +86,7 @@ jobs:
           export ARM_CLIENT_SECRET="$APP_PASSWORD"
           export ARM_SUBSCRIPTION_ID=`az account show --query "id" --output tsv`
           export ARM_TENANT_ID="$TENANT_ID"
-          
-          # This environment variable can be uncommented if the service principal only has contributor access and cannot register resource providers.  
-          # This will fail if the resource providers have never been registered in this subscription (see: https://www.terraform.io/docs/providers/azurerm/index.html#skip_provider_registration)
-          #export ARM_SKIP_PROVIDER_REGISTRATION=true
+          export ARM_SKIP_PROVIDER_REGISTRATION=${{ github.event.inputs.skip_provider_registration }}
 
           # some resources may require ssh keys (e.g. Kubernetes, VMs, etc.)
           # terraform will read below environment variables
