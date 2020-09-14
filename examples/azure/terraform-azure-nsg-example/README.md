@@ -1,4 +1,4 @@
-# Terraform Azure @Module@ Example
+# Terraform Azure NSG Example
 
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys the following:
 
@@ -35,9 +35,9 @@ it should be free, but you are completely responsible for all Azure charges.
 1. [Review environment variables](#review-environment-variables).
 1. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 1. `cd test`
-1. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/azure/terraform_azure_@module@_test.go](/test/terraform_azure_nic_test.go).
-1. `go build terraform_azure_@module@_test.go`
-1. `go test -v -run TestTerraformAzure@Module@Example`
+1. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/azure/terraform_azure_nsg_example_test.go](/test/terraform_azure_nsg_example_test.go).
+1. `go build terraform_azure_nsg_example_test.go`
+1. `go test -v -run TestTerraformAzureNsgExample`
 
 ## Module test APIs
 
@@ -92,12 +92,12 @@ Check that the `github.com/Azure/azure-sdk-for-go` version in your generated `go
 
 ### Check Azure-sdk-for-go version
 
-Let's make sure [go.mod](https://github.com/gruntwork-io/terratest/blob/master/go.mod) includes the appropriate [azure-sdk-for-go version](https://github.com/Azure/azure-sdk-for-go/releases/tag/v38.1.0):
+Let's make sure [go.mod](https://github.com/gruntwork-io/terratest/blob/master/go.mod) includes the appropriate [azure-sdk-for-go version](https://github.com/Azure/azure-sdk-for-go/releases/tag/v46.0.0):
 
 ```go
 require (
     ...
-    github.com/Azure/azure-sdk-for-go v38.1.0+incompatible
+    github.com/Azure/azure-sdk-for-go v46.0.0+incompatible
     ...
 )
 ```
@@ -105,7 +105,7 @@ require (
 If we make changes to either the **go.mod** or the **go test file**, we should make sure that the go build command works still.
 
 ```powershell
-go build terraform_azure_@module_test.go
+go build terraform_azure_nsg_example_test.go
 ```
 
 ## Review Environment Variables

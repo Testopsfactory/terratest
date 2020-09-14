@@ -33,7 +33,7 @@ func TestTerraformAzureNsgExample(t *testing.T) {
 	assert.Equal(t, 7, len(rules.SummarizedRules))
 
 	// We should have a rule named "allowSSH"
-	sshRule := rules.FindRuleByName(t, "allowSSH")
+	sshRule := rules.FindRuleByName("allowSSH")
 
 	// That rule should allow port 22 inbound
 	assert.True(t, sshRule.AllowsDestinationPort("22"))
