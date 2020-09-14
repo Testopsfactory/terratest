@@ -179,7 +179,7 @@ func ParsePortRangeString(rangeString string) (low uint16, hight uint16) {
 	}
 
 	// Is this a range?
-	if strings.Index(rangeString, "-") == -1 {
+	if !strings.Contains(rangeString, "-") {
 		val, _ := strconv.ParseInt(rangeString, 10, 16)
 		return uint16(val), uint16(val)
 	}
