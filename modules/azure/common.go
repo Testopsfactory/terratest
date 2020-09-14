@@ -3,6 +3,8 @@ package azure
 import (
 	"fmt"
 	"os"
+
+	autorest "github.com/Azure/go-autorest/autorest/azure"
 )
 
 const (
@@ -12,6 +14,10 @@ const (
 
 	// AzureResGroupName is an optional env variable custom to Terratest to designate a target Azure resource group
 	AzureResGroupName = "AZURE_RES_GROUP_NAME"
+
+	// AzureEnvironmentEnvName is the name of the Azure environment to use
+	// Set to AzureUSGovernmentCloud or AzurePublicCloud
+	AzureEnvironmentEnvName = "AZURE_ENVIRONMENT"
 )
 
 // GetTargetAzureSubscription is a helper function to find the correct target Azure Subscription ID,
@@ -51,4 +57,45 @@ func getTargetAzureResourceGroupName(resourceGroupName string) (string, error) {
 	}
 
 	return resourceGroupName, nil
+}
+
+// getDefaultEnvironmentName returns either a configured Azure environment name, or the public default
+func getDefaultEnvironmentName() string {
+	envName, exists := os.LookupEnv(AzureEnvironmentEnvName)
+
+	if !exists || envName == "" {
+		envName = autorest.PublicCloud.Name
+	}
+
+	return envName
+}
+
+// getEnvironmentBaseUri returns the ARM management URI for the configured Azure environment.
+func getEnvironmentBaseURI() (string, error) {
+	envName := getDefaultEnvironmentName()
+	env, err := autorest.EnvironmentFromName(envName)
+	if err != nil {
+		return "", err
+	}
+	return env.ResourceManagerEndpoint, nil
+}
+
+// getKeyVaultURISuffix returns the proper KeyVault URI suffix for the configured Azure environment.
+func getKeyVaultURISuffix() (string, error) {
+	envName := getDefaultEnvironmentName()
+	env, err := autorest.EnvironmentFromName(envName)
+	if err != nil {
+		return "", err
+	}
+	return env.KeyVaultDNSSuffix, nil
+}
+
+// getStorageURISuffix returns the proper storage URI suffix for the configured Azure environment
+func getStorageURISuffix() (string, error) {
+	envName := getDefaultEnvironmentName()
+	env, err := autorest.EnvironmentFromName(envName)
+	if err != nil {
+		return "", err
+	}
+	return env.StorageEndpointSuffix, nil
 }

@@ -16,8 +16,14 @@ func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesCli
 		return nil, err
 	}
 
+	// Lookup environment URI
+	baseURI, err := getEnvironmentBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
 	// Create a VM client
-	vmClient := compute.NewVirtualMachinesClient(subscriptionID)
+	vmClient := compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID)
 
 	// Create an authorizer
 	authorizer, err := NewAuthorizer()

@@ -15,7 +15,13 @@ func GetManagedClustersClientE(subscriptionID string) (*containerservice.Managed
 		return nil, err
 	}
 
-	managedServicesClient := containerservice.NewManagedClustersClient(subscriptionID)
+	// Lookup environment URI
+	baseURI, err := getEnvironmentBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	managedServicesClient := containerservice.NewManagedClustersClientWithBaseURI(baseURI, subscriptionID)
 	authorizer, err := NewAuthorizer()
 
 	if err != nil {
