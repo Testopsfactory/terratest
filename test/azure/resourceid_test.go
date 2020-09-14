@@ -3,6 +3,7 @@ package azure
 import (
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,11 +15,11 @@ func TestGetNameFromResourceID(t *testing.T) {
 	sliceNotFound := "noresourcepresent"
 
 	// verify success
-	resultSuccess := GetNameFromResourceID(sliceSource)
+	resultSuccess := azure.GetNameFromResourceID(sliceSource)
 	assert.Equal(t, sliceResult, resultSuccess)
 
 	// verify error when seperator not found
-	resultBadSeperator := GetNameFromResourceID(sliceNotFound)
+	resultBadSeperator := azure.GetNameFromResourceID(sliceNotFound)
 	assert.Equal(t, "", resultBadSeperator)
 }
 
@@ -31,18 +32,18 @@ func TestGetSliceLastValue(t *testing.T) {
 	sliceResult := "success"
 
 	// verify success
-	resultSuccess, err := GetSliceLastValueE(sliceSource, sliceSeperator)
+	resultSuccess, err := azure.GetSliceLastValueE(sliceSource, sliceSeperator)
 	require.NoError(t, err)
 	assert.Equal(t, sliceResult, resultSuccess)
 
 	// verify error when seperator not found
-	resultBadSeperator, err := GetSliceLastValueE(sliceSource, sliceBadSeperator)
+	resultBadSeperator, err := azure.GetSliceLastValueE(sliceSource, sliceBadSeperator)
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "invalid input or no slice available")
 	assert.Equal(t, "", resultBadSeperator)
 
 	// verify error when slice does not have seperator
-	resultNotFound, err := GetSliceLastValueE(sliceNotFound, sliceSeperator)
+	resultNotFound, err := azure.GetSliceLastValueE(sliceNotFound, sliceSeperator)
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "invalid input or no slice available")
 	assert.Equal(t, "", resultNotFound)
@@ -62,28 +63,28 @@ func TestGetSliceIndexValue(t *testing.T) {
 	sliceResult7 := "success"
 
 	// verify success index 0
-	resultSuccess0, err := GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector0)
+	resultSuccess0, err := azure.GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector0)
 	require.NoError(t, err)
 	assert.Equal(t, sliceResult0, resultSuccess0)
 
 	// verify success index 4
-	resultSuccess4, err := GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector4)
+	resultSuccess4, err := azure.GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector4)
 	require.NoError(t, err)
 	assert.Equal(t, sliceResult4, resultSuccess4)
 
 	// verify success index 7
-	resultSuccess7, err := GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector7)
+	resultSuccess7, err := azure.GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector7)
 	require.NoError(t, err)
 	assert.Equal(t, sliceResult7, resultSuccess7)
 
 	// verify error with negative index
-	resultNegIndex, err := GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelectorNeg)
+	resultNegIndex, err := azure.GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelectorNeg)
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "invalid input or no slice available")
 	assert.Equal(t, "", resultNegIndex)
 
 	// verify error when seperator not found
-	resultBadIndex10, err := GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector10)
+	resultBadIndex10, err := azure.GetSliceIndexValueE(sliceSource, sliceSeperator, sliceSelector10)
 	require.Error(t, err)
 	assert.Equal(t, err.Error(), "index out of slice range")
 	assert.Equal(t, "", resultBadIndex10)
