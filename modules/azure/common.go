@@ -15,8 +15,12 @@ const (
 	// AzureResGroupName is an optional env variable custom to Terratest to designate a target Azure resource group
 	AzureResGroupName = "AZURE_RES_GROUP_NAME"
 
-	// AzureEnvironmentEnvName is the name of the Azure environment to use
-	// Set to AzureUSGovernmentCloud or AzurePublicCloud
+	// AzureEnvironmentEnvName is the name of the Azure environment to use. Set to one of the following:
+	//
+	// "AzureChinaCloud":        ChinaCloud,
+	// "AzureGermanCloud":       GermanCloud,
+	// "AzurePublicCloud":       PublicCloud,
+	// "AzureUSGovernmentCloud": USGovernmentCloud,
 	AzureEnvironmentEnvName = "AZURE_ENVIRONMENT"
 )
 
