@@ -1,79 +1,79 @@
-variable "resourceGroupName" {
-  type        = string
+variable "resource_group_name" {
   description = "Name of the resource group that exists in Azure"
+  type        = string
 }
 
-variable "appName" {
-  type        = string
+variable "app_name" {
   description = "The base name of the application used in the naming convention."
+  type        = string
 }
 
 variable "location" {
+  description = "Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created."
   type        = string
-  description = "(Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created."
 }
 
-variable "shortName" {
+variable "short_name" {
+  description = "Shorthand name for SMS texts."
   type        = string
-  description = "Required shorthand name for SMS texts."
 }
 
-variable "enableEmail" {
-  type        = bool
+variable "enable_email" {
   description = "Enable email alert capabilities"
-  default     = false
-}
-
-variable "emailName" {
-  type        = string
-  description = "Friendly Name for email address"
-  default     = ""
-}
-
-variable "emailAddress" {
-  type        = string
-  description = "email address to send alerts to"
-  default     = ""
-}
-
-variable "enableSMS" {
   type        = bool
-  description = "Enable Texting Alerts"
   default     = false
 }
 
-variable "smsName" {
+variable "email_name" {
+  description = "Friendly Name for email address"
   type        = string
-  description = "Friendly Name for phone number"
   default     = ""
 }
 
-variable "smsCountryCode" {
-  type        = number
+variable "email_address" {
+  description = "email address to send alerts to"
+  type        = string
+  default     = ""
+}
+
+variable "enable_sms" {
+  description = "Enable Texting Alerts"
+  type        = bool
+  default     = false
+}
+
+variable "sms_name" {
+  description = "Friendly Name for phone number"
+  type        = string
+  default     = ""
+}
+
+variable "sms_country_code" {
   description = "Country Code for phone number"
+  type        = number
   default     = 1
 }
 
-variable "smsPhoneNumber" {
-  type        = number
+variable "sms_phone_number" {
   description = "Phone number for text alerts"
+  type        = number
   default     = 0
 }
 
-variable "enableWebHook" {
-  type        = bool
+variable "enable_webhook" {
   description = "Enable Web Hook Alerts"
+  type        = bool
   default     = false
 }
 
-variable "webhookName" {
-  type        = string
+variable "webhook_name" {
   description = "Friendly Name for web hook"
+  type        = string
   default     = ""
 }
 
-variable "webhookServiceUri" {
-  type        = string
+variable "webhook_service_uri" {
   description = "The full URI for the webhook"
+  type        = string
   default     = ""
 }

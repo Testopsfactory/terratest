@@ -23,26 +23,20 @@ func TestTerraformAzureActionGroupExample(t *testing.T) {
 
 	expectedResourceGroupName := fmt.Sprintf("tmp-rg-%s", _random)
 	expectedAppName := fmt.Sprintf("tmp-asp-%s", _random)
-	expectedLocation := "westus2"
-	expectedShortName := "blah"
-	expectedEmailName := "emailTestName"
-	expectedEmailAddress := "sample@test.com"
-	expectedWebhookName := "webhookTestName"
-	expectedWebhookServiceUri := "http://example.com/alert"
 
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../../examples/azure/terraform-azure-actiongroup-example",
 		Vars: map[string]interface{}{
-			"resourceGroupName": expectedResourceGroupName,
-			"appName":           expectedAppName,
-			"location":          expectedLocation,
-			"shortName":         expectedShortName,
-			"enableEmail":       true,
-			"emailName":         expectedEmailName,
-			"emailAddress":      expectedEmailAddress,
-			"enableWebHook":     true,
-			"webhookName":       expectedWebhookName,
-			"webhookServiceUri": expectedWebhookServiceUri,
+			"resource_group_name": expectedResourceGroupName,
+			"app_name":            expectedAppName,
+			"location":            "westus2",
+			"short_name":          "blah",
+			"enable_email":        true,
+			"email_name":          "emailTestName",
+			"email_address":       "sample@test.com",
+			"enable_webhook":      true,
+			"webhook_name":        "webhookTestName",
+			"webhook_service_uri": "http://example.com/alert",
 		},
 	}
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created

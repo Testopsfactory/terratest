@@ -8,18 +8,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// GetActionGroupResource gets the AppServicePlan.
-// ruleName - required to find the AppServicePlan.
+// GetActionGroupResource gets the ActionGroupResource.
+// ruleName - required to find the ActionGroupResource.
 // resGroupName - use an empty string if you have the AZURE_RES_GROUP_NAME environment variable set
 // subscriptionId - use an empty string if you have the ARM_SUBSCRIPTION_ID environment variable set
 func GetActionGroupResource(t *testing.T, ruleName string, resGroupName string, subscriptionID string) *insights.ActionGroupResource {
-	actionGroupResource, err := getActionGroupResourceE(ruleName, resGroupName, subscriptionID)
+	actionGroupResource, err := GetActionGroupResourceE(ruleName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
 	return actionGroupResource
 }
 
-func getActionGroupResourceE(ruleName string, resGroupName string, subscriptionID string) (*insights.ActionGroupResource, error) {
+// GetActionGroupResourceE gets the ActionGroupResource with Error details on error.
+// ruleName - required to find the ActionGroupResource.
+// resGroupName - use an empty string if you have the AZURE_RES_GROUP_NAME environment variable set
+// subscriptionId - use an empty string if you have the ARM_SUBSCRIPTION_ID environment variable set
+func GetActionGroupResourceE(ruleName string, resGroupName string, subscriptionID string) (*insights.ActionGroupResource, error) {
 	rgName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {
 		return nil, err
