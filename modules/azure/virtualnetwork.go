@@ -53,7 +53,10 @@ func CheckSubnetContainsIP(t testing.TestingT, IP string, subnetName string, vne
 
 // CheckSubnetContainsIPE checks if the Private IP is contined in the Subnet Address Range
 func CheckSubnetContainsIPE(t testing.TestingT, ipAddress string, subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
-	subnetPrefix := GetSubnetIPRange(t, subnetName, vnetName, resGroupName, subscriptionID)
+	subnetPrefix, err := GetSubnetIPRangeE(t, subnetName, vnetName, resGroupName, subscriptionID)
+	if err != nil {
+		return false, err
+	}
 
 	// Convert the IP to a net IP address
 	ip := net.ParseIP(ipAddress)
