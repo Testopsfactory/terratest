@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTerraformAzureExample(t *testing.T) {
+func TestTerraformAzureResourceGroupExample(t *testing.T) {
 	t.Parallel()
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
