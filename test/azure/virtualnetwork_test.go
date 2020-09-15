@@ -17,16 +17,6 @@ The below tests are currently stubbed out, with the expectation that they will t
 If/when methods can be mocked or Create/Delete APIs are added, these tests can be extended.
 */
 
-func TestGetVirtualNetworksClientE(t *testing.T) {
-	t.Parallel()
-
-	subID := ""
-
-	_, err := azure.GetVirtualNetworksClientE(subID)
-
-	require.Error(t, err)
-}
-
 func TestGetVirtualNetworkE(t *testing.T) {
 	t.Parallel()
 
@@ -35,16 +25,6 @@ func TestGetVirtualNetworkE(t *testing.T) {
 	subID := ""
 
 	_, err := azure.GetVirtualNetworkE(t, vnetName, rgName, subID)
-
-	require.Error(t, err)
-}
-
-func TestGetSubnetClientE(t *testing.T) {
-	t.Parallel()
-
-	subID := ""
-
-	_, err := azure.GetSubnetClientE(subID)
 
 	require.Error(t, err)
 }

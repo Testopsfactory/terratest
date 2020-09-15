@@ -17,16 +17,6 @@ The below tests are currently stubbed out, with the expectation that they will t
 If/when methods can be mocked or Create/Delete APIs are added, these tests can be extended.
 */
 
-func TestGetPublicIPAddressClientE(t *testing.T) {
-	t.Parallel()
-
-	subID := ""
-
-	_, err := azure.GetPublicIPAddressClientE(subID)
-
-	require.Error(t, err)
-}
-
 func TestGetPublicIPAddressE(t *testing.T) {
 	t.Parallel()
 
