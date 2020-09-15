@@ -6,14 +6,12 @@ import (
 
 // GetSubscriptionClient is a helper function that will setup an Azure Subscription client on your behalf
 func GetSubscriptionClient() (*subscriptions.Client, error) {
-	// Lookup environment URI
-	baseURI, err := getEnvironmentBaseURI()
+	// Create a Subscription client
+	factory := NewClientFactory()
+	subscriptionClient, err := factory.GetSubscriptionClientE()
 	if err != nil {
 		return nil, err
 	}
-
-	// Create a Subscription client
-	subscriptionClient := subscriptions.NewClientWithBaseURI(baseURI)
 
 	// Create an authorizer
 	authorizer, err := NewAuthorizer()

@@ -9,28 +9,21 @@ import (
 
 // GetManagedClustersClientE is a helper function that will setup an Azure ManagedClusters client on your behalf
 func GetManagedClustersClientE(subscriptionID string) (*containerservice.ManagedClustersClient, error) {
-	// Validate Azure subscription ID
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	// Get a client
+	factory := NewClientFactory()
+	client, err := factory.GetManagedClustersClientE(subscriptionID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Lookup environment URI
-	baseURI, err := getEnvironmentBaseURI()
-	if err != nil {
-		return nil, err
-	}
-
-	managedServicesClient := containerservice.NewManagedClustersClientWithBaseURI(baseURI, subscriptionID)
+	// setup authorizer
 	authorizer, err := NewAuthorizer()
-
 	if err != nil {
 		return nil, err
 	}
 
-	managedServicesClient.Authorizer = *authorizer
-
-	return &managedServicesClient, nil
+	client.Authorizer = *authorizer
+	return &client, nil
 }
 
 // GetManagedClusterE will return ManagedCluster

@@ -10,20 +10,12 @@ import (
 
 // GetVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf
 func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesClient, error) {
-	// Validate Azure subscription ID
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Lookup environment URI
-	baseURI, err := getEnvironmentBaseURI()
-	if err != nil {
-		return nil, err
-	}
-
 	// Create a VM client
-	vmClient := compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID)
+	factory := NewClientFactory()
+	vmClient, err := factory.GetVirtualMachinesClientE(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create an authorizer
 	authorizer, err := NewAuthorizer()
