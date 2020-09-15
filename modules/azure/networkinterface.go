@@ -68,12 +68,7 @@ func ipConfigHasPublicIP(ipConfig *network.InterfaceIPConfiguration) bool {
 		return false
 	}
 
-	stringIPConfig := string(byteIPConfig)
-	if !(strings.Contains(stringIPConfig, "publicIPAddress")) {
-		return false
-	}
-
-	return true
+	return strings.Contains(string(byteIPConfig), "publicIPAddress")
 }
 
 // GetNetworkInterfacePrivateIPs gets a list of the Private IPs of a Network Interface configs
