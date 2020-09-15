@@ -101,7 +101,10 @@ func bindRuleList(dest *[]NsgRuleSummary, source network.SecurityRuleListResultI
 	for source.NotDone() {
 		v := source.Value()
 		*dest = append(*dest, convertToNsgRuleSummary(v.Name, v.SecurityRulePropertiesFormat))
-		source.NextWithContext(context.Background())
+		err := source.NextWithContext(context.Background())
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
