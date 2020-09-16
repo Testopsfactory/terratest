@@ -81,7 +81,7 @@ resource "azurerm_availability_set" "main" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine" "main" {
-  name                             = "${var.prefix}-01"
+  name                             = "${var.prefix}-vm"
   location                         = azurerm_resource_group.main.location
   resource_group_name              = azurerm_resource_group.main.name
   network_interface_ids            = [azurerm_network_interface.main.id]
@@ -106,7 +106,7 @@ resource "azurerm_virtual_machine" "main" {
   }
 
   os_profile {
-    computer_name  = "${var.prefix}-01"
+    computer_name  = var.prefix
     admin_username = var.user_name
     admin_password = var.password
   }
