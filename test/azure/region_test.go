@@ -26,7 +26,7 @@ func TestGetRandomRegionExcludesForbiddenRegions(t *testing.T) {
 	approvedRegions := []string{"canadacentral", "eastus", "eastus2", "westus", "westus2", "westeurope", "northeurope", "uksouth", "southeastasia", "eastasia", "japaneast", "australiacentral"}
 	forbiddenRegions := []string{"westus2", "japaneast"}
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 50; i++ {
 		randomRegion := azure.GetRandomRegion(t, approvedRegions, forbiddenRegions, "")
 		assert.NotContains(t, forbiddenRegions, randomRegion)
 	}
