@@ -12,6 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTerraformAzureAvailabilitySetExample(t *testing.T) {
@@ -19,7 +20,6 @@ func TestTerraformAzureAvailabilitySetExample(t *testing.T) {
 
 	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
 	subscriptionID := ""
-	prefix := "terratest-avs"
 
 	// Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
@@ -27,9 +27,10 @@ func TestTerraformAzureAvailabilitySetExample(t *testing.T) {
 		TerraformDir: "../../examples/azure/terraform-azure-availabilityset-example",
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]interface{}{
-			"prefix": prefix,
-		},
+		// Vars: map[string]interface{}{
+		//	"location": "East US",
+		//  "vm_size": "Standard_B1ls",
+		// },
 	}
 
 	// At the end of the test, run `terraform destroy` to clean up any resources that were created
@@ -41,7 +42,8 @@ func TestTerraformAzureAvailabilitySetExample(t *testing.T) {
 	// Run `terraform output` to get the values of output variables
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	availabilitySetName := terraform.Output(t, terraformOptions, "availability_set_name")
-	fdc, _ := strconv.ParseInt(terraform.Output(t, terraformOptions, "availability_set_fdc"), 10, 32)
+	fdc, err := strconv.ParseInt(terraform.Output(t, terraformOptions, "availability_set_fdc"), 10, 32)
+	require.NoError(t, err)
 	avsSetFDC := int32(fdc)
 	vmName := terraform.Output(t, terraformOptions, "vm_name")
 

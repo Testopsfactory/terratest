@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -28,23 +27,43 @@ func AvailabilitySetExistsE(t testing.TestingT, avsName string, resGroupName str
 
 // CheckAvailabilitySetContainsVM checks if the Virtual Machine is contained in the Availability Set VMs
 func CheckAvailabilitySetContainsVM(t testing.TestingT, vmName string, avsName string, resGroupName string, subscriptionID string) bool {
-	avsVMs, err := GetAvailabilitySetVMsE(t, avsName, resGroupName, subscriptionID)
-	if err != nil {
-		return false
-	}
-
-	return collections.ListContains(avsVMs, strings.ToLower(vmName))
+	success, err := CheckAvailabilitySetContainsVME(t, vmName, avsName, resGroupName, subscriptionID)
+	require.NoError(t, err)
+	return success
 }
 
-// GetAvailabilitySetVMs gets a list of VM names in the specified Azure Availability Set
-func GetAvailabilitySetVMs(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) []string {
-	vms, err := GetAvailabilitySetVMsE(t, avsName, resGroupName, subscriptionID)
+// CheckAvailabilitySetContainsVME checks if the Virtual Machine is contained in the Availability Set VMs
+func CheckAvailabilitySetContainsVME(t testing.TestingT, vmName string, avsName string, resGroupName string, subscriptionID string) (bool, error) {
+	client, err := GetAvailabilitySetClientE(subscriptionID)
+	if err != nil {
+		return false, err
+	}
+
+	// Get the Availability Set
+	avs, err := client.Get(context.Background(), resGroupName, avsName)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the VM is found in the AVS VM collection and return true
+	for _, vm := range *avs.VirtualMachines {
+		if strings.EqualFold(vmName, GetNameFromResourceID(*vm.ID)) {
+			return true, nil
+		}
+	}
+
+	return false, NewNotFoundError("Virtual Machine", vmName, avsName)
+}
+
+// GetAvailabilitySetVMNamesInCaps gets a list of VM names in the specified Azure Availability Set
+func GetAvailabilitySetVMNamesInCaps(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) []string {
+	vms, err := GetAvailabilitySetVMNamesInCapsE(t, avsName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vms
 }
 
-// GetAvailabilitySetVMsE gets a list of VM names in the specified Azure Availability Set
-func GetAvailabilitySetVMsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) ([]string, error) {
+// GetAvailabilitySetVMNamesInCapsE gets a list of VM names in the specified Azure Availability Set
+func GetAvailabilitySetVMNamesInCapsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) ([]string, error) {
 	client, err := GetAvailabilitySetClientE(subscriptionID)
 	if err != nil {
 		return nil, err
@@ -57,8 +76,12 @@ func GetAvailabilitySetVMsE(t testing.TestingT, avsName string, resGroupName str
 
 	vms := []string{}
 
+	// Get the names for all VMs in the Availability Set
 	for _, vm := range *avs.VirtualMachines {
-		vms = append(vms, strings.ToLower(GetNameFromResourceID(*vm.ID)))
+		// IDs are returned in ALL CAPS for this property
+		if vmName := GetNameFromResourceID(*vm.ID); len(vmName) > 0 {
+			vms = append(vms, vmName)
+		}
 	}
 
 	return vms, nil

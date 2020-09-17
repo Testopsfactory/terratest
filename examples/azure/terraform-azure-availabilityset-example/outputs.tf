@@ -11,5 +11,5 @@ output "availability_set_fdc" {
 }
 
 output "vm_name" {
-  value = azurerm_virtual_machine.main01.name
+  value = azurerm_virtual_machine.main.name
 }

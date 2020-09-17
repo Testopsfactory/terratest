@@ -12,12 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
-	subscriptionID = ""
-	rgName         = "terratest-rg"
-)
-
 /*
 The below tests are currently stubbed out, with the expectation that they will throw errors.
 If/when methods to create and delete network resources are added, these tests can be extended.
@@ -25,6 +19,8 @@ If/when methods to create and delete network resources are added, these tests ca
 
 func TestGetAvailabilitySetClientE(t *testing.T) {
 	t.Parallel()
+
+	subscriptionID := ""
 
 	client, err := GetAvailabilitySetClientE(subscriptionID)
 
@@ -36,8 +32,35 @@ func TestGetAvailabilitySetE(t *testing.T) {
 	t.Parallel()
 
 	avsName := ""
+	rgName := ""
+	subscriptionID := ""
 
 	_, err := GetAvailabilitySetE(t, avsName, rgName, subscriptionID)
+
+	require.Error(t, err)
+}
+
+func TestCheckAvailabilitySetContainsVME(t *testing.T) {
+	t.Parallel()
+
+	vmName := ""
+	avsName := ""
+	rgName := ""
+	subscriptionID := ""
+
+	_, err := CheckAvailabilitySetContainsVME(t, vmName, avsName, rgName, subscriptionID)
+
+	require.Error(t, err)
+}
+
+func TestGetAvailabilitySetVMNamesInCapsE(t *testing.T) {
+	t.Parallel()
+
+	avsName := ""
+	rgName := ""
+	subscriptionID := ""
+
+	_, err := GetAvailabilitySetVMNamesInCapsE(t, avsName, rgName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -46,18 +69,10 @@ func TestGetAvailabilitySetFaultDomainCountE(t *testing.T) {
 	t.Parallel()
 
 	avsName := ""
+	rgName := ""
+	subscriptionID := ""
 
 	_, err := GetAvailabilitySetFaultDomainCountE(t, avsName, rgName, subscriptionID)
-
-	require.Error(t, err)
-}
-
-func TestGetAvailabilitySetVMsE(t *testing.T) {
-	t.Parallel()
-
-	avsName := ""
-
-	_, err := GetAvailabilitySetVMsE(t, avsName, rgName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -66,6 +81,8 @@ func TestAvailabilitySetExistsE(t *testing.T) {
 	t.Parallel()
 
 	avsName := ""
+	rgName := ""
+	subscriptionID := ""
 
 	_, err := AvailabilitySetExistsE(t, avsName, rgName, subscriptionID)
 

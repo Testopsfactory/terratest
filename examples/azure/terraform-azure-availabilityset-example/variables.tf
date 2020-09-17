@@ -25,31 +25,7 @@ variable "avs_fault_domain_count" {
 }
 
 variable "location" {
-  description = "Resources Azure deploy location"
+  description = "The Azure location where to deploy your resources too"
   type        = string
   default     = "East US"
-}
-
-variable "password" {
-  description = "The password to configure for SSH access"
-  type        = string
-  default     = "HorriblePassword1234!"
-}
-
-variable "prefix" {
-  description = "The prefix that will be attached to all resources deployed"
-  type        = string
-  default     = "terratest-avs"
-}
-
-variable "username" {
-  description = "The username to be provisioned into your VM"
-  type        = string
-  default     = "testadmin"
-}
-
-variable "vm_size" {
-  description = "The username to be provisioned into your VM"
-  type        = string
-  default ="Standard_B1s"
 }
