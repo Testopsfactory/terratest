@@ -35,11 +35,11 @@ it should be free, but you are completely responsible for all Azure charges.
 1. Configure your Azure credentials using one of the [supported methods for Azure CLI
    tools](https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest)
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
-1. Configure your [Go test environment](../../examples/azure/README.md)
+1. Configure your [Go test environment](../README.md)
 1. `cd test/azure`
 1. `go build terraform_azure_availabilityset_example_test.go`
 1. `go test -v -run TestTerraformAzureAvailabilitySetExample`
 
-For a list of availabile test APIs please refer to the [API Documentation](../../modules/azure/README.md).
+For a list of availabile test APIs please refer to the [API Documentation](/modules/azure/README.md).
 
 
