@@ -24,6 +24,7 @@ const (
 	// "AzureGermanCloud":       GermanCloud
 	// "AzurePublicCloud":       PublicCloud
 	// "AzureUSGovernmentCloud": USGovernmentCloud
+	// "AzureStackCloud":		 Azure stack
 	AzureEnvironmentEnvName = "AZURE_ENVIRONMENT"
 )
 
