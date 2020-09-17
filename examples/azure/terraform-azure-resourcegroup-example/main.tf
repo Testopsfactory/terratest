@@ -6,6 +6,6 @@ resource "random_string" "default" {
 }
 
 resource "azurerm_resource_group" "main" {
-  name     =  format("%s-%s-%s", "terratest", lower(random_string.default.result), "keyvault")
+  name     =  format("%s-%s-%s", "terratest", lower(random_string.default.result), "resourcegroup")
   location = var.location
 }
