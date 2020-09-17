@@ -2,7 +2,7 @@
 
 Terratest uses Go to make calls to Azure through the azure-sdk-for-go library and independently confirm the actual Azure resource property matches the expected state provided by Terraform output variables. 
 
-* Instructions for running each Azure Terratest module are included in each Terraform example folder:
+* Instructions for running each Azure Terratest module are included in each Terraform example sub-folder:
     * examples/azure/terraform-azure-*-example/README.md
 * Tests wich assert against expected Terraform output values are located in the the respective go files of the folder:
     * [test/azure/terraform-azure-*-example_test.go](../../test/azure)
