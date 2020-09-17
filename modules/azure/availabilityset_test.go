@@ -3,12 +3,11 @@
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
-package test
+package azure
 
 import (
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,7 +26,7 @@ If/when methods to create and delete network resources are added, these tests ca
 func TestGetAvailabilitySetClientE(t *testing.T) {
 	t.Parallel()
 
-	client, err := azure.GetAvailabilitySetClientE(subscriptionID)
+	client, err := GetAvailabilitySetClientE(subscriptionID)
 
 	require.NoError(t, err)
 	assert.NotEmpty(t, *client)
@@ -38,7 +37,7 @@ func TestGetAvailabilitySetE(t *testing.T) {
 
 	avsName := ""
 
-	_, err := azure.GetAvailabilitySetE(t, avsName, rgName, subscriptionID)
+	_, err := GetAvailabilitySetE(t, avsName, rgName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -48,7 +47,7 @@ func TestGetAvailabilitySetFaultDomainCountE(t *testing.T) {
 
 	avsName := ""
 
-	_, err := azure.GetAvailabilitySetFaultDomainCountE(t, avsName, rgName, subscriptionID)
+	_, err := GetAvailabilitySetFaultDomainCountE(t, avsName, rgName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -58,7 +57,7 @@ func TestGetAvailabilitySetVMsE(t *testing.T) {
 
 	avsName := ""
 
-	_, err := azure.GetAvailabilitySetVMsE(t, avsName, rgName, subscriptionID)
+	_, err := GetAvailabilitySetVMsE(t, avsName, rgName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -68,7 +67,7 @@ func TestAvailabilitySetExistsE(t *testing.T) {
 
 	avsName := ""
 
-	_, err := azure.AvailabilitySetExistsE(t, avsName, rgName, subscriptionID)
+	_, err := AvailabilitySetExistsE(t, avsName, rgName, subscriptionID)
 
 	require.Error(t, err)
 }
