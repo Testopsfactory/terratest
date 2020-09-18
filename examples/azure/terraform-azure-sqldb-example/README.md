@@ -2,7 +2,7 @@
 
 This folder contains a Terraform module that deploys a sql database in [Azure](https://azure.microsoft.com/) to demonstrate how you can use Terratest to write automated tests for your Azure Terraform code. 
 
-This module deploys [Azure SQL Database](https://azure.microsoft.com/en-us/services/sql-database/.
+This module deploys an [Azure SQL server](https://azure.microsoft.com/en-us/services/sql-database/campaign/) and an [Azure SQL Database](https://azure.microsoft.com/en-us/services/sql-database/).
 
 Check out [test/azure/terraform_azure_sqldb_example_test.go](./../../../test/azure/terraform_azure_sqldb_example_test.go) to see how you can write automated tests for this module and validate the configuration of the parameters and options. 
 

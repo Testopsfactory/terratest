@@ -51,18 +51,6 @@ resource "azurerm_sql_server" "sqlserver" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY AZURE STORAGE ACCOUNT
-# ---------------------------------------------------------------------------------------------------------------------
-
-resource "azurerm_storage_account" "sql" {
-  name                     = var.sa_name
-  resource_group_name      = azurerm_resource_group.sql.name
-  location                 = azurerm_resource_group.sql.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AZURE SQL DATA BASE
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -71,14 +59,6 @@ resource "azurerm_sql_database" "sqldb" {
   resource_group_name = azurerm_resource_group.sql.name
   location            = azurerm_resource_group.sql.location
   server_name         = azurerm_sql_server.sqlserver.name
-
-  extended_auditing_policy {
-    storage_endpoint                        = azurerm_storage_account.sql.primary_blob_endpoint
-    storage_account_access_key              = azurerm_storage_account.sql.primary_access_key
-    storage_account_access_key_is_secondary = true
-    retention_in_days                       = 6
-  }
-
   tags = {
     environment = var.tags
   }
