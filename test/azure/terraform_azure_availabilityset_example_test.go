@@ -29,7 +29,7 @@ func TestTerraformAzureAvailabilitySetExample(t *testing.T) {
 		// Variables to pass to our Terraform code using -var options
 		// Vars: map[string]interface{}{
 		//	"location": "East US",
-		//  "vm_size": "Standard_B1ls",
+		//	"vm_size": "Standard_B1ls",
 		// },
 	}
 
