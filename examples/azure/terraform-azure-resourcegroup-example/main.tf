@@ -1,11 +1,4 @@
-resource "random_string" "default" {
-  length = 3  
-  lower = true
-  number = false
-  special = false
-}
-
-resource "azurerm_resource_group" "main" {
-  name     =  format("%s-%s-%s", "terratest", lower(random_string.default.result), "resourcegroup")
+resource "azurerm_resource_group" "example" {
+  name     =  var.resource_group_name
   location = var.location
 }
