@@ -92,22 +92,15 @@ func GetAvailabilitySetVMNamesInCapsE(t testing.TestingT, avsName string, resGro
 func GetAvailabilitySetFaultDomainCount(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) int32 {
 	avsFaultDomainCount, err := GetAvailabilitySetFaultDomainCountE(t, avsName, resGroupName, subscriptionID)
 	require.NoError(t, err)
-
 	return avsFaultDomainCount
 }
 
 // GetAvailabilitySetFaultDomainCountE gets the Fault Domain Count for the specified Azure Availability Set
 func GetAvailabilitySetFaultDomainCountE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (int32, error) {
-	client, err := GetAvailabilitySetClientE(subscriptionID)
+	avs, err := GetAvailabilitySetE(t, avsName, resGroupName, subscriptionID)
 	if err != nil {
 		return -1, err
 	}
-
-	avs, err := client.Get(context.Background(), resGroupName, avsName)
-	if err != nil {
-		return -1, err
-	}
-
 	return *avs.PlatformFaultDomainCount, nil
 }
 
