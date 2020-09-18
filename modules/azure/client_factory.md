@@ -41,11 +41,11 @@ func SomeMethod() {
 }
 ```
 
-Now we have code that can be used with any cloud environment just by changing the base URI we pass to the clients (Public is shown in above example). But where do we get these URI's?
+Now we have code that can be used with any cloud environment just by changing the base URI we pass to the clients (Public is shown in above example). 
 
 ## Environment URI Lookups
 
-Rather than hardcode such URI's, we should look these up. Fortunately, the Autorest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the Autorest `EnvironmentFromName(envName string)` function to return the appropriate structure. 
+Rather than hardcode these URI's, they should be looked up from an authoritiative source. Fortunately, the Autorest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the Autorest `EnvironmentFromName(envName string)` function to return the appropriate structure. 
 
 This Environment structure has the following fields configured for each cloud environment:
 
@@ -89,10 +89,9 @@ To configure different cloud environments, we will use the same `AZURE_ENVIRONME
 |"AzureUSGovernmentCloud"   |USGovernmentCloud  |
 |"AzureStackCloud"          |Azure stack        |
 
-
 Note that when using the "AzureStackCloud" setting, you must also set the `AZURE_ENVIRONMENT_FILEPATH` variable to point to a JSON file containing your Azure Stack URI deatils.
 
->NOTE: The default behavior of the `client_factory` is to use the AzurePublicCloud environment. This requires no work >from the developer to configure, and ensures consistent behavior with the current SDK code.
+>NOTE: The default behavior of the `client_factory` is to use the AzurePublicCloud environment. This requires no work from the developer to configure, and ensures consistent behavior with the current SDK code.       
 
 ## Usage Patterns
 
