@@ -47,6 +47,7 @@ func CheckAvailabilitySetContainsVME(t testing.TestingT, vmName string, avsName 
 
 	// Check if the VM is found in the AVS VM collection and return true
 	for _, vm := range *avs.VirtualMachines {
+		// VM IDs are always ALL CAPS in this property so ignoring case
 		if strings.EqualFold(vmName, GetNameFromResourceID(*vm.ID)) {
 			return true, nil
 		}
