@@ -39,5 +39,3 @@ it should be free, but you are completely responsible for all Azure charges.
 1. `cd test/azure`
 1. `go build terraform_azure_availabilityset_example_test.go`
 1. `go test -v -run TestTerraformAzureAvailabilitySetExample`
-
-
