@@ -9,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 )
 
 func TestPortRangeParsing(t *testing.T) {
@@ -40,24 +42,51 @@ func TestPortRangeParsing(t *testing.T) {
 	}
 }
 
+func TestNsgRuleSummaryConverstion(t *testing.T) {
+	// Quick test to make sure the safe nil handling is working
+	var name = "test name"
+	var sdkStruct = network.SecurityRulePropertiesFormat{}
+	sdkStruct.Description = nil
+	sdkStruct.Protocol = network.SecurityRuleProtocolTCP
+	sdkStruct.SourcePortRange = nil
+	sdkStruct.DestinationPortRange = nil
+	sdkStruct.SourceAddressPrefix = nil
+	sdkStruct.DestinationAddressPrefix = nil
+	sdkStruct.Access = network.SecurityRuleAccessAllow
+	sdkStruct.Priority = nil
+	sdkStruct.Direction = network.SecurityRuleDirectionInbound
+
+	// Verify the nil values were correctly defaulted to "" without a panic
+	result := convertToNsgRuleSummary(&name, &sdkStruct)
+	assert.Equal(t, "", result.Description)
+	assert.Equal(t, "", result.SourcePortRange)
+	assert.Equal(t, "", result.DestinationPortRange)
+	assert.Equal(t, "", result.SourceAddressPrefix)
+	assert.Equal(t, "", result.DestinationAddressPrefix)
+	assert.Equal(t, int32(0), result.Priority)
+}
+
 func TestAllowSourcePort(t *testing.T) {
 	var cases = []struct {
 		CaseName        string
 		SourcePortRange string
+		Access          string
 		TestPort        string
 		Result          bool
 	}{
-		{"22 allows 22", "22", "22", true},
-		{"22 doesn't allow 80", "22", "80", false},
-		{"Any allows any", "*", "*", true},
+		{"22 allowed", "22", "Allow", "22", true},
+		{"22 denied", "22", "Deny", "22", false},
+		{"22 doesn't allow 80", "22", "Allow", "80", false},
+		{"Any allows any", "*", "Allow", "*", true},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.CaseName, func(t *testing.T) {
 			summary := NsgRuleSummary{}
 			summary.SourcePortRange = tt.SourcePortRange
+			summary.Access = tt.Access
 			result := summary.AllowsSourcePort(t, tt.TestPort)
-			assert.Equal(t, result, tt.Result)
+			assert.Equal(t, tt.Result, result)
 		})
 	}
 }
@@ -66,20 +95,23 @@ func TestAllowDestinationPort(t *testing.T) {
 	var cases = []struct {
 		CaseName        string
 		SourcePortRange string
+		Access          string
 		TestPort        string
 		Result          bool
 	}{
-		{"22 allows 22", "22", "22", true},
-		{"22 doesn't allow 80", "22", "80", false},
-		{"Any allows any", "*", "*", true},
+		{"22 allowed", "22", "Allow", "22", true},
+		{"22 denied", "22", "Deny", "22", false},
+		{"22 doesn't allow 80", "22", "Allow", "80", false},
+		{"Any allows any", "*", "Allow", "*", true},
 	}
 
 	for _, tt := range cases {
 		t.Run(tt.CaseName, func(t *testing.T) {
 			summary := NsgRuleSummary{}
 			summary.DestinationPortRange = tt.SourcePortRange
+			summary.Access = tt.Access
 			result := summary.AllowsDestinationPort(t, tt.TestPort)
-			assert.Equal(t, result, tt.Result)
+			assert.Equal(t, tt.Result, result)
 		})
 	}
 }
