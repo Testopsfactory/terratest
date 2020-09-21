@@ -184,7 +184,7 @@ func (summarizedRules *NsgRuleSummaryList) FindRuleByName(name string) NsgRuleSu
 func (summarizedRule *NsgRuleSummary) AllowsDestinationPort(t *testing.T, port string) bool {
 	allowed, err := portRangeAllowsPort(summarizedRule.DestinationPortRange, port)
 	assert.NoError(t, err)
-	return allowed
+	return allowed && (summarizedRule.Access == "Allow")
 }
 
 // AllowsSourcePort checks to see if the rule allows a specific source port. This is helpful when verifying
@@ -192,7 +192,7 @@ func (summarizedRule *NsgRuleSummary) AllowsDestinationPort(t *testing.T, port s
 func (summarizedRule *NsgRuleSummary) AllowsSourcePort(t *testing.T, port string) bool {
 	allowed, err := portRangeAllowsPort(summarizedRule.SourcePortRange, port)
 	assert.NoError(t, err)
-	return allowed
+	return allowed && (summarizedRule.Access == "Allow")
 }
 
 // portRangeAllowsPort is the internal impelmentation of AllowsSourcePort and AllowsDestinationPort.
@@ -213,10 +213,12 @@ func portRangeAllowsPort(portRange string, port string) (bool, error) {
 		return false, parseErr
 	}
 
+	// If the user wants to check "all", make sure we parsed input range to include all ports.
 	if (port == "*") && (low == 0) && (high == 65535) {
 		return true, nil
 	}
 
+	// Evaluate and return
 	return ((uint16(portAsInt) >= low) && (uint16(portAsInt) <= high)), nil
 }
 
@@ -224,12 +226,12 @@ func portRangeAllowsPort(portRange string, port string) (bool, error) {
 // a tuple in [low, hi] form. Note that if a single digit is supplied, both members of the
 // return tuple will be the same value (e.g., "22" returns (22, 22))
 func parsePortRangeString(rangeString string) (uint16, uint16, error) {
-	// Is this an asterisk?
+	// An asterisk means all ports
 	if rangeString == "*" {
 		return uint16(0), uint16(65535), nil
 	}
 
-	// Is this a range?
+	// Check for range string that contains hyphen separator
 	if !strings.Contains(rangeString, "-") {
 		val, parseErr := strconv.ParseInt(rangeString, 10, 16)
 		if parseErr != nil {
@@ -238,27 +240,33 @@ func parsePortRangeString(rangeString string) (uint16, uint16, error) {
 		return uint16(val), uint16(val), nil
 	}
 
+	// Split the rang into parts and validate
 	parts := strings.Split(rangeString, "-")
 	if len(parts) != 2 {
 		return 0, 0, fmt.Errorf("Invalid port range specified; must be of the format '{low port}-{high port}'")
 	}
 
+	// Assume the low port is listed first; parse it
 	lowVal, parseErr := strconv.ParseInt(parts[0], 10, 16)
 	if parseErr != nil {
 		return 0, 0, parseErr
 	}
 
+	// Assume the hi port is listed first; parse it
 	highVal, parseErr := strconv.ParseInt(parts[1], 10, 16)
 	if parseErr != nil {
 		return 0, 0, parseErr
 	}
 
-	// Normalize ordering
+	// Normalize ordering in the case that low and hi were reversed.
+	// This should _never_ happen, as the Azure API's won't allow it, but
+	// we shouldn't fail if it's the case.
 	if lowVal > highVal {
 		temp := lowVal
 		lowVal = highVal
 		highVal = temp
 	}
 
+	// Return values
 	return uint16(lowVal), uint16(highVal), nil
 }
