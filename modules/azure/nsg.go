@@ -11,6 +11,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// NsgRuleSummaryList holds a colleciton of NsgRuleSummary rules
+type NsgRuleSummaryList struct {
+	SummarizedRules []NsgRuleSummary
+}
+
+// NsgRuleSummary is a string-based (non-pointer) summary of an NSG rule with several helper methods attached
+// to help with verification of rule configuratoin.
+type NsgRuleSummary struct {
+	Name                     string
+	Description              string
+	Protocol                 string
+	SourcePortRange          string
+	DestinationPortRange     string
+	SourceAddressPrefix      string
+	DestinationAddressPrefix string
+	Access                   string
+	Priority                 int32
+	Direction                string
+}
+
 // GetDefaultNsgRulesClientE returns a rules client which can be used to read the list of *default* security rules
 // defined on an network security group. Note that the "default" rules are those provided implicitly
 // by the Azure platform.
@@ -55,7 +75,7 @@ func GetCustomNsgRulesClientE(subscriptionID string) (network.SecurityRulesClien
 	return nsgClient, nil
 }
 
-// GetAllNSGRulesE returns a slice containing the combined "default" and "custom" rules from a network
+// GetAllNSGRulesE returns an NsgRuleSummaryList instance containing the combined "default" and "custom" rules from a network
 // security group.
 func GetAllNSGRulesE(resourceGroupName, nsgName, subscriptionID string) (NsgRuleSummaryList, error) {
 	defaultRulesClient, err := GetDefaultNsgRulesClientE(subscriptionID)
@@ -100,26 +120,6 @@ func GetAllNSGRulesE(resourceGroupName, nsgName, subscriptionID string) (NsgRule
 	return ruleList, nil
 }
 
-// NsgRuleSummaryList holds a colleciton of NsgRuleSummary rules
-type NsgRuleSummaryList struct {
-	SummarizedRules []NsgRuleSummary
-}
-
-// NsgRuleSummary is a string-based (non-pointer) summary of an NSG rule with several helper methods attached
-// to help with verification of rule configuratoin.
-type NsgRuleSummary struct {
-	Name                     string
-	Description              string
-	Protocol                 string
-	SourcePortRange          string
-	DestinationPortRange     string
-	SourceAddressPrefix      string
-	DestinationAddressPrefix string
-	Access                   string
-	Priority                 int32
-	Direction                string
-}
-
 // bindRuleList takes a raw list of security rules from the SDK and converts them into a string-based
 // summary struct.
 func bindRuleList(source network.SecurityRuleListResultIterator) ([]NsgRuleSummary, error) {
@@ -139,24 +139,36 @@ func bindRuleList(source network.SecurityRuleListResultIterator) ([]NsgRuleSumma
 // rules properties and name into a single, string-based struct.
 func convertToNsgRuleSummary(name *string, rule *network.SecurityRulePropertiesFormat) NsgRuleSummary {
 	summary := NsgRuleSummary{}
-
-	if rule.Description != nil {
-		summary.Description = *rule.Description
-	}
-
-	summary.Name = *name
+	summary.Description = safePtrToString(rule.Description)
+	summary.Name = safePtrToString(name)
 	summary.Protocol = string(rule.Protocol)
-	summary.SourcePortRange = *rule.SourcePortRange
-	summary.DestinationPortRange = *rule.DestinationPortRange
-	summary.SourceAddressPrefix = *rule.SourceAddressPrefix
-	summary.DestinationAddressPrefix = *rule.DestinationAddressPrefix
+	summary.SourcePortRange = safePtrToString(rule.SourcePortRange)
+	summary.DestinationPortRange = safePtrToString(rule.DestinationPortRange)
+	summary.SourceAddressPrefix = safePtrToString(rule.SourceAddressPrefix)
+	summary.DestinationAddressPrefix = safePtrToString(rule.DestinationAddressPrefix)
 	summary.Access = string(rule.Access)
-	summary.Priority = *rule.Priority
+	summary.Priority = safePtrToInt32(rule.Priority)
 	summary.Direction = string(rule.Direction)
 	return summary
 }
 
-// FindRuleByName looks for a matching rule by name within a collection of rules.
+// safePtrToString converts a string pointer to a non-pointer string value, or to "" if the pointer is nil.
+func safePtrToString(raw *string) string {
+	if raw == nil {
+		return ""
+	}
+	return *raw
+}
+
+// safePtrToInt32 converts a int32 pointer to a non-pointer int32 value, or to 0 if the pointer is nil.
+func safePtrToInt32(raw *int32) int32 {
+	if raw == nil {
+		return 0
+	}
+	return *raw
+}
+
+// FindRuleByName looks for a matching rule by name within the current collection of rules.
 func (summarizedRules *NsgRuleSummaryList) FindRuleByName(name string) NsgRuleSummary {
 	for _, r := range summarizedRules.SummarizedRules {
 		if r.Name == name {
@@ -239,6 +251,13 @@ func parsePortRangeString(rangeString string) (uint16, uint16, error) {
 	highVal, parseErr := strconv.ParseInt(parts[1], 10, 16)
 	if parseErr != nil {
 		return 0, 0, parseErr
+	}
+
+	// Normalize ordering
+	if lowVal > highVal {
+		temp := lowVal
+		lowVal = highVal
+		highVal = temp
 	}
 
 	return uint16(lowVal), uint16(highVal), nil
