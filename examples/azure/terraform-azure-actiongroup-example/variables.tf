@@ -1,3 +1,13 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# ENVIRONMENT VARIABLES
+# Define these secrets as environment variables
+# ---------------------------------------------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------------------------------------------
+# REQUIRED PARAMETERS
+# You must provide a value for each of these parameters.
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "resource_group_name" {
   description = "Name of the resource group that exists in Azure"
   type        = string
@@ -17,6 +27,11 @@ variable "short_name" {
   description = "Shorthand name for SMS texts."
   type        = string
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
 
 variable "enable_email" {
   description = "Enable email alert capabilities"
