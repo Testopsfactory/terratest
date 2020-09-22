@@ -3,6 +3,8 @@
 # This is an example of how to deploy an Azure AKS cluster with load balancer in front of the service 
 # to handle providing the public interface into the cluster.
 # ---------------------------------------------------------------------------------------------------------------------
+# See test/azure/terraform_azure_aks_example_test.go for how to write automated tests for this code.
+# ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
   # This module is now only being tested with Terraform 0.13.x. However, to make upgrading easier, we are setting

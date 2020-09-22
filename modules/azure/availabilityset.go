@@ -9,15 +9,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// AvailabilitySetExists indicates whether the speficied Azure Availability Set exists
+// AvailabilitySetExists indicates whether the speficied Azure Availability Set exists.
+// This function would fail the test if there is an error.
 func AvailabilitySetExists(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) bool {
 	exists, err := AvailabilitySetExistsE(t, avsName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
-// AvailabilitySetExistsE indicates whether the speficied Azure Availability Set exists.
-// This function would fail the test if there is an error.
+// AvailabilitySetExistsE indicates whether the speficied Azure Availability Set exists
 func AvailabilitySetExistsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (bool, error) {
 	_, err := GetAvailabilitySetE(t, avsName, resGroupName, subscriptionID)
 	if err != nil {
@@ -26,15 +26,15 @@ func AvailabilitySetExistsE(t testing.TestingT, avsName string, resGroupName str
 	return true, nil
 }
 
-// CheckAvailabilitySetContainsVM checks if the Virtual Machine is contained in the Availability Set VMs
+// CheckAvailabilitySetContainsVM checks if the Virtual Machine is contained in the Availability Set VMs.
+// This function would fail the test if there is an error.
 func CheckAvailabilitySetContainsVM(t testing.TestingT, vmName string, avsName string, resGroupName string, subscriptionID string) bool {
 	success, err := CheckAvailabilitySetContainsVME(t, vmName, avsName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return success
 }
 
-// CheckAvailabilitySetContainsVME checks if the Virtual Machine is contained in the Availability Set VMs.
-// This function would fail the test if there is an error.
+// CheckAvailabilitySetContainsVME checks if the Virtual Machine is contained in the Availability Set VMs
 func CheckAvailabilitySetContainsVME(t testing.TestingT, vmName string, avsName string, resGroupName string, subscriptionID string) (bool, error) {
 	client, err := GetAvailabilitySetClientE(subscriptionID)
 	if err != nil {
@@ -58,15 +58,15 @@ func CheckAvailabilitySetContainsVME(t testing.TestingT, vmName string, avsName 
 	return false, NewNotFoundError("Virtual Machine", vmName, avsName)
 }
 
-// GetAvailabilitySetVMNamesInCaps gets a list of VM names in the specified Azure Availability Set
+// GetAvailabilitySetVMNamesInCaps gets a list of VM names in the specified Azure Availability Set.
+// This function would fail the test if there is an error.
 func GetAvailabilitySetVMNamesInCaps(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) []string {
 	vms, err := GetAvailabilitySetVMNamesInCapsE(t, avsName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vms
 }
 
-// GetAvailabilitySetVMNamesInCapsE gets a list of VM names in the specified Azure Availability Set.
-// This function would fail the test if there is an error.
+// GetAvailabilitySetVMNamesInCapsE gets a list of VM names in the specified Azure Availability Set
 func GetAvailabilitySetVMNamesInCapsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) ([]string, error) {
 	client, err := GetAvailabilitySetClientE(subscriptionID)
 	if err != nil {
@@ -91,15 +91,15 @@ func GetAvailabilitySetVMNamesInCapsE(t testing.TestingT, avsName string, resGro
 	return vms, nil
 }
 
-// GetAvailabilitySetFaultDomainCount gets the Fault Domain Count for the specified Azure Availability Set
+// GetAvailabilitySetFaultDomainCount gets the Fault Domain Count for the specified Azure Availability Set.
+// This function would fail the test if there is an error.
 func GetAvailabilitySetFaultDomainCount(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) int32 {
 	avsFaultDomainCount, err := GetAvailabilitySetFaultDomainCountE(t, avsName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return avsFaultDomainCount
 }
 
-// GetAvailabilitySetFaultDomainCountE gets the Fault Domain Count for the specified Azure Availability Set.
-// This function would fail the test if there is an error.
+// GetAvailabilitySetFaultDomainCountE gets the Fault Domain Count for the specified Azure Availability Set
 func GetAvailabilitySetFaultDomainCountE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (int32, error) {
 	avs, err := GetAvailabilitySetE(t, avsName, resGroupName, subscriptionID)
 	if err != nil {
@@ -108,8 +108,7 @@ func GetAvailabilitySetFaultDomainCountE(t testing.TestingT, avsName string, res
 	return *avs.PlatformFaultDomainCount, nil
 }
 
-// GetAvailabilitySetE gets an Availability Set in the specified Azure Resource Group.
-// This function would fail the test if there is an error.
+// GetAvailabilitySetE gets an Availability Set in the specified Azure Resource Group
 func GetAvailabilitySetE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (*compute.AvailabilitySet, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
@@ -132,8 +131,7 @@ func GetAvailabilitySetE(t testing.TestingT, avsName string, resGroupName string
 	return &avs, nil
 }
 
-// GetAvailabilitySetClientE gets a new Availability Set client in the specified Azure Subscription.
-// This function would fail the test if there is an error.
+// GetAvailabilitySetClientE gets a new Availability Set client in the specified Azure Subscription
 func GetAvailabilitySetClientE(subscriptionID string) (*compute.AvailabilitySetsClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)

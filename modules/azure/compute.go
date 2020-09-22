@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// GetVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf
-func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesClient, error) {
+// GetVirtualMachineClientE is a helper function that will setup an Azure Virtual Machine client on your behalf
+func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -31,7 +31,8 @@ func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesCli
 	return &vmClient, nil
 }
 
-// GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine
+// GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetSizeOfVirtualMachine(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) compute.VirtualMachineSizeTypes {
 	size, err := GetSizeOfVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -39,8 +40,7 @@ func GetSizeOfVirtualMachine(t testing.TestingT, vmName string, resGroupName str
 	return size
 }
 
-// GetSizeOfVirtualMachineE gets the size type of the given Azure Virtual Machine.
-// This function would fail the test if there is an error.
+// GetSizeOfVirtualMachineE gets the size type of the given Azure Virtual Machine
 func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (compute.VirtualMachineSizeTypes, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
@@ -49,7 +49,7 @@ func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName st
 	}
 
 	// Create a VM client
-	vmClient, err := GetVirtualMachineClient(subscriptionID)
+	vmClient, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
 		return "", err
 	}
@@ -63,7 +63,8 @@ func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName st
 	return vm.VirtualMachineProperties.HardwareProfile.VMSize, nil
 }
 
-// GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map
+// GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map.
+// This function would fail the test if there is an error.
 func GetTagsForVirtualMachine(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) map[string]string {
 	tags, err := GetTagsForVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -71,8 +72,7 @@ func GetTagsForVirtualMachine(t testing.TestingT, vmName string, resGroupName st
 	return tags
 }
 
-// GetTagsForVirtualMachineE gets the tags of the given Virtual Machine as a map.
-// This function would fail the test if there is an error.
+// GetTagsForVirtualMachineE gets the tags of the given Virtual Machine as a map
 func GetTagsForVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (map[string]string, error) {
 	// Setup a blank map to populate and return
 	tags := make(map[string]string)
@@ -84,7 +84,7 @@ func GetTagsForVirtualMachineE(t testing.TestingT, vmName string, resGroupName s
 	}
 
 	// Create a VM client
-	vmClient, err := GetVirtualMachineClient(subscriptionID)
+	vmClient, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
 		return tags, err
 	}

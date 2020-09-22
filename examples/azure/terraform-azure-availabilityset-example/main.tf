@@ -1,5 +1,9 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# See test/azure/terraform_azure_availabilityset_example_test.go for how to write automated tests for this code
+# DEPLOY AN AZURE AVAILABILITY SET
+# This is an example of how to deploy an Azure Availability Set with a Virtual Machine in the availability set 
+# and the minimum network resources for the VM.
+# ---------------------------------------------------------------------------------------------------------------------
+# See test/azure/terraform_azure_availabilityset_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "azurerm" {
@@ -8,16 +12,20 @@ provider "azurerm" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# PIN TERRAFORM VERSION
+# PIN TERRAFORM VERSION TO >= 0.12
+# The examples have been upgraded to 0.12 syntax
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
-  required_version = ">= 0.12"
+  # This module is now only being tested with Terraform 0.13.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 0.13.x code.
+  required_version = ">= 0.12.26"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # GENERATE RANDOMIZATION STRINGS
-# These help prevent resource name collision and improve test security
+# These random strings help prevent resource name collision and improve test security
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "random_string" "avsexample" {
@@ -34,7 +42,7 @@ resource "random_password" "avsexample" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY RESOURCE GROUP TO CONTAIN TEST RESOURCES
+# DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "avsexample" {
@@ -43,7 +51,7 @@ resource "azurerm_resource_group" "avsexample" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY AVAILABILITY SET
+# DEPLOY THE AVAILABILITY SET
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_availability_set" "avsexample" {
