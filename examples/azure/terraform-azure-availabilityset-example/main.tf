@@ -28,7 +28,7 @@ terraform {
 # These random strings help prevent resource name collision and improve test security
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "random_string" "avsexample" {
+resource "random_string" "avs" {
   length  = 3
   lower   = true
   upper   = false
@@ -36,7 +36,7 @@ resource "random_string" "avsexample" {
   special = false
 }
 
-resource "random_password" "avsexample" {
+resource "random_password" "avs" {
   length           = 16
   override_special = "-_%@"
   min_upper        = "1"
@@ -49,8 +49,8 @@ resource "random_password" "avsexample" {
 # DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "avsexample" {
-  name     = format("%s-%s-%s", "terratest", random_string.avsexample.result, "rg")
+resource "azurerm_resource_group" "avs" {
+  name     = format("%s-%s-%s", "terratest", random_string.avs.result, "rg")
   location = var.location
 }
 
@@ -58,10 +58,10 @@ resource "azurerm_resource_group" "avsexample" {
 # DEPLOY THE AVAILABILITY SET
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_availability_set" "avsexample" {
-  name                        = format("%s-%s", random_string.avsexample.result, "avs")
-  location                    = azurerm_resource_group.avsexample.location
-  resource_group_name         = azurerm_resource_group.avsexample.name
+resource "azurerm_availability_set" "avs" {
+  name                        = format("%s-%s", random_string.avs.result, "avs")
+  location                    = azurerm_resource_group.avs.location
+  resource_group_name         = azurerm_resource_group.avs.name
   platform_fault_domain_count = var.avs_fault_domain_count
   managed                     = true
 }
@@ -70,28 +70,28 @@ resource "azurerm_availability_set" "avsexample" {
 # DEPLOY MINIMAL NETWORK RESOURCES FOR VM
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_network" "avsexample" {
-  name                = format("%s-%s", random_string.avsexample.result, "net")
+resource "azurerm_virtual_network" "avs" {
+  name                = format("%s-%s", random_string.avs.result, "net")
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.avsexample.location
-  resource_group_name = azurerm_resource_group.avsexample.name
+  location            = azurerm_resource_group.avs.location
+  resource_group_name = azurerm_resource_group.avs.name
 }
 
-resource "azurerm_subnet" "avsexample" {
-  name                 = format("%s-%s", random_string.avsexample.result, "subnet")
-  resource_group_name  = azurerm_resource_group.avsexample.name
-  virtual_network_name = azurerm_virtual_network.avsexample.name
+resource "azurerm_subnet" "avs" {
+  name                 = format("%s-%s", random_string.avs.result, "subnet")
+  resource_group_name  = azurerm_resource_group.avs.name
+  virtual_network_name = azurerm_virtual_network.avs.name
   address_prefixes     = ["10.0.17.0/24"]
 }
 
-resource "azurerm_network_interface" "avsexample" {
-  name                = format("%s-%s", random_string.avsexample.result, "nic")
-  location            = azurerm_resource_group.avsexample.location
-  resource_group_name = azurerm_resource_group.avsexample.name
+resource "azurerm_network_interface" "avs" {
+  name                = format("%s-%s", random_string.avs.result, "nic")
+  location            = azurerm_resource_group.avs.location
+  resource_group_name = azurerm_resource_group.avs.name
 
   ip_configuration {
-    name                          = format("%s-%s", random_string.avsexample.result, "config01")
-    subnet_id                     = azurerm_subnet.avsexample.id
+    name                          = format("%s-%s", random_string.avs.result, "config01")
+    subnet_id                     = azurerm_subnet.avs.id
     private_ip_address_allocation = "Dynamic"
   }
 }
@@ -101,12 +101,12 @@ resource "azurerm_network_interface" "avsexample" {
 # This VM does not actually do anything and is the smallest size VM available with an Ubuntu image
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_machine" "avsexample" {
-  name                             = format("%s-%s", random_string.avsexample.result, "vm")
-  location                         = azurerm_resource_group.avsexample.location
-  resource_group_name              = azurerm_resource_group.avsexample.name
-  network_interface_ids            = [azurerm_network_interface.avsexample.id]
-  availability_set_id              = azurerm_availability_set.avsexample.id
+resource "azurerm_virtual_machine" "avs" {
+  name                             = format("%s-%s", random_string.avs.result, "vm")
+  location                         = azurerm_resource_group.avs.location
+  resource_group_name              = azurerm_resource_group.avs.name
+  network_interface_ids            = [azurerm_network_interface.avs.id]
+  availability_set_id              = azurerm_availability_set.avs.id
   vm_size                          = "Standard_B1ls"
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
@@ -119,16 +119,16 @@ resource "azurerm_virtual_machine" "avsexample" {
   }
 
   storage_os_disk {
-    name              = format("%s-%s", random_string.avsexample.result, "osdisk")
+    name              = format("%s-%s", random_string.avs.result, "osdisk")
     caching           = "None"
     create_option     = "FromImage"
     managed_disk_type = "StandardSSD_LRS"
   }
 
   os_profile {
-    computer_name  = format("%s-%s", random_string.avsexample.result, "vm")
+    computer_name  = format("%s-%s", random_string.avs.result, "vm")
     admin_username = "testadmin"
-    admin_password = random_password.avsexample.result
+    admin_password = random_password.avs.result
   }
 
   os_profile_linux_config {
