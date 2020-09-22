@@ -1,3 +1,7 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# See test/azure/terraform_azure_vm_example_test.go for how to write automated tests for this code.
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "azurerm" {
   version = "=2.20.0"
   features {}
@@ -5,7 +9,6 @@ provider "azurerm" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # PIN TERRAFORM VERSION TO >= 0.12
-# The examples have been upgraded to 0.12 syntax
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
@@ -13,11 +16,20 @@ terraform {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY A RESOURCE GROUP
-# See test/terraform_azure_example_test.go for how to write automated tests for this code.
+# GENERATE RANDOMIZATION
+# This helps avoid resource name collisions and improve test security
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "main" {
+resource "random_password" "vmexample" {
+  length           = 16
+  override_special = "-_%@"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY RESOURCE GROUP TO CONTAIN TEST RESOURCES
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "azurerm_resource_group" "vmexample" {
   name     = "${var.prefix}-resources"
   location = var.location
 }
@@ -26,41 +38,41 @@ resource "azurerm_resource_group" "main" {
 # DEPLOY VIRTUAL NETWORK RESOURCES
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_network" "main" {
+resource "azurerm_virtual_network" "vmexample" {
   name                = "${var.prefix}-network"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.vmexample.location
+  resource_group_name = azurerm_resource_group.vmexample.name
 }
 
-resource "azurerm_subnet" "main" {
+resource "azurerm_subnet" "vmexample" {
   name                 = "${var.prefix}-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes       = [var.subnet_prefix]
+  resource_group_name  = azurerm_resource_group.vmexample.name
+  virtual_network_name = azurerm_virtual_network.vmexample.name
+  address_prefixes     = [var.subnet_prefix]
 }
 
-resource "azurerm_public_ip" "main" {
+resource "azurerm_public_ip" "vmexample" {
   name                    = "${var.prefix}-pip"
-  resource_group_name     = azurerm_resource_group.main.name
-  location                = azurerm_resource_group.main.location
+  resource_group_name     = azurerm_resource_group.vmexample.name
+  location                = azurerm_resource_group.vmexample.location
   allocation_method       = "Static"
   ip_version              = "IPv4"
   sku                     = "Standard"
   idle_timeout_in_minutes = "4"
 }
 
-resource "azurerm_network_interface" "main" {
+resource "azurerm_network_interface" "vmexample" {
   name                = "${var.prefix}-nic"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.vmexample.location
+  resource_group_name = azurerm_resource_group.vmexample.name
 
   ip_configuration {
     name                          = "terratestconfiguration1"
-    subnet_id                     = azurerm_subnet.main.id
+    subnet_id                     = azurerm_subnet.vmexample.id
     private_ip_address_allocation = "Static"
     private_ip_address            = var.private_ip
-    public_ip_address_id          = azurerm_public_ip.main.id
+    public_ip_address_id          = azurerm_public_ip.vmexample.id
   }
 }
 
@@ -68,24 +80,24 @@ resource "azurerm_network_interface" "main" {
 # DEPLOY AVAILABILITY SET
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_availability_set" "main" {
-  name                        = "${var.prefix}-avs"
-  location                    = azurerm_resource_group.main.location
-  resource_group_name         = azurerm_resource_group.main.name
-  platform_fault_domain_count = 2
-  managed                     = true
+resource "azurerm_availability_set" "vmexample" {
+  name                             = "${var.prefix}-avs"
+  location                         = azurerm_resource_group.vmexample.location
+  resource_group_name              = azurerm_resource_group.vmexample.name
+  platform_fault_dovmexample_count = 2
+  managed                          = true
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A VIRTUAL MACHINE RUNNING WINDOWS SERVER
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_machine" "main" {
+resource "azurerm_virtual_machine" "vmexample" {
   name                             = "${var.prefix}-vm"
-  location                         = azurerm_resource_group.main.location
-  resource_group_name              = azurerm_resource_group.main.name
-  network_interface_ids            = [azurerm_network_interface.main.id]
-  availability_set_id              = azurerm_availability_set.main.id
+  location                         = azurerm_resource_group.vmexample.location
+  resource_group_name              = azurerm_resource_group.vmexample.name
+  network_interface_ids            = [azurerm_network_interface.vmexample.id]
+  availability_set_id              = azurerm_availability_set.vmexample.id
   vm_size                          = var.vm_size
   license_type                     = "Windows_Server"
   delete_os_disk_on_termination    = true
@@ -100,15 +112,15 @@ resource "azurerm_virtual_machine" "main" {
 
   storage_os_disk {
     name              = "${var.prefix}-osdisk"
-    caching           = "ReadWrite"
+    caching           = "None"
     create_option     = "FromImage"
     managed_disk_type = var.disk_type
   }
 
   os_profile {
-    computer_name  = var.prefix
+    computer_name  = "vmexample"
     admin_username = var.user_name
-    admin_password = var.password
+    admin_password = random_password.vmexample.result
   }
   os_profile_windows_config {
     provision_vm_agent = true
@@ -119,18 +131,18 @@ resource "azurerm_virtual_machine" "main" {
 # DEPLOY AND ATTACH MANAGED DISK TO VIRTUAL MACHINE
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_managed_disk" "main" {
+resource "azurerm_managed_disk" "vmexample" {
   name                 = "${var.prefix}-disk"
-  location             = azurerm_resource_group.main.location
-  resource_group_name  = azurerm_resource_group.main.name
+  location             = azurerm_resource_group.vmexample.location
+  resource_group_name  = azurerm_resource_group.vmexample.name
   storage_account_type = var.disk_type
   create_option        = "Empty"
   disk_size_gb         = 10
 }
 
-resource "azurerm_virtual_machine_data_disk_attachment" "main" {
-  managed_disk_id    = azurerm_managed_disk.main.id
-  virtual_machine_id = azurerm_virtual_machine.main.id
+resource "azurerm_virtual_machine_data_disk_attachment" "vmexample" {
+  managed_disk_id    = azurerm_managed_disk.vmexample.id
+  virtual_machine_id = azurerm_virtual_machine.vmexample.id
   caching            = "ReadWrite"
   lun                = 10
 }

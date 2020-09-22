@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
@@ -53,43 +52,28 @@ func CheckSubnetContainsIP(t testing.TestingT, IP string, subnetName string, vne
 
 // CheckSubnetContainsIPE checks if the Private IP is contined in the Subnet Address Range
 func CheckSubnetContainsIPE(t testing.TestingT, ipAddress string, subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
-	subnetPrefix, err := GetSubnetIPRangeE(t, subnetName, vnetName, resGroupName, subscriptionID)
+	// Convert the IP to a net IP address
+	ip := net.ParseIP(ipAddress)
+	if ip == nil {
+		return false, NewFailedToParseError("IP Address", ipAddress)
+	}
+
+	// Get Subnet
+	subnet, err := GetSubnetE(t, subnetName, vnetName, resGroupName, subscriptionID)
 	if err != nil {
 		return false, err
 	}
 
-	// Convert the IP to a net IP address
-	ip := net.ParseIP(ipAddress)
+	// Get Subnet IP range, this required field is never nil therefore no exception handling required
+	subnetPrefix := *subnet.AddressPrefix
 
-	if ip == nil {
-		return false, fmt.Errorf("Failed to parse IP address %s", ipAddress)
-	}
-
-	// Check if the IP is in the Subnet Range
+	// Check if the IP is in the Subnet Range using the net package
 	_, ipNet, err := net.ParseCIDR(subnetPrefix)
 	if err != nil {
-		return false, fmt.Errorf("Failed to parse subnet range %s", subnetPrefix)
+		return false, NewFailedToParseError("Subnet Range", subnetPrefix)
 	}
 
 	return ipNet.Contains(ip), nil
-}
-
-// GetSubnetIPRange gets the IPv4 Range of the specified Subnet
-func GetSubnetIPRange(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) string {
-	vnetDNSIPs, err := GetSubnetIPRangeE(t, subnetName, vnetName, resGroupName, subscriptionID)
-	require.NoError(t, err)
-	return vnetDNSIPs
-}
-
-// GetSubnetIPRangeE gets the IPv4 Range of the specified Subnet
-func GetSubnetIPRangeE(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) (string, error) {
-	// Get Subnet
-	subnet, err := GetSubnetE(t, subnetName, vnetName, resGroupName, subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	return *subnet.AddressPrefix, nil
 }
 
 // GetVirtualNetworkSubnets gets all Subnet names and their respective address prefixes in the specified Virtual Network
@@ -100,18 +84,20 @@ func GetVirtualNetworkSubnets(t testing.TestingT, vnetName string, resGroupName 
 }
 
 // GetVirtualNetworkSubnetsE gets all Subnet names and their respective address prefixes in the specified Virtual Network
+// Returning both the name and prefix together helps reduce calls for these commonly accessed properties
 func GetVirtualNetworkSubnetsE(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) (map[string]string, error) {
+	subNetDetails := map[string]string{}
+
 	client, err := GetSubnetClientE(subscriptionID)
 	if err != nil {
-		return nil, err
+		return subNetDetails, err
 	}
 
 	subnets, err := client.List(context.Background(), resGroupName, vnetName)
 	if err != nil {
-		return nil, err
+		return subNetDetails, err
 	}
 
-	subNetDetails := make(map[string]string)
 	for _, v := range subnets.Values() {
 		subnetName := v.Name
 		subNetAddressPrefix := v.AddressPrefix

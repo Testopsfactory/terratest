@@ -21,7 +21,7 @@
 variable "disk_type" {
   description = "temp"
   type        = string
-  default     = "Standard_LRS"
+  default     = "StandardSSD_LRS"
 }
 
 variable "location" {
@@ -75,5 +75,5 @@ variable "vm_image_version" {
 variable "vm_size" {
   description = "The Azure VM Size of the VM"
   type        = string
-  default     = "Standard_DS1_v2"
+  default     = "Standard_B1s"
 }

@@ -44,12 +44,13 @@ func GetNetworkInterfacePublicIPsE(t testing.TestingT, nicName string, resGroupN
 		return publicIPs, err
 	}
 
-	// Get the Public IPs from each configuration
+	// Get the Public IPs from each configuration available
 	for _, IPConfiguration := range *nic.IPConfigurations {
 		if ipConfigHasPublicIP(&IPConfiguration) {
+			// Get the ID from the long string NIC representation
 			publicAddressID := GetNameFromResourceID(*IPConfiguration.PublicIPAddress.ID)
 
-			// Get the Public Ip from the Public Address resource
+			// Get the Public Ip from the Public Address client
 			publicIP := GetPublicAddressIP(t, publicAddressID, resGroupName, subscriptionID)
 			publicIPs = append(publicIPs, publicIP)
 		}
@@ -60,6 +61,7 @@ func GetNetworkInterfacePublicIPsE(t testing.TestingT, nicName string, resGroupN
 
 // ipConfigHasPublicIP returns true if an IP Configuration has a Public IP Address
 // This helper method was created since a config without a public address causes a nil pointer panic
+// and the string representation is searched for the publicIPAddress text to identify it's presence.
 func ipConfigHasPublicIP(ipConfig *network.InterfaceIPConfiguration) bool {
 	var byteIPConfig []byte
 
