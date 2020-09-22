@@ -18,7 +18,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "main" {
-  name     = "${var.prefix}-resources"
+  name     = var.resource_group_name
   location = var.location
 }
 
@@ -27,33 +27,33 @@ resource "azurerm_resource_group" "main" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-network"
+  name                = var.vnet_name
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 }
 
 resource "azurerm_subnet" "internal" {
-  name                 = "internal"
+  name                 = var.subnet_name
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes       = ["10.0.17.0/24"]
 }
 
 resource "azurerm_network_interface" "main" {
-  name                = "${var.prefix}-nic"
+  name                = var.vm_nic_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
-    name                          = "terratestconfiguration1"
+    name                          = var.vm_nic_ip_config_name
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
 resource "azurerm_network_security_group" "main" {
-  name                = "testSecurityGroup1"
+  name                = var.nsg_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 }
@@ -64,8 +64,8 @@ resource "azurerm_network_interface_security_group_association" "main" {
 }
 
 resource "azurerm_network_security_rule" "main" {
-  name                        = "allowSSH"
-  description                 = "allowSSH"
+  name                        = var.nsg_rule_name
+  description                 = var.nsg_rule_name
   priority                    = 100
   direction                   = "Inbound"
   access                      = "Allow"
@@ -80,10 +80,11 @@ resource "azurerm_network_security_rule" "main" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A VIRTUAL MACHINE RUNNING UBUNTU
+# This VM does not actually do anything and is the smallest size VM available with an Ubuntu image
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine" "main" {
-  name                             = "${var.prefix}-vm"
+  name                             = var.vm_name
   location                         = azurerm_resource_group.main.location
   resource_group_name              = azurerm_resource_group.main.name
   network_interface_ids            = [azurerm_network_interface.main.id]
@@ -99,7 +100,7 @@ resource "azurerm_virtual_machine" "main" {
   }
 
   storage_os_disk {
-    name              = "terratestosdisk1"
+    name              = var.os_disk_name
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
