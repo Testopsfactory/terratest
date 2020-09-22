@@ -39,6 +39,10 @@ resource "random_string" "avsexample" {
 resource "random_password" "avsexample" {
   length           = 16
   override_special = "-_%@"
+  min_upper        = "1"
+  min_lower        = "1"
+  min_numeric      = "1"
+  min_special      = "1"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
