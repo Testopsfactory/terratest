@@ -20,14 +20,14 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 	t.Parallel()
 
 	// Create values for Terraform
-	subscriptionID := "" // leave blank if available as an Environment Var
+	subscriptionID := "" // subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
 	prefix := fmt.Sprintf("terratest-net-%s", random.UniqueId())
 	expectedLocation := "eastus2"
 	expectedSubnetRange := "10.0.20.0/24"
 	expectedPrivateIP := "10.0.20.5"
 	expectedDnsIp01 := "10.0.0.5"
 	expectedDnsIp02 := "10.0.0.6"
-	exectedDNSLabel := strings.ToLower(prefix) // only lowercase, numeric and hyphens allowed
+	exectedDNSLabel := strings.ToLower(prefix) // only lowercase, numeric and hyphens chars allowed for DNS
 
 	// Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{

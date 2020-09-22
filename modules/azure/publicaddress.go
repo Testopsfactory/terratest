@@ -8,14 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// PublicAddressExists indicates whether the speficied AzurePublic Address exists
+// PublicAddressExists indicates whether the speficied AzurePublic Address exists.
+// This function would fail the test if there is an error.
 func PublicAddressExists(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) bool {
 	exists, err := PublicAddressExistsE(t, publicAddressName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
-// PublicAddressExistsE indicates whether the speficied AzurePublic Address exists
+// PublicAddressExistsE indicates whether the speficied AzurePublic Address exists.
 func PublicAddressExistsE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Public Address
 	_, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
@@ -25,14 +26,14 @@ func PublicAddressExistsE(t testing.TestingT, publicAddressName string, resGroup
 	return true, nil
 }
 
-// GetPublicAddressIP gets the IP of a Public IP Address
+// GetPublicAddressIP gets the IP of a Public IP Address. This function would fail the test if there is an error.
 func GetPublicAddressIP(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) string {
 	IP, err := GetPublicAddressIPE(t, publicAddressName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return IP
 }
 
-// GetPublicAddressIPE gets the IP of a Public IP Address with error
+// GetPublicAddressIPE gets the IP of a Public IP Address.
 func GetPublicAddressIPE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (string, error) {
 	// Create a NIC client
 	pip, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
@@ -43,7 +44,8 @@ func GetPublicAddressIPE(t testing.TestingT, publicAddressName string, resGroupN
 	return *pip.IPAddress, nil
 }
 
-// CheckPublicDNSNameAvailability checks whether a Domain Name in the cloudapp.azure.com zone is available for use
+// CheckPublicDNSNameAvailability checks whether a Domain Name in the cloudapp.azure.com zone
+// is available for use. This function would fail the test if there is an error.
 func CheckPublicDNSNameAvailability(t testing.TestingT, location string, domainNameLabel string, subscriptionID string) bool {
 	available, err := CheckPublicDNSNameAvailabilityE(t, location, domainNameLabel, subscriptionID)
 	if err != nil {
@@ -52,7 +54,7 @@ func CheckPublicDNSNameAvailability(t testing.TestingT, location string, domainN
 	return available
 }
 
-// CheckPublicDNSNameAvailabilityE checks whether a Domain Name in the cloudapp.azure.com zone is available for use
+// CheckPublicDNSNameAvailabilityE checks whether a Domain Name in the cloudapp.azure.com zone is available for use.
 func CheckPublicDNSNameAvailabilityE(t testing.TestingT, location string, domainNameLabel string, subscriptionID string) (bool, error) {
 	client, err := GetPublicIPAddressClientE(subscriptionID)
 	if err != nil {
@@ -67,7 +69,7 @@ func CheckPublicDNSNameAvailabilityE(t testing.TestingT, location string, domain
 	return *res.Available, nil
 }
 
-// GetPublicIPAddressE gets a Public IP Addresses in the specified Azure Resource Group
+// GetPublicIPAddressE gets a Public IP Addresses in the specified Azure Resource Group.
 func GetPublicIPAddressE(t testing.TestingT, publicIPAddressName string, resGroupName string, subscriptionID string) (*network.PublicIPAddress, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
@@ -89,7 +91,7 @@ func GetPublicIPAddressE(t testing.TestingT, publicIPAddressName string, resGrou
 	return &pip, nil
 }
 
-// GetPublicIPAddressClientE creates a Public IP Addresses client in the specified Azure Subscription
+// GetPublicIPAddressClientE creates a Public IP Addresses client in the specified Azure Subscription.
 func GetPublicIPAddressClientE(subscriptionID string) (*network.PublicIPAddressesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)

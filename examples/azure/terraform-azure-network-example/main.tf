@@ -1,3 +1,11 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY AN AZURE NETWORK
+# This is an example of how to deploy frequent Azure Networking Resources. Note this network dosen't actually do
+# anything and is only created for the example to test their commonly needed and integrated propeties.
+# ---------------------------------------------------------------------------------------------------------------------
+# See test/azure/terraform_azure_network_example_test.go for how to write automated tests for this code.
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "azurerm" {
   version = "=2.20.0"
   features {}
@@ -9,11 +17,12 @@ provider "azurerm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
-  required_version = ">= 0.12"
+  # This module is now only being tested with Terraform 0.13.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 0.13.x code.
+  required_version = ">= 0.12.26"
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# See test/azure/terraform_azure_network_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
@@ -25,7 +34,6 @@ resource "azurerm_resource_group" "net" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY VIRTUAL NETWORK
-# Note this network dosen't actually do anything and is only created for the example.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "net" {
