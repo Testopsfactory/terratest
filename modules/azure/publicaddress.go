@@ -34,12 +34,6 @@ func GetPublicAddressIP(t testing.TestingT, publicAddressName string, resGroupNa
 
 // GetPublicAddressIPE gets the IP of a Public IP Address with error
 func GetPublicAddressIPE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (string, error) {
-	// Validate Azure subscription ID
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
 	// Create a NIC client
 	pip, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
 	if err != nil {

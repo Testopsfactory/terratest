@@ -3,12 +3,11 @@
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
-package test
+package azure
 
 import (
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +23,7 @@ func TestGetVirtualNetworkE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetVirtualNetworkE(t, vnetName, rgName, subID)
+	_, err := GetVirtualNetworkE(t, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -37,7 +36,7 @@ func TestGetSubnetE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetSubnetE(t, subnetName, vnetName, rgName, subID)
+	_, err := GetSubnetE(t, subnetName, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -49,7 +48,7 @@ func TestGetVirtualNetworkDNSServerIPsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetVirtualNetworkDNSServerIPsE(t, vnetName, rgName, subID)
+	_, err := GetVirtualNetworkDNSServerIPsE(t, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -61,20 +60,7 @@ func TestGetVirtualNetworkSubnetsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetVirtualNetworkSubnetsE(t, vnetName, rgName, subID)
-
-	require.Error(t, err)
-}
-
-func TestGetSubnetIPRangeE(t *testing.T) {
-	t.Parallel()
-
-	subnetName := ""
-	vnetName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := azure.GetSubnetIPRangeE(t, subnetName, vnetName, rgName, subID)
+	_, err := GetVirtualNetworkSubnetsE(t, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -88,7 +74,7 @@ func TestCheckSubnetContainsIPE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.CheckSubnetContainsIPE(t, ipAddress, subnetName, vnetName, rgName, subID)
+	_, err := CheckSubnetContainsIPE(t, ipAddress, subnetName, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -101,7 +87,7 @@ func TestSubnetExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.SubnetExistsE(t, subnetName, vnetName, rgName, subID)
+	_, err := SubnetExistsE(t, subnetName, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -113,7 +99,7 @@ func TestVirtualNetworkExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.VirtualNetworkExistsE(t, vnetName, rgName, subID)
+	_, err := VirtualNetworkExistsE(t, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }

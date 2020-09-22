@@ -3,12 +3,11 @@
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
-package test
+package azure
 
 import (
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,50 +16,50 @@ The below tests are currently stubbed out, with the expectation that they will t
 If/when methods can be mocked or Create/Delete APIs are added, these tests can be extended.
 */
 
-func TestGetPublicIPAddressE(t *testing.T) {
+func TestGetNetworkInterfaceE(t *testing.T) {
 	t.Parallel()
 
-	paName := ""
+	nicName := ""
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetPublicIPAddressE(t, paName, rgName, subID)
+	_, err := GetNetworkInterfaceE(t, nicName, rgName, subID)
 
 	require.Error(t, err)
 }
 
-func TestCheckPublicDNSNameAvailabilityE(t *testing.T) {
+func TestGetNetworkInterfacePrivateIPsE(t *testing.T) {
 	t.Parallel()
 
-	location := ""
-	domain := ""
+	nicName := ""
+	rgName := ""
 	subID := ""
 
-	_, err := azure.CheckPublicDNSNameAvailabilityE(t, location, domain, subID)
+	_, err := GetNetworkInterfacePrivateIPsE(t, nicName, rgName, subID)
 
 	require.Error(t, err)
 }
 
-func TestGetPublicAddressIPE(t *testing.T) {
+func TestGetNetworkInterfacePublicIPsE(t *testing.T) {
 	t.Parallel()
 
-	paName := ""
+	nicName := ""
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetPublicAddressIPE(t, paName, rgName, subID)
+	_, err := GetNetworkInterfacePublicIPsE(t, nicName, rgName, subID)
 
 	require.Error(t, err)
 }
 
-func TestPublicAddressExistsE(t *testing.T) {
+func TestNetworkInterfaceExistsE(t *testing.T) {
 	t.Parallel()
 
-	paName := ""
+	nicName := ""
 	rgName := ""
 	subID := ""
 
-	_, err := azure.PublicAddressExistsE(t, paName, rgName, subID)
+	_, err := NetworkInterfaceExistsE(t, nicName, rgName, subID)
 
 	require.Error(t, err)
 }
