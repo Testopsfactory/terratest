@@ -39,7 +39,8 @@ func GetSizeOfVirtualMachine(t testing.TestingT, vmName string, resGroupName str
 	return size
 }
 
-// GetSizeOfVirtualMachineE gets the size type of the given Azure Virtual Machine
+// GetSizeOfVirtualMachineE gets the size type of the given Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (compute.VirtualMachineSizeTypes, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
@@ -70,7 +71,8 @@ func GetTagsForVirtualMachine(t testing.TestingT, vmName string, resGroupName st
 	return tags
 }
 
-// GetTagsForVirtualMachineE gets the tags of the given Virtual Machine as a map
+// GetTagsForVirtualMachineE gets the tags of the given Virtual Machine as a map.
+// This function would fail the test if there is an error.
 func GetTagsForVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (map[string]string, error) {
 	// Setup a blank map to populate and return
 	tags := make(map[string]string)

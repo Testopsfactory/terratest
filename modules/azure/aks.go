@@ -7,7 +7,8 @@ import (
 	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
-// GetManagedClustersClientE is a helper function that will setup an Azure ManagedClusters client on your behalf
+// GetManagedClustersClientE is a helper function that will setup an Azure ManagedClusters client on your behalf.
+// This function would fail the test if there is an error.
 func GetManagedClustersClientE(subscriptionID string) (*containerservice.ManagedClustersClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
@@ -27,7 +28,8 @@ func GetManagedClustersClientE(subscriptionID string) (*containerservice.Managed
 	return &managedServicesClient, nil
 }
 
-// GetManagedClusterE will return ManagedCluster
+// GetManagedClusterE will return ManagedCluster.
+// This function would fail the test if there is an error.
 func GetManagedClusterE(t testing.TestingT, resourceGroupName, clusterName, subscriptionID string) (*containerservice.ManagedCluster, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
