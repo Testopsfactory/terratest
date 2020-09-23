@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// AvailabilitySetExists indicates whether the speficied Azure Availability Set exists.
+// AvailabilitySetExists indicates whether the specified Azure Availability Set exists.
 // This function would fail the test if there is an error.
 func AvailabilitySetExists(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) bool {
 	exists, err := AvailabilitySetExistsE(t, avsName, resGroupName, subscriptionID)
