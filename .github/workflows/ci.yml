@@ -65,6 +65,13 @@ jobs:
 
           # run the linter
           ./bin/golangci-lint run ./test/azure/ --build-tags=azure --timeout 5m0s
+      - name: run go unit test for azure
+        id: azure_unit_test
+        run: |
+          cd modules
+
+          # run the unit tests under the `azure` subfolder
+          go test ./azure/* -v -timeout 90m
       - name: login to azure cli
         uses: azure/login@v1.1
         with:
