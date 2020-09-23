@@ -56,5 +56,6 @@ func TestTerraformAzureAvailabilitySetExample(t *testing.T) {
 	assert.Equal(t, expectedAvsFaultDomainCount, actualAvsFaultDomainCount)
 
 	// Check the Availability Set for a VM
-	assert.True(t, azure.CheckAvailabilitySetContainsVM(t, expectedVMName, expectedAvsName, resourceGroupName, subscriptionID))
+	actualVMPresent := azure.CheckAvailabilitySetContainsVM(t, expectedVMName, expectedAvsName, resourceGroupName, subscriptionID)
+	assert.True(t, actualVMPresent)
 }
