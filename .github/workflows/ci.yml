@@ -67,6 +67,8 @@ jobs:
           ./bin/golangci-lint run ./test/azure/ --build-tags=azure --timeout 5m0s
       - name: run go unit test for azure
         id: azure_unit_test
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         run: |
           cd modules
 
