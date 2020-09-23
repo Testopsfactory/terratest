@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// PublicAddressExists indicates whether the speficied AzurePublic Address exists.
+// PublicAddressExists indicates whether the specified AzurePublic Address exists.
 // This function would fail the test if there is an error.
 func PublicAddressExists(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) bool {
 	exists, err := PublicAddressExistsE(t, publicAddressName, resGroupName, subscriptionID)
@@ -16,7 +16,7 @@ func PublicAddressExists(t testing.TestingT, publicAddressName string, resGroupN
 	return exists
 }
 
-// PublicAddressExistsE indicates whether the speficied AzurePublic Address exists.
+// PublicAddressExistsE indicates whether the specified AzurePublic Address exists.
 func PublicAddressExistsE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Public Address
 	_, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
@@ -77,7 +77,7 @@ func GetPublicIPAddressE(t testing.TestingT, publicIPAddressName string, resGrou
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetPublicIPAddressClientE(subscriptionID)
 	if err != nil {
 		return nil, err

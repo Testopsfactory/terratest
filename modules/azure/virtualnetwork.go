@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// VirtualNetworkExists indicates whether the speficied Azure Virtual Network exists.
+// VirtualNetworkExists indicates whether the specified Azure Virtual Network exists.
 // This function would fail the test if there is an error.
 func VirtualNetworkExists(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) bool {
 	exists, err := VirtualNetworkExistsE(t, vnetName, resGroupName, subscriptionID)
@@ -17,7 +17,7 @@ func VirtualNetworkExists(t testing.TestingT, vnetName string, resGroupName stri
 	return exists
 }
 
-// VirtualNetworkExistsE indicates whether the speficied Azure Virtual Network exists.
+// VirtualNetworkExistsE indicates whether the specified Azure Virtual Network exists.
 func VirtualNetworkExistsE(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Virtual Network
 	_, err := GetVirtualNetworkE(t, vnetName, resGroupName, subscriptionID)
@@ -27,7 +27,7 @@ func VirtualNetworkExistsE(t testing.TestingT, vnetName string, resGroupName str
 	return true, nil
 }
 
-// SubnetExists indicates whether the speficied Azure Virtual Network Subnet exists.
+// SubnetExists indicates whether the specified Azure Virtual Network Subnet exists.
 // This function would fail the test if there is an error.
 func SubnetExists(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) bool {
 	exists, err := SubnetExistsE(t, subnetName, vnetName, resGroupName, subscriptionID)
@@ -35,7 +35,7 @@ func SubnetExists(t testing.TestingT, subnetName string, vnetName string, resGro
 	return exists
 }
 
-// SubnetExistsE indicates whether the speficied Azure Virtual Network Subnet exists.
+// SubnetExistsE indicates whether the specified Azure Virtual Network Subnet exists.
 func SubnetExistsE(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Subnet
 	_, err := GetSubnetE(t, subnetName, vnetName, resGroupName, subscriptionID)
@@ -139,7 +139,7 @@ func GetSubnetE(t testing.TestingT, subnetName string, vnetName string, resGroup
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetSubnetClientE(subscriptionID)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func GetVirtualNetworkE(t testing.TestingT, vnetName string, resGroupName string
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetVirtualNetworksClientE(subscriptionID)
 	if err != nil {
 		return nil, err

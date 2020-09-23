@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// NetworkInterfaceExists indicates whether the speficied Azure Network Interface exists.
+// NetworkInterfaceExists indicates whether the specified Azure Network Interface exists.
 // This function would fail the test if there is an error.
 func NetworkInterfaceExists(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) bool {
 	exists, err := NetworkInterfaceExistsE(t, nicName, resGroupName, subscriptionID)
@@ -18,7 +18,7 @@ func NetworkInterfaceExists(t testing.TestingT, nicName string, resGroupName str
 	return exists
 }
 
-// NetworkInterfaceExistsE indicates whether the speficied Azure Network Interface exists.
+// NetworkInterfaceExistsE indicates whether the specified Azure Network Interface exists.
 func NetworkInterfaceExistsE(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Network Interface
 	_, err := GetNetworkInterfaceE(t, nicName, resGroupName, subscriptionID)
@@ -110,7 +110,7 @@ func GetNetworkInterfaceE(t testing.TestingT, nicName string, resGroupName strin
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetNetworkInterfaceClientE(subscriptionID)
 	if err != nil {
 		return nil, err

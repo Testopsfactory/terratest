@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AN AZURE NETWORK
-# This is an example of how to deploy frequent Azure Networking Resources. Note this network dosen't actually do
-# anything and is only created for the example to test their commonly needed and integrated propeties.
+# This is an example of how to deploy frequent Azure Networking Resources. Note this network doesn't actually do
+# anything and is only created for the example to test their commonly needed and integrated properties.
 # ---------------------------------------------------------------------------------------------------------------------
 # See test/azure/terraform_azure_network_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
