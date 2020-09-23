@@ -21,13 +21,13 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 
 	// Create values for Terraform
 	subscriptionID := "" // subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
-	prefix := fmt.Sprintf("terratest-net-%s", random.UniqueId())
+	uniquePostfix := random.UniqueId()
 	expectedLocation := "eastus2"
 	expectedSubnetRange := "10.0.20.0/24"
 	expectedPrivateIP := "10.0.20.5"
 	expectedDnsIp01 := "10.0.0.5"
 	expectedDnsIp02 := "10.0.0.6"
-	exectedDNSLabel := strings.ToLower(prefix) // only lowercase, numeric and hyphens chars allowed for DNS
+	exectedDNSLabel := fmt.Sprintf("dns-terratest-%s", strings.ToLower(uniquePostfix)) // only lowercase, numeric and hyphens chars allowed for DNS
 
 	// Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
@@ -36,7 +36,7 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"prefix":            prefix,
+			"postfix":           uniquePostfix,
 			"subnet_prefix":     expectedSubnetRange,
 			"private_ip":        expectedPrivateIP,
 			"dns_ip_01":         expectedDnsIp01,
@@ -53,65 +53,65 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the values of output variables
-	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-	virtualNetworkName := terraform.Output(t, terraformOptions, "virtual_network_name")
-	subnetName := terraform.Output(t, terraformOptions, "subnet_name")
-	publicAddressName := terraform.Output(t, terraformOptions, "public_address_name")
-	nicInternalName := terraform.Output(t, terraformOptions, "network_interface_internal")
-	nicExternalName := terraform.Output(t, terraformOptions, "network_interface_external")
+	expectedRgName := terraform.Output(t, terraformOptions, "resource_group_name")
+	expectedVNetName := terraform.Output(t, terraformOptions, "virtual_network_name")
+	expectedSubnetName := terraform.Output(t, terraformOptions, "subnet_name")
+	expectedPublicAddressName := terraform.Output(t, terraformOptions, "public_address_name")
+	expectedPrivateNicName := terraform.Output(t, terraformOptions, "network_interface_internal")
+	expectedPublicNicName := terraform.Output(t, terraformOptions, "network_interface_external")
 
 	// Tests are separated into subtests to differentiate integrated tests and pure resource tests
 
 	// Integrated network resource tests
 	t.Run("VirtualNetwork_Subnet", func(t *testing.T) {
 		// Check the Subnet exists in the Virtual Network Subnets with the expected Address Prefix
-		actualVnetSubnets := azure.GetVirtualNetworkSubnets(t, virtualNetworkName, resourceGroupName, subscriptionID)
-		assert.NotNil(t, actualVnetSubnets[subnetName])
-		assert.Equal(t, expectedSubnetRange, actualVnetSubnets[subnetName])
+		actualVnetSubnets := azure.GetVirtualNetworkSubnets(t, expectedVNetName, expectedRgName, subscriptionID)
+		assert.NotNil(t, actualVnetSubnets[expectedSubnetName])
+		assert.Equal(t, expectedSubnetRange, actualVnetSubnets[expectedSubnetName])
 	})
 
 	t.Run("NIC_PublicAddress", func(t *testing.T) {
 		// Check the internal network interface does NOT have a public IP
-		actualPrivateIPOnly := azure.GetNetworkInterfacePublicIPs(t, nicInternalName, resourceGroupName, subscriptionID)
-		assert.True(t, len(actualPrivateIPOnly) == 0)
+		actualPrivateIPOnly := azure.GetNetworkInterfacePublicIPs(t, expectedPrivateNicName, expectedRgName, subscriptionID)
+		assert.Nil(t, actualPrivateIPOnly)
 
 		// Check the external network interface has a public IP
-		actualPublicIPs := azure.GetNetworkInterfacePublicIPs(t, nicExternalName, resourceGroupName, subscriptionID)
+		actualPublicIPs := azure.GetNetworkInterfacePublicIPs(t, expectedPublicNicName, expectedRgName, subscriptionID)
 		assert.True(t, len(actualPublicIPs) == 1)
 	})
 
 	t.Run("Subnet_NIC", func(t *testing.T) {
 		// Check the private IP is in the subnet range
-		checkPrivateIpInSubnet := azure.CheckSubnetContainsIP(t, expectedPrivateIP, subnetName, virtualNetworkName, resourceGroupName, subscriptionID)
+		checkPrivateIpInSubnet := azure.CheckSubnetContainsIP(t, expectedPrivateIP, expectedSubnetName, expectedVNetName, expectedRgName, subscriptionID)
 		assert.True(t, checkPrivateIpInSubnet)
 	})
 
 	// Tests for individual network resources
 	t.Run("Network", func(t *testing.T) {
 		// Check the Virtual Network exists
-		assert.True(t, azure.VirtualNetworkExists(t, virtualNetworkName, resourceGroupName, subscriptionID))
+		assert.True(t, azure.VirtualNetworkExists(t, expectedVNetName, expectedRgName, subscriptionID))
 
 		// Check the Subnet exists
-		assert.True(t, azure.SubnetExists(t, subnetName, virtualNetworkName, resourceGroupName, subscriptionID))
+		assert.True(t, azure.SubnetExists(t, expectedSubnetName, expectedVNetName, expectedRgName, subscriptionID))
 
 		// Check the Network Interfaces exist
-		assert.True(t, azure.NetworkInterfaceExists(t, nicInternalName, resourceGroupName, subscriptionID))
-		assert.True(t, azure.NetworkInterfaceExists(t, nicExternalName, resourceGroupName, subscriptionID))
+		assert.True(t, azure.NetworkInterfaceExists(t, expectedPrivateNicName, expectedRgName, subscriptionID))
+		assert.True(t, azure.NetworkInterfaceExists(t, expectedPublicNicName, expectedRgName, subscriptionID))
 
 		// Check Public Address exists
-		assert.True(t, azure.PublicAddressExists(t, publicAddressName, resourceGroupName, subscriptionID))
+		assert.True(t, azure.PublicAddressExists(t, expectedPublicAddressName, expectedRgName, subscriptionID))
 
 		// Check the Virtual Network DNS server IPs
-		actualDNSIPs := azure.GetVirtualNetworkDNSServerIPs(t, virtualNetworkName, resourceGroupName, subscriptionID)
+		actualDNSIPs := azure.GetVirtualNetworkDNSServerIPs(t, expectedVNetName, expectedRgName, subscriptionID)
 		assert.Contains(t, actualDNSIPs, expectedDnsIp01)
 		assert.Contains(t, actualDNSIPs, expectedDnsIp02)
 
 		// Check the Network Interface private IP
-		actualPrivateIPs := azure.GetNetworkInterfacePrivateIPs(t, nicInternalName, resourceGroupName, subscriptionID)
+		actualPrivateIPs := azure.GetNetworkInterfacePrivateIPs(t, expectedPrivateNicName, expectedRgName, subscriptionID)
 		assert.Contains(t, actualPrivateIPs, expectedPrivateIP)
 
-		// Check the Public Address public IP
-		actualPublicIP := azure.GetPublicAddressIP(t, publicAddressName, resourceGroupName, subscriptionID)
+		// Check the Public Address public IP is allocated
+		actualPublicIP := azure.GetPublicAddressIP(t, expectedPublicAddressName, expectedRgName, subscriptionID)
 		assert.True(t, len(actualPublicIP) > 0)
 
 		// Check DNS created for this example is reserved
@@ -119,7 +119,7 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 		assert.False(t, actualDnsNotAvailable)
 
 		// Check new randomized DNS is available
-		newDNSLabel := strings.ToLower(fmt.Sprintf("%s-%s-%s", prefix, random.UniqueId(), random.UniqueId()))
+		newDNSLabel := fmt.Sprintf("dns-terratest-%s", strings.ToLower(random.UniqueId()))
 		actualDnsAvailable := azure.CheckPublicDNSNameAvailability(t, expectedLocation, newDNSLabel, subscriptionID)
 		assert.True(t, actualDnsAvailable)
 	})

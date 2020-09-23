@@ -41,8 +41,8 @@ variable "location" {
   default     = "East US"
 }
 
-variable "prefix" {
-  description = "The prefix that will be attached to all resources deployed"
+variable "postfix" {
+  description = "The postfix that will be attached to all resources deployed"
   type        = string
   default     = "terratest-net"
 }

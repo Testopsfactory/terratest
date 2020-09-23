@@ -28,7 +28,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "net" {
-  name     = "${var.prefix}-resources"
+  name     = "terratest-net-rg-${var.postfix}"
   location = var.location
 }
 
@@ -37,7 +37,7 @@ resource "azurerm_resource_group" "net" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "net" {
-  name                = "${var.prefix}-vnet"
+  name                = "vnet-${var.postfix}"
   location            = azurerm_resource_group.net.location
   resource_group_name = azurerm_resource_group.net.name
   address_space       = ["10.0.0.0/16"]
@@ -45,18 +45,18 @@ resource "azurerm_virtual_network" "net" {
 }
 
 resource "azurerm_subnet" "net" {
-  name                 = "${var.prefix}-subnet"
+  name                 = "subnet-${var.postfix}"
   resource_group_name  = azurerm_resource_group.net.name
   virtual_network_name = azurerm_virtual_network.net.name
   address_prefixes     = [var.subnet_prefix]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY INTERNAL NETWORK INTERFACE
+# DEPLOY PRIVATE NETWORK INTERFACE
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_network_interface" "net01" {
-  name                = "${var.prefix}-nic-01"
+  name                = "nic-private-${var.postfix}"
   location            = azurerm_resource_group.net.location
   resource_group_name = azurerm_resource_group.net.name
 
@@ -69,22 +69,22 @@ resource "azurerm_network_interface" "net01" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY PUBLIC IP AND EXTERNAL NETWORK INTERFACE
+# DEPLOY PUBLIC IP AND NETWORK INTERFACE
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_public_ip" "net" {
-  name                    = "${var.prefix}-pip"
+  name                    = "pip-${var.postfix}"
   resource_group_name     = azurerm_resource_group.net.name
   location                = azurerm_resource_group.net.location
   allocation_method       = "Static"
   ip_version              = "IPv4"
-  sku                     = "Standard"
+  sku                     = "Basic"
   idle_timeout_in_minutes = "4"
   domain_name_label       = var.domain_name_label
 }
 
 resource "azurerm_network_interface" "net02" {
-  name                = "${var.prefix}-nic-02"
+  name                = "nic-public-${var.postfix}"
   location            = azurerm_resource_group.net.location
   resource_group_name = azurerm_resource_group.net.name
 
