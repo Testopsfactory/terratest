@@ -9,14 +9,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// VirtualMachineExists indicates whether the speficied Azure Virtual Machine exists
+// VirtualMachineExists indicates whether the speficied Azure Virtual Machine exists.
+// This function would fail the test if there is an error.
 func VirtualMachineExists(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) bool {
 	exists, err := VirtualMachineExistsE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
-// VirtualMachineExistsE indicates whether the speficied Azure Virtual Machine exists
+// VirtualMachineExistsE indicates whether the speficied Azure Virtual Machine exists.
 func VirtualMachineExistsE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get VM Object
 	_, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -26,7 +27,8 @@ func VirtualMachineExistsE(t testing.TestingT, vmName string, resGroupName strin
 	return true, nil
 }
 
-// GetVirtualMachineNics gets a list of Network Interface names for a speficied Azure Virtual Machine
+// GetVirtualMachineNics gets a list of Network Interface names for a speficied Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineNics(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) []string {
 	nicList, err := GetVirtualMachineNicsE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -34,7 +36,7 @@ func GetVirtualMachineNics(t testing.TestingT, vmName string, resGroupName strin
 	return nicList
 }
 
-// GetVirtualMachineNicsE gets a list of Network Interface names for a specified Azure Virtual Machine
+// GetVirtualMachineNicsE gets a list of Network Interface names for a specified Azure Virtual Machine.
 func GetVirtualMachineNicsE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) ([]string, error) {
 	nics := []string{}
 
@@ -57,7 +59,8 @@ func GetVirtualMachineNicsE(t testing.TestingT, vmName string, resGroupName stri
 	return nics, nil
 }
 
-// GetVirtualMachineNicCount gets the Network Interface count of the specified Azure Virtual Machine
+// GetVirtualMachineNicCount gets the Network Interface count of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineNicCount(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) int {
 	nicCount, err := GetVirtualMachineNicCountE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -65,7 +68,7 @@ func GetVirtualMachineNicCount(t testing.TestingT, vmName string, resGroupName s
 	return nicCount
 }
 
-// GetVirtualMachineNicCountE gets the Network Interface count of the specified Azure Virtual Machine
+// GetVirtualMachineNicCountE gets the Network Interface count of the specified Azure Virtual Machine.
 func GetVirtualMachineNicCountE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (int, error) {
 	nicCount := 0
 
@@ -78,7 +81,8 @@ func GetVirtualMachineNicCountE(t testing.TestingT, vmName string, resGroupName 
 	return len(*vm.NetworkProfile.NetworkInterfaces), nil
 }
 
-// GetVirtualMachineManagedDisks gets the list of Managed Disk names of the specified Azure Virtual Machine
+// GetVirtualMachineManagedDisks gets the list of Managed Disk names of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineManagedDisks(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) []string {
 	diskNames, err := GetVirtualMachineManagedDisksE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -86,7 +90,7 @@ func GetVirtualMachineManagedDisks(t testing.TestingT, vmName string, resGroupNa
 	return diskNames
 }
 
-// GetVirtualMachineManagedDisksE gets the list of Managed Disk names of the specified Azure Virtual Machine
+// GetVirtualMachineManagedDisksE gets the list of Managed Disk names of the specified Azure Virtual Machine.
 func GetVirtualMachineManagedDisksE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) ([]string, error) {
 	diskNames := []string{}
 
@@ -105,7 +109,8 @@ func GetVirtualMachineManagedDisksE(t testing.TestingT, vmName string, resGroupN
 	return diskNames, nil
 }
 
-// GetVirtualMachineManagedDiskCount gets the Managed Disk count of the specified Azure Virtual Machine
+// GetVirtualMachineManagedDiskCount gets the Managed Disk count of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineManagedDiskCount(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) int {
 	mngDiskCount, err := GetVirtualMachineManagedDiskCountE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -113,7 +118,7 @@ func GetVirtualMachineManagedDiskCount(t testing.TestingT, vmName string, resGro
 	return mngDiskCount
 }
 
-// GetVirtualMachineManagedDiskCountE gets the Managed Disk count of the specified Azure Virtual Machine
+// GetVirtualMachineManagedDiskCountE gets the Managed Disk count of the specified Azure Virtual Machine.
 func GetVirtualMachineManagedDiskCountE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (int, error) {
 	mngDiskCount := -1
 
@@ -126,7 +131,8 @@ func GetVirtualMachineManagedDiskCountE(t testing.TestingT, vmName string, resGr
 	return len(*vm.StorageProfile.DataDisks), nil
 }
 
-// GetVirtualMachineOsDiskName gets the OS Disk name of the specified Azure Virtual Machine
+// GetVirtualMachineOsDiskName gets the OS Disk name of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineOsDiskName(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) string {
 	osDiskName, err := GetVirtualMachineOsDiskNameE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -134,7 +140,7 @@ func GetVirtualMachineOsDiskName(t testing.TestingT, vmName string, resGroupName
 	return osDiskName
 }
 
-// GetVirtualMachineOsDiskNameE gets the OS Disk name of the specified Azure Virtual Machine
+// GetVirtualMachineOsDiskNameE gets the OS Disk name of the specified Azure Virtual Machine.
 func GetVirtualMachineOsDiskNameE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (string, error) {
 	// Get VM Object
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -145,14 +151,15 @@ func GetVirtualMachineOsDiskNameE(t testing.TestingT, vmName string, resGroupNam
 	return *vm.StorageProfile.OsDisk.Name, nil
 }
 
-// GetVirtualMachineState gets the State of the specified Azure Virtual Machine
+// GetVirtualMachineState gets the State of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineState(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) string {
 	vmState, err := GetVirtualMachineStateE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vmState
 }
 
-// GetVirtualMachineStateE gets the State of the specified Azure Virtual Machine
+// GetVirtualMachineStateE gets the State of the specified Azure Virtual Machine.
 func GetVirtualMachineStateE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (string, error) {
 	// Get VM Object
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -163,7 +170,8 @@ func GetVirtualMachineStateE(t testing.TestingT, vmName string, resGroupName str
 	return vm.Status, nil
 }
 
-// GetVirtualMachineAvailabilitySetID gets the Availability Set ID of the specified Azure Virtual Machine
+// GetVirtualMachineAvailabilitySetID gets the Availability Set ID of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineAvailabilitySetID(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) string {
 	adminUser, err := GetVirtualMachineAvailabilitySetIDE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -171,7 +179,7 @@ func GetVirtualMachineAvailabilitySetID(t testing.TestingT, vmName string, resGr
 	return adminUser
 }
 
-// GetVirtualMachineAvailabilitySetIDE gets the Availability Set ID of the specified Azure Virtual Machine
+// GetVirtualMachineAvailabilitySetIDE gets the Availability Set ID of the specified Azure Virtual Machine.
 func GetVirtualMachineAvailabilitySetIDE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (string, error) {
 	// Get VM Object
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -182,7 +190,7 @@ func GetVirtualMachineAvailabilitySetIDE(t testing.TestingT, vmName string, resG
 	return GetNameFromResourceID(*vm.AvailabilitySet.ID), nil
 }
 
-// VMImage represents the storage image for the specified Azure Virtual Machine
+// VMImage represents the storage image for the specified Azure Virtual Machine.
 type VMImage struct {
 	Publisher string
 	Offer     string
@@ -190,7 +198,8 @@ type VMImage struct {
 	Version   string
 }
 
-// GetVirtualMachineImage gets the Image of the specified Azure Virtual Machine
+// GetVirtualMachineImage gets the Image of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineImage(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) VMImage {
 	adminUser, err := GetVirtualMachineImageE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -198,7 +207,7 @@ func GetVirtualMachineImage(t testing.TestingT, vmName string, resGroupName stri
 	return adminUser
 }
 
-// GetVirtualMachineImageE gets the Image  of the specified Azure Virtual Machine
+// GetVirtualMachineImageE gets the Image  of the specified Azure Virtual Machine.
 func GetVirtualMachineImageE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (VMImage, error) {
 	vmImage := VMImage{}
 
@@ -217,14 +226,15 @@ func GetVirtualMachineImageE(t testing.TestingT, vmName string, resGroupName str
 	return vmImage, nil
 }
 
-// GetVirtualMachineAdminUser gets the Admin Username of the specified Azure Virtual Machine
+// GetVirtualMachineAdminUser gets the Admin Username of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineAdminUser(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) string {
 	adminUser, err := GetVirtualMachineAdminUserE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return adminUser
 }
 
-// GetVirtualMachineAdminUserE gets the Admin Username of the specified Azure Virtual Machine
+// GetVirtualMachineAdminUserE gets the Admin Username of the specified Azure Virtual Machine.
 func GetVirtualMachineAdminUserE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (string, error) {
 	// Get VM Object
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -235,7 +245,8 @@ func GetVirtualMachineAdminUserE(t testing.TestingT, vmName string, resGroupName
 	return string(*vm.OsProfile.AdminUsername), nil
 }
 
-// GetVirtualMachineSize gets the Size Type of the specified Azure Virtual Machine
+// GetVirtualMachineSize gets the Size Type of the specified Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetVirtualMachineSize(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) compute.VirtualMachineSizeTypes {
 	size, err := GetVirtualMachineSizeE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -243,7 +254,7 @@ func GetVirtualMachineSize(t testing.TestingT, vmName string, resGroupName strin
 	return size
 }
 
-// GetVirtualMachineSizeE gets the Size Type of the specified Azure Virtual Machine
+// GetVirtualMachineSizeE gets the Size Type of the specified Azure Virtual Machine.
 func GetVirtualMachineSizeE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (compute.VirtualMachineSizeTypes, error) {
 	// Get VM Object
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -254,7 +265,8 @@ func GetVirtualMachineSizeE(t testing.TestingT, vmName string, resGroupName stri
 	return vm.VirtualMachineProperties.HardwareProfile.VMSize, nil
 }
 
-// GetVirtualMachineTags gets the Tags of the specified Virtual Machine as a map
+// GetVirtualMachineTags gets the Tags of the specified Virtual Machine as a map.
+// This function would fail the test if there is an error.
 func GetVirtualMachineTags(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) map[string]string {
 	tags, err := GetVirtualMachineTagsE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -262,7 +274,7 @@ func GetVirtualMachineTags(t testing.TestingT, vmName string, resGroupName strin
 	return tags
 }
 
-// GetVirtualMachineTagsE gets the Tags of the specified Virtual Machine as a map
+// GetVirtualMachineTagsE gets the Tags of the specified Virtual Machine as a map.
 func GetVirtualMachineTagsE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (map[string]string, error) {
 	// Setup a blank map to populate and return
 	tags := make(map[string]string)
@@ -285,14 +297,15 @@ func GetVirtualMachineTagsE(t testing.TestingT, vmName string, resGroupName stri
 // Get multiple Virtual Machines from a Resource Group
 // ***************************************************** //
 
-// GetResourceGroupVirtualMachines gets a list of all Virtual Machine names in the specified Resource Group
+// GetResourceGroupVirtualMachines gets a list of all Virtual Machine names in the specified Resource Group.
+// This function would fail the test if there is an error.
 func GetResourceGroupVirtualMachines(t testing.TestingT, resGroupName string, subscriptionID string) []string {
 	vms, err := GetResourceGroupVirtualMachinesE(t, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vms
 }
 
-// GetResourceGroupVirtualMachinesE gets a list of all Virtual Machine names in the specified Resource Group
+// GetResourceGroupVirtualMachinesE gets a list of all Virtual Machine names in the specified Resource Group.
 func GetResourceGroupVirtualMachinesE(t testing.TestingT, resourceGroupName string, subscriptionID string) ([]string, error) {
 	vmDetails := []string{}
 
@@ -312,14 +325,15 @@ func GetResourceGroupVirtualMachinesE(t testing.TestingT, resourceGroupName stri
 	return vmDetails, nil
 }
 
-// GetResourceGroupVirtualMachinesObjects gets all Virtual Machine objects in the specified Resource Group
+// GetResourceGroupVirtualMachinesObjects gets all Virtual Machine objects in the specified Resource Group.
+// This function would fail the test if there is an error.
 func GetResourceGroupVirtualMachinesObjects(t testing.TestingT, resGroupName string, subscriptionID string) *map[string]compute.VirtualMachineProperties {
 	vms, err := GetResourceGroupVirtualMachinesObjectsE(t, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vms
 }
 
-// GetResourceGroupVirtualMachinesObjectsE gets all Virtual Machine objects in the specified Resource Group
+// GetResourceGroupVirtualMachinesObjectsE gets all Virtual Machine objects in the specified Resource Group.
 func GetResourceGroupVirtualMachinesObjectsE(t testing.TestingT, resourceGroupName string, subscriptionID string) (*map[string]compute.VirtualMachineProperties, error) {
 	vmClient, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
@@ -349,14 +363,15 @@ type Instance struct {
 	*compute.VirtualMachine
 }
 
-// GetVirtualMachineInstance gets a local Virtual Machine instance in the specified Resource Group
+// GetVirtualMachineInstance gets a local Virtual Machine instance in the specified Resource Group.
+// This function would fail the test if there is an error.
 func GetVirtualMachineInstance(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) *Instance {
 	vm, err := GetVirtualMachineInstanceE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vm
 }
 
-// GetVirtualMachineInstanceE gets a local Virtual Machine instance in the specified Resource Group
+// GetVirtualMachineInstanceE gets a local Virtual Machine instance in the specified Resource Group.
 func GetVirtualMachineInstanceE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (*Instance, error) {
 	// Get VM Object
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -367,7 +382,7 @@ func GetVirtualMachineInstanceE(t testing.TestingT, vmName string, resGroupName 
 	return &Instance{vm}, nil
 }
 
-// GetVirtualMachineInstanceSize gets the size of the Virtual Machine
+// GetVirtualMachineInstanceSize gets the size of the Virtual Machine.
 func (vm *Instance) GetVirtualMachineInstanceSize() compute.VirtualMachineSizeTypes {
 	return vm.VirtualMachineProperties.HardwareProfile.VMSize
 }
@@ -376,14 +391,15 @@ func (vm *Instance) GetVirtualMachineInstanceSize() compute.VirtualMachineSizeTy
 // Get the base VM Object
 // *********************** //
 
-// GetVirtualMachine gets a Virtual Machine in the specified Azure Resource Group
+// GetVirtualMachine gets a Virtual Machine in the specified Azure Resource Group.
+// This function would fail the test if there is an error.
 func GetVirtualMachine(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) *compute.VirtualMachine {
 	vm, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return vm
 }
 
-// GetVirtualMachineE gets a Virtual Machine in the specified Azure Resource Group
+// GetVirtualMachineE gets a Virtual Machine in the specified Azure Resource Group.
 func GetVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (*compute.VirtualMachine, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
@@ -405,7 +421,7 @@ func GetVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, 
 	return &vm, nil
 }
 
-// GetVirtualMachineClientE creates a Azure Virtual Machine client in the specified Azure Subscription
+// GetVirtualMachineClientE creates a Azure Virtual Machine client in the specified Azure Subscription.
 func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
