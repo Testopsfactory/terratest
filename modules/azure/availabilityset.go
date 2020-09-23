@@ -17,7 +17,7 @@ func AvailabilitySetExists(t testing.TestingT, avsName string, resGroupName stri
 	return exists
 }
 
-// AvailabilitySetExistsE indicates whether the speficied Azure Availability Set exists
+// AvailabilitySetExistsE indicates whether the specified Azure Availability Set exists
 func AvailabilitySetExistsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (bool, error) {
 	_, err := GetAvailabilitySetE(t, avsName, resGroupName, subscriptionID)
 	if err != nil {
