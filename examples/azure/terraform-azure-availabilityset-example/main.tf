@@ -7,7 +7,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "azurerm" {
-  version = "=2.20.0"
+  version = "~> 2.20"
   features {}
 }
 
@@ -24,33 +24,11 @@ terraform {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# GENERATE RANDOMIZATION STRINGS
-# These random strings help prevent resource name collision and improve test security
-# ---------------------------------------------------------------------------------------------------------------------
-
-resource "random_string" "avs" {
-  length  = 3
-  lower   = true
-  upper   = false
-  number  = false
-  special = false
-}
-
-resource "random_password" "avs" {
-  length           = 16
-  override_special = "-_%@"
-  min_upper        = "1"
-  min_lower        = "1"
-  min_numeric      = "1"
-  min_special      = "1"
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "avs" {
-  name     = format("%s-%s-%s", "terratest", random_string.avs.result, "rg")
+  name     = "terratest-avs-rg-${var.postfix}"
   location = var.location
 }
 
@@ -59,7 +37,7 @@ resource "azurerm_resource_group" "avs" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_availability_set" "avs" {
-  name                        = format("%s-%s", random_string.avs.result, "avs")
+  name                        = "avs-${var.postfix}"
   location                    = azurerm_resource_group.avs.location
   resource_group_name         = azurerm_resource_group.avs.name
   platform_fault_domain_count = var.avs_fault_domain_count
@@ -71,26 +49,26 @@ resource "azurerm_availability_set" "avs" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "avs" {
-  name                = format("%s-%s", random_string.avs.result, "net")
+  name                = "vnet-${var.postfix}"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.avs.location
   resource_group_name = azurerm_resource_group.avs.name
 }
 
 resource "azurerm_subnet" "avs" {
-  name                 = format("%s-%s", random_string.avs.result, "subnet")
+  name                 = "subnet-${var.postfix}"
   resource_group_name  = azurerm_resource_group.avs.name
   virtual_network_name = azurerm_virtual_network.avs.name
   address_prefixes     = ["10.0.17.0/24"]
 }
 
 resource "azurerm_network_interface" "avs" {
-  name                = format("%s-%s", random_string.avs.result, "nic")
+  name                = "nic-${var.postfix}"
   location            = azurerm_resource_group.avs.location
   resource_group_name = azurerm_resource_group.avs.name
 
   ip_configuration {
-    name                          = format("%s-%s", random_string.avs.result, "config01")
+    name                          = "config-${var.postfix}-01"
     subnet_id                     = azurerm_subnet.avs.id
     private_ip_address_allocation = "Dynamic"
   }
@@ -102,7 +80,7 @@ resource "azurerm_network_interface" "avs" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine" "avs" {
-  name                             = format("%s-%s", random_string.avs.result, "vm")
+  name                             = "vm-${var.postfix}"
   location                         = azurerm_resource_group.avs.location
   resource_group_name              = azurerm_resource_group.avs.name
   network_interface_ids            = [azurerm_network_interface.avs.id]
@@ -119,14 +97,14 @@ resource "azurerm_virtual_machine" "avs" {
   }
 
   storage_os_disk {
-    name              = format("%s-%s", random_string.avs.result, "osdisk")
+    name              = "osdisk-${var.postfix}"
     caching           = "None"
     create_option     = "FromImage"
-    managed_disk_type = "StandardSSD_LRS"
+    managed_disk_type = "Standard_LRS"
   }
 
   os_profile {
-    computer_name  = format("%s-%s", random_string.avs.result, "vm")
+    computer_name  = "vm-${var.postfix}"
     admin_username = "testadmin"
     admin_password = random_password.avs.result
   }
@@ -134,4 +112,15 @@ resource "azurerm_virtual_machine" "avs" {
   os_profile_linux_config {
     disable_password_authentication = false
   }
+
+  depends_on = [random_password.avs]
+}
+
+resource "random_password" "avs" {
+  length           = 16
+  override_special = "-_%@"
+  min_upper        = "1"
+  min_lower        = "1"
+  min_numeric      = "1"
+  min_special      = "1"
 }
