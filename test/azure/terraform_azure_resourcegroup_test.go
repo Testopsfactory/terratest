@@ -6,7 +6,6 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/azure"
@@ -18,14 +17,14 @@ import (
 func TestTerraformAzureResourceGroupExample(t *testing.T) {
 	t.Parallel()
 
-	expectedResourceGroupName := fmt.Sprintf("terratest-rg-%s", random.UniqueId())
+	uniquePostfix := random.UniqueId()
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-resourcegroup-example",
 		Vars: map[string]interface{}{
-			"resource_group_name": expectedResourceGroupName,
+			"postfix": uniquePostfix,
 		},
 	}
 

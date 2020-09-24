@@ -16,6 +16,7 @@ func ResourceGroupExists(t *testing.T, resourceGroupName string, subscriptionID 
 }
 
 // ResourceGroupExistsE indicates whether a resource group exists within a subscription
+// This function would fail the test if there is an error.
 func ResourceGroupExistsE(resourceGroupName, subscriptionID string) (bool, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -33,6 +34,7 @@ func ResourceGroupExistsE(resourceGroupName, subscriptionID string) (bool, error
 }
 
 //GetResourceGroupClientE gets a resource group client in a subscription
+// This function would fail the test if there is an error.
 func GetResourceGroupClientE(subscriptionID string) (*resources.GroupsClient, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
