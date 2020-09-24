@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/azure"
+	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -100,7 +101,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 		assert.NotNil(t, publicIPAddressResource, fmt.Sprintf("Public IP Resource for LB01 Frontend: %s", publicIPAddressForLB01))
 
 		// Verify that expected PublicIPAddressResource is assigned to Load Balancer
-		pipResourceName, err := azure.GetSliceLastValueE(*fe01Props.PublicIPAddress.ID, "/")
+		pipResourceName, err := collections.GetSliceLastValueE(*fe01Props.PublicIPAddress.ID, "/")
 		require.NoError(t, err)
 		assert.Equal(t, publicIPAddressForLB01, pipResourceName, "LB01 Public IP Address Resource Name")
 
@@ -125,7 +126,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 		assert.Equal(t, frontendIPConfigForLB02, *fe02Props.PrivateIPAddress, "LB02 Frontend IP address")
 		assert.Equal(t, frontendIPAllocForLB02, string(fe02Props.PrivateIPAllocationMethod), "LB02 Frontend IP allocation method")
-		subnetID, err := azure.GetSliceLastValueE(*fe02Props.Subnet.ID, "/")
+		subnetID, err := collections.GetSliceLastValueE(*fe02Props.Subnet.ID, "/")
 		require.NoError(t, err, "LB02 Frontend subnet not found")
 		assert.Equal(t, frontendSubnetID, subnetID, "LB02 Frontend subnet ID")
 	})
