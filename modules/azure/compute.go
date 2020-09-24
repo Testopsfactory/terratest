@@ -9,7 +9,7 @@ import (
 )
 
 // GetVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf
-func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesClient, error) {
+func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Create a VM client
 	factory := NewClientFactory()
 	vmClient, err := factory.GetVirtualMachinesClientE(subscriptionID)
@@ -29,7 +29,8 @@ func GetVirtualMachineClient(subscriptionID string) (*compute.VirtualMachinesCli
 	return &vmClient, nil
 }
 
-// GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine
+// GetSizeOfVirtualMachine gets the size type of the given Azure Virtual Machine.
+// This function would fail the test if there is an error.
 func GetSizeOfVirtualMachine(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) compute.VirtualMachineSizeTypes {
 	size, err := GetSizeOfVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -46,7 +47,7 @@ func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName st
 	}
 
 	// Create a VM client
-	vmClient, err := GetVirtualMachineClient(subscriptionID)
+	vmClient, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
 		return "", err
 	}
@@ -60,7 +61,8 @@ func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName st
 	return vm.VirtualMachineProperties.HardwareProfile.VMSize, nil
 }
 
-// GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map
+// GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map.
+// This function would fail the test if there is an error.
 func GetTagsForVirtualMachine(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) map[string]string {
 	tags, err := GetTagsForVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -80,7 +82,7 @@ func GetTagsForVirtualMachineE(t testing.TestingT, vmName string, resGroupName s
 	}
 
 	// Create a VM client
-	vmClient, err := GetVirtualMachineClient(subscriptionID)
+	vmClient, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
 		return tags, err
 	}
