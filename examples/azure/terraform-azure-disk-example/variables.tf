@@ -13,14 +13,19 @@
 # You must provide a value for each of these parameters.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "prefix" {
-  description = "temp"
+# ---------------------------------------------------------------------------------------------------------------------
+# OPTIONAL PARAMETERS
+# These parameters have reasonable defaults.
+# ---------------------------------------------------------------------------------------------------------------------
+
+variable "postfix" {
+  description = "A postfix string to centrally mitigate resource name collisions"
   type        = string
-  default     = "terratest-avs"
+  default     = "resource"
 }
 
 variable "location" {
-  description = "The region"
+  description = "The Azure region in which to deploy your resources to"
   type        = string
   default     = "East US"
 }

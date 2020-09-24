@@ -29,9 +29,9 @@ func DiskExistsE(t testing.TestingT, diskName string, resGroupName string, subsc
 // This property also accessible from the VM client disk storage object but only works
 // when the VM is online, while this direct call to GetDiskType always works.
 func GetDiskType(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) compute.DiskStorageAccountTypes {
-	disk, err := GetDiskTypeE(t, diskName, resGroupName, subscriptionID)
+	diskType, err := GetDiskTypeE(t, diskName, resGroupName, subscriptionID)
 	require.NoError(t, err)
-	return disk
+	return diskType
 }
 
 // GetDiskTypeE returns the Disk Storage Account Type of the Azure Managed Disk
@@ -43,6 +43,13 @@ func GetDiskTypeE(t testing.TestingT, diskName string, resGroupName string, subs
 	}
 
 	return disk.Sku.Name, nil
+}
+
+// GetDisk returns a Disk in the specified Azure Resource Group
+func GetDisk(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) *compute.Disk {
+	disk, err := GetDiskE(t, diskName, resGroupName, subscriptionID)
+	require.NoError(t, err)
+	return disk
 }
 
 // GetDiskE returns a Disk in the specified Azure Resource Group
