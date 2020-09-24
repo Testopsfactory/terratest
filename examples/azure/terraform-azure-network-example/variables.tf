@@ -44,7 +44,7 @@ variable "location" {
 variable "postfix" {
   description = "The postfix that will be attached to all resources deployed"
   type        = string
-  default     = "terratest-net"
+  default     = "resource"
 }
 
 variable "private_ip" {

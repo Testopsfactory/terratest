@@ -73,7 +73,7 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 	t.Run("NIC_PublicAddress", func(t *testing.T) {
 		// Check the internal network interface does NOT have a public IP
 		actualPrivateIPOnly := azure.GetNetworkInterfacePublicIPs(t, expectedPrivateNicName, expectedRgName, subscriptionID)
-		assert.Nil(t, actualPrivateIPOnly)
+		assert.True(t, len(actualPrivateIPOnly) == 0)
 
 		// Check the external network interface has a public IP
 		actualPublicIPs := azure.GetNetworkInterfacePublicIPs(t, expectedPublicNicName, expectedRgName, subscriptionID)
