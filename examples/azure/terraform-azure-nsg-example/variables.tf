@@ -18,6 +18,13 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "postfix" {
+  description = "Random postfix string used for each test run; set from the test file at runtime."
+  type        = string
+  default     = "qwefgt"
+}
+
+
 variable "resource_group_name" {
   description = "Name for the resource group holding resources for this example"
   type        = string
@@ -33,43 +40,49 @@ variable "location" {
 variable "vnet_name" {
   description = "Name for the example virtual network"
   type        = string
-  default     = "terratest-nsg-example-network"
+  default     = "vnet01"
 }
 
 variable "subnet_name" {
   description = "Name for the example virtual network default subnet"
   type        = string
-  default     = "terratest-nsg-example-subnet"
+  default     = "subnet01"
 }
 
 variable "vm_nic_name" {
   description = "Name for the NIC attached to our example VM."
   type        = string
-  default     = "terratest-nsg-example-nic"
+  default     = "nic01"
 }
 
 variable "vm_nic_ip_config_name" {
   description = "Name for the NIC IP configuration attached to our example VM."
   type        = string
-  default     = "terratest-nsg-example-nic-ip-config"
+  default     = "nic_ipconfig01"
 }
 
 variable "nsg_name" {
   description = "Name for the example NSG."
   type        = string
-  default     = "terratest-nsg-example-nsg"
+  default     = "nsg01"
 }
 
-variable "nsg_rule_name" {
-  description = "Name for the example NSG rule used in this example."
+variable "nsg_ssh_rule_name" {
+  description = "Name for the example SSH NSG rule used in this example."
   type        = string
-  default     = "terratest-nsg-example-nsg-rule"
+  default     = "nsgrule01"
+}
+
+variable "nsg_http_rule_name" {
+  description = "Name for the example HTTP NSG rule used in this example."
+  type        = string
+  default     = "nsgrule02"
 }
 
 variable "vm_name" {
   description = "The name of the VM used in this example"
   type        = string
-  default     = "terratest-nsg-example-vm"
+  default     = "vm01"
 }
 
 variable "vm_size" {
@@ -81,23 +94,23 @@ variable "vm_size" {
 variable "hostname" {
   description = "The hostname of the new VM to be configured"
   type        = string
-  default     = "terratest-nsg-example-vm"
+  default     = "vm01"
 }
 
 variable "os_disk_name" {
   description = "The of the OS disk to use on our example VM."
   type        = string
-  default     = "terratest-nsg-example-os-disk"
-}
-
-variable "password" {
-  description = "The password to configure for SSH access"
-  type        = string
-  default     = "HorriblePassword1234!"
+  default     = "osdisk01"
 }
 
 variable "username" {
   description = "The username to be provisioned into your VM"
   type        = string
   default     = "testadmin"
+}
+
+variable "password" {
+  description = "The password to configure for SSH access"
+  type        = string
+  default     = "!@#PasswordSetInCode!@#"
 }

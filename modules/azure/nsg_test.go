@@ -46,15 +46,6 @@ func TestNsgRuleSummaryConverstion(t *testing.T) {
 	// Quick test to make sure the safe nil handling is working
 	var name = "test name"
 	var sdkStruct = network.SecurityRulePropertiesFormat{}
-	sdkStruct.Description = nil
-	sdkStruct.Protocol = network.SecurityRuleProtocolTCP
-	sdkStruct.SourcePortRange = nil
-	sdkStruct.DestinationPortRange = nil
-	sdkStruct.SourceAddressPrefix = nil
-	sdkStruct.DestinationAddressPrefix = nil
-	sdkStruct.Access = network.SecurityRuleAccessAllow
-	sdkStruct.Priority = nil
-	sdkStruct.Direction = network.SecurityRuleDirectionInbound
 
 	// Verify the nil values were correctly defaulted to "" without a panic
 	result := convertToNsgRuleSummary(&name, &sdkStruct)
