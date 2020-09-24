@@ -69,6 +69,12 @@ func TestAllowSourcePort(t *testing.T) {
 		{"22 denied", "22", "Deny", "22", false},
 		{"22 doesn't allow 80", "22", "Allow", "80", false},
 		{"Any allows any", "*", "Allow", "*", true},
+		{"Allows a range of ports", "80-90", "Allow", "80", true},
+		{"Allows a range of ports", "80-90", "Allow", "85", true},
+		{"Allows a range of ports", "80-90", "Allow", "90", true},
+		{"Blocks a range of ports", "80-90", "Deny", "80", false},
+		{"Blocks a range of ports", "80-90", "Deny", "85", false},
+		{"Blocks a range of ports", "80-90", "Deny", "90", false},
 	}
 
 	for _, tt := range cases {
@@ -94,6 +100,12 @@ func TestAllowDestinationPort(t *testing.T) {
 		{"22 denied", "22", "Deny", "22", false},
 		{"22 doesn't allow 80", "22", "Allow", "80", false},
 		{"Any allows any", "*", "Allow", "*", true},
+		{"Allows a range of ports", "80-90", "Allow", "80", true},
+		{"Allows a range of ports", "80-90", "Allow", "85", true},
+		{"Allows a range of ports", "80-90", "Allow", "90", true},
+		{"Blocks a range of ports", "80-90", "Deny", "80", false},
+		{"Blocks a range of ports", "80-90", "Deny", "85", false},
+		{"Blocks a range of ports", "80-90", "Deny", "90", false},
 	}
 
 	for _, tt := range cases {
