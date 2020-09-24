@@ -64,7 +64,8 @@ func GetSizeOfVirtualMachineE(t testing.TestingT, vmName string, resGroupName st
 	return vm.VirtualMachineProperties.HardwareProfile.VMSize, nil
 }
 
-// GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map
+// GetTagsForVirtualMachine gets the tags of the given Virtual Machine as a map.
+// This function would fail the test if there is an error.
 func GetTagsForVirtualMachine(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) map[string]string {
 	tags, err := GetTagsForVirtualMachineE(t, vmName, resGroupName, subscriptionID)
 	require.NoError(t, err)

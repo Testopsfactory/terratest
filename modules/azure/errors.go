@@ -29,4 +29,18 @@ func (err FailedToParseError) Error() string {
 // NewFailedToParseError creates a new not found error when an expected object is not found in the search space
 func NewFailedToParseError(objectType string, objectID string) FailedToParseError {
 	return FailedToParseError{objectType, objectID}
+// NotFoundError is returned when an expected object is not found in the search spa
+type NotFoundError struct {
+	objectType  string
+	objectID    string
+	searchSpace string
+}
+
+func (err NotFoundError) Error() string {
+	return fmt.Sprintf("Object of type %s with id %s not found in %s", err.objectType, err.objectID, err.searchSpace)
+}
+
+// NewNotFoundError creates a new not found error when an expected object is not found in the search space
+func NewNotFoundError(objectType string, objectID string, region string) NotFoundError {
+	return NotFoundError{objectType, objectID, region}
 }

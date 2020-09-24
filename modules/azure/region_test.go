@@ -8,15 +8,13 @@ package azure
 import (
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/azure"
-
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetRandomRegion(t *testing.T) {
 	t.Parallel()
 
-	randomRegion := azure.GetRandomRegion(t, nil, nil, "")
+	randomRegion := GetRandomRegion(t, nil, nil, "")
 	assertLooksLikeRegionName(t, randomRegion)
 }
 
