@@ -130,5 +130,10 @@ resource "azurerm_virtual_machine" "vm_example" {
   os_profile_linux_config {
     disable_password_authentication = false
   }
+
+  # Correctly setup the dependencies to make sure resources are correctly destroyed.
+  depends_on = [
+    azurerm_network_interface_security_group_association.main
+  ]
 }
 
