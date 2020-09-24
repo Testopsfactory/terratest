@@ -66,13 +66,9 @@ jobs:
           # run the linter
           ./bin/golangci-lint run ./test/azure/ --build-tags=azure --timeout 5m0s
       - name: run terraform fmt on examples/azure folder
+        uses: hashicorp/setup-terraform@v1
         id: azure_terraform_fmt
-        run: |
-          # list files to be linted
-          [ -d "examples/azure" ] && ls -li "examples/azure"
-
-          # run terraform format
-          terraform fmt -check -recursive ./examples/azure
+        run: terraform fmt -check -recursive ./examples/azure
       - name: login to azure cli
         uses: azure/login@v1.1
         with:
