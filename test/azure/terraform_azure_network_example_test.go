@@ -86,8 +86,8 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 		assert.True(t, checkPrivateIpInSubnet)
 	})
 
-	// Tests for individual network resources
-	t.Run("Network", func(t *testing.T) {
+	// Test for resource presence
+	t.Run("Exists", func(t *testing.T) {
 		// Check the Virtual Network exists
 		assert.True(t, azure.VirtualNetworkExists(t, expectedVNetName, expectedRgName, subscriptionID))
 
@@ -100,7 +100,10 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 
 		// Check Public Address exists
 		assert.True(t, azure.PublicAddressExists(t, expectedPublicAddressName, expectedRgName, subscriptionID))
+	})
 
+	// Tests for useful network properties
+	t.Run("Network", func(t *testing.T) {
 		// Check the Virtual Network DNS server IPs
 		actualDNSIPs := azure.GetVirtualNetworkDNSServerIPs(t, expectedVNetName, expectedRgName, subscriptionID)
 		assert.Contains(t, actualDNSIPs, expectedDnsIp01)
