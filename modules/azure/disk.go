@@ -9,6 +9,7 @@ import (
 )
 
 // DiskExists indicates whether the speficied Azure Managed Disk exists
+// This function would fail the test if there is an error.
 func DiskExists(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) bool {
 	exists, err := DiskExistsE(t, diskName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -28,6 +29,7 @@ func DiskExistsE(t testing.TestingT, diskName string, resGroupName string, subsc
 // GetDiskType returns the Disk Storage Account Type of the Azure Managed Disk
 // This property also accessible from the VM client disk storage object but only works
 // when the VM is online, while this direct call to GetDiskType always works.
+// This function would fail the test if there is an error.
 func GetDiskType(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) compute.DiskStorageAccountTypes {
 	diskType, err := GetDiskTypeE(t, diskName, resGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -46,6 +48,7 @@ func GetDiskTypeE(t testing.TestingT, diskName string, resGroupName string, subs
 }
 
 // GetDisk returns a Disk in the specified Azure Resource Group
+// This function would fail the test if there is an error.
 func GetDisk(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) *compute.Disk {
 	disk, err := GetDiskE(t, diskName, resGroupName, subscriptionID)
 	require.NoError(t, err)
