@@ -37,7 +37,7 @@ resource "azurerm_subnet" "internal" {
   name                 = "${var.subnet_name}-${var.postfix}"
   resource_group_name  = azurerm_resource_group.nsg_rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes       = ["10.0.17.0/24"]
+  address_prefixes     = ["10.0.17.0/24"]
 }
 
 resource "azurerm_network_interface" "main" {
