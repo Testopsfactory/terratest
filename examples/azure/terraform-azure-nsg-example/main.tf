@@ -17,7 +17,7 @@ terraform {
 # See test/terraform_azure_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "main" {
+resource "azurerm_resource_group" "nsg_rg" {
   name     = "${var.resource_group_name}-${var.postfix}"
   location = var.location
 }
@@ -26,24 +26,24 @@ resource "azurerm_resource_group" "main" {
 # DEPLOY VIRTUAL NETWORK RESOURCES
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_network" "main" {
+resource "azurerm_virtual_network" "vnet" {
   name                = "${var.vnet_name}-${var.postfix}"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.nsg_rg.location
+  resource_group_name = azurerm_resource_group.nsg_rg.name
 }
 
 resource "azurerm_subnet" "internal" {
   name                 = "${var.subnet_name}-${var.postfix}"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.main.name
+  resource_group_name  = azurerm_resource_group.nsg_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes       = ["10.0.17.0/24"]
 }
 
 resource "azurerm_network_interface" "main" {
   name                = "${var.vm_nic_name}-${var.postfix}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.nsg_rg.location
+  resource_group_name = azurerm_resource_group.nsg_rg.name
 
   ip_configuration {
     name                          = "${var.vm_nic_ip_config_name}-${var.postfix}"
@@ -52,15 +52,15 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
-resource "azurerm_network_security_group" "main" {
+resource "azurerm_network_security_group" "nsg_example" {
   name                = "${var.nsg_name}-${var.postfix}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.nsg_rg.location
+  resource_group_name = azurerm_resource_group.nsg_rg.name
 }
 
 resource "azurerm_network_interface_security_group_association" "main" {
   network_interface_id      = azurerm_network_interface.main.id
-  network_security_group_id = azurerm_network_security_group.main.id
+  network_security_group_id = azurerm_network_security_group.nsg_example.id
 }
 
 resource "azurerm_network_security_rule" "allowSSH" {
@@ -74,8 +74,8 @@ resource "azurerm_network_security_rule" "allowSSH" {
   destination_port_range      = 22
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.main.name
-  network_security_group_name = azurerm_network_security_group.main.name
+  resource_group_name         = azurerm_resource_group.nsg_rg.name
+  network_security_group_name = azurerm_network_security_group.nsg_example.name
 }
 
 resource "azurerm_network_security_rule" "blockHTTP" {
@@ -89,8 +89,8 @@ resource "azurerm_network_security_rule" "blockHTTP" {
   destination_port_range      = 80
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.main.name
-  network_security_group_name = azurerm_network_security_group.main.name
+  resource_group_name         = azurerm_resource_group.nsg_rg.name
+  network_security_group_name = azurerm_network_security_group.nsg_example.name
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -98,10 +98,10 @@ resource "azurerm_network_security_rule" "blockHTTP" {
 # This VM does not actually do anything and is the smallest size VM available with an Ubuntu image
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_machine" "main" {
+resource "azurerm_virtual_machine" "vm_example" {
   name                             = "${var.vm_name}-${var.postfix}"
-  location                         = azurerm_resource_group.main.location
-  resource_group_name              = azurerm_resource_group.main.name
+  location                         = azurerm_resource_group.nsg_rg.location
+  resource_group_name              = azurerm_resource_group.nsg_rg.name
   network_interface_ids            = [azurerm_network_interface.main.id]
   vm_size                          = var.vm_size
   delete_os_disk_on_termination    = true
