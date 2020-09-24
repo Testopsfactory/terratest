@@ -17,6 +17,8 @@ import (
 func TestTerraformAzureResourceGroupExample(t *testing.T) {
 	t.Parallel()
 
+	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
+	subscriptionID := ""
 	uniquePostfix := random.UniqueId()
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
@@ -38,6 +40,6 @@ func TestTerraformAzureResourceGroupExample(t *testing.T) {
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 
 	// website::tag::4:: Verify the resource group exists
-	exists := azure.ResourceGroupExists(t, resourceGroupName, "")
+	exists := azure.ResourceGroupExists(t, resourceGroupName, subscriptionID)
 	assert.True(t, exists, "Resource group does not exist")
 }
