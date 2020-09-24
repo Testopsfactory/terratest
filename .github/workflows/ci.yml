@@ -68,7 +68,6 @@ jobs:
       - name: setup terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 0.13.2
           terraform_wrapper: false
         id: azure_terraform_install
           
