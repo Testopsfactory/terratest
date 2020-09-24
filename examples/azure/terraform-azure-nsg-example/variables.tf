@@ -28,7 +28,7 @@ variable "postfix" {
 variable "resource_group_name" {
   description = "Name for the resource group holding resources for this example"
   type        = string
-  default     = "terratest-nsg-example"
+  default     = "terratest-nsg-rg"
 }
 
 variable "location" {
