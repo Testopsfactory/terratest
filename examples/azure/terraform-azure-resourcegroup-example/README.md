@@ -1,6 +1,7 @@
 # Terraform Azure Resource Group Example
 
-This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate
+This folder contains a simple Terraform module that deploys resources in 
+[Azure](https://azure.microsoft.com/) to demonstrate
 how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys a Resource Group with no other resources.
 
 - A [Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/overview) with no other resources.
