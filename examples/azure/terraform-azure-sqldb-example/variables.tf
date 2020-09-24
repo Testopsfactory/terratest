@@ -48,12 +48,6 @@ variable tags {
     default = "Development"
 }
 
-variable sa_name {
-    description = "The name of the storage account."
-    type        = string
-    default     = "examplesqlsa"
-}
-
 variable sqldb_name {
     description = "The name of the Microsoft SQL database."
     type        = string
