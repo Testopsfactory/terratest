@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // NsgRuleSummaryList holds a colleciton of NsgRuleSummary rules
@@ -29,6 +30,15 @@ type NsgRuleSummary struct {
 	Access                   string
 	Priority                 int32
 	Direction                string
+}
+
+// GetDefaultNsgRulesClient returns a rules client which can be used to read the list of *default* security rules
+// defined on an network security group. Note that the "default" rules are those provided implicitly
+// by the Azure platform.
+func GetDefaultNsgRulesClient(t *testing.T, subscriptionID string) network.DefaultSecurityRulesClient {
+	client, err := GetDefaultNsgRulesClientE(subscriptionID)
+	require.NoError(t, err)
+	return client
 }
 
 // GetDefaultNsgRulesClientE returns a rules client which can be used to read the list of *default* security rules
@@ -53,6 +63,15 @@ func GetDefaultNsgRulesClientE(subscriptionID string) (network.DefaultSecurityRu
 	return nsgClient, nil
 }
 
+// GetCustomNsgRulesClient returns a rules client which can be used to read the list of *custom* security rules
+// defined on an network security group. Note that the "custom" rules are those defined by
+// end users.
+func GetCustomNsgRulesClient(t *testing.T, subscriptionID string) network.SecurityRulesClient {
+	client, err := GetCustomNsgRulesClientE(subscriptionID)
+	require.NoError(t, err)
+	return client
+}
+
 // GetCustomNsgRulesClientE returns a rules client which can be used to read the list of *custom* security rules
 // defined on an network security group. Note that the "custom" rules are those defined by
 // end users.
@@ -73,6 +92,14 @@ func GetCustomNsgRulesClientE(subscriptionID string) (network.SecurityRulesClien
 
 	nsgClient.Authorizer = *auth
 	return nsgClient, nil
+}
+
+// GetAllNSGRules returns an NsgRuleSummaryList instance containing the combined "default" and "custom" rules from a network
+// security group.
+func GetAllNSGRules(t *testing.T, resourceGroupName, nsgName, subscriptionID string) NsgRuleSummaryList {
+	results, err := GetAllNSGRulesE(resourceGroupName, nsgName, subscriptionID)
+	require.NoError(t, err)
+	return results
 }
 
 // GetAllNSGRulesE returns an NsgRuleSummaryList instance containing the combined "default" and "custom" rules from a network
