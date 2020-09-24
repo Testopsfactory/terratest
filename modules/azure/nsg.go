@@ -35,6 +35,7 @@ type NsgRuleSummary struct {
 // GetDefaultNsgRulesClient returns a rules client which can be used to read the list of *default* security rules
 // defined on an network security group. Note that the "default" rules are those provided implicitly
 // by the Azure platform.
+// This function would fail the test if there is an error.
 func GetDefaultNsgRulesClient(t *testing.T, subscriptionID string) network.DefaultSecurityRulesClient {
 	client, err := GetDefaultNsgRulesClientE(subscriptionID)
 	require.NoError(t, err)
@@ -66,6 +67,7 @@ func GetDefaultNsgRulesClientE(subscriptionID string) (network.DefaultSecurityRu
 // GetCustomNsgRulesClient returns a rules client which can be used to read the list of *custom* security rules
 // defined on an network security group. Note that the "custom" rules are those defined by
 // end users.
+// This function would fail the test if there is an error.
 func GetCustomNsgRulesClient(t *testing.T, subscriptionID string) network.SecurityRulesClient {
 	client, err := GetCustomNsgRulesClientE(subscriptionID)
 	require.NoError(t, err)
@@ -96,6 +98,7 @@ func GetCustomNsgRulesClientE(subscriptionID string) (network.SecurityRulesClien
 
 // GetAllNSGRules returns an NsgRuleSummaryList instance containing the combined "default" and "custom" rules from a network
 // security group.
+// This function would fail the test if there is an error.
 func GetAllNSGRules(t *testing.T, resourceGroupName, nsgName, subscriptionID string) NsgRuleSummaryList {
 	results, err := GetAllNSGRulesE(resourceGroupName, nsgName, subscriptionID)
 	require.NoError(t, err)
