@@ -69,6 +69,7 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         id: azure_terraform_fmt
         run: terraform fmt -check -recursive ./examples/azure
+        continue-on-error: false
       - name: login to azure cli
         uses: azure/login@v1.1
         with:
