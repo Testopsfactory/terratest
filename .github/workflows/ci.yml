@@ -57,7 +57,7 @@ jobs:
 
           # run the linter
           ./bin/golangci-lint run ./modules/azure/ --build-tags=azure --timeout 5m0s
-          - name: lint test/azure folder
+      - name: lint test/azure folder
         id: azure_test_lint
         run: |
           # list files to be linted
