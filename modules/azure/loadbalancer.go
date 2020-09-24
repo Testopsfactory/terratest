@@ -53,6 +53,31 @@ func GetLoadBalancerClientE(subscriptionID string) (*network.LoadBalancersClient
 	return &loadBalancerClient, nil
 }
 
+// GetLoadBalancerFrontendConfig returns an IP address and specifies public or private
+func GetLoadBalancerFrontendConfig(pipResource string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate string, err1 error) {
+	// TODO: pipResource is non-nil for public, nil for private
+	// TODO: refactor to check private IP first, to determine how to get IP value
+
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return "", "", err
+	}
+	client, err := GetPublicIPAddressClientE(subscriptionID)
+	if err != nil {
+		return "", "", err
+	}
+	publicIPAddress, err := client.Get(context.Background(), resourceGroupName, pipResource, "")
+	if err != nil {
+		return "", "", err
+	}
+
+	pipProps := *publicIPAddress.PublicIPAddressPropertiesFormat
+	ipValue := (pipProps.IPAddress)
+
+	// TODO: return public or private after determination
+	return *ipValue, "public", nil
+}
+
 // GetPublicIPAddressE returns a Public IP Address resource, else returns nil with err
 func GetPublicIPAddressE(publicIPAddressName string, resourceGroupName string, subscriptionID string) (*network.PublicIPAddress, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)

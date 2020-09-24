@@ -95,15 +95,27 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 		// Ensure PrivateIPAddress is nil for LB01
 		assert.Nil(t, fe01Props.PrivateIPAddress, "LB01 shouldn't have PrivateIPAddress")
 
+		// TODO: remove PIP check early
 		// Ensure PublicIPAddress Resource exists, no need to check PublicIPAddress value
-		publicIPAddressResource, err := azure.GetPublicIPAddressE(publicIPAddressForLB01, resourceGroupName, "")
-		require.NoError(t, err)
-		assert.NotNil(t, publicIPAddressResource, fmt.Sprintf("Public IP Resource for LB01 Frontend: %s", publicIPAddressForLB01))
+		//publicIPAddressResource, err := azure.GetPublicIPAddressE(publicIPAddressForLB01, resourceGroupName, "")
+		//require.NoError(t, err)
+		//assert.NotNil(t, publicIPAddressResource, fmt.Sprintf("Public IP Resource for LB01 Frontend: %s", publicIPAddressForLB01))
 
-		// Verify that expected PublicIPAddressResource is assigned to Load Balancer
+		// Get PublicIPAddressResource name for Load Balancer
 		pipResourceName, err := collections.GetSliceLastValueE(*fe01Props.PublicIPAddress.ID, "/")
 		require.NoError(t, err)
-		assert.Equal(t, publicIPAddressForLB01, pipResourceName, "LB01 Public IP Address Resource Name")
+		//assert.Equal(t, publicIPAddressForLB01, pipResourceName, "LB01 Public IP Address Resource Name")
+
+		// TODO: get config from LB
+		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(pipResourceName, resourceGroupName, "")
+		require.NoError(t, err)
+		assert.NotEmpty(t, ipAddress)
+		assert.Equal(t, "public", publicOrPrivate)
+
+		// TODO: no need to get PIP resource?
+		publicIPAddressResource, err := azure.GetPublicIPAddressE(pipResourceName, resourceGroupName, "")
+		require.NoError(t, err)
+		assert.NotNil(t, publicIPAddressResource, fmt.Sprintf("Public IP Resource for LB01 Frontend: %s", publicIPAddressForLB01))
 
 		assert.Equal(t, FrontendIPAllocationMethod, string(fe01Props.PrivateIPAllocationMethod), "LB01 Frontend IP allocation method")
 		assert.Nil(t, fe01Props.Subnet, "LB01 shouldn't have Subnet")
