@@ -1,13 +1,13 @@
 output "vm_name" {
-  value = azurerm_virtual_machine.main.name
+  value = azurerm_virtual_machine.vm_example.name
 }
 
 output "resource_group_name" {
-  value = azurerm_resource_group.main.name
+  value = azurerm_resource_group.nsg_rg.name
 }
 
 output "nsg_name" {
-  value = azurerm_network_security_group.main.name
+  value = azurerm_network_security_group.nsg_example.name
 }
 
 output "ssh_rule_name" {
