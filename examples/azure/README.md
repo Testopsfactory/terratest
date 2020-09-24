@@ -4,7 +4,7 @@ Terratest uses Go to make calls to Azure through the azure-sdk-for-go library an
 
 - Instructions for running each Azure Terratest module are included in each Terraform example sub-folder:
   - examples/azure/terraform-azure-\*-example/README.md
-- Tests wich assert against expected Terraform output values are located in the the respective go files of the folder:
+- Tests which assert against expected Terraform output values are located in the the respective go files of the folder:
   - [test/azure/terraform-azure-\*-example_test.go](../../test/azure)
 - Test APIs which provide the actual Azure resource property values via the azure-sdk-for-go are located in the folder:
   - [modules/azure](../../modules/azure)
@@ -44,7 +44,12 @@ export ARM_SUBSCRIPTION_ID=your_subscription_id
 export ARM_TENANT_ID=your_tenant_id
 ```
 
+<<<<<<< HEAD
 Note, in a Windows environment, these should be set as **system environment variables**. We can use a PowerShell console with administrative rights to update these environment variables:
+=======
+Note, in a Windows environment, these should be set as **system environment variables**. We can use a PowerShell console with administrative rights to update these environment variables:
+
+> > > > > > > 0a00d533c915f0dd2c33ef9a3b5f595dee19d74f
 
 ```powershell
 [System.Environment]::SetEnvironmentVariable("ARM_CLIENT_ID",$your_app_id,[System.EnvironmentVariableTarget]::Machine)

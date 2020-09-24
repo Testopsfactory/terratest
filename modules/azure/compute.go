@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// VirtualMachineExists indicates whether the speficied Azure Virtual Machine exists.
+// VirtualMachineExists indicates whether the specifcied Azure Virtual Machine exists.
 // This function would fail the test if there is an error.
 func VirtualMachineExists(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) bool {
 	exists, err := VirtualMachineExistsE(t, vmName, resGroupName, subscriptionID)
@@ -17,7 +17,7 @@ func VirtualMachineExists(t testing.TestingT, vmName string, resGroupName string
 	return exists
 }
 
-// VirtualMachineExistsE indicates whether the speficied Azure Virtual Machine exists.
+// VirtualMachineExistsE indicates whether the specifcied Azure Virtual Machine exists.
 func VirtualMachineExistsE(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get VM Object
 	_, err := GetVirtualMachineE(t, vmName, resGroupName, subscriptionID)
@@ -27,7 +27,7 @@ func VirtualMachineExistsE(t testing.TestingT, vmName string, resGroupName strin
 	return true, nil
 }
 
-// GetVirtualMachineNics gets a list of Network Interface names for a speficied Azure Virtual Machine.
+// GetVirtualMachineNics gets a list of Network Interface names for a specifcied Azure Virtual Machine.
 // This function would fail the test if there is an error.
 func GetVirtualMachineNics(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) []string {
 	nicList, err := GetVirtualMachineNicsE(t, vmName, resGroupName, subscriptionID)
@@ -407,7 +407,7 @@ func GetVirtualMachineE(t testing.TestingT, vmName string, resGroupName string, 
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
 		return nil, err
