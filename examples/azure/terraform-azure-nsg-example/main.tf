@@ -18,7 +18,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "main" {
-  name     = var.resource_group_name
+  name     = "${var.resource_group_name}-${var.postfix}"
   location = var.location
 }
 
@@ -27,33 +27,33 @@ resource "azurerm_resource_group" "main" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "main" {
-  name                = var.vnet_name
+  name                = "${var.vnet_name}-${var.postfix}"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 }
 
 resource "azurerm_subnet" "internal" {
-  name                 = var.subnet_name
+  name                 = "${var.subnet_name}-${var.postfix}"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes       = ["10.0.17.0/24"]
 }
 
 resource "azurerm_network_interface" "main" {
-  name                = var.vm_nic_name
+  name                = "${var.vm_nic_name}-${var.postfix}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
-    name                          = var.vm_nic_ip_config_name
+    name                          = "${var.vm_nic_ip_config_name}-${var.postfix}"
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
 resource "azurerm_network_security_group" "main" {
-  name                = var.nsg_name
+  name                = "${var.nsg_name}-${var.postfix}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 }
@@ -63,9 +63,9 @@ resource "azurerm_network_interface_security_group_association" "main" {
   network_security_group_id = azurerm_network_security_group.main.id
 }
 
-resource "azurerm_network_security_rule" "main" {
-  name                        = var.nsg_rule_name
-  description                 = var.nsg_rule_name
+resource "azurerm_network_security_rule" "allowSSH" {
+  name                        = "${var.nsg_ssh_rule_name}-${var.postfix}"
+  description                 = "${var.nsg_ssh_rule_name}-${var.postfix}"
   priority                    = 100
   direction                   = "Inbound"
   access                      = "Allow"
@@ -78,13 +78,28 @@ resource "azurerm_network_security_rule" "main" {
   network_security_group_name = azurerm_network_security_group.main.name
 }
 
+resource "azurerm_network_security_rule" "blockHTTP" {
+  name                        = "${var.nsg_http_rule_name}-${var.postfix}"
+  description                 = "${var.nsg_http_rule_name}-${var.postfix}"
+  priority                    = 200
+  direction                   = "Inbound"
+  access                      = "Deny"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = 80
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.main.name
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A VIRTUAL MACHINE RUNNING UBUNTU
 # This VM does not actually do anything and is the smallest size VM available with an Ubuntu image
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine" "main" {
-  name                             = var.vm_name
+  name                             = "${var.vm_name}-${var.postfix}"
   location                         = azurerm_resource_group.main.location
   resource_group_name              = azurerm_resource_group.main.name
   network_interface_ids            = [azurerm_network_interface.main.id]
@@ -100,7 +115,7 @@ resource "azurerm_virtual_machine" "main" {
   }
 
   storage_os_disk {
-    name              = var.os_disk_name
+    name              = "${var.os_disk_name}-${var.postfix}"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
