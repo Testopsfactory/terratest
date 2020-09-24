@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 
 	"github.com/gruntwork-io/terratest/modules/azure"
+	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ func TestTerraformAzureDiskExample(t *testing.T) {
 
 	// Subscription ID, leave blank if available as an Environment Var
 	subID := ""
-	prefix := "terratest-disk"
+	uniquePostfix := random.UniqueId()
 
 	// Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
@@ -29,7 +30,7 @@ func TestTerraformAzureDiskExample(t *testing.T) {
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
-			"prefix": prefix,
+			"postfix": uniquePostfix,
 		},
 	}
 
