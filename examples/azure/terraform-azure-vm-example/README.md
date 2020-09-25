@@ -5,8 +5,8 @@ how you can use Terratest to write automated tests for your Azure Virtual Machin
 
 - A [Virtual Machine](https://azure.microsoft.com/en-us/services/virtual-machines/) and gives that VM the following resources:
   - [Virtual Machine](https://docs.microsoft.com/en-us/azure/virtual-machines/) with the name specified in the `vm_name` variable.
-  - [Managed Disk](https://docs.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview) with the namne specified in the `managed_disk_name` variable.
-  - [Availability Set](https://docs.microsoft.com/en-us/azure/virtual-machines/availability) with the namne specified in the `availability_set_name` variable.
+  - [Managed Disk](https://docs.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview) with the name specified in the `managed_disk_name` variable.
+  - [Availability Set](https://docs.microsoft.com/en-us/azure/virtual-machines/availability) with the name specified in the `availability_set_name` variable.
 - A [Virtual Network](https://azure.microsoft.com/en-us/services/virtual-network/) module that contains the following resources:
   - [Virtual Network](https://docs.microsoft.com/en-us/azure/virtual-network/) with the name specified in the `virtual_network_name` variable.
   - [Subnet](https://docs.microsoft.com/en-us/rest/api/virtualnetwork/subnets) with the name specified in the `subnet_name` variable.
@@ -16,7 +16,7 @@ how you can use Terratest to write automated tests for your Azure Virtual Machin
 Check out [test/azure/terraform_azure_vm_test.go](/test/azure/terraform_azure_vm_test.go) to see how you can write
 automated tests for this module.
 
-Note that the Virtual Machine madule creates a Microsoft Windows Server Image with a managed disk, availability set and network configuration for demonstration purposes.
+Note that the Virtual Machine module creates a Microsoft Windows Server Image with a managed disk, availability set and network configuration for demonstration purposes.
 
 **WARNING**: This module and the automated tests for it deploy real resources into your Azure account which can cost you
 money. The resources are all part of the [Azure Free Account](https://azure.microsoft.com/en-us/free/), so if you haven't used that up,

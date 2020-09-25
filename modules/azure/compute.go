@@ -349,7 +349,7 @@ func GetResourceGroupVirtualMachinesObjectsE(t testing.TestingT, resourceGroupNa
 	for _, v := range vms.Values() {
 		machineName := v.Name
 		vmProperties := v.VirtualMachineProperties
-		vmDetails[*machineName] = *vmProperties
+		vmDetails[string(*machineName)] = *vmProperties
 	}
 	return &vmDetails, nil
 }
