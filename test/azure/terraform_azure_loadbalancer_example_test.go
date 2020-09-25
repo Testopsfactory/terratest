@@ -48,10 +48,6 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 		},
 	}
 
-	//TODO: check config later?
-	// config
-	//FrontendIPAllocationMethod := "Dynamic"
-
 	// loadbalancer::tag::4:: At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)
 
@@ -87,15 +83,11 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("IP Checks for LB01", func(t *testing.T) {
 
-		// TODO: get config from LB
+		// Get config from LB, including IP Address and whether Public/Private
 		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer01Name, resourceGroupName, "")
 		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer01Name))
 		assert.NotEmpty(t, ipAddress)
 		assert.Equal(t, "public", publicOrPrivate)
-
-		//TODO: need additional checks for public LB?
-		//assert.Equal(t, FrontendIPAllocationMethod, string(fe01Props.PrivateIPAllocationMethod), "LB01 Frontend IP allocation method")
-		//assert.Nil(t, fe01Props.Subnet, "LB01 shouldn't have Subnet")
 	})
 
 	t.Run("Load Balancer 02", func(t *testing.T) {
