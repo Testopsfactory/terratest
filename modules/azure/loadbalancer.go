@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	"github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/stretchr/testify/require"
 )
 
 // IPType is enumerator for IP Types, e.g. Public/Private
@@ -20,8 +22,16 @@ func (ipType IPType) String() string {
 	return [...]string{"PublicIP", "PrivateIP"}[ipType]
 }
 
-// LoadBalancerExistsE returns true if the load balancer exists, else returns false with err
-func LoadBalancerExistsE(loadBalancerName string, resourceGroupName string, subscriptionID string) (bool, error) {
+// LoadBalancerExists indicates whether the specified Load Balancer exists.
+// This function would fail the test if there is an error.
+func LoadBalancerExists(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) bool {
+	exists, err := LoadBalancerExistsE(t, loadBalancerName, resourceGroupName, subscriptionID)
+	require.NoError(t, err)
+	return exists
+}
+
+// LoadBalancerExistsE indicates whether the specified Load Balancer exists.
+func LoadBalancerExistsE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (bool, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
 		return false, err

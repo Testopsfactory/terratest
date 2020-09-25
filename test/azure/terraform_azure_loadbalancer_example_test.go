@@ -60,8 +60,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	// happy path tests
 	t.Run("Load Balancer 01", func(t *testing.T) {
 		// load balancer 01 (with Public IP) exists
-		lb01Exists, err := azure.LoadBalancerExistsE(loadBalancer01Name, resourceGroupName, "")
-		assert.NoError(t, err, fmt.Sprintf("Load Balancer error: %s", loadBalancer01Name))
+		lb01Exists := azure.LoadBalancerExists(t, loadBalancer01Name, resourceGroupName, "")
 		assert.True(t, lb01Exists)
 
 	})
@@ -87,8 +86,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("Load Balancer 02", func(t *testing.T) {
 		// load balancer 02 (with Private IP on vnet/subnet) exists
-		lb02Exists, err := azure.LoadBalancerExistsE(loadBalancer02Name, resourceGroupName, "")
-		assert.NoError(t, err, "Load Balancer error.")
+		lb02Exists := azure.LoadBalancerExists(t, loadBalancer02Name, resourceGroupName, "")
 		assert.True(t, lb02Exists)
 	})
 
