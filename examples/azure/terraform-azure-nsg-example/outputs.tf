@@ -11,9 +11,9 @@ output "nsg_name" {
 }
 
 output "ssh_rule_name" {
-  value = azurerm_network_security_rule.allowSSH.name
+  value = azurerm_network_security_rule.allow_ssh.name
 }
 
 output "http_rule_name" {
-  value = azurerm_network_security_rule.blockHTTP.name
+  value = azurerm_network_security_rule.block_http.name
 }

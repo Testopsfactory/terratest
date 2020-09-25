@@ -24,7 +24,6 @@ variable "postfix" {
   default     = "qwefgt"
 }
 
-
 variable "resource_group_name" {
   description = "Name for the resource group holding resources for this example"
   type        = string
