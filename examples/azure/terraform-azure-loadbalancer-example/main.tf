@@ -75,7 +75,7 @@ resource "azurerm_lb" "lb_private" {
   sku                 = "Basic"
 
   frontend_ip_configuration {
-    name                          = "${var.feIPConfig_forlb02}"
+    name                          = "${var.lb02_feconfig}"
     subnet_id                     = azurerm_subnet.lb.id
     private_ip_address            = "10.200.2.10"
     private_ip_address_allocation = "Static"

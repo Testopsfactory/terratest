@@ -17,7 +17,7 @@ output "pip_forlb01" {
 output "loadbalancer02_name" {
   value = azurerm_lb.lb_private.name
 }
-output "feIPConfig_forlb02" {
+output "privateip_forlb02" {
   value = azurerm_lb.lb_private.frontend_ip_configuration[0].private_ip_address
 }
 

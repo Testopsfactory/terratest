@@ -54,7 +54,7 @@ variable "pip_forlb01" {
   default     = "terratest-loadbalancer-pip-01"
 }
 
-variable "feIPConfig_forlb02" {
+variable "lb02_feconfig" {
   description = "Frontend Config for Load Balancer 02"
   type        = string
   default     = "terratest-loadbalancer-cfg-02"
