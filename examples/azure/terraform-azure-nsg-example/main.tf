@@ -1,3 +1,11 @@
+# ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY AN AZURE VM ALONG WITH AN EXAMPLE NETWORK SECURITY GROUP (NSG)
+# This is an example of how to deploy an NSG along with the minimum networking resources
+# to support a basic virtual machine.
+# ---------------------------------------------------------------------------------------------------------------------
+# See test/azure/terraform_azure_nsg_example_test.go for how to write automated tests for this code.
+# ---------------------------------------------------------------------------------------------------------------------
+
 provider "azurerm" {
   version = "~>2.20"
   features {}
@@ -14,7 +22,7 @@ terraform {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A RESOURCE GROUP
-# See test/terraform_azure_example_test.go for how to write automated tests for this code.
+# See test/terraform_azure_nsg_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "nsg_rg" {
@@ -63,7 +71,7 @@ resource "azurerm_network_interface_security_group_association" "main" {
   network_security_group_id = azurerm_network_security_group.nsg_example.id
 }
 
-resource "azurerm_network_security_rule" "allowSSH" {
+resource "azurerm_network_security_rule" "allow_ssh" {
   name                        = "${var.nsg_ssh_rule_name}-${var.postfix}"
   description                 = "${var.nsg_ssh_rule_name}-${var.postfix}"
   priority                    = 100
@@ -78,7 +86,7 @@ resource "azurerm_network_security_rule" "allowSSH" {
   network_security_group_name = azurerm_network_security_group.nsg_example.name
 }
 
-resource "azurerm_network_security_rule" "blockHTTP" {
+resource "azurerm_network_security_rule" "block_http" {
   name                        = "${var.nsg_http_rule_name}-${var.postfix}"
   description                 = "${var.nsg_http_rule_name}-${var.postfix}"
   priority                    = 200
@@ -124,7 +132,7 @@ resource "azurerm_virtual_machine" "vm_example" {
   os_profile {
     computer_name  = var.hostname
     admin_username = var.username
-    admin_password = var.password
+    admin_password = random_password.nsg.result
   }
 
   os_profile_linux_config {
@@ -135,5 +143,14 @@ resource "azurerm_virtual_machine" "vm_example" {
   depends_on = [
     azurerm_network_interface_security_group_association.main
   ]
+}
+
+resource "random_password" "nsg" {
+  length           = 16
+  override_special = "-_%@"
+  min_upper        = "1"
+  min_lower        = "1"
+  min_numeric      = "1"
+  min_special      = "1"
 }
 

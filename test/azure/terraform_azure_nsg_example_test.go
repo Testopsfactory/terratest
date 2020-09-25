@@ -6,7 +6,6 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/azure"
@@ -19,15 +18,13 @@ func TestTerraformAzureNsgExample(t *testing.T) {
 	t.Parallel()
 
 	randomPostfixValue := random.UniqueId()
-	vmPassword := fmt.Sprintf("%s@#$%s", random.UniqueId(), random.UniqueId())
 
 	// Construct options for TF apply
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-nsg-example",
 		Vars: map[string]interface{}{
-			"postfix":  randomPostfixValue,
-			"password": vmPassword,
+			"postfix": randomPostfixValue,
 		},
 	}
 

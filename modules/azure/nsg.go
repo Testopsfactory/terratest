@@ -165,7 +165,7 @@ func bindRuleList(source network.SecurityRuleListResultIterator) ([]NsgRuleSumma
 	return rules, nil
 }
 
-// convertToNsgRuleSummary converst the raw SDK security rule type into a summarized struct, flattening the
+// convertToNsgRuleSummary converts the raw SDK security rule type into a summarized struct, flattening the
 // rules properties and name into a single, string-based struct.
 func convertToNsgRuleSummary(name *string, rule *network.SecurityRulePropertiesFormat) NsgRuleSummary {
 	summary := NsgRuleSummary{}

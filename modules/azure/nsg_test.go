@@ -42,10 +42,10 @@ func TestPortRangeParsing(t *testing.T) {
 	}
 }
 
-func TestNsgRuleSummaryConverstion(t *testing.T) {
+func TestNsgRuleSummaryConversion(t *testing.T) {
 	// Quick test to make sure the safe nil handling is working
-	var name = "test name"
-	var sdkStruct = network.SecurityRulePropertiesFormat{}
+	name := "test name"
+	sdkStruct := network.SecurityRulePropertiesFormat{}
 
 	// Verify the nil values were correctly defaulted to "" without a panic
 	result := convertToNsgRuleSummary(&name, &sdkStruct)

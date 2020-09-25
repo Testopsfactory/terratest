@@ -3,8 +3,8 @@
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys the following:
 
 * A [Virtual Machine](https://azure.microsoft.com/en-us/services/virtual-machines/) that gives the module the following:
-    * [Virtual Machine](https://docs.microsoft.com/en-us/azure/virtual-machines/) with the value specified in the `vm_name` variable.
-    * A [Network Security Group](https://docs.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview) created with a single custom rule to allow SSH (port 22) with the nsg name specified in the `nsg_name` variable.
+    * [Virtual Machine](https://docs.microsoft.com/en-us/azure/virtual-machines/) with the value specified in the `vm_name` variable along with a random value for the `postfix` variable (set from test code).
+    * A [Network Security Group](https://docs.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview) created with a single custom rule to allow SSH (port 22) with the nsg name specified in the `nsg_name` variable along with a random value for the `postfix` variable (set from test code).
 
 Check out [test/azure/terraform_azure_nsg_example_test.go](/test/azure/terraform_azure_nsg_example_test.go) to see how you can write
 automated tests for this module.
