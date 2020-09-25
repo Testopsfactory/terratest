@@ -82,8 +82,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	})
 
 	t.Run("IP Checks for LB01", func(t *testing.T) {
-
-		// Get config from LB, including IP Address and whether Public/Private
+		// Get config from LB01, including IP Address and verify Public IP
 		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer01Name, resourceGroupName, "")
 		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer01Name))
 		assert.NotEmpty(t, ipAddress)
@@ -98,23 +97,10 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	})
 
 	t.Run("IP Check for Load Balancer 02", func(t *testing.T) {
-		// Read LB02 information
-
+		// Get config from LB02, including IP Address and verify Private IP
 		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer02Name, resourceGroupName, "")
 		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer02Name))
 		assert.NotEmpty(t, ipAddress)
 		assert.Equal(t, "private", publicOrPrivate)
-
-		//lb02, err := azure.GetLoadBalancerE(loadBalancer02Name, resourceGroupName, "")
-		//require.NoError(t, err)
-		//lb02Props := lb02.LoadBalancerPropertiesFormat
-		//fe02Config := (*lb02Props.FrontendIPConfigurations)[0]
-		//fe02Props := *fe02Config.FrontendIPConfigurationPropertiesFormat
-
-		//assert.Equal(t, frontendIPConfigForLB02, *fe02Props.PrivateIPAddress, "LB02 Frontend IP address")
-		//assert.Equal(t, frontendIPAllocForLB02, string(fe02Props.PrivateIPAllocationMethod), "LB02 Frontend IP allocation method")
-		//subnetID, err := collections.GetSliceLastValueE(*fe02Props.Subnet.ID, "/")
-		//require.NoError(t, err, "LB02 Frontend subnet not found")
-		//assert.Equal(t, frontendSubnetID, subnetID, "LB02 Frontend subnet ID")
 	})
 }

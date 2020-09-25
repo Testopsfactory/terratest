@@ -98,23 +98,6 @@ func GetLoadBalancerFrontendConfig(loadBalancer01Name string, resourceGroupName 
 
 }
 
-// GetPublicIPAddressE returns a Public IP Address resource, else returns nil with err
-func GetPublicIPAddressE(publicIPAddressName string, resourceGroupName string, subscriptionID string) (*network.PublicIPAddress, error) {
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-	client, err := GetPublicIPAddressClientE(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-	publicIPAddress, err := client.Get(context.Background(), resourceGroupName, publicIPAddressName, "")
-	if err != nil {
-		return nil, err
-	}
-	return &publicIPAddress, nil
-}
-
 // GetPublicIPAddressClientE creates a PublicIPAddresses client
 func GetPublicIPAddressClientE(subscriptionID string) (*network.PublicIPAddressesClient, error) {
 	client := network.NewPublicIPAddressesClient(subscriptionID)

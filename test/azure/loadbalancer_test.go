@@ -40,15 +40,3 @@ func TestGetLoadBalancerE(t *testing.T) {
 
 	require.Error(t, err)
 }
-
-func TestGetPublicIPAddressE(t *testing.T) {
-	t.Parallel()
-
-	publicIPAddressName := ""
-	resourceGroupName := ""
-	subscriptionID := ""
-
-	_, err := azure.GetPublicIPAddressE(publicIPAddressName, resourceGroupName, subscriptionID)
-
-	require.Error(t, err)
-}
