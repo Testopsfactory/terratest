@@ -19,27 +19,21 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "disk_type" {
-  description = "temp"
+  description = "The type of the Virtual Machine disks"
   type        = string
-  default     = "StandardSSD_LRS"
+  default     = "Standard_LRS"
 }
 
 variable "location" {
-  description = "The Azure location to deploy resources too"
+  description = "The Azure location where to deploy your resources too"
   type        = string
   default     = "East US"
 }
 
-variable "password" {
-  description = "the password to configure for ssh access"
+variable "postfix" {
+  description = "A postfix string to centrally mitigate resource name collisions"
   type        = string
-  default     = "horriblepassword1234!"
-}
-
-variable "prefix" {
-  description = "The prefix that will be attached to all resources deployed"
-  type        = string
-  default     = "terratest-vm"
+  default     = "resource"
 }
 
 variable "private_ip" {
@@ -60,16 +54,35 @@ variable "user_name" {
   default     = "testadmin"
 }
 
+# Small Windows Server Image available with Free Account for Windows demo only
+variable "vm_image_publisher" {
+  description = "The storage image reference Publisher from which the VM is created"
+  type        = string
+  default     = "MicrosoftWindowsServer"
+}
+
+variable "vm_image_offer" {
+  description = "The storage image reference Offer from which the VM is created"
+  type        = string
+  default     = "WindowsServer"
+}
+
 variable "vm_image_sku" {
   description = "The storage image reference SKU from which the VM is created"
   type        = string
-  default     = "2016-Datacenter"
+  default     = "2019-Datacenter-Core-smalldisk"
 }
 
 variable "vm_image_version" {
   description = "The storage image reference Version from which the VM is created"
   type        = string
   default     = "latest"
+}
+
+variable "vm_license_type" {
+  description = "The License Type from which the VM is created"
+  type        = string
+  default     = "Windows_Server"
 }
 
 variable "vm_size" {
