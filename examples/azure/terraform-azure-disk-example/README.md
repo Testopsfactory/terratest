@@ -15,6 +15,7 @@ Note that the resources deployed in this module don't actually do anything; it j
 1. Configure your Azure credentials using one of the [supported methods for Azure CLI
    tools](https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest)
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
+1. Ensure [environment variables](../README.md#review-environment-variables) are available
 1. Run `terraform init`
 1. Run `terraform apply`
 1. When you're done, run `terraform destroy`
