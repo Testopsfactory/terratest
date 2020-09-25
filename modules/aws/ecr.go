@@ -5,18 +5,19 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/gruntwork-io/gruntwork-cli/errors"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
-// CreateECRRepo creates a new ECR Repository
+// CreateECRRepo creates a new ECR Repository. This will fail the test and stop execution if there is an error.
 func CreateECRRepo(t testing.TestingT, region string, name string) *ecr.Repository {
 	repo, err := CreateECRRepoE(t, region, name)
 	require.NoError(t, err)
 	return repo
 }
 
-// CreateECRRepoE creates a new ECR Repository
+// CreateECRRepoE creates a new ECR Repository.
 func CreateECRRepoE(t testing.TestingT, region string, name string) (*ecr.Repository, error) {
 	client := NewECRClient(t, region)
 	resp, err := client.CreateRepository(&ecr.CreateRepositoryInput{RepositoryName: aws.String(name)})
@@ -26,14 +27,14 @@ func CreateECRRepoE(t testing.TestingT, region string, name string) (*ecr.Reposi
 	return resp.Repository, nil
 }
 
-// GetECRRepo gets an ECR repository by name
+// GetECRRepo gets an ECR repository by name. This will fail the test and stop execution if there is an error.
 func GetECRRepo(t testing.TestingT, region string, name string) *ecr.Repository {
 	repo, err := GetECRRepoE(t, region, name)
 	require.NoError(t, err)
 	return repo
 }
 
-// GetECRRepoE gets an ECR Repository by name
+// GetECRRepoE gets an ECR Repository by name.
 func GetECRRepoE(t testing.TestingT, region string, name string) (*ecr.Repository, error) {
 	client := NewECRClient(t, region)
 	repositoryNames := []*string{aws.String(name)}
@@ -42,12 +43,13 @@ func GetECRRepoE(t testing.TestingT, region string, name string) (*ecr.Repositor
 		return nil, err
 	}
 	if len(resp.Repositories) != 1 {
-		return nil, fmt.Errorf("There is no repository named %s", name)
+		return nil, errors.WithStackTrace(fmt.Errorf("Unexpectedly found %d repositories", len(resp.Repositories)))
 	}
 	return resp.Repositories[0], nil
 }
 
 // DeleteECRRepo will force delete the ECR repo by deleting all images prior to deleting the ECR repository.
+// This will fail the test and stop execution if there is an error.
 func DeleteECRRepo(t testing.TestingT, region string, repo *ecr.Repository) {
 	err := DeleteECRRepoE(t, region, repo)
 	require.NoError(t, err)
@@ -77,13 +79,15 @@ func DeleteECRRepoE(t testing.TestingT, region string, repo *ecr.Repository) err
 	return nil
 }
 
-// NewECRClient returns a client for the Elastic Container Registry
+// NewECRClient returns a client for the Elastic Container Registry. This will fail the test and
+// stop execution if there is an error.
 func NewECRClient(t testing.TestingT, region string) *ecr.ECR {
 	sess, err := NewECRClientE(t, region)
 	require.NoError(t, err)
 	return sess
 }
 
+// NewECRClient returns a client for the Elastic Container Registry.
 func NewECRClientE(t testing.TestingT, region string) (*ecr.ECR, error) {
 	sess, err := NewAuthenticatedSession(region)
 	if err != nil {
