@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/azure"
-	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
@@ -56,8 +55,9 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	// loadbalancer::tag::3:: Run `terraform output` to get the values of output variables
 
-	frontendIPConfigForLB02 := terraform.Output(t, terraformOptions, "feIPConfig_forlb02")
-	frontendIPAllocForLB02 := "Static"
+	// TODO: needed?
+	//frontendIPConfigForLB02 := terraform.Output(t, terraformOptions, "feIPConfig_forlb02")
+	//frontendIPAllocForLB02 := "Static"
 
 	// loadbalancer::tag::5 Set expected variables for test
 
@@ -99,16 +99,22 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("IP Check for Load Balancer 02", func(t *testing.T) {
 		// Read LB02 information
-		lb02, err := azure.GetLoadBalancerE(loadBalancer02Name, resourceGroupName, "")
-		require.NoError(t, err)
-		lb02Props := lb02.LoadBalancerPropertiesFormat
-		fe02Config := (*lb02Props.FrontendIPConfigurations)[0]
-		fe02Props := *fe02Config.FrontendIPConfigurationPropertiesFormat
 
-		assert.Equal(t, frontendIPConfigForLB02, *fe02Props.PrivateIPAddress, "LB02 Frontend IP address")
-		assert.Equal(t, frontendIPAllocForLB02, string(fe02Props.PrivateIPAllocationMethod), "LB02 Frontend IP allocation method")
-		subnetID, err := collections.GetSliceLastValueE(*fe02Props.Subnet.ID, "/")
-		require.NoError(t, err, "LB02 Frontend subnet not found")
-		assert.Equal(t, frontendSubnetID, subnetID, "LB02 Frontend subnet ID")
+		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer02Name, resourceGroupName, "")
+		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer02Name))
+		assert.NotEmpty(t, ipAddress)
+		assert.Equal(t, "private", publicOrPrivate)
+
+		//lb02, err := azure.GetLoadBalancerE(loadBalancer02Name, resourceGroupName, "")
+		//require.NoError(t, err)
+		//lb02Props := lb02.LoadBalancerPropertiesFormat
+		//fe02Config := (*lb02Props.FrontendIPConfigurations)[0]
+		//fe02Props := *fe02Config.FrontendIPConfigurationPropertiesFormat
+
+		//assert.Equal(t, frontendIPConfigForLB02, *fe02Props.PrivateIPAddress, "LB02 Frontend IP address")
+		//assert.Equal(t, frontendIPAllocForLB02, string(fe02Props.PrivateIPAllocationMethod), "LB02 Frontend IP allocation method")
+		//subnetID, err := collections.GetSliceLastValueE(*fe02Props.Subnet.ID, "/")
+		//require.NoError(t, err, "LB02 Frontend subnet not found")
+		//assert.Equal(t, frontendSubnetID, subnetID, "LB02 Frontend subnet ID")
 	})
 }
