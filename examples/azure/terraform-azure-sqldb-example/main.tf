@@ -51,7 +51,7 @@ resource "azurerm_sql_server" "sqlserver" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_sql_database" "sqldb" {
-  name                = "$sqldb-${var.postfix}"
+  name                = "sqldb-${var.postfix}"
   resource_group_name = azurerm_resource_group.sql.name
   location            = azurerm_resource_group.sql.location
   server_name         = azurerm_sql_server.sqlserver.name
