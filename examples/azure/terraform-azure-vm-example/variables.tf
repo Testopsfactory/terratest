@@ -54,7 +54,7 @@ variable "user_name" {
   default     = "testadmin"
 }
 
-# Small Windows Server Image available with Free Account for Windows demo only
+# Small Windows Server Image available with Azure Free Account
 variable "vm_image_publisher" {
   description = "The storage image reference Publisher from which the VM is created"
   type        = string

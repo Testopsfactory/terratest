@@ -1,18 +1,26 @@
 # ---------------------------------------------------------------------------------------------------------------------
+# DEPLOY A VIRTUAL MACHINE
+# This is an advanced example of how to deploy an Azure Virtual Machine in an availability set, managed disk 
+# and Networking with a Public IP.
+# ---------------------------------------------------------------------------------------------------------------------
 # See test/azure/terraform_azure_vm_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "azurerm" {
-  version = "=2.20.0"
+  version = "~> 2.20"
   features {}
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # PIN TERRAFORM VERSION TO >= 0.12
+# The examples have been upgraded to 0.12 syntax
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
-  required_version = ">= 0.12"
+  # This module is now only being tested with Terraform 0.13.x. However, to make upgrading easier, we are setting
+  # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
+  # forwards compatible with 0.13.x code.
+  required_version = ">= 0.12.26"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -20,7 +28,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "vm" {
-  name     = "terratest-vs-rg-${var.postfix}"
+  name     = "terratest-vm-rg-${var.postfix}"
   location = var.location
 }
 
@@ -85,7 +93,7 @@ resource "azurerm_availability_set" "vm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine" "vm" {
-  name                             = "$vm-${var.postfix}"
+  name                             = "vm-${var.postfix}"
   location                         = azurerm_resource_group.vm.location
   resource_group_name              = azurerm_resource_group.vm.name
   network_interface_ids            = [azurerm_network_interface.vm.id]
@@ -121,7 +129,6 @@ resource "azurerm_virtual_machine" "vm" {
   depends_on = [random_password.vm]
 }
 
-# Random password used to improve test security
 resource "random_password" "vm" {
   length           = 16
   override_special = "-_%@"
@@ -136,7 +143,7 @@ resource "random_password" "vm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_managed_disk" "vm" {
-  name                 = "${var.postfix}-disk"
+  name                 = "disk-${var.postfix}"
   location             = azurerm_resource_group.vm.location
   resource_group_name  = azurerm_resource_group.vm.name
   storage_account_type = var.disk_type
