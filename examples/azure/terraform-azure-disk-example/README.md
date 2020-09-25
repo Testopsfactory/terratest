@@ -3,7 +3,7 @@
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate
 how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys an [Azure managed disk](https://azure.microsoft.com/en-us/services/storage/disks).
 
-Check out [test/azure/terraform_azure_disk_test.go](/test/azure/terraform_azure_disk_test.go) to see how you can write automated tests for this module.
+Check out [test/azure/terraform_azure_disk_example_test.go](/test/azure/terraform_azure_disk_example_test.go) to see how you can write automated tests for this module.
 
 Note that the resources deployed in this module don't actually do anything; it just runs the resources for demonstration purposes.
 
@@ -29,6 +29,6 @@ Note that the resources deployed in this module don't actually do anything; it j
 4. [Review environment variables](#review-environment-variables).
 5. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 6. `cd test`
-7. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/azure/terraform_azure_disk_test.go](/test/azure/terraform_azure_disk_test.go).
-8. `go build azure/terraform_azure_disk_test.go`
+7. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/azure/terraform_azure_disk_example_test.go](/test/azure/terraform_azure_disk_example_test.go).
+8. `go build azure/terraform_azure_disk_example_test.go`
 9. `go test -v -run TestTerraformAzureDiskExample`
