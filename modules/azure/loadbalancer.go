@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	"github.com/gruntwork-io/terratest/modules/collections"
 )
 
 // LoadBalancerExistsE returns true if the load balancer exists, else returns false with err
@@ -54,7 +55,7 @@ func GetLoadBalancerClientE(subscriptionID string) (*network.LoadBalancersClient
 }
 
 // GetLoadBalancerFrontendConfig returns an IP address and specifies public or private
-func GetLoadBalancerFrontendConfig(pipResource string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate string, err1 error) {
+func GetLoadBalancerFrontendConfig(loadBalancer01Name string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate string, err1 error) {
 	// TODO: pipResource is non-nil for public, nil for private
 	// TODO: refactor to check private IP first, to determine how to get IP value
 
@@ -62,11 +63,29 @@ func GetLoadBalancerFrontendConfig(pipResource string, resourceGroupName string,
 	if err != nil {
 		return "", "", err
 	}
+
+	// Read the LB information
+	lb01, err := GetLoadBalancerE(loadBalancer01Name, resourceGroupName, "")
+	if err != nil {
+		return "", "", err
+	}
+	lb01Props := lb01.LoadBalancerPropertiesFormat
+	fe01Config := (*lb01Props.FrontendIPConfigurations)[0]
+	fe01Props := *fe01Config.FrontendIPConfigurationPropertiesFormat
+
+	// TODO: Ensure PrivateIPAddress is nil for LB01?
+
+	// Get PublicIPAddressResource name for Load Balancer
+	pipResourceName, err := collections.GetSliceLastValueE(*fe01Props.PublicIPAddress.ID, "/")
+	if err != nil {
+		return "", "", err
+	}
+
 	client, err := GetPublicIPAddressClientE(subscriptionID)
 	if err != nil {
 		return "", "", err
 	}
-	publicIPAddress, err := client.Get(context.Background(), resourceGroupName, pipResource, "")
+	publicIPAddress, err := client.Get(context.Background(), resourceGroupName, pipResourceName, "")
 	if err != nil {
 		return "", "", err
 	}

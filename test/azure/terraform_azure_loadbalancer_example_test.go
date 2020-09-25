@@ -48,8 +48,9 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 		},
 	}
 
+	//TODO: check config later?
 	// config
-	FrontendIPAllocationMethod := "Dynamic"
+	//FrontendIPAllocationMethod := "Dynamic"
 
 	// loadbalancer::tag::4:: At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)
@@ -68,7 +69,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	t.Run("Load Balancer 01", func(t *testing.T) {
 		// load balancer 01 (with Public IP) exists
 		lb01Exists, err := azure.LoadBalancerExistsE(loadBalancer01Name, resourceGroupName, "")
-		assert.NoError(t, err, "Load Balancer error.")
+		assert.NoError(t, err, fmt.Sprintf("Load Balancer error: %s", loadBalancer01Name))
 		assert.True(t, lb01Exists)
 
 	})
@@ -76,7 +77,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	t.Run("Frontend Config for LB01", func(t *testing.T) {
 		// Read the LB information
 		lb01, err := azure.GetLoadBalancerE(loadBalancer01Name, resourceGroupName, "")
-		require.NoError(t, err)
+		require.NoError(t, err, fmt.Sprintf("Load Balancer config error: %s", loadBalancer01Name))
 		lb01Props := lb01.LoadBalancerPropertiesFormat
 		fe01Config := (*lb01Props.FrontendIPConfigurations)[0]
 
@@ -85,40 +86,16 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	})
 
 	t.Run("IP Checks for LB01", func(t *testing.T) {
-		// Read the LB information
-		lb01, err := azure.GetLoadBalancerE(loadBalancer01Name, resourceGroupName, "")
-		require.NoError(t, err)
-		lb01Props := lb01.LoadBalancerPropertiesFormat
-		fe01Config := (*lb01Props.FrontendIPConfigurations)[0]
-		fe01Props := *fe01Config.FrontendIPConfigurationPropertiesFormat
-
-		// Ensure PrivateIPAddress is nil for LB01
-		assert.Nil(t, fe01Props.PrivateIPAddress, "LB01 shouldn't have PrivateIPAddress")
-
-		// TODO: remove PIP check early
-		// Ensure PublicIPAddress Resource exists, no need to check PublicIPAddress value
-		//publicIPAddressResource, err := azure.GetPublicIPAddressE(publicIPAddressForLB01, resourceGroupName, "")
-		//require.NoError(t, err)
-		//assert.NotNil(t, publicIPAddressResource, fmt.Sprintf("Public IP Resource for LB01 Frontend: %s", publicIPAddressForLB01))
-
-		// Get PublicIPAddressResource name for Load Balancer
-		pipResourceName, err := collections.GetSliceLastValueE(*fe01Props.PublicIPAddress.ID, "/")
-		require.NoError(t, err)
-		//assert.Equal(t, publicIPAddressForLB01, pipResourceName, "LB01 Public IP Address Resource Name")
 
 		// TODO: get config from LB
-		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(pipResourceName, resourceGroupName, "")
-		require.NoError(t, err)
+		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer01Name, resourceGroupName, "")
+		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer01Name))
 		assert.NotEmpty(t, ipAddress)
 		assert.Equal(t, "public", publicOrPrivate)
 
-		// TODO: no need to get PIP resource?
-		publicIPAddressResource, err := azure.GetPublicIPAddressE(pipResourceName, resourceGroupName, "")
-		require.NoError(t, err)
-		assert.NotNil(t, publicIPAddressResource, fmt.Sprintf("Public IP Resource for LB01 Frontend: %s", publicIPAddressForLB01))
-
-		assert.Equal(t, FrontendIPAllocationMethod, string(fe01Props.PrivateIPAllocationMethod), "LB01 Frontend IP allocation method")
-		assert.Nil(t, fe01Props.Subnet, "LB01 shouldn't have Subnet")
+		//TODO: need additional checks for public LB?
+		//assert.Equal(t, FrontendIPAllocationMethod, string(fe01Props.PrivateIPAllocationMethod), "LB01 Frontend IP allocation method")
+		//assert.Nil(t, fe01Props.Subnet, "LB01 shouldn't have Subnet")
 	})
 
 	t.Run("Load Balancer 02", func(t *testing.T) {
