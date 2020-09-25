@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
-	"github.com/gruntwork-io/terratest/modules/collections"
 )
 
 // IPType is enumerator for IP Types, e.g. Public/Private
@@ -87,10 +86,7 @@ func GetLoadBalancerFrontendConfig(loadBalancer01Name string, resourceGroupName 
 
 	if fe01Props.PrivateIPAddress == nil {
 		// Get PublicIPAddressResource name for Load Balancer
-		pipResourceName, err := collections.GetSliceLastValueE(*fe01Props.PublicIPAddress.ID, "/")
-		if err != nil {
-			return "", "", err
-		}
+		pipResourceName := GetNameFromResourceID(*fe01Props.PublicIPAddress.ID)
 
 		client, err := GetPublicIPAddressClientE(subscriptionID)
 		if err != nil {
