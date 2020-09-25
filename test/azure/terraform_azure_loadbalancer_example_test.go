@@ -13,7 +13,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestTerraformAzureLoadBalancerExample(t *testing.T) {
@@ -61,8 +60,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("Frontend Config for LB01", func(t *testing.T) {
 		// Read the LB information
-		lb01, err := azure.GetLoadBalancerE(t, loadBalancer01Name, resourceGroupName, "")
-		require.NoError(t, err, fmt.Sprintf("Load Balancer config error: %s", loadBalancer01Name))
+		lb01 := azure.GetLoadBalancer(t, loadBalancer01Name, resourceGroupName, "")
 		lb01Props := lb01.LoadBalancerPropertiesFormat
 		fe01Config := (*lb01Props.FrontendIPConfigurations)[0]
 

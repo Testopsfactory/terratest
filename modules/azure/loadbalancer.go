@@ -48,6 +48,14 @@ func LoadBalancerExistsE(t testing.TestingT, loadBalancerName string, resourceGr
 	return *lb.Name == loadBalancerName, nil
 }
 
+// GetLoadBalancer returns a load balancer resource as specified by name, else returns nil with err
+// This function would fail the test if there is an error.
+func GetLoadBalancer(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) *network.LoadBalancer {
+	lb, err := GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
+	require.NoError(t, err)
+	return lb
+}
+
 // GetLoadBalancerE returns a load balancer resource as specified by name, else returns nil with err
 func GetLoadBalancerE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (*network.LoadBalancer, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
