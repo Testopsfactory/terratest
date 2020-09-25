@@ -19,17 +19,13 @@ provider "azurerm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "sql" {
-  name     = var.resource_group_name
+  name     = "terratest-rg-${var.postfix}"
   location = var.location
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AZURE SQL SERVER
 # ---------------------------------------------------------------------------------------------------------------------
-
-resource "random_id" "sqlserver" {
-  byte_length = 8
-}
 
 resource "random_password" "password" {
   length = 16
@@ -38,7 +34,7 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_sql_server" "sqlserver" {
-  name                         = "${var.sqlserver_name}-${lower(random_id.sqlserver.hex)}"
+  name                         = "mssqlserver-${var.postfix}"
   resource_group_name          = azurerm_resource_group.sql.name
   location                     = azurerm_resource_group.sql.location
   version                      = "12.0"
@@ -55,7 +51,7 @@ resource "azurerm_sql_server" "sqlserver" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_sql_database" "sqldb" {
-  name                = var.sqldb_name
+  name                = "$sqldb-${var.postfix}"
   resource_group_name = azurerm_resource_group.sql.name
   location            = azurerm_resource_group.sql.location
   server_name         = azurerm_sql_server.sqlserver.name

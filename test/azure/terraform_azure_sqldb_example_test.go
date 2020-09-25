@@ -1,12 +1,10 @@
-// +build azure
-
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
 package test
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/sql/mgmt/2014-04-01/sql"
@@ -19,14 +17,18 @@ import (
 func TestTerraformAzureSQLDBExample(t *testing.T) {
 	t.Parallel()
 
-	expectedResourceGroupName := fmt.Sprintf("sqldatabase-rg-%s", random.UniqueId())
+	uniquePostfix := strings.ToLower(random.UniqueId())
+
+	//fmt.println(uniquePostfix)
+
+	//expectedResourceGroupName := fmt.Sprintf("sqlrg-%s", uniquePostfix) //fmt.Sprintf("sqldatabase-rg-%s", random.UniqueId())
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-sqldb-example",
 		Vars: map[string]interface{}{
-			"resource_group_name": expectedResourceGroupName,
+			"postfix": uniquePostfix,
 		},
 	}
 
@@ -44,6 +46,7 @@ func TestTerraformAzureSQLDBExample(t *testing.T) {
 	expectedSQLDBName := terraform.Output(t, terraformOptions, "sql_database_name")
 
 	expectedSQLDBID := terraform.Output(t, terraformOptions, "sql_database_id")
+	expectedResourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	expectedSQLDBStatus := "Online"
 
 	// website::tag::4:: Get the SQL server details and assert them against the terraform output

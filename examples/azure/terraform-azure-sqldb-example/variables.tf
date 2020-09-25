@@ -18,22 +18,10 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable resource_group_name {
-  description = "The name of the resource group in which to create the Microsoft SQL Server."
-  type        = string
-  default     = "sqldatabase-rg"
-}
-
 variable location {
   description = "The supported azure location where the resource exists"
   type        = string
   default     = "West US2"
-}
-
-variable sqlserver_name {
-    description = "The name of the Microsoft SQL Server."
-    type        = string
-    default     = "mssqlserver"
 }
 
 variable sqlserver_admin_login {
@@ -48,9 +36,8 @@ variable tags {
     default = "Development"
 }
 
-variable sqldb_name {
-    description = "The name of the Microsoft SQL database."
-    type        = string
-    default     = "mssqldatabase"
-
+variable "postfix" {
+  description = "A postfix string to centrally mitigate resource name collisions"
+  type        = string
+  default     = "resource"
 }

@@ -26,3 +26,7 @@ output "sql_server_admin_login_pass" {
   value     = azurerm_sql_server.sqlserver.administrator_login_password
   sensitive = true
 }
+
+output "resource_group_name" {
+  value = azurerm_resource_group.sql.name
+}
