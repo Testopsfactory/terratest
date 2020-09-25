@@ -67,7 +67,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("Frontend Config for LB01", func(t *testing.T) {
 		// Read the LB information
-		lb01, err := azure.GetLoadBalancerE(loadBalancer01Name, resourceGroupName, "")
+		lb01, err := azure.GetLoadBalancerE(t, loadBalancer01Name, resourceGroupName, "")
 		require.NoError(t, err, fmt.Sprintf("Load Balancer config error: %s", loadBalancer01Name))
 		lb01Props := lb01.LoadBalancerPropertiesFormat
 		fe01Config := (*lb01Props.FrontendIPConfigurations)[0]
@@ -78,8 +78,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("IP Checks for LB01", func(t *testing.T) {
 		// Get config from LB01, including IP Address and verify Public IP
-		ipAddress, ipType, err := azure.GetLoadBalancerFrontendConfig(loadBalancer01Name, resourceGroupName, "")
-		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer01Name))
+		ipAddress, ipType := azure.GetLoadBalancerFrontendConfig(t, loadBalancer01Name, resourceGroupName, "")
 		assert.NotEmpty(t, ipAddress)
 		assert.Equal(t, string(azure.PublicIP), ipType)
 	})
@@ -93,8 +92,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	t.Run("IP Check for Load Balancer 02", func(t *testing.T) {
 		// Get config from LB02, including IP Address and verify Private IP
 
-		ipAddress, ipType, err := azure.GetLoadBalancerFrontendConfig(loadBalancer02Name, resourceGroupName, "")
-		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer02Name))
+		ipAddress, ipType := azure.GetLoadBalancerFrontendConfig(t, loadBalancer02Name, resourceGroupName, "")
 		assert.NotEmpty(t, ipAddress)
 		assert.Equal(t, string(azure.PrivateIP), ipType)
 	})
