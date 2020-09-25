@@ -75,8 +75,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	// we have used in various scenarios to give some flexability in Terratest.
 
 	t.Run("Strategies", func(t *testing.T) {
-		t.Parallel()
-
 		// Check the VM Size directly.
 		actualVMSize := azure.GetVirtualMachineSize(t, expectedVMName, resourceGroupName, subscriptionID)
 		assert.Equal(t, expectedVMSize, actualVMSize)
@@ -97,8 +95,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	})
 
 	t.Run("MultipleVMs", func(t *testing.T) {
-		t.Parallel()
-
 		// Ths approach is beneficial when multiple VMs need to be tested at once.
 
 		// Check against all VM names in a Resource Group.
@@ -123,8 +119,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	})
 
 	t.Run("Information", func(t *testing.T) {
-		t.Parallel()
-
 		// Check if the Virtual Machine exists.
 		assert.True(t, azure.VirtualMachineExists(t, expectedVMName, resourceGroupName, subscriptionID))
 
@@ -139,8 +133,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	})
 
 	t.Run("AvailabilitySet", func(t *testing.T) {
-		t.Parallel()
-
 		// Check the Availability Set of the VM.
 		// The AVS ID returned from the VM is always CAPS so ignoring case in the assertion.
 		actualexpectedAvsName := azure.GetVirtualMachineAvailabilitySetID(t, expectedVMName, resourceGroupName, subscriptionID)
@@ -152,8 +144,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	})
 
 	t.Run("Disk", func(t *testing.T) {
-		t.Parallel()
-
 		// Check the OS Disk name of the VM.
 		actualOSDiskName := azure.GetVirtualMachineOsDiskName(t, expectedVMName, resourceGroupName, subscriptionID)
 		assert.Equal(t, expectedOSDiskName, actualOSDiskName)
@@ -173,8 +163,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 
 	// See the Terratest Azure Network Example for other related tests.
 	t.Run("NetworkInterface", func(t *testing.T) {
-		t.Parallel()
-
 		// Check the Network Interface count of the VM.
 		actualNicCount := azure.GetVirtualMachineNicCount(t, expectedVMName, resourceGroupName, subscriptionID)
 		assert.Equal(t, expectedNicCount, actualNicCount)
@@ -193,8 +181,6 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	})
 
 	t.Run("Vnet&Subnet", func(t *testing.T) {
-		t.Parallel()
-
 		// Check the Subnet exists in the Virtual Network.
 		actualVnetSubnets := azure.GetVirtualNetworkSubnets(t, expectedVNetName, resourceGroupName, subscriptionID)
 		assert.NotNil(t, actualVnetSubnets[expectedVNetName])
