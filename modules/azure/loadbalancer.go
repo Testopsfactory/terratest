@@ -7,6 +7,20 @@ import (
 	"github.com/gruntwork-io/terratest/modules/collections"
 )
 
+// IPType is enumerator for IP Types, e.g. Public/Private
+type IPType int
+
+// IPType values listed using iota
+const (
+	PublicIP IPType = iota
+	PrivateIP
+)
+
+// string values for IPType
+func (ipType IPType) String() string {
+	return [...]string{"PublicIP", "PrivateIP"}[ipType]
+}
+
 // LoadBalancerExistsE returns true if the load balancer exists, else returns false with err
 func LoadBalancerExistsE(loadBalancerName string, resourceGroupName string, subscriptionID string) (bool, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
@@ -55,6 +69,7 @@ func GetLoadBalancerClientE(subscriptionID string) (*network.LoadBalancersClient
 }
 
 // GetLoadBalancerFrontendConfig returns an IP address and specifies public or private
+// This function would fail the test if there is an error.
 func GetLoadBalancerFrontendConfig(loadBalancer01Name string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate string, err1 error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -90,10 +105,10 @@ func GetLoadBalancerFrontendConfig(loadBalancer01Name string, resourceGroupName 
 		ipValue := (pipProps.IPAddress)
 
 		// return public IP
-		return *ipValue, "public", nil
+		return *ipValue, string(PublicIP), nil
 	} else {
 		// return private IP
-		return *fe01Props.PrivateIPAddress, "private", nil
+		return *fe01Props.PrivateIPAddress, string(PrivateIP), nil
 	}
 
 }

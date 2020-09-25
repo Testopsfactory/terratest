@@ -18,7 +18,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "lb" {
-  name     =  "${var.resource_group_name}"
+  name     = "${var.resource_group_name}"
   location = "East US"
 }
 
@@ -27,9 +27,9 @@ resource "azurerm_resource_group" "lb" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_public_ip" "lb" {
-  name     =  "${var.pip_forlb01}"
-  resource_group_name = azurerm_resource_group.lb.name
-  location            = azurerm_resource_group.lb.location
+  name                    = "${var.pip_forlb01}"
+  resource_group_name     = azurerm_resource_group.lb.name
+  location                = azurerm_resource_group.lb.location
   allocation_method       = "Static"
   ip_version              = "IPv4"
   sku                     = "Basic"
@@ -37,15 +37,15 @@ resource "azurerm_public_ip" "lb" {
 }
 
 resource "azurerm_lb" "lb_public" {
-  name     =  "${var.loadbalancer01_name}"
+  name                = "${var.loadbalancer01_name}"
   location            = azurerm_resource_group.lb.location
   resource_group_name = azurerm_resource_group.lb.name
   sku                 = "Basic"
 
-    frontend_ip_configuration {
-      name     =  "${var.lb01_feconfig}"
-      public_ip_address_id = azurerm_public_ip.lb.id
-    }
+  frontend_ip_configuration {
+    name                 = "${var.lb01_feconfig}"
+    public_ip_address_id = azurerm_public_ip.lb.id
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ resource "azurerm_lb" "lb_public" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "lb" {
-  name     =  "${var.vnet_name}"
+  name                = "${var.vnet_name}"
   location            = azurerm_resource_group.lb.location
   resource_group_name = azurerm_resource_group.lb.name
   address_space       = ["10.200.0.0/21"]
@@ -62,22 +62,22 @@ resource "azurerm_virtual_network" "lb" {
 }
 
 resource "azurerm_subnet" "lb" {
-  name     =  "${var.feSubnet_forlb02}"
-  resource_group_name = azurerm_resource_group.lb.name
+  name                 = "${var.feSubnet_forlb02}"
+  resource_group_name  = azurerm_resource_group.lb.name
   virtual_network_name = azurerm_virtual_network.lb.name
-  address_prefix     = "10.200.2.0/25"
+  address_prefix       = "10.200.2.0/25"
 }
 
 resource "azurerm_lb" "lb_private" {
-  name     =  "${var.loadbalancer02_name}"
+  name                = "${var.loadbalancer02_name}"
   location            = azurerm_resource_group.lb.location
   resource_group_name = azurerm_resource_group.lb.name
   sku                 = "Basic"
 
-    frontend_ip_configuration {
-      name     =  "${var.feIPConfig_forlb02}"
-      subnet_id                     = azurerm_subnet.lb.id
-      private_ip_address            = "10.200.2.10"
-      private_ip_address_allocation = "Static"
-    }
+  frontend_ip_configuration {
+    name                          = "${var.feIPConfig_forlb02}"
+    subnet_id                     = azurerm_subnet.lb.id
+    private_ip_address            = "10.200.2.10"
+    private_ip_address_allocation = "Static"
+  }
 }

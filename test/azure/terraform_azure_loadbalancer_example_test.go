@@ -55,10 +55,6 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	// loadbalancer::tag::3:: Run `terraform output` to get the values of output variables
 
-	// TODO: needed?
-	//frontendIPConfigForLB02 := terraform.Output(t, terraformOptions, "feIPConfig_forlb02")
-	//frontendIPAllocForLB02 := "Static"
-
 	// loadbalancer::tag::5 Set expected variables for test
 
 	// happy path tests
@@ -83,10 +79,10 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("IP Checks for LB01", func(t *testing.T) {
 		// Get config from LB01, including IP Address and verify Public IP
-		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer01Name, resourceGroupName, "")
+		ipAddress, ipType, err := azure.GetLoadBalancerFrontendConfig(loadBalancer01Name, resourceGroupName, "")
 		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer01Name))
 		assert.NotEmpty(t, ipAddress)
-		assert.Equal(t, "public", publicOrPrivate)
+		assert.Equal(t, string(azure.PublicIP), ipType)
 	})
 
 	t.Run("Load Balancer 02", func(t *testing.T) {
@@ -98,9 +94,10 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	t.Run("IP Check for Load Balancer 02", func(t *testing.T) {
 		// Get config from LB02, including IP Address and verify Private IP
-		ipAddress, publicOrPrivate, err := azure.GetLoadBalancerFrontendConfig(loadBalancer02Name, resourceGroupName, "")
+
+		ipAddress, ipType, err := azure.GetLoadBalancerFrontendConfig(loadBalancer02Name, resourceGroupName, "")
 		require.NoError(t, err, fmt.Sprintf("Load Balancer IP Check error: %s", loadBalancer02Name))
 		assert.NotEmpty(t, ipAddress)
-		assert.Equal(t, "private", publicOrPrivate)
+		assert.Equal(t, string(azure.PrivateIP), ipType)
 	})
 }
