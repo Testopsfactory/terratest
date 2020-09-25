@@ -18,7 +18,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "lb" {
-  name     = "${var.resource_group_name}"
+  name     = var.resource_group_name
   location = "East US"
 }
 
@@ -65,7 +65,7 @@ resource "azurerm_subnet" "lb" {
   name                 = "${var.feSubnet_forlb02}"
   resource_group_name  = azurerm_resource_group.lb.name
   virtual_network_name = azurerm_virtual_network.lb.name
-  address_prefix       = "10.200.2.0/25"
+  address_prefixes     = ["10.200.2.0/25"]
 }
 
 resource "azurerm_lb" "lb_private" {
