@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// DiskExists indicates whether the speficied Azure Managed Disk exists
+// DiskExists indicates whether the specified Azure Managed Disk exists
 // This function would fail the test if there is an error.
 func DiskExists(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) bool {
 	exists, err := DiskExistsE(t, diskName, resGroupName, subscriptionID)
@@ -16,7 +16,7 @@ func DiskExists(t testing.TestingT, diskName string, resGroupName string, subscr
 	return exists
 }
 
-// DiskExistsE indicates whether the speficied Azure Managed Disk exists
+// DiskExistsE indicates whether the specified Azure Managed Disk exists
 func DiskExistsE(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Disk object
 	_, err := GetDiskE(t, diskName, resGroupName, subscriptionID)
@@ -63,7 +63,7 @@ func GetDiskE(t testing.TestingT, diskName string, resGroupName string, subscrip
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetDiskClientE(subscriptionID)
 	if err != nil {
 		return nil, err
