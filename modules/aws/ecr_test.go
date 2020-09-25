@@ -3,7 +3,9 @@ package aws
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestEcrRepo(t *testing.T) {
@@ -13,11 +15,11 @@ func TestEcrRepo(t *testing.T) {
 	repo1, err := CreateECRRepoE(t, region, "terratest")
 	defer DeleteECRRepo(t, region, repo1)
 
-	assert.Nil(t, err)
-	assert.Equal(t, "terratest", *repo1.RepositoryName)
+	require.NoError(t, err)
+	assert.Equal(t, "terratest", aws.StringValue(repo1.RepositoryName))
 
 	repo2, err := GetECRRepoE(t, region, "terratest")
 
-	assert.Nil(t, err)
-	assert.Equal(t, "terratest", *repo2.RepositoryName)
+	require.NoError(t, err)
+	assert.Equal(t, "terratest", aws.StringValue(repo2.RepositoryName))
 }
