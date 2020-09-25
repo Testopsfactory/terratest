@@ -1,45 +1,54 @@
-# Terraform Azure Availability Set Example
+# Terratest Configuration and Setup
 
-This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate
-how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys two Load Balancers for Public and Private IP scenarios.
+Terratest uses Go to make calls to Azure through the azure-sdk-for-go library and independently confirm the actual Azure resource property matches the expected state provided by Terraform output variables. 
 
-- A (public) [Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/) that gives the module the following:
-  - `Load Balancer` with the name specified in the `loadbalancer01_name` and configuration in the `lb01_feconfig` output variables.
+* Instructions for running each Azure Terratest module are included in each Terraform example sub-folder:
+    * examples/azure/terraform-azure-*-example/README.md
+* Tests wich assert against expected Terraform output values are located in the the respective go files of the folder:
+    * [test/azure/terraform-azure-*-example_test.go](../../test/azure)
+* Test APIs which provide the actual Azure resource property values via the azure-sdk-for-go are located in the folder:
+    * [modules/azure](../../modules/azure)
 
-- A [Public IP Address](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-public-ip-address) that is associated with the public Load Balancer, with the following:
-  - `Public IP Address` with the name specified in the `pip_forlb01` output variable.
+## Go Dependencies
 
-- A (private) [Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/) that gives the module the following:
-  - `Load Balancer` with the name specified in the `loadbalancer02_name` and configuration in the `lb02_feconfig` output variables.
-- A [Virtual Network](https://docs.microsoft.com/en-us/azure/virtual-network/) that gives the Availability Set the following:
-  - [Virtual Network](https://docs.microsoft.com/en-us/azure/virtual-network/) with the name specified in the `vnet_name` output variable.
-  - [Subnet](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-manage-subnet) with the name specified in the `feSubnet_forlb02` output variable.
+Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`
 
-Check out [test/azure/terraform_azure_loadbalancer_example_test.go](/test/azure/terraform_azure_loadbalancer_example_test.go) to see how you can write
-automated tests for this module.
+These modules are currently using the latest version of Go and was tested with **go1.14.4**.
 
-Note that the Load Balancers and their associated resources in this module don't actually do anything; they are created before running the tests, for demonstration purposes.
+## Azure-sdk-for-go version
 
-**WARNING**: This module and the automated tests for it deploy real resources into your Azure account which can cost you money. The resources are all part of the [Azure Free Account](https://azure.microsoft.com/en-us/free/), so if you haven't used that up, it should be free, but you are completely responsible for all Azure charges.
+Let's make sure [go.mod](https://github.com/gruntwork-io/terratest/blob/master/go.mod) includes the appropriate [azure-sdk-for-go version](https://github.com/Azure/azure-sdk-for-go/releases/tag/v46.1.0):
 
-## Running this module manually
+```go
+require (
+    ...
+    github.com/Azure/azure-sdk-for-go v46.1.0+incompatible
+    ...
+)
+```
 
-1. Sign up for [Azure](https://azure.microsoft.com/)
-1. Configure your Azure credentials using one of the [supported methods for Azure CLI
-   tools](https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest)
-1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
-1. Ensure [environment variables](../README.md#review-environment-variables) are available
-1. Run `terraform init`
-1. Run `terraform apply`
-1. When you're done, run `terraform destroy`
+If we make changes to either the **go.mod** or the **go test file**, we should make sure that the go build command works still.
 
-## Running automated tests against this module
+```powershell
+go build terraform_azure_*_test.go
+```
 
-1. Sign up for [Azure](https://azure.microsoft.com/)
-1. Configure your Azure credentials using one of the [supported methods for Azure CLI
-   tools](https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest)
-1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
-1. Configure your Terratest [Go test environment](../README.md)
-1. `cd test/azure`
-1. `go build terraform_azure_loadbalancer_example_test.go`
-1. `go test -v -run TestTerraformAzureLoadBalancerExample`
+## Review Environment Variables
+
+As part of configuring terraform for Azure, we'll want to check that we have set the appropriate [credentials](https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fterraform%2Ftoc.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#set-up-terraform-access-to-azure) and also that we set the [environment variables](https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure?toc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fterraform%2Ftoc.json&bc=https%3A%2F%2Fdocs.microsoft.com%2Fen-us%2Fazure%2Fbread%2Ftoc.json#configure-terraform-environment-variables) on the testing host.
+
+```bash
+export ARM_CLIENT_ID=your_app_id
+export ARM_CLIENT_SECRET=your_password
+export ARM_SUBSCRIPTION_ID=your_subscription_id
+export ARM_TENANT_ID=your_tenant_id
+```
+
+Note, in a Windows environment, these should be set as **system environment variables**.  We can use a PowerShell console with administrative rights to update these environment variables:
+
+```powershell
+[System.Environment]::SetEnvironmentVariable("ARM_CLIENT_ID",$your_app_id,[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable("ARM_CLIENT_SECRET",$your_password,[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable("ARM_SUBSCRIPTION_ID",$your_subscription_id,[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable("ARM_TENANT_ID",$your_tenant_id,[System.EnvironmentVariableTarget]::Machine)
+```
