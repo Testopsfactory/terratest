@@ -42,10 +42,10 @@ func TestTerraformAzureDiskExample(t *testing.T) {
 
 	// Run `terraform output` to get the values of output variables
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-	diskName := terraform.Output(t, terraformOptions, "disk_name")
-	diskType := terraform.Output(t, terraformOptions, "disk_type")
+	expectedDiskName := terraform.Output(t, terraformOptions, "disk_name")
+	expectedDiskType := terraform.Output(t, terraformOptions, "disk_type")
 
 	// Check the Disk Type
-	actualDiskType := azure.GetDiskType(t, diskName, resourceGroupName, subID)
-	assert.Equal(t, compute.DiskStorageAccountTypes(diskType), actualDiskType)
+	actualDiskType := azure.GetDiskType(t, expectedDiskName, resourceGroupName, subID)
+	assert.Equal(t, compute.DiskStorageAccountTypes(expectedDiskType), actualDiskType)
 }
