@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------------------
 
 provider "azurerm" {
-  version = "~>2.8.0"
+  version = "~>2.29.0"
   features {}
 }
 
@@ -54,7 +54,7 @@ resource "azurerm_mysql_server" "mysqlserver" {
   geo_redundant_backup_enabled      = true
   infrastructure_encryption_enabled = true
   public_network_access_enabled     = false
-  ssl_enforcement           = true
+  ssl_enforcement_enabled           = true
   ssl_minimal_tls_version_enforced  = "TLS1_2"
 }
 
