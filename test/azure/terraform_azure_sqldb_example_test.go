@@ -21,10 +21,6 @@ func TestTerraformAzureSQLDBExample(t *testing.T) {
 
 	uniquePostfix := strings.ToLower(random.UniqueId())
 
-	//fmt.println(uniquePostfix)
-
-	//expectedResourceGroupName := fmt.Sprintf("sqlrg-%s", uniquePostfix) //fmt.Sprintf("sqldatabase-rg-%s", random.UniqueId())
-
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
