@@ -1,7 +1,7 @@
 package aws
 
 import (
-	"fmt"
+	goerrors "errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ecr"
@@ -28,6 +28,7 @@ func CreateECRRepoE(t testing.TestingT, region string, name string) (*ecr.Reposi
 }
 
 // GetECRRepo gets an ECR repository by name. This will fail the test and stop execution if there is an error.
+// An error occurs if a repository with the given name does not exist in the given region.
 func GetECRRepo(t testing.TestingT, region string, name string) *ecr.Repository {
 	repo, err := GetECRRepoE(t, region, name)
 	require.NoError(t, err)
@@ -35,6 +36,7 @@ func GetECRRepo(t testing.TestingT, region string, name string) *ecr.Repository 
 }
 
 // GetECRRepoE gets an ECR Repository by name.
+// An error occurs if a repository with the given name does not exist in the given region.
 func GetECRRepoE(t testing.TestingT, region string, name string) (*ecr.Repository, error) {
 	client := NewECRClient(t, region)
 	repositoryNames := []*string{aws.String(name)}
@@ -43,7 +45,7 @@ func GetECRRepoE(t testing.TestingT, region string, name string) (*ecr.Repositor
 		return nil, err
 	}
 	if len(resp.Repositories) != 1 {
-		return nil, errors.WithStackTrace(fmt.Errorf("Unexpectedly found %d repositories", len(resp.Repositories)))
+		return nil, errors.WithStackTrace(goerrors.New(("An unexpected condition occurred. Please file an issue at github.com/gruntwork-io/terratest")))
 	}
 	return resp.Repositories[0], nil
 }
