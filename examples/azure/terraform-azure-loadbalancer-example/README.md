@@ -3,13 +3,15 @@
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate
 how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys two Load Balancers for Public and Private IP scenarios.
 
-- A (public) [Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/) that gives the module the following:
+- A Public [Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/) that gives the module the following:
+
   - `Load Balancer` with the name specified in the `loadbalancer01_name` and configuration in the `lb01_feconfig` output variables.
 
 - A [Public IP Address](https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-public-ip-address) that is associated with the public Load Balancer, with the following:
+
   - `Public IP Address` with the name specified in the `pip_forlb01` output variable.
 
-- A (private) [Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/) that gives the module the following:
+- A Private [Load Balancer](https://docs.microsoft.com/en-us/azure/load-balancer/) that gives the module the following:
   - `Load Balancer` with the name specified in the `loadbalancer02_name` and configuration in the `lb02_feconfig` output variables.
 - A [Virtual Network](https://docs.microsoft.com/en-us/azure/virtual-network/) that provides the following for the Load Balancer to use:
   - [Virtual Network](https://docs.microsoft.com/en-us/azure/virtual-network/) with the name specified in the `vnet_name` output variable.

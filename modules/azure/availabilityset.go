@@ -116,7 +116,7 @@ func GetAvailabilitySetE(t testing.TestingT, avsName string, resGroupName string
 		return nil, err
 	}
 
-	// Get the client refrence
+	// Get the client reference
 	client, err := GetAvailabilitySetClientE(subscriptionID)
 	if err != nil {
 		return nil, err

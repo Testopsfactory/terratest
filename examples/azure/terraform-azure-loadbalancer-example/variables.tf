@@ -18,10 +18,16 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "resource_group_name" {
-  description = "The resource group where all resources will be deployed"
+variable "config_name_for_lb01" {
+  description = "Frontend Config for Load Balancer 01"
   type        = string
-  default     = "terratest-keyvault-rg"
+  default     = "terratest-loadbalancer-cfg-01"
+}
+
+variable "config_name_for_lb02" {
+  description = "Frontend Config for Load Balancer 02"
+  type        = string
+  default     = "terratest-loadbalancer-cfg-02"
 }
 
 variable "loadbalancer01_name" {
@@ -36,32 +42,38 @@ variable "loadbalancer02_name" {
   default     = "terratest-loadbalancer-lb-02"
 }
 
-variable "vnet_name" {
-  description = "Virtual Network for Load Balancer 02"
+variable "location" {
+  description = "The location where to deploy the resources"
   type        = string
-  default     = "terratest-loadbalancer-vnet"
+  default     = "East US"
 }
 
-variable "lb01_feconfig" {
-  description = "Frontend Config for Load Balancer 01"
-  type        = string
-  default     = "terratest-loadbalancer-cfg-01"
-}
-
-variable "pip_forlb01" {
+variable "pip_for_lb01" {
   description = "Public IP for Load Balancer 01"
   type        = string
   default     = "terratest-loadbalancer-pip-01"
 }
 
-variable "lb02_feconfig" {
-  description = "Frontend Config for Load Balancer 02"
+variable "privateip_for_lb02" {
+  description = "Private IP for Load Balancer 02"
   type        = string
-  default     = "terratest-loadbalancer-cfg-02"
+  default     = "10.200.2.10"
 }
 
-variable "feSubnet_forlb02" {
+variable "resource_group_name" {
+  description = "The resource group where all resources will be deployed"
+  type        = string
+  default     = "terratest-loadbalancer-rg"
+}
+
+variable "subnet_name" {
   description = "Frontend Subnet for Load Balancer 02"
   type        = string
   default     = "terratest-loadbalancer-snt-02"
+}
+
+variable "vnet_name" {
+  description = "Virtual Network for Load Balancer 02"
+  type        = string
+  default     = "terratest-loadbalancer-vnet"
 }

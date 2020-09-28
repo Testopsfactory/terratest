@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// IPType is enumerator for IP Types, e.g. Public/Private
+// IPType enumerator for IP Types, Public or Private.
 type IPType int
 
 // IPType values listed using iota
@@ -17,7 +17,7 @@ const (
 	PrivateIP
 )
 
-// string values for IPType
+// String values for IPType
 func (ipType IPType) String() string {
 	return [...]string{"PublicIP", "PrivateIP"}[ipType]
 }
@@ -32,41 +32,150 @@ func LoadBalancerExists(t testing.TestingT, loadBalancerName string, resourceGro
 
 // LoadBalancerExistsE indicates whether the specified Load Balancer exists.
 func LoadBalancerExistsE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (bool, error) {
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	_, err := GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
 	if err != nil {
 		return false, err
 	}
-	client, err := GetLoadBalancerClientE(t, subscriptionID)
-	if err != nil {
-		return false, err
-	}
-	lb, err := client.Get(context.Background(), resourceGroupName, loadBalancerName, "")
-	if err != nil {
-		return false, err
-	}
-
-	return *lb.Name == loadBalancerName, nil
+	return true, nil
 }
 
-// GetLoadBalancer returns a load balancer resource as specified by name, else returns nil with err
+// GetLoadBalancerConfigNames gets a list of the Frontend Configuration Names for the Load Balancer.
 // This function would fail the test if there is an error.
-func GetLoadBalancer(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) *network.LoadBalancer {
-	lb, err := GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
+func GetLoadBalancerConfigNames(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) []string {
+	configName, err := GetLoadBalancerConfigNamesE(t, loadBalancerName, resourceGroupName, subscriptionID)
 	require.NoError(t, err)
-	return lb
+	return configName
 }
 
-// GetLoadBalancerE returns a load balancer resource as specified by name, else returns nil with err
-func GetLoadBalancerE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (*network.LoadBalancer, error) {
+// GetLoadBalancerConfigNamesE gets a list of the Frontend Configuration Names for the Load Balancer.
+func GetLoadBalancerConfigNamesE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) ([]string, error) {
+	var configNames []string
+
+	lb, err := GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
+	if err != nil {
+		return configNames, err
+	}
+
+	lbProps := lb.LoadBalancerPropertiesFormat
+	feConfigs := *lbProps.FrontendIPConfigurations
+	if len(feConfigs) == 0 {
+		// No Frontend Configurations present
+		return configNames, NewNotFoundError("Frontend Config", "Any", loadBalancerName)
+	}
+
+	// Get the names of the Frontend IP Configurations present
+	for _, config := range feConfigs {
+		configNames = append(configNames, *config.Name)
+	}
+
+	return configNames, nil
+}
+
+// GetLoadBalancerFrontendConfig gets the IP address and specifies public or private for the specified Load Balancer.
+// This function would fail the test if there is an error.
+func GetLoadBalancerFrontendConfig(t testing.TestingT, feConfigName string, loadBalancerName string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate IPType) {
+	ipAddress, ipType, err := GetLoadBalancerFrontendConfigE(t, feConfigName, loadBalancerName, resourceGroupName, subscriptionID)
+	require.NoError(t, err)
+	return ipAddress, ipType
+}
+
+// GetLoadBalancerFrontendConfigE gets the IP address and specifies public or private for the specified Load Balancer.
+func GetLoadBalancerFrontendConfigE(t testing.TestingT, feConfigName string, loadBalancer01Name string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate IPType, err1 error) {
+	// Get the specified Load Balancer Frontend Config
+	feConfig, err := GetLoadBalancerFrontendIPConfigurationE(t, feConfigName, loadBalancer01Name, resourceGroupName, subscriptionID)
+	if err != nil {
+		return "", -1, err
+	}
+
+	// Get the Properties of the Frontend Configuration
+	feProps := *feConfig.FrontendIPConfigurationPropertiesFormat
+
+	// Check Public Type
+	if feProps.PublicIPAddress != nil {
+		// Get PublicIPAddressResource name for Load Balancer Frontend Configuration
+		pipResourceName := GetNameFromResourceID(*feProps.PublicIPAddress.ID)
+
+		client, err := GetPublicIPAddressClientE(subscriptionID)
+		if err != nil {
+			return "", -1, err
+		}
+		publicIPAddress, err := client.Get(context.Background(), resourceGroupName, pipResourceName, subscriptionID)
+		if err != nil {
+			return "", -1, err
+		}
+
+		pipProps := *publicIPAddress.PublicIPAddressPropertiesFormat
+		ipValue := (pipProps.IPAddress)
+
+		// Public IP
+		return *ipValue, IPType(PublicIP), nil
+	}
+
+	// Private IP
+	return *feProps.PrivateIPAddress, IPType(PrivateIP), nil
+
+}
+
+// GetLoadBalancerFrontendIPConfigurationE gets a Load Balancer Configuration in the specified Azure Resource Group
+func GetLoadBalancerFrontendIPConfigurationE(t testing.TestingT, feConfigName string, loadBalancerName string, resourceGroupName string, subscriptionID string) (*network.FrontendIPConfiguration, error) {
+	// Validate Azure Resource Group Name
+	resourceGroupName, err := getTargetAzureResourceGroupName(resourceGroupName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the client reference
+	client, err := GetLoadBalancerFrontendIPConfigurationClientE(t, subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the Load Balancer Frontend Configuration
+	lbc, err := client.Get(context.Background(), resourceGroupName, loadBalancerName, feConfigName)
+	if err != nil {
+		return nil, err
+	}
+
+	return &lbc, nil
+}
+
+// GetLoadBalancerFrontendIPConfigurationClientE creates a Load Balancer Configuration client.
+func GetLoadBalancerFrontendIPConfigurationClientE(t testing.TestingT, subscriptionID string) (*network.LoadBalancerFrontendIPConfigurationsClient, error) {
+	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
 		return nil, err
 	}
+
+	// Get the Load Balancer Frontend Configuration client
+	client := network.NewLoadBalancerFrontendIPConfigurationsClient(subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+	client.Authorizer = *authorizer
+
+	return &client, nil
+}
+
+// GetLoadBalancerE gets a Load Balancer in the specified Azure Resource Group
+func GetLoadBalancerE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (*network.LoadBalancer, error) {
+	// Validate Azure Resource Group Name
+	resourceGroupName, err := getTargetAzureResourceGroupName(resourceGroupName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the client reference
 	client, err := GetLoadBalancerClientE(t, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
-	lb, err := client.Get(context.Background(), resourceGroupName, loadBalancerName, "")
+
+	// Get the Load Balancer
+	lb, err := client.Get(context.Background(), resourceGroupName, loadBalancerName, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,73 +183,23 @@ func GetLoadBalancerE(t testing.TestingT, loadBalancerName string, resourceGroup
 	return &lb, nil
 }
 
-// GetLoadBalancerClientE creates a load balancer client.
+// GetLoadBalancerClientE gets a new Load Balancer client in the specified Azure Subscription.
 func GetLoadBalancerClientE(t testing.TestingT, subscriptionID string) (*network.LoadBalancersClient, error) {
-	loadBalancerClient := network.NewLoadBalancersClient(subscriptionID)
-	authorizer, err := NewAuthorizer()
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
 		return nil, err
 	}
-	loadBalancerClient.Authorizer = *authorizer
-	return &loadBalancerClient, nil
-}
 
-// GetLoadBalancerFrontendConfig indicates whether the specified Load Balancer exists.
-// This function would fail the test if there is an error.
-func GetLoadBalancerFrontendConfig(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate string) {
-	ipAddress, ipType, err := GetLoadBalancerFrontendConfigE(t, loadBalancerName, resourceGroupName, subscriptionID)
-	require.NoError(t, err)
-	return ipAddress, ipType
-}
+	// Get the Load Balancer client
+	client := network.NewLoadBalancersClient(subscriptionID)
 
-// GetLoadBalancerFrontendConfigE returns an IP address and specifies public or private
-func GetLoadBalancerFrontendConfigE(t testing.TestingT, loadBalancer01Name string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate string, err1 error) {
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return "", "", err
-	}
-
-	// Read the LB information
-	lb01, err := GetLoadBalancerE(t, loadBalancer01Name, resourceGroupName, "")
-	if err != nil {
-		return "", "", err
-	}
-	lb01Props := lb01.LoadBalancerPropertiesFormat
-	fe01Config := (*lb01Props.FrontendIPConfigurations)[0]
-	fe01Props := *fe01Config.FrontendIPConfigurationPropertiesFormat
-
-	if fe01Props.PrivateIPAddress == nil {
-		// Get PublicIPAddressResource name for Load Balancer
-		pipResourceName := GetNameFromResourceID(*fe01Props.PublicIPAddress.ID)
-
-		client, err := GetPublicIPAddressClientE(subscriptionID)
-		if err != nil {
-			return "", "", err
-		}
-		publicIPAddress, err := client.Get(context.Background(), resourceGroupName, pipResourceName, "")
-		if err != nil {
-			return "", "", err
-		}
-
-		pipProps := *publicIPAddress.PublicIPAddressPropertiesFormat
-		ipValue := (pipProps.IPAddress)
-
-		// return public IP
-		return *ipValue, string(PublicIP), nil
-	} else {
-		// return private IP
-		return *fe01Props.PrivateIPAddress, string(PrivateIP), nil
-	}
-
-}
-
-// GetPublicIPAddressClientE creates a PublicIPAddresses client
-func GetPublicIPAddressClientE(subscriptionID string) (*network.PublicIPAddressesClient, error) {
-	client := network.NewPublicIPAddressesClient(subscriptionID)
+	// Create an authorizer
 	authorizer, err := NewAuthorizer()
 	if err != nil {
 		return nil, err
 	}
 	client.Authorizer = *authorizer
+
 	return &client, nil
 }
