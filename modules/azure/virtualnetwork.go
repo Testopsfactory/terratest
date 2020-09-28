@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"net"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -22,6 +23,9 @@ func VirtualNetworkExistsE(t testing.TestingT, vnetName string, resGroupName str
 	// Get the Virtual Network
 	_, err := GetVirtualNetworkE(t, vnetName, resGroupName, subscriptionID)
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return false, nil
+		}
 		return false, err
 	}
 	return true, nil
@@ -40,6 +44,9 @@ func SubnetExistsE(t testing.TestingT, subnetName string, vnetName string, resGr
 	// Get the Subnet
 	_, err := GetSubnetE(t, subnetName, vnetName, resGroupName, subscriptionID)
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return false, nil
+		}
 		return false, err
 	}
 	return true, nil

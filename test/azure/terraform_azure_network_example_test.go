@@ -20,8 +20,8 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 	t.Parallel()
 
 	// Create values for Terraform
-	subscriptionID := "" // subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
-	uniquePostfix := random.UniqueId()
+	subscriptionID := ""               // subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
+	uniquePostfix := random.UniqueId() // "resource" - switch for terratest or manual terraform deployment
 	expectedLocation := "eastus2"
 	expectedSubnetRange := "10.0.20.0/24"
 	expectedPrivateIP := "10.0.20.5"
@@ -34,7 +34,7 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 		// Relative path to the Terraform dir
 		TerraformDir: "../../examples/azure/terraform-azure-network-example",
 
-		// Variables to pass to our Terraform code using -var options
+		// Variables to pass to our Terraform code using -var options.
 		Vars: map[string]interface{}{
 			"postfix":           uniquePostfix,
 			"subnet_prefix":     expectedSubnetRange,
@@ -73,11 +73,11 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 	t.Run("NIC_PublicAddress", func(t *testing.T) {
 		// Check the internal network interface does NOT have a public IP
 		actualPrivateIPOnly := azure.GetNetworkInterfacePublicIPs(t, expectedPrivateNicName, expectedRgName, subscriptionID)
-		assert.True(t, len(actualPrivateIPOnly) == 0)
+		assert.Equal(t, 0, len(actualPrivateIPOnly))
 
 		// Check the external network interface has a public IP
 		actualPublicIPs := azure.GetNetworkInterfacePublicIPs(t, expectedPublicNicName, expectedRgName, subscriptionID)
-		assert.True(t, len(actualPublicIPs) == 1)
+		assert.Equal(t, 1, len(actualPublicIPs))
 	})
 
 	t.Run("Subnet_NIC", func(t *testing.T) {
@@ -98,6 +98,9 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 		assert.True(t, azure.NetworkInterfaceExists(t, expectedPrivateNicName, expectedRgName, subscriptionID))
 		assert.True(t, azure.NetworkInterfaceExists(t, expectedPublicNicName, expectedRgName, subscriptionID))
 
+		// Check Network Interface that does not exist in the Resource Group
+		assert.False(t, azure.NetworkInterfaceExists(t, "negative-test", expectedRgName, subscriptionID))
+
 		// Check Public Address exists
 		assert.True(t, azure.PublicAddressExists(t, expectedPublicAddressName, expectedRgName, subscriptionID))
 	})
@@ -113,9 +116,9 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 		actualPrivateIPs := azure.GetNetworkInterfacePrivateIPs(t, expectedPrivateNicName, expectedRgName, subscriptionID)
 		assert.Contains(t, actualPrivateIPs, expectedPrivateIP)
 
-		// Check the Public Address public IP is allocated
-		actualPublicIP := azure.GetPublicAddressIP(t, expectedPublicAddressName, expectedRgName, subscriptionID)
-		assert.True(t, len(actualPublicIP) > 0)
+		// Check the Public Address's Public IP is allocated
+		actualPublicIP := azure.GetIPOfPublicIPAddressByName(t, expectedPublicAddressName, expectedRgName, subscriptionID)
+		assert.NotEmpty(t, actualPublicIP)
 
 		// Check DNS created for this example is reserved
 		actualDnsNotAvailable := azure.CheckPublicDNSNameAvailability(t, expectedLocation, exectedDNSLabel, subscriptionID)

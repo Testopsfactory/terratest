@@ -2,7 +2,7 @@ package azure
 
 import (
 	"context"
-	"reflect"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -22,10 +22,17 @@ func NetworkInterfaceExistsE(t testing.TestingT, nicName string, resGroupName st
 	// Get the Network Interface
 	_, err := GetNetworkInterfaceE(t, nicName, resGroupName, subscriptionID)
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return false, nil
+		}
 		return false, err
 	}
 	return true, nil
 }
+
+/* func (e &network.Error) Error() string {
+	return fmt.Sprintf("Error code: %v", e.Code)
+} */
 
 // GetNetworkInterfacePrivateIPs gets a list of the Private IPs of a Network Interface configs.
 // This function would fail the test if there is an error.
@@ -75,12 +82,12 @@ func GetNetworkInterfacePublicIPsE(t testing.TestingT, nicName string, resGroupN
 	// Get the Public IPs from each configuration available
 	for _, IPConfiguration := range *nic.IPConfigurations {
 		// Iterate each config, for successful configurations check for a Public Address reference.
-		// Not failing on errors as as this is an optimistic accumulator.
+		// Not failing on errors as this is an optimistic accumulator.
 		nicConfig, err := GetNetworkInterfaceConfigurationE(t, nicName, *IPConfiguration.Name, resGroupName, subscriptionID)
 		if err == nil {
-			if publicAddressID := nicConfig.PublicIPAddress; !reflect.ValueOf(nicConfig.PublicIPAddress).IsNil() {
-				// Get Public Address IP for configs with using Public Address client
-				publicIP, err := GetPublicAddressIPE(t, GetNameFromResourceID(*publicAddressID.ID), resGroupName, subscriptionID)
+			if nicConfig.PublicIPAddress != nil {
+				publicAddressID := GetNameFromResourceID(*nicConfig.PublicIPAddress.ID)
+				publicIP, err := GetIPOfPublicIPAddressByNameE(t, publicAddressID, resGroupName, subscriptionID)
 				if err == nil {
 					publicIPs = append(publicIPs, publicIP)
 				}

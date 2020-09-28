@@ -9,7 +9,6 @@ import (
 )
 
 // GetVirtualMachineClientE is a helper function that will setup an Azure Virtual Machine client on your behalf.
-// This function would fail the test if there is an error.
 func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)

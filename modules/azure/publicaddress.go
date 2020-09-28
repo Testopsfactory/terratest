@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -21,20 +22,24 @@ func PublicAddressExistsE(t testing.TestingT, publicAddressName string, resGroup
 	// Get the Public Address
 	_, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return false, nil
+		}
 		return false, err
 	}
 	return true, nil
 }
 
-// GetPublicAddressIP gets the IP of a Public IP Address. This function would fail the test if there is an error.
-func GetPublicAddressIP(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) string {
-	IP, err := GetPublicAddressIPE(t, publicAddressName, resGroupName, subscriptionID)
+// GetIPOfPublicIPAddressByName gets the Public IP of the Public IP Address specified.
+// This function would fail the test if there is an error.
+func GetIPOfPublicIPAddressByName(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) string {
+	IP, err := GetIPOfPublicIPAddressByNameE(t, publicAddressName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return IP
 }
 
-// GetPublicAddressIPE gets the IP of a Public IP Address.
-func GetPublicAddressIPE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (string, error) {
+// GetIPOfPublicIPAddressByNameE gets the Public IP of the Public IP Address specified.
+func GetIPOfPublicIPAddressByNameE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (string, error) {
 	// Create a NIC client
 	pip, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
 	if err != nil {
