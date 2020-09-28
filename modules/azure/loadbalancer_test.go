@@ -3,7 +3,7 @@
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
-package test
+package azure
 
 import (
 	"testing"
@@ -24,7 +24,7 @@ func TestLoadBalancerExistsE(t *testing.T) {
 	resourceGroupName := ""
 	subscriptionID := ""
 
-	_, err := azure.LoadBalancerExistsE(loadBalancerName, resourceGroupName, subscriptionID)
+	_, err := azure.LoadBalancerExistsE(t, loadBalancerName, resourceGroupName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -36,7 +36,7 @@ func TestGetLoadBalancerE(t *testing.T) {
 	resourceGroupName := ""
 	subscriptionID := ""
 
-	_, err := azure.GetLoadBalancerE(loadBalancerName, resourceGroupName, subscriptionID)
+	_, err := azure.GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
 
 	require.Error(t, err)
 }
