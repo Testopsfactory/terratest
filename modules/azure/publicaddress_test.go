@@ -40,14 +40,14 @@ func TestCheckPublicDNSNameAvailabilityE(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGetPublicAddressIPE(t *testing.T) {
+func TestGetIPOfPublicIPAddressByNameE(t *testing.T) {
 	t.Parallel()
 
 	paName := ""
 	rgName := ""
 	subID := ""
 
-	_, err := GetPublicAddressIPE(t, paName, rgName, subID)
+	_, err := GetIPOfPublicIPAddressByNameE(t, paName, rgName, subID)
 
 	require.Error(t, err)
 }
