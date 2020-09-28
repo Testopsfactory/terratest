@@ -80,7 +80,7 @@ func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([
 
 // DNSLookupAuthoritative gets authoritative answers for the specified record and type.
 // If resolvers are defined, uses them instead of the default system ones to find the authoritative nameservers.
-// Fails on any error.
+// Fails on any error from DNSLookupAuthoritativeE.
 func DNSLookupAuthoritative(t testing.TestingT, query DNSQuery, resolvers []string) DNSAnswers {
 	res, err := DNSLookupAuthoritativeE(t, query, resolvers)
 
@@ -115,6 +115,21 @@ func DNSLookupAuthoritativeE(t testing.TestingT, query DNSQuery, resolvers []str
 	return res, nil
 }
 
+// DNSLookupAuthoritativeWithRetry repeatedly gets authoritative answers for the specified record and type
+// until ANY of the authoritative nameservers found replies with non-empty answer matching the expectedAnswers,
+// or until max retries has been exceeded.
+// If resolvers are defined, uses them instead of the default system ones to find the authoritative nameservers.
+// Fails on any error from DNSLookupAuthoritativeWithRetryE.
+func DNSLookupAuthoritativeWithRetry(t testing.TestingT, query DNSQuery, resolvers []string, maxRetries int, sleepBetweenRetries time.Duration) DNSAnswers {
+	res, err := DNSLookupAuthoritativeWithRetryE(t, query, resolvers, maxRetries, sleepBetweenRetries)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return res
+}
+
 // DNSLookupAuthoritativeWithRetryE repeatedly gets authoritative answers for the specified record and type
 // until ANY of the authoritative nameservers found replies with non-empty answer matching the expectedAnswers,
 // or until max retries has been exceeded.
@@ -133,7 +148,7 @@ func DNSLookupAuthoritativeWithRetryE(t testing.TestingT, query DNSQuery, resolv
 // DNSLookupAuthoritativeAll gets authoritative answers for the specified record and type.
 // All the authoritative nameservers found must give the same answers.
 // If resolvers are defined, uses them instead of the default system ones to find the authoritative nameservers.
-// Fails on any error.
+// Fails on any error from DNSLookupAuthoritativeAllE.
 func DNSLookupAuthoritativeAll(t testing.TestingT, query DNSQuery, resolvers []string) DNSAnswers {
 	res, err := DNSLookupAuthoritativeAllE(t, query, resolvers)
 
