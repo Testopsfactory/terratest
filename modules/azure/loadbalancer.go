@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -34,6 +35,9 @@ func LoadBalancerExists(t testing.TestingT, loadBalancerName string, resourceGro
 func LoadBalancerExistsE(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) (bool, error) {
 	_, err := GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
 	if err != nil {
+		if strings.Contains(err.Error(), "ResourceNotFound") {
+			return false, nil
+		}
 		return false, err
 	}
 	return true, nil
