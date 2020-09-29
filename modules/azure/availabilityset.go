@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -21,8 +22,10 @@ func AvailabilitySetExists(t testing.TestingT, avsName string, resGroupName stri
 func AvailabilitySetExistsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (bool, error) {
 	_, err := GetAvailabilitySetE(t, avsName, resGroupName, subscriptionID)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
-			return false, nil
+		if autorestError, ok := err.(autorest.DetailedError); ok {
+			if autorestError.StatusCode.(int) == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
