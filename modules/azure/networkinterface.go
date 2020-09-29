@@ -2,9 +2,9 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -12,43 +12,41 @@ import (
 // NetworkInterfaceExists indicates whether the specified Azure Network Interface exists.
 // This function would fail the test if there is an error.
 func NetworkInterfaceExists(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) bool {
-	exists, err := NetworkInterfaceExistsE(t, nicName, resGroupName, subscriptionID)
+	exists, err := NetworkInterfaceExistsE(nicName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
 // NetworkInterfaceExistsE indicates whether the specified Azure Network Interface exists.
-func NetworkInterfaceExistsE(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) (bool, error) {
+func NetworkInterfaceExistsE(nicName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Network Interface
-	_, err := GetNetworkInterfaceE(t, nicName, resGroupName, subscriptionID)
+	_, err := GetNetworkInterfaceE(nicName, resGroupName, subscriptionID)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
-			return false, nil
+		if autorestError, ok := err.(autorest.DetailedError); ok {
+			if autorestError.StatusCode.(int) == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
 	return true, nil
 }
 
-/* func (e &network.Error) Error() string {
-	return fmt.Sprintf("Error code: %v", e.Code)
-} */
-
 // GetNetworkInterfacePrivateIPs gets a list of the Private IPs of a Network Interface configs.
 // This function would fail the test if there is an error.
 func GetNetworkInterfacePrivateIPs(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) []string {
-	IPs, err := GetNetworkInterfacePrivateIPsE(t, nicName, resGroupName, subscriptionID)
+	IPs, err := GetNetworkInterfacePrivateIPsE(nicName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
 	return IPs
 }
 
 // GetNetworkInterfacePrivateIPsE gets a list of the Private IPs of a Network Interface configs.
-func GetNetworkInterfacePrivateIPsE(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) ([]string, error) {
+func GetNetworkInterfacePrivateIPsE(nicName string, resGroupName string, subscriptionID string) ([]string, error) {
 	var privateIPs []string
 
 	// Get the Network Interface client
-	nic, err := GetNetworkInterfaceE(t, nicName, resGroupName, subscriptionID)
+	nic, err := GetNetworkInterfaceE(nicName, resGroupName, subscriptionID)
 	if err != nil {
 		return privateIPs, err
 	}
@@ -64,17 +62,17 @@ func GetNetworkInterfacePrivateIPsE(t testing.TestingT, nicName string, resGroup
 // GetNetworkInterfacePublicIPs returns a list of all the Public IPs found in the Network Interface configurations.
 // This function would fail the test if there is an error.
 func GetNetworkInterfacePublicIPs(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) []string {
-	IPs, err := GetNetworkInterfacePublicIPsE(t, nicName, resGroupName, subscriptionID)
+	IPs, err := GetNetworkInterfacePublicIPsE(nicName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return IPs
 }
 
 // GetNetworkInterfacePublicIPsE returns a list of all the Public IPs found in the Network Interface configurations.
-func GetNetworkInterfacePublicIPsE(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) ([]string, error) {
+func GetNetworkInterfacePublicIPsE(nicName string, resGroupName string, subscriptionID string) ([]string, error) {
 	var publicIPs []string
 
 	// Get the Network Interface client
-	nic, err := GetNetworkInterfaceE(t, nicName, resGroupName, subscriptionID)
+	nic, err := GetNetworkInterfaceE(nicName, resGroupName, subscriptionID)
 	if err != nil {
 		return publicIPs, err
 	}
@@ -83,11 +81,11 @@ func GetNetworkInterfacePublicIPsE(t testing.TestingT, nicName string, resGroupN
 	for _, IPConfiguration := range *nic.IPConfigurations {
 		// Iterate each config, for successful configurations check for a Public Address reference.
 		// Not failing on errors as this is an optimistic accumulator.
-		nicConfig, err := GetNetworkInterfaceConfigurationE(t, nicName, *IPConfiguration.Name, resGroupName, subscriptionID)
+		nicConfig, err := GetNetworkInterfaceConfigurationE(nicName, *IPConfiguration.Name, resGroupName, subscriptionID)
 		if err == nil {
 			if nicConfig.PublicIPAddress != nil {
 				publicAddressID := GetNameFromResourceID(*nicConfig.PublicIPAddress.ID)
-				publicIP, err := GetIPOfPublicIPAddressByNameE(t, publicAddressID, resGroupName, subscriptionID)
+				publicIP, err := GetIPOfPublicIPAddressByNameE(publicAddressID, resGroupName, subscriptionID)
 				if err == nil {
 					publicIPs = append(publicIPs, publicIP)
 				}
@@ -99,7 +97,7 @@ func GetNetworkInterfacePublicIPsE(t testing.TestingT, nicName string, resGroupN
 }
 
 // GetNetworkInterfaceConfigurationE gets a Network Interface Configuration in the specified Azure Resource Group.
-func GetNetworkInterfaceConfigurationE(t testing.TestingT, nicName string, nicConfigName string, resGroupName string, subscriptionID string) (*network.InterfaceIPConfiguration, error) {
+func GetNetworkInterfaceConfigurationE(nicName string, nicConfigName string, resGroupName string, subscriptionID string) (*network.InterfaceIPConfiguration, error) {
 	// Validate Azure Resource Group
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {
@@ -143,7 +141,7 @@ func GetNetworkInterfaceConfigurationClientE(subscriptionID string) (*network.In
 }
 
 // GetNetworkInterfaceE gets a Network Interface in the specified Azure Resource Group.
-func GetNetworkInterfaceE(t testing.TestingT, nicName string, resGroupName string, subscriptionID string) (*network.Interface, error) {
+func GetNetworkInterfaceE(nicName string, resGroupName string, subscriptionID string) (*network.Interface, error) {
 	// Validate Azure Resource Group
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {

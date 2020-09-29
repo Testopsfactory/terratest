@@ -2,9 +2,9 @@ package azure
 
 import (
 	"context"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -12,18 +12,20 @@ import (
 // PublicAddressExists indicates whether the specified AzurePublic Address exists.
 // This function would fail the test if there is an error.
 func PublicAddressExists(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) bool {
-	exists, err := PublicAddressExistsE(t, publicAddressName, resGroupName, subscriptionID)
+	exists, err := PublicAddressExistsE(publicAddressName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
 // PublicAddressExistsE indicates whether the specified AzurePublic Address exists.
-func PublicAddressExistsE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (bool, error) {
+func PublicAddressExistsE(publicAddressName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Public Address
-	_, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
+	_, err := GetPublicIPAddressE(publicAddressName, resGroupName, subscriptionID)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
-			return false, nil
+		if autorestError, ok := err.(autorest.DetailedError); ok {
+			if autorestError.StatusCode.(int) == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
@@ -33,15 +35,15 @@ func PublicAddressExistsE(t testing.TestingT, publicAddressName string, resGroup
 // GetIPOfPublicIPAddressByName gets the Public IP of the Public IP Address specified.
 // This function would fail the test if there is an error.
 func GetIPOfPublicIPAddressByName(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) string {
-	IP, err := GetIPOfPublicIPAddressByNameE(t, publicAddressName, resGroupName, subscriptionID)
+	IP, err := GetIPOfPublicIPAddressByNameE(publicAddressName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return IP
 }
 
 // GetIPOfPublicIPAddressByNameE gets the Public IP of the Public IP Address specified.
-func GetIPOfPublicIPAddressByNameE(t testing.TestingT, publicAddressName string, resGroupName string, subscriptionID string) (string, error) {
+func GetIPOfPublicIPAddressByNameE(publicAddressName string, resGroupName string, subscriptionID string) (string, error) {
 	// Create a NIC client
-	pip, err := GetPublicIPAddressE(t, publicAddressName, resGroupName, subscriptionID)
+	pip, err := GetPublicIPAddressE(publicAddressName, resGroupName, subscriptionID)
 	if err != nil {
 		return "", err
 	}
@@ -52,7 +54,7 @@ func GetIPOfPublicIPAddressByNameE(t testing.TestingT, publicAddressName string,
 // CheckPublicDNSNameAvailability checks whether a Domain Name in the cloudapp.azure.com zone
 // is available for use. This function would fail the test if there is an error.
 func CheckPublicDNSNameAvailability(t testing.TestingT, location string, domainNameLabel string, subscriptionID string) bool {
-	available, err := CheckPublicDNSNameAvailabilityE(t, location, domainNameLabel, subscriptionID)
+	available, err := CheckPublicDNSNameAvailabilityE(location, domainNameLabel, subscriptionID)
 	if err != nil {
 		return false
 	}
@@ -60,7 +62,7 @@ func CheckPublicDNSNameAvailability(t testing.TestingT, location string, domainN
 }
 
 // CheckPublicDNSNameAvailabilityE checks whether a Domain Name in the cloudapp.azure.com zone is available for use.
-func CheckPublicDNSNameAvailabilityE(t testing.TestingT, location string, domainNameLabel string, subscriptionID string) (bool, error) {
+func CheckPublicDNSNameAvailabilityE(location string, domainNameLabel string, subscriptionID string) (bool, error) {
 	client, err := GetPublicIPAddressClientE(subscriptionID)
 	if err != nil {
 		return false, err
@@ -75,7 +77,7 @@ func CheckPublicDNSNameAvailabilityE(t testing.TestingT, location string, domain
 }
 
 // GetPublicIPAddressE gets a Public IP Addresses in the specified Azure Resource Group.
-func GetPublicIPAddressE(t testing.TestingT, publicIPAddressName string, resGroupName string, subscriptionID string) (*network.PublicIPAddress, error) {
+func GetPublicIPAddressE(publicIPAddressName string, resGroupName string, subscriptionID string) (*network.PublicIPAddress, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {

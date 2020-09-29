@@ -23,7 +23,7 @@ func TestGetPublicIPAddressE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetPublicIPAddressE(t, paName, rgName, subID)
+	_, err := GetPublicIPAddressE(paName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -35,7 +35,7 @@ func TestCheckPublicDNSNameAvailabilityE(t *testing.T) {
 	domain := ""
 	subID := ""
 
-	_, err := CheckPublicDNSNameAvailabilityE(t, location, domain, subID)
+	_, err := CheckPublicDNSNameAvailabilityE(location, domain, subID)
 
 	require.Error(t, err)
 }
@@ -47,7 +47,7 @@ func TestGetIPOfPublicIPAddressByNameE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetIPOfPublicIPAddressByNameE(t, paName, rgName, subID)
+	_, err := GetIPOfPublicIPAddressByNameE(paName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -59,7 +59,7 @@ func TestPublicAddressExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := PublicAddressExistsE(t, paName, rgName, subID)
+	_, err := PublicAddressExistsE(paName, rgName, subID)
 
 	require.Error(t, err)
 }

@@ -23,7 +23,7 @@ func TestGetVirtualNetworkE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualNetworkE(t, vnetName, rgName, subID)
+	_, err := GetVirtualNetworkE(vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -36,7 +36,7 @@ func TestGetSubnetE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetSubnetE(t, subnetName, vnetName, rgName, subID)
+	_, err := GetSubnetE(subnetName, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -48,7 +48,7 @@ func TestGetVirtualNetworkDNSServerIPsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualNetworkDNSServerIPsE(t, vnetName, rgName, subID)
+	_, err := GetVirtualNetworkDNSServerIPsE(vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -60,7 +60,7 @@ func TestGetVirtualNetworkSubnetsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualNetworkSubnetsE(t, vnetName, rgName, subID)
+	_, err := GetVirtualNetworkSubnetsE(vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -74,7 +74,7 @@ func TestCheckSubnetContainsIPE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := CheckSubnetContainsIPE(t, ipAddress, subnetName, vnetName, rgName, subID)
+	_, err := CheckSubnetContainsIPE(ipAddress, subnetName, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -87,7 +87,7 @@ func TestSubnetExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := SubnetExistsE(t, subnetName, vnetName, rgName, subID)
+	_, err := SubnetExistsE(subnetName, vnetName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -99,7 +99,7 @@ func TestVirtualNetworkExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := VirtualNetworkExistsE(t, vnetName, rgName, subID)
+	_, err := VirtualNetworkExistsE(vnetName, rgName, subID)
 
 	require.Error(t, err)
 }

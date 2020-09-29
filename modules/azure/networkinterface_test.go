@@ -23,7 +23,7 @@ func TestGetNetworkInterfaceE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetNetworkInterfaceE(t, nicName, rgName, subID)
+	_, err := GetNetworkInterfaceE(nicName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -35,7 +35,7 @@ func TestGetNetworkInterfacePrivateIPsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetNetworkInterfacePrivateIPsE(t, nicName, rgName, subID)
+	_, err := GetNetworkInterfacePrivateIPsE(nicName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -47,7 +47,7 @@ func TestGetNetworkInterfacePublicIPsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetNetworkInterfacePublicIPsE(t, nicName, rgName, subID)
+	_, err := GetNetworkInterfacePublicIPsE(nicName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -59,7 +59,7 @@ func TestNetworkInterfaceExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := NetworkInterfaceExistsE(t, nicName, rgName, subID)
+	_, err := NetworkInterfaceExistsE(nicName, rgName, subID)
 
 	require.Error(t, err)
 }

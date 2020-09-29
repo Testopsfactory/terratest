@@ -3,9 +3,9 @@ package azure
 import (
 	"context"
 	"net"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -13,18 +13,20 @@ import (
 // VirtualNetworkExists indicates whether the specified Azure Virtual Network exists.
 // This function would fail the test if there is an error.
 func VirtualNetworkExists(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) bool {
-	exists, err := VirtualNetworkExistsE(t, vnetName, resGroupName, subscriptionID)
+	exists, err := VirtualNetworkExistsE(vnetName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
 // VirtualNetworkExistsE indicates whether the specified Azure Virtual Network exists.
-func VirtualNetworkExistsE(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
+func VirtualNetworkExistsE(vnetName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Virtual Network
-	_, err := GetVirtualNetworkE(t, vnetName, resGroupName, subscriptionID)
+	_, err := GetVirtualNetworkE(vnetName, resGroupName, subscriptionID)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
-			return false, nil
+		if autorestError, ok := err.(autorest.DetailedError); ok {
+			if autorestError.StatusCode.(int) == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
@@ -34,18 +36,20 @@ func VirtualNetworkExistsE(t testing.TestingT, vnetName string, resGroupName str
 // SubnetExists indicates whether the specified Azure Virtual Network Subnet exists.
 // This function would fail the test if there is an error.
 func SubnetExists(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) bool {
-	exists, err := SubnetExistsE(t, subnetName, vnetName, resGroupName, subscriptionID)
+	exists, err := SubnetExistsE(subnetName, vnetName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return exists
 }
 
 // SubnetExistsE indicates whether the specified Azure Virtual Network Subnet exists.
-func SubnetExistsE(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
+func SubnetExistsE(subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Get the Subnet
-	_, err := GetSubnetE(t, subnetName, vnetName, resGroupName, subscriptionID)
+	_, err := GetSubnetE(subnetName, vnetName, resGroupName, subscriptionID)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
-			return false, nil
+		if autorestError, ok := err.(autorest.DetailedError); ok {
+			if autorestError.StatusCode.(int) == 404 {
+				return false, nil
+			}
 		}
 		return false, err
 	}
@@ -55,13 +59,13 @@ func SubnetExistsE(t testing.TestingT, subnetName string, vnetName string, resGr
 // CheckSubnetContainsIP checks if the Private IP is contined in the Subnet Address Range.
 // This function would fail the test if there is an error.
 func CheckSubnetContainsIP(t testing.TestingT, IP string, subnetName string, vnetName string, resGroupName string, subscriptionID string) bool {
-	inRange, err := CheckSubnetContainsIPE(t, IP, subnetName, vnetName, resGroupName, subscriptionID)
+	inRange, err := CheckSubnetContainsIPE(IP, subnetName, vnetName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return inRange
 }
 
 // CheckSubnetContainsIPE checks if the Private IP is contined in the Subnet Address Range.
-func CheckSubnetContainsIPE(t testing.TestingT, ipAddress string, subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
+func CheckSubnetContainsIPE(ipAddress string, subnetName string, vnetName string, resGroupName string, subscriptionID string) (bool, error) {
 	// Convert the IP to a net IP address
 	ip := net.ParseIP(ipAddress)
 	if ip == nil {
@@ -69,7 +73,7 @@ func CheckSubnetContainsIPE(t testing.TestingT, ipAddress string, subnetName str
 	}
 
 	// Get Subnet
-	subnet, err := GetSubnetE(t, subnetName, vnetName, resGroupName, subscriptionID)
+	subnet, err := GetSubnetE(subnetName, vnetName, resGroupName, subscriptionID)
 	if err != nil {
 		return false, err
 	}
@@ -89,14 +93,14 @@ func CheckSubnetContainsIPE(t testing.TestingT, ipAddress string, subnetName str
 // GetVirtualNetworkSubnets gets all Subnet names and their respective address prefixes in the
 // specified Virtual Network. This function would fail the test if there is an error.
 func GetVirtualNetworkSubnets(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) map[string]string {
-	subnets, err := GetVirtualNetworkSubnetsE(t, vnetName, resGroupName, subscriptionID)
+	subnets, err := GetVirtualNetworkSubnetsE(vnetName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 	return subnets
 }
 
 // GetVirtualNetworkSubnetsE gets all Subnet names and their respective address prefixes in the specified Virtual Network.
 // Returning both the name and prefix together helps reduce calls for these frequently accessed properties.
-func GetVirtualNetworkSubnetsE(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) (map[string]string, error) {
+func GetVirtualNetworkSubnetsE(vnetName string, resGroupName string, subscriptionID string) (map[string]string, error) {
 	subNetDetails := map[string]string{}
 
 	client, err := GetSubnetClientE(subscriptionID)
@@ -121,16 +125,16 @@ func GetVirtualNetworkSubnetsE(t testing.TestingT, vnetName string, resGroupName
 // GetVirtualNetworkDNSServerIPs gets a list of all Virtual Network DNS server IPs.
 // This function would fail the test if there is an error.
 func GetVirtualNetworkDNSServerIPs(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) []string {
-	vnetDNSIPs, err := GetVirtualNetworkDNSServerIPsE(t, vnetName, resGroupName, subscriptionID)
+	vnetDNSIPs, err := GetVirtualNetworkDNSServerIPsE(vnetName, resGroupName, subscriptionID)
 	require.NoError(t, err)
 
 	return vnetDNSIPs
 }
 
 // GetVirtualNetworkDNSServerIPsE gets a list of all Virtual Network DNS server IPs with Error.
-func GetVirtualNetworkDNSServerIPsE(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) ([]string, error) {
+func GetVirtualNetworkDNSServerIPsE(vnetName string, resGroupName string, subscriptionID string) ([]string, error) {
 	// Get Virtual Network
-	vnet, err := GetVirtualNetworkE(t, vnetName, resGroupName, subscriptionID)
+	vnet, err := GetVirtualNetworkE(vnetName, resGroupName, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +143,7 @@ func GetVirtualNetworkDNSServerIPsE(t testing.TestingT, vnetName string, resGrou
 }
 
 // GetSubnetE gets a subnet.
-func GetSubnetE(t testing.TestingT, subnetName string, vnetName string, resGroupName string, subscriptionID string) (*network.Subnet, error) {
+func GetSubnetE(subnetName string, vnetName string, resGroupName string, subscriptionID string) (*network.Subnet, error) {
 	// Validate Azure Resource Group
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {
@@ -183,7 +187,7 @@ func GetSubnetClientE(subscriptionID string) (*network.SubnetsClient, error) {
 }
 
 // GetVirtualNetworkE gets Virtual Network in the specified Azure Resource Group.
-func GetVirtualNetworkE(t testing.TestingT, vnetName string, resGroupName string, subscriptionID string) (*network.VirtualNetwork, error) {
+func GetVirtualNetworkE(vnetName string, resGroupName string, subscriptionID string) (*network.VirtualNetwork, error) {
 	// Validate Azure Resource Group
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
 	if err != nil {
