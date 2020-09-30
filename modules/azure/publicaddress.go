@@ -21,7 +21,7 @@ func PublicAddressExistsE(publicAddressName string, resGroupName string, subscri
 	// Get the Public Address
 	_, err := GetPublicIPAddressE(publicAddressName, resGroupName, subscriptionID)
 	if err != nil {
-		if ResourceNotFoundError(err) {
+		if ResourceNotFoundErrorExists(err) {
 			return false, nil
 		}
 		return false, err

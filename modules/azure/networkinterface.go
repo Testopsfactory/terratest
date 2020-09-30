@@ -21,7 +21,7 @@ func NetworkInterfaceExistsE(nicName string, resGroupName string, subscriptionID
 	// Get the Network Interface
 	_, err := GetNetworkInterfaceE(nicName, resGroupName, subscriptionID)
 	if err != nil {
-		if ResourceNotFoundError(err) {
+		if ResourceNotFoundErrorExists(err) {
 			return false, nil
 		}
 		return false, err

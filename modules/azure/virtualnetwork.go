@@ -22,7 +22,7 @@ func VirtualNetworkExistsE(vnetName string, resGroupName string, subscriptionID 
 	// Get the Virtual Network
 	_, err := GetVirtualNetworkE(vnetName, resGroupName, subscriptionID)
 	if err != nil {
-		if ResourceNotFoundError(err) {
+		if ResourceNotFoundErrorExists(err) {
 			return false, nil
 		}
 		return false, err
@@ -43,7 +43,7 @@ func SubnetExistsE(subnetName string, vnetName string, resGroupName string, subs
 	// Get the Subnet
 	_, err := GetSubnetE(subnetName, vnetName, resGroupName, subscriptionID)
 	if err != nil {
-		if ResourceNotFoundError(err) {
+		if ResourceNotFoundErrorExists(err) {
 			return false, nil
 		}
 		return false, err

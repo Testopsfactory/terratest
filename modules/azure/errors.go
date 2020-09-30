@@ -52,8 +52,8 @@ func NewNotFoundError(objectType string, objectID string, region string) NotFoun
 	return NotFoundError{objectType, objectID, region}
 }
 
-// ResourceNotFoundError gets the Service Error Code from a Autorest err
-func ResourceNotFoundError(err error) bool {
+// ResourceNotFoundErrorExists checks the Service Error Code for the 'Resource Not Found' error
+func ResourceNotFoundErrorExists(err error) bool {
 	if err != nil {
 		if autorestError, ok := err.(autorest.DetailedError); ok {
 			if requestError, ok := autorestError.Original.(*azure.RequestError); ok {
