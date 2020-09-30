@@ -12,17 +12,14 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/miekg/dns"
+	"github.com/stretchr/testify/require"
 )
 
 // DNSFindNameservers tries to find the NS record for the given FQDN, iterating down the domain hierarchy
 // until it founds the NS records and returns it. Fails if there's any error or no NS record is found up to the apex domain.
 func DNSFindNameservers(t testing.TestingT, fqdn string, resolvers []string) []string {
 	nameservers, err := DNSFindNameserversE(t, fqdn, resolvers)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	require.NoError(t, err)
 	return nameservers
 }
 
@@ -87,11 +84,7 @@ func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([
 // Fails on any error from DNSLookupAuthoritativeE.
 func DNSLookupAuthoritative(t testing.TestingT, query DNSQuery, resolvers []string) DNSAnswers {
 	res, err := DNSLookupAuthoritativeE(t, query, resolvers)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	require.NoError(t, err)
 	return res
 }
 
@@ -126,11 +119,7 @@ func DNSLookupAuthoritativeE(t testing.TestingT, query DNSQuery, resolvers []str
 // Fails on any error from DNSLookupAuthoritativeWithRetryE.
 func DNSLookupAuthoritativeWithRetry(t testing.TestingT, query DNSQuery, resolvers []string, maxRetries int, sleepBetweenRetries time.Duration) DNSAnswers {
 	res, err := DNSLookupAuthoritativeWithRetryE(t, query, resolvers, maxRetries, sleepBetweenRetries)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	require.NoError(t, err)
 	return res
 }
 
@@ -155,11 +144,7 @@ func DNSLookupAuthoritativeWithRetryE(t testing.TestingT, query DNSQuery, resolv
 // Fails on any error from DNSLookupAuthoritativeAllE.
 func DNSLookupAuthoritativeAll(t testing.TestingT, query DNSQuery, resolvers []string) DNSAnswers {
 	res, err := DNSLookupAuthoritativeAllE(t, query, resolvers)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	require.NoError(t, err)
 	return res
 }
 
@@ -203,10 +188,7 @@ func DNSLookupAuthoritativeAllE(t testing.TestingT, query DNSQuery, resolvers []
 // Fails when max retries has been exceeded.
 func DNSLookupAuthoritativeAllWithRetry(t testing.TestingT, query DNSQuery, resolvers []string, maxRetries int, sleepBetweenRetries time.Duration) {
 	_, err := DNSLookupAuthoritativeAllWithRetryE(t, query, resolvers, maxRetries, sleepBetweenRetries)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DNSLookupAuthoritativeAllWithRetryE repeatedly sends DNS requests for the specified record and type,
@@ -229,10 +211,7 @@ func DNSLookupAuthoritativeAllWithRetryE(t testing.TestingT, query DNSQuery, res
 // Fails on any underlying error from DNSLookupAuthoritativeAllWithValidationE.
 func DNSLookupAuthoritativeAllWithValidation(t testing.TestingT, query DNSQuery, resolvers []string, expectedAnswers DNSAnswers) {
 	err := DNSLookupAuthoritativeAllWithValidationE(t, query, resolvers, expectedAnswers)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DNSLookupAuthoritativeAllWithValidationE gets authoritative answers for the specified record and type.
@@ -264,10 +243,7 @@ func DNSLookupAuthoritativeAllWithValidationE(t testing.TestingT, query DNSQuery
 // Fails when max retries has been exceeded.
 func DNSLookupAuthoritativeAllWithValidationRetry(t testing.TestingT, query DNSQuery, resolvers []string, expectedAnswers DNSAnswers, maxRetries int, sleepBetweenRetries time.Duration) {
 	err := DNSLookupAuthoritativeAllWithValidationRetryE(t, query, resolvers, expectedAnswers, maxRetries, sleepBetweenRetries)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // DNSLookupAuthoritativeAllWithValidationRetryE repeatedly gets authoritative answers for the specified record and type
@@ -313,11 +289,7 @@ func DNSDoWithRetryE(t testing.TestingT, actionDescription string, maxRetries in
 // Supported record types: A, AAAA, CNAME, MX, NS, TXT
 func DNSLookup(t testing.TestingT, query DNSQuery, resolvers []string) DNSAnswers {
 	res, err := DNSLookupE(t, query, resolvers)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	require.NoError(t, err)
 	return res
 }
 
