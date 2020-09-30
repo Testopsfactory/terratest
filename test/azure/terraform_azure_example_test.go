@@ -1,4 +1,4 @@
-// +build azure
+// +build azure azureslim,compute
 
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
@@ -41,7 +41,7 @@ func TestTerraformAzureExample(t *testing.T) {
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 
 	// website::tag::4:: Look up the size of the given Virtual Machine and ensure it matches the output.
-	actualVMSize := azure.GetSizeOfVirtualMachine(t, vmName, resourceGroupName, "")
+	actualVMSize := azure.GetVirtualMachineSize(t, vmName, resourceGroupName, "")
 	expectedVMSize := compute.VirtualMachineSizeTypes("Standard_B1s")
 	assert.Equal(t, expectedVMSize, actualVMSize)
 }
