@@ -26,7 +26,7 @@ terraform {
 # DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "resourcegroup" {
-  name     = "terratest-rg-${var.postfix}"
+resource "azurerm_resource_group" "resource_group" {
+  name     = "${var.basename}-${var.postfix}"
   location = var.location
 }
