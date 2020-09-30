@@ -62,7 +62,7 @@ func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([
 		domain = strings.Join(parts[i:], ".")
 		res, err = lookupFunc(domain)
 
-		if err == nil && len(res) > 0 {
+		if len(res) > 0 {
 			var nameservers []string
 
 			for _, ns := range res {
@@ -71,6 +71,10 @@ func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([
 
 			logger.Logf(t, "FQDN %s belongs to domain %s, found NS record: %s", fqdn, domain, nameservers)
 			return nameservers, nil
+		}
+
+		if err != nil {
+			logger.Logf(t, err.Error())
 		}
 	}
 
