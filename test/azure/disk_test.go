@@ -41,15 +41,3 @@ func TestGetDiskTypeE(t *testing.T) {
 
 	require.Error(t, err)
 }
-
-func TestDiskExistsE(t *testing.T) {
-	t.Parallel()
-
-	diskName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := azure.DiskExistsE(t, diskName, rgName, subID)
-
-	require.Error(t, err)
-}
