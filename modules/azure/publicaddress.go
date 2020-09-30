@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -22,10 +21,8 @@ func PublicAddressExistsE(publicAddressName string, resGroupName string, subscri
 	// Get the Public Address
 	_, err := GetPublicIPAddressE(publicAddressName, resGroupName, subscriptionID)
 	if err != nil {
-		if autorestError, ok := err.(autorest.DetailedError); ok {
-			if autorestError.StatusCode.(int) == 404 {
-				return false, nil
-			}
+		if ResourceNotFoundError(err) {
+			return false, nil
 		}
 		return false, err
 	}

@@ -101,9 +101,6 @@ func TestTerraformAzureNetworkExample(t *testing.T) {
 		// Check Network Interface that does not exist in the Resource Group
 		assert.False(t, azure.NetworkInterfaceExists(t, "negative-test", expectedRgName, subscriptionID))
 
-		// Check Network Interface that does not exist in the Resource Group
-		assert.False(t, azure.NetworkInterfaceExists(t, "negative-test", "expectedRgName", subscriptionID))
-
 		// Check Public Address exists
 		assert.True(t, azure.PublicAddressExists(t, expectedPublicAddressName, expectedRgName, subscriptionID))
 	})

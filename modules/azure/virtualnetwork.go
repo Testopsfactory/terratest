@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -23,10 +22,8 @@ func VirtualNetworkExistsE(vnetName string, resGroupName string, subscriptionID 
 	// Get the Virtual Network
 	_, err := GetVirtualNetworkE(vnetName, resGroupName, subscriptionID)
 	if err != nil {
-		if autorestError, ok := err.(autorest.DetailedError); ok {
-			if autorestError.StatusCode.(int) == 404 {
-				return false, nil
-			}
+		if ResourceNotFoundError(err) {
+			return false, nil
 		}
 		return false, err
 	}
@@ -46,10 +43,8 @@ func SubnetExistsE(subnetName string, vnetName string, resGroupName string, subs
 	// Get the Subnet
 	_, err := GetSubnetE(subnetName, vnetName, resGroupName, subscriptionID)
 	if err != nil {
-		if autorestError, ok := err.(autorest.DetailedError); ok {
-			if autorestError.StatusCode.(int) == 404 {
-				return false, nil
-			}
+		if ResourceNotFoundError(err) {
+			return false, nil
 		}
 		return false, err
 	}

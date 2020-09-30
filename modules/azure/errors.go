@@ -1,6 +1,11 @@
 package azure
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/azure"
+)
 
 // SubscriptionIDNotFound is an error that occurs when the Azure Subscription ID could not be found or was not provided
 type SubscriptionIDNotFound struct{}
@@ -45,4 +50,18 @@ func (err NotFoundError) Error() string {
 // NewNotFoundError creates a new not found error when an expected object is not found in the search space
 func NewNotFoundError(objectType string, objectID string, region string) NotFoundError {
 	return NotFoundError{objectType, objectID, region}
+}
+
+// ResourceNotFoundError gets the Service Error Code from a Autorest err
+func ResourceNotFoundError(err error) bool {
+	if err != nil {
+		if autorestError, ok := err.(autorest.DetailedError); ok {
+			if requestError, ok := autorestError.Original.(*azure.RequestError); ok {
+				if requestError.ServiceError.Code == "ResourceNotFound" {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
