@@ -22,7 +22,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 
 	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
 	subscriptionID := ""
-	uniquePostfix := random.UniqueId()
+	uniquePostfix := random.UniqueId() // "resource" //
 	expectedVmAdminUser := "testadmin"
 	expectedVMSize := compute.VirtualMachineSizeTypes("Standard_B1s")
 	expectedImageSKU := "2019-Datacenter-Core-smalldisk"
@@ -87,14 +87,14 @@ func TestTerraformAzureVmExample(t *testing.T) {
 
 		// Check the VM Size by instance alternate example.
 		// This strategy is beneficial when checking multiple properties by using one VM instance and making
-		// calls against it with the added benefit of module abstraction.
+		// calls against it with the added benefit of property checks and abstraction.
 		vmInstance := azure.GetVirtualMachineInstance(t, virtualMachineName, resourceGroupName, subscriptionID)
 		actualVMSize = vmInstance.GetVirtualMachineInstanceSize()
 		assert.Equal(t, expectedVMSize, actualVMSize)
 	})
 
 	t.Run("MultipleVMs", func(t *testing.T) {
-		// Ths approach is beneficial when multiple VMs need to be tested at once.
+		// This is beneficial when multiple VMs in a Resource Group need to be tested at once.
 
 		// Check against all VM names in a Resource Group.
 		vmList := azure.GetResourceGroupVirtualMachines(t, resourceGroupName, subscriptionID)

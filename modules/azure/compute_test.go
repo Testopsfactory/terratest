@@ -24,7 +24,7 @@ func TestGetVirtualMachineE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -36,7 +36,7 @@ func TestGetVirtualMachineInstanceE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineInstanceE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineInstanceE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -47,7 +47,7 @@ func TestGetResourceGroupVirtualMachinesObjectsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetResourceGroupVirtualMachinesObjectsE(t, rgName, subID)
+	_, err := GetResourceGroupVirtualMachinesObjectsE(rgName, subID)
 
 	require.Error(t, err)
 }
@@ -58,7 +58,7 @@ func TestGetResourceGroupVirtualMachinesE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetResourceGroupVirtualMachinesE(t, rgName, subID)
+	_, err := GetResourceGroupVirtualMachinesE(rgName, subID)
 
 	require.Error(t, err)
 }
@@ -70,7 +70,7 @@ func TestGetVirtualMachineTagsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineTagsE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineTagsE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -82,7 +82,7 @@ func TestGetVirtualMachineSizeE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineSizeE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineSizeE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -94,7 +94,7 @@ func TestGetVirtualMachineAdminUserE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineAdminUserE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineAdminUserE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -106,7 +106,7 @@ func TestGetVirtualMachineImageE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineImageE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineImageE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -118,7 +118,7 @@ func TestGetVirtualMachineAvailabilitySetIDE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineAvailabilitySetIDE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineAvailabilitySetIDE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -130,7 +130,7 @@ func TestGetVirtualMachineStateE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineStateE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineStateE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -142,7 +142,7 @@ func TestGetVirtualMachineOsDiskNameE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineOsDiskNameE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineOsDiskNameE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -154,7 +154,7 @@ func TestGetVirtualMachineManagedDiskCountE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineManagedDiskCountE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineManagedDiskCountE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -166,7 +166,7 @@ func TestGetVirtualMachineManagedDisksE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineManagedDisksE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineManagedDisksE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -178,7 +178,7 @@ func TestGetVirtualMachineNicCountE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineNicCountE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineNicCountE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -190,7 +190,7 @@ func TestGetVirtualMachineNicsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineNicsE(t, vmName, rgName, subID)
+	_, err := GetVirtualMachineNicsE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -202,7 +202,7 @@ func TestVirtualMachineExistsE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := VirtualMachineExistsE(t, vmName, rgName, subID)
+	_, err := VirtualMachineExistsE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
