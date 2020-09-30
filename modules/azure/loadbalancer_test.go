@@ -23,7 +23,7 @@ func TestLoadBalancerExistsE(t *testing.T) {
 	resourceGroupName := ""
 	subscriptionID := ""
 
-	_, err := LoadBalancerExistsE(t, loadBalancerName, resourceGroupName, subscriptionID)
+	_, err := LoadBalancerExistsE(loadBalancerName, resourceGroupName, subscriptionID)
 
 	require.Error(t, err)
 }
@@ -35,7 +35,7 @@ func TestGetLoadBalancerE(t *testing.T) {
 	resourceGroupName := ""
 	subscriptionID := ""
 
-	_, err := GetLoadBalancerE(t, loadBalancerName, resourceGroupName, subscriptionID)
+	_, err := GetLoadBalancerE(loadBalancerName, resourceGroupName, subscriptionID)
 
 	require.Error(t, err)
 }
