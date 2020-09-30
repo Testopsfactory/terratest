@@ -1,5 +1,5 @@
 output "resource_group_name" {
-  value = azurerm_resource_group.disk.name
+  value = azurerm_resource_group.disk_rg.name
 }
 
 output "disk_name" {
