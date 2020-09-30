@@ -21,7 +21,7 @@ func AvailabilitySetExists(t testing.TestingT, avsName string, resGroupName stri
 func AvailabilitySetExistsE(t testing.TestingT, avsName string, resGroupName string, subscriptionID string) (bool, error) {
 	_, err := GetAvailabilitySetE(t, avsName, resGroupName, subscriptionID)
 	if err != nil {
-		if strings.Contains(err.Error(), "ResourceNotFound") {
+		if ResourceNotFoundErrorExists(err) {
 			return false, nil
 		}
 		return false, err
