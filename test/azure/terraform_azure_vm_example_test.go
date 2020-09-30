@@ -104,7 +104,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 		// Get all VMs in a Resource Group by reference alternate example.
 		// This strategy is beneficial when checking multiple VMs & their properties by avoiding
 		// multiple SDK calls. The penalty for this approach is introducing direct references
-		// which need to be checked for nil when not required.
+		// which need to be checked for nil for optional configurations.
 		vmsByRef := azure.GetResourceGroupVirtualMachinesObjects(t, resourceGroupName, subscriptionID)
 		assert.True(t, len(*vmsByRef) > 0)
 
@@ -175,7 +175,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 		assert.Contains(t, actualPrivateIPAddress, expectedPrivateIPAddress)
 
 		// Check for the Public IP for the NIC. No expected value since it is assigned runtime.
-		actualPublicIP := azure.GetPublicAddressIP(t, expectedPublicAddressName, resourceGroupName, subscriptionID)
+		actualPublicIP := azure.GetIPOfPublicIPAddressByName(t, expectedPublicAddressName, resourceGroupName, subscriptionID)
 		assert.NotNil(t, actualPublicIP)
 	})
 
