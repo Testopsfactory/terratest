@@ -57,9 +57,7 @@ func ResourceNotFoundError(err error) bool {
 	if err != nil {
 		if autorestError, ok := err.(autorest.DetailedError); ok {
 			if requestError, ok := autorestError.Original.(*azure.RequestError); ok {
-				if requestError.ServiceError.Code == "ResourceNotFound" {
-					return true
-				}
+				return (requestError.ServiceError.Code == "ResourceNotFound")
 			}
 		}
 	}
