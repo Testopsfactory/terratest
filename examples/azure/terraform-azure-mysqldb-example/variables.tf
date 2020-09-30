@@ -18,33 +18,33 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable resource_group_name {
-  description = "The name of the resource group in which to create the Microsoft MySQL Server."
-  type        = string
-  default     = "mysqldatabase-rg"
-}
-
 variable location {
   description = "The supported azure location where the resource exists"
   type        = string
   default     = "West US2"
 }
 
-variable mysqlserver_name {
-    description = "The name of the Microsoft MySQL Server."
-    type        = string
-    default     = "msmysqlserver"
-}
-
 variable mysqlserver_admin_login {
     description = "The administrator login name for the mysql server."
     type        = string
-    default     = "mysqladminun"
+    default     = "mysqladmin"
 }
 
-variable mysqldb_name {
-    description = "The name of the Microsoft mySQL database."
-    type        = string
-    default     = "msmysqldatabase"
+variable mysqlserver_sku_name {
+  description = "The SKU name for the mysql server."
+  type        = string
+  default     = "GP_Gen5_2"
 
+}
+
+variable mysqlserver_storage_mb {
+  description = "The Max storage allowed for mysql server."
+  type        = string
+  default     = "5120"
+}
+
+variable "postfix" {
+  description = "A postfix string to centrally mitigate resource name collisions"
+  type        = string
+  default     = "resource"
 }

@@ -19,17 +19,13 @@ provider "azurerm" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_resource_group" "mysql" {
-  name     = var.resource_group_name
+  name     = "terratest-mysql-${var.postfix}"
   location = var.location
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AZURE MySQL SERVER
 # ---------------------------------------------------------------------------------------------------------------------
-
-resource "random_id" "mysqlserver" {
-  byte_length = 8
-}
 
 resource "random_password" "password" {
   length = 16
@@ -38,21 +34,21 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_mysql_server" "mysqlserver" {
-  name                = "${var.mysqlserver_name}-${lower(random_id.mysqlserver.hex)}"
+  name                = "mysqlserver-${var.postfix}"
   location            = azurerm_resource_group.mysql.location
   resource_group_name = azurerm_resource_group.mysql.name
 
   administrator_login          = var.mysqlserver_admin_login
   administrator_login_password = random_password.password.result
 
-  sku_name   = "B_Gen5_2"
-  storage_mb = 5120
+  sku_name   = var.mysqlserver_sku_name
+  storage_mb = var.mysqlserver_storage_mb
   version    = "5.7"
 
   auto_grow_enabled                 = true
-  backup_retention_days             = 7
-  geo_redundant_backup_enabled      = true
+  geo_redundant_backup_enabled      = false
   infrastructure_encryption_enabled = true
+  backup_retention_days             = 7
   public_network_access_enabled     = false
   ssl_enforcement_enabled           = true
   ssl_minimal_tls_version_enforced  = "TLS1_2"
@@ -63,7 +59,7 @@ resource "azurerm_mysql_server" "mysqlserver" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_mysql_database" "mysqldb" {
-  name                = var.mysqldb_name
+  name                = "mysqldb-${var.postfix}"
   resource_group_name = azurerm_resource_group.mysql.name
   server_name         = azurerm_mysql_server.mysqlserver.name
   charset             = "utf8"
