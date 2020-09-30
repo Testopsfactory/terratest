@@ -26,7 +26,8 @@ func TestTerraformAzureResourceGroupExample(t *testing.T) {
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-resourcegroup-example",
 		Vars: map[string]interface{}{
-			"postfix": uniquePostfix,
+			"postfix":  uniquePostfix,
+			"basename": "terratest-rs1",
 		},
 	}
 
