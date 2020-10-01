@@ -109,7 +109,7 @@ func GetIPOfLoadBalancerFrontendIPConfigE(feConfigName string, loadBalancerName 
 		return ipValue, IPType(PublicIP), nil
 	}
 
-	// Not a public IP therefore return the Private IP as there are no other options available
+	// Return the Private IP as there are no other option available
 	return *feProps.PrivateIPAddress, IPType(PrivateIP), nil
 
 }

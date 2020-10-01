@@ -45,7 +45,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	expectedLBPublicName := terraform.Output(t, terraformOptions, "lb_public_name")
 	expectedLBPrivateName := terraform.Output(t, terraformOptions, "lb_private_name")
-	expectedLBNoFEConfigName := terraform.Output(t, terraformOptions, "lb_no_fe_config_name")
+	expectedLBNoFEConfigName := terraform.Output(t, terraformOptions, "lb_default_name")
 	expectedLBPublicFeConfigName := terraform.Output(t, terraformOptions, "lb_public_fe_config_name")
 	expectedLBPrivateFeConfigName := terraform.Output(t, terraformOptions, "lb_private_fe_config_static_name")
 	expectedLBPrivateIP := terraform.Output(t, terraformOptions, "lb_private_ip_static")

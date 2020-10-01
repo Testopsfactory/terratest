@@ -1,4 +1,4 @@
-output "lb_no_fe_config_name" {
+output "lb_default_name" {
   value = azurerm_lb.default.name
 }
 
