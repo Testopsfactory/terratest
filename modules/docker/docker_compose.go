@@ -37,3 +37,18 @@ func RunDockerComposeE(t testing.TestingT, options *Options, args ...string) (st
 
 	return shell.RunCommandAndGetOutputE(t, cmd)
 }
+
+// RunDockerComposeE runs docker-compose with the given arguments and options and return only stdout.
+func RunDockerComposeStdOutE(t testing.TestingT, options *Options, args ...string) (string, error) {
+	cmd := shell.Command{
+		Command: "docker-compose",
+		// We append --project-name to ensure containers from multiple different tests using Docker Compose don't end
+		// up in the same project and end up conflicting with each other.
+		Args:       append([]string{"--project-name", t.Name()}, args...),
+		WorkingDir: options.WorkingDir,
+		Env:        options.EnvVars,
+		Logger:     options.Logger,
+	}
+
+	return shell.RunCommandAndGetStdOutE(t, cmd)
+}
