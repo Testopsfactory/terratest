@@ -7,7 +7,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 provider "azurerm" {
-  version = "~> 2.20"
+  version = "~> 2.29"
   features {}
 }
 
@@ -27,7 +27,7 @@ terraform {
 # DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "vm" {
+resource "azurerm_resource_group" "vm_rg" {
   name     = "terratest-vm-rg-${var.postfix}"
   location = var.location
 }
@@ -37,41 +37,41 @@ resource "azurerm_resource_group" "vm" {
 # This network includes a public address for integration tests
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_network" "vm" {
+resource "azurerm_virtual_network" "vnet" {
   name                = "vnet-${var.postfix}"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.vm.location
-  resource_group_name = azurerm_resource_group.vm.name
+  location            = azurerm_resource_group.vm_rg.location
+  resource_group_name = azurerm_resource_group.vm_rg.name
 }
 
-resource "azurerm_subnet" "vm" {
+resource "azurerm_subnet" "subnet" {
   name                 = "subnet-${var.postfix}"
-  resource_group_name  = azurerm_resource_group.vm.name
-  virtual_network_name = azurerm_virtual_network.vm.name
+  resource_group_name  = azurerm_resource_group.vm_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = [var.subnet_prefix]
 }
 
-resource "azurerm_public_ip" "vm" {
+resource "azurerm_public_ip" "pip" {
   name                    = "pip-${var.postfix}"
-  resource_group_name     = azurerm_resource_group.vm.name
-  location                = azurerm_resource_group.vm.location
+  resource_group_name     = azurerm_resource_group.vm_rg.name
+  location                = azurerm_resource_group.vm_rg.location
   allocation_method       = "Static"
   ip_version              = "IPv4"
   sku                     = "Standard"
   idle_timeout_in_minutes = "4"
 }
 
-resource "azurerm_network_interface" "vm" {
+resource "azurerm_network_interface" "nic" {
   name                = "nic-${var.postfix}"
-  location            = azurerm_resource_group.vm.location
-  resource_group_name = azurerm_resource_group.vm.name
+  location            = azurerm_resource_group.vm_rg.location
+  resource_group_name = azurerm_resource_group.vm_rg.name
 
   ip_configuration {
     name                          = "terratestconfiguration1"
-    subnet_id                     = azurerm_subnet.vm.id
+    subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Static"
     private_ip_address            = var.private_ip
-    public_ip_address_id          = azurerm_public_ip.vm.id
+    public_ip_address_id          = azurerm_public_ip.pip.id
   }
 }
 
@@ -79,10 +79,10 @@ resource "azurerm_network_interface" "vm" {
 # DEPLOY AN AVAILABILITY SET
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_availability_set" "vm" {
+resource "azurerm_availability_set" "avs" {
   name                        = "avs-${var.postfix}"
-  location                    = azurerm_resource_group.vm.location
-  resource_group_name         = azurerm_resource_group.vm.name
+  location                    = azurerm_resource_group.vm_rg.location
+  resource_group_name         = azurerm_resource_group.vm_rg.name
   platform_fault_domain_count = 2
   managed                     = true
 }
@@ -92,12 +92,12 @@ resource "azurerm_availability_set" "vm" {
 # This VM does not actually do anything and is the smallest size VM available with a Windows image
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_machine" "vm" {
+resource "azurerm_virtual_machine" "vm_example" {
   name                             = "vm-${var.postfix}"
-  location                         = azurerm_resource_group.vm.location
-  resource_group_name              = azurerm_resource_group.vm.name
-  network_interface_ids            = [azurerm_network_interface.vm.id]
-  availability_set_id              = azurerm_availability_set.vm.id
+  location                         = azurerm_resource_group.vm_rg.location
+  resource_group_name              = azurerm_resource_group.vm_rg.name
+  network_interface_ids            = [azurerm_network_interface.nic.id]
+  availability_set_id              = azurerm_availability_set.avs.id
   vm_size                          = var.vm_size
   license_type                     = var.vm_license_type
   delete_os_disk_on_termination    = true
@@ -120,16 +120,16 @@ resource "azurerm_virtual_machine" "vm" {
   os_profile {
     computer_name  = "vm-${var.postfix}"
     admin_username = var.user_name
-    admin_password = random_password.vm.result
+    admin_password = random_password.rand.result
   }
   os_profile_windows_config {
     provision_vm_agent = true
   }
 
-  depends_on = [random_password.vm]
+  depends_on = [random_password.rand]
 }
 
-resource "random_password" "vm" {
+resource "random_password" "rand" {
   length           = 16
   override_special = "-_%@"
   min_upper        = "1"
@@ -142,18 +142,18 @@ resource "random_password" "vm" {
 # ATTACH A MANAGED DISK TO THE VIRTUAL MACHINE
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_managed_disk" "vm" {
+resource "azurerm_managed_disk" "disk" {
   name                 = "disk-${var.postfix}"
-  location             = azurerm_resource_group.vm.location
-  resource_group_name  = azurerm_resource_group.vm.name
+  location             = azurerm_resource_group.vm_rg.location
+  resource_group_name  = azurerm_resource_group.vm_rg.name
   storage_account_type = var.disk_type
   create_option        = "Empty"
   disk_size_gb         = 10
 }
 
-resource "azurerm_virtual_machine_data_disk_attachment" "vm" {
-  managed_disk_id    = azurerm_managed_disk.vm.id
-  virtual_machine_id = azurerm_virtual_machine.vm.id
+resource "azurerm_virtual_machine_data_disk_attachment" "vm_disk" {
+  managed_disk_id    = azurerm_managed_disk.disk.id
+  virtual_machine_id = azurerm_virtual_machine.vm_example.id
   caching            = "ReadWrite"
   lun                = 10
 }

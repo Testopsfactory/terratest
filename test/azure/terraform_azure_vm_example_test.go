@@ -97,7 +97,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 		// This is beneficial when multiple VMs in a Resource Group need to be tested at once.
 
 		// Check against all VM names in a Resource Group.
-		vmList := azure.GetResourceGroupVirtualMachines(t, resourceGroupName, subscriptionID)
+		vmList := azure.ListVirtualMachinesForResourceGroup(t, resourceGroupName, subscriptionID)
 		assert.True(t, len(vmList) > 0)
 		assert.Contains(t, vmList, virtualMachineName)
 
@@ -105,7 +105,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 		// This strategy is beneficial when checking multiple VMs & their properties by avoiding
 		// multiple SDK calls. The penalty for this approach is introducing direct references
 		// which need to be checked for nil for optional configurations.
-		vmsByRef := azure.GetResourceGroupVirtualMachinesObjects(t, resourceGroupName, subscriptionID)
+		vmsByRef := azure.GetVirtualMachinesForResourceGroup(t, resourceGroupName, subscriptionID)
 		assert.True(t, len(*vmsByRef) > 0)
 
 		// Check for the VM.
