@@ -52,23 +52,21 @@ func GetLoadBalancerFrontendIPConfigNames(t testing.TestingT, loadBalancerName s
 
 // GetLoadBalancerFrontendIPConfigNamesE ConfigNamesE gets a list of the Frontend Configuration Names for the Load Balancer.
 func GetLoadBalancerFrontendIPConfigNamesE(loadBalancerName string, resourceGroupName string, subscriptionID string) ([]string, error) {
-
 	lb, err := GetLoadBalancerE(loadBalancerName, resourceGroupName, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
 
+	// Get the Frontend IP Configurations
 	lbProps := lb.LoadBalancerPropertiesFormat
 	feConfigs := *lbProps.FrontendIPConfigurations
 	if len(feConfigs) == 0 {
-		// No Frontend Configurations present, no error needed as this is valid
+		// No Frontend IP Configuration present
 		return nil, nil
 	}
 
-	// Create a string array long enough the to contain the names
-	configNames := make([]string, len(feConfigs))
-
 	// Get the names of the Frontend IP Configurations present
+	configNames := make([]string, len(feConfigs))
 	for i, config := range feConfigs {
 		configNames[i] = *config.Name
 	}

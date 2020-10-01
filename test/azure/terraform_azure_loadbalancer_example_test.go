@@ -19,7 +19,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
 	subscriptionID := ""
-	uniquePostfix := random.UniqueId()
+	uniquePostfix := random.UniqueId() // "resource"
 	privateIPForLB02 := "10.200.2.10"
 
 	// Configure Terraform setting up a path to Terraform code.
@@ -49,6 +49,9 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 	expectedLBPublicFeConfigName := terraform.Output(t, terraformOptions, "lb_public_fe_config_name")
 	expectedLBPrivateFeConfigName := terraform.Output(t, terraformOptions, "lb_private_fe_config_static_name")
 	expectedLBPrivateIP := terraform.Output(t, terraformOptions, "lb_private_ip_static")
+
+	actualLBDoesNotExist := azure.LoadBalancerExists(t, "negative-test", resourceGroupName, subscriptionID)
+	assert.False(t, actualLBDoesNotExist)
 
 	t.Run("LoadBalancer_Public", func(t *testing.T) {
 		// Check Public Load Balancer exists.
@@ -82,7 +85,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 		assert.Equal(t, azure.PrivateIP, actualLBPrivateIPType)
 	})
 
-	t.Run("LoadBalancer_NoFrontEndConfig", func(t *testing.T) {
+	t.Run("LoadBalancer_Default", func(t *testing.T) {
 		// Check No Frontend Config Load Balancer exists.
 		actualLBNoFEConfigExists := azure.LoadBalancerExists(t, expectedLBNoFEConfigName, resourceGroupName, subscriptionID)
 		assert.True(t, actualLBNoFEConfigExists)
