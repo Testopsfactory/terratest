@@ -21,6 +21,9 @@ func DiskExistsE(diskName string, resGroupName string, subscriptionID string) (b
 	// Get the Disk object
 	_, err := GetDiskE(diskName, resGroupName, subscriptionID)
 	if err != nil {
+		if ResourceNotFoundErrorExists(err) {
+			return false, nil
+		}
 		return false, err
 	}
 	return true, nil
