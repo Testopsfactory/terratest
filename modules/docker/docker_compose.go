@@ -16,7 +16,7 @@ type Options struct {
 
 // RunDockerCompose runs docker-compose with the given arguments and options and return stdout/stderr.
 func RunDockerCompose(t testing.TestingT, options *Options, args ...string) string {
-	out, err := RunDockerComposeE(t, false, options, args...)
+	out, err := runDockerComposeE(t, false, options, args...)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,12 +25,16 @@ func RunDockerCompose(t testing.TestingT, options *Options, args ...string) stri
 
 // RunDockerComposeAndGetStdout runs docker-compose with the given arguments and options and returns only stdout.
 func RunDockerComposeAndGetStdOut(t testing.TestingT, options *Options, args ...string) string {
-	out, _ := RunDockerComposeE(t, true, options, args...)
+	out, _ := runDockerComposeE(t, true, options, args...)
 	return out
 }
 
 // RunDockerComposeE runs docker-compose with the given arguments and options and return stdout/stderr.
-func RunDockerComposeE(t testing.TestingT, stdout bool, options *Options, args ...string) (string, error) {
+func RunDockerComposeE(t testing.TestingT, options *Options, args ...string) (string, error) {
+	return runDockerComposeE(t, false, options, args...)
+}
+
+func runDockerComposeE(t testing.TestingT, stdout bool, options *Options, args ...string) (string, error) {
 	cmd := shell.Command{
 		Command: "docker-compose",
 		// We append --project-name to ensure containers from multiple different tests using Docker Compose don't end
