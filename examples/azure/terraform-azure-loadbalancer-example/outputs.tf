@@ -1,25 +1,29 @@
-output "loadbalancer_01_name" {
-  value = azurerm_lb.lb_public.name
+output "lb_no_fe_config_name" {
+  value = azurerm_lb.lb_no_fe_config.name
 }
 
-output "loadbalancer_02_name" {
+output "lb_private_name" {
   value = azurerm_lb.lb_private.name
 }
 
-output "config_name_for_lb01" {
-  value = azurerm_lb.lb_public.frontend_ip_configuration[0].name
-}
-
-output "config_name_for_lb02" {
+output "lb_private_fe_config_name" {
   value = azurerm_lb.lb_private.frontend_ip_configuration[0].name
 }
 
-output "public_address_name_for_lb01" {
-  value = azurerm_public_ip.lb.name
+output "lb_private_ip" {
+  value = azurerm_lb.lb_private.frontend_ip_configuration[0].private_ip_address
 }
 
-output "privateip_for_lb02" {
-  value = azurerm_lb.lb_private.frontend_ip_configuration[0].private_ip_address
+output "lb_public_name" {
+  value = azurerm_lb.lb_public.name
+}
+
+output "lb_public_fe_config_name" {
+  value = azurerm_lb.lb_public.frontend_ip_configuration[0].name
+}
+
+output "public_address_name" {
+  value = azurerm_public_ip.lb.name
 }
 
 output "resource_group_name" {
