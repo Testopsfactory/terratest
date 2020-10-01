@@ -23,9 +23,10 @@ func RunDockerCompose(t testing.TestingT, options *Options, args ...string) stri
 	return out
 }
 
-// RunDockerComposeStdoutE runs docker-compose with the given arguments and options and return only stdout.
-func RunDockerComposeStdOutE(t testing.TestingT, options *Options, args ...string) (string, error) {
-	return RunDockerComposeE(t, true, options, args...)
+// RunDockerComposeAndGetStdout runs docker-compose with the given arguments and options and returns only stdout.
+func RunDockerComposeAndGetStdOut(t testing.TestingT, options *Options, args ...string) string {
+	out, _ := RunDockerComposeE(t, true, options, args...)
+	return out
 }
 
 // RunDockerComposeE runs docker-compose with the given arguments and options and return stdout/stderr.
@@ -41,7 +42,7 @@ func RunDockerComposeE(t testing.TestingT, stdout bool, options *Options, args .
 	}
 
 	if stdout {
-		return shell.RunCommandAndGetStdOutE(t, cmd)
+		return shell.RunCommandAndGetStdOut(t, cmd), nil
 	}
 	return shell.RunCommandAndGetOutputE(t, cmd)
 }
