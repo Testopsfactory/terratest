@@ -132,6 +132,32 @@ func GetDatabaseClient(subscriptionID string) (*sql.DatabasesClient, error) {
 	return &sqlDBClient, nil
 }
 
+//ListSQLServerDatabases is a helper function that gets a list of databases on a sql server
+func ListSQLServerDatabases(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) *[]sql.Database {
+	dbList, err := ListSQLServerDatabasesE(t, resGroupName, serverName, subscriptionID)
+	require.NoError(t, err)
+
+	return dbList
+}
+
+//ListSQLServerDatabasesE is a helper function that gets a list of databases on a sql server
+func ListSQLServerDatabasesE(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) (*[]sql.Database, error) {
+	// Create a SQl db client
+	sqlClient, err := GetDatabaseClient(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	//Get the corresponding DB client
+	sqlDbs, err := sqlClient.ListByServer(context.Background(), resGroupName, serverName, "", "")
+	if err != nil {
+		return nil, err
+	}
+
+	// Return DB ID
+	return sqlDbs.Value, nil
+}
+
 // GetDatabaseID is a helper function that gets the sql db id
 func GetDatabaseID(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
 	dbID, err := GetDatabaseIDE(t, subscriptionID, resGroupName, serverName, dbName)

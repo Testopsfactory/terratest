@@ -9,7 +9,7 @@
 # ------------------------------------------------------------------------------
 
 provider "azurerm" {
-  version = "~>2.8.0"
+  version = "~>2.29"
   features {}
 }
 
@@ -18,7 +18,7 @@ provider "azurerm" {
 # See test/terraform_azure_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "sql" {
+resource "azurerm_resource_group" "sql_rg" {
   name     = "terratest-rg-${var.postfix}"
   location = var.location
 }
@@ -35,8 +35,8 @@ resource "random_password" "password" {
 
 resource "azurerm_sql_server" "sqlserver" {
   name                         = "mssqlserver-${var.postfix}"
-  resource_group_name          = azurerm_resource_group.sql.name
-  location                     = azurerm_resource_group.sql.location
+  resource_group_name          = azurerm_resource_group.sql_rg.name
+  location                     = azurerm_resource_group.sql_rg.location
   version                      = "12.0"
   administrator_login          = var.sqlserver_admin_login
   administrator_login_password = random_password.password.result
@@ -52,8 +52,8 @@ resource "azurerm_sql_server" "sqlserver" {
 
 resource "azurerm_sql_database" "sqldb" {
   name                = "sqldb-${var.postfix}"
-  resource_group_name = azurerm_resource_group.sql.name
-  location            = azurerm_resource_group.sql.location
+  resource_group_name = azurerm_resource_group.sql_rg.name
+  location            = azurerm_resource_group.sql_rg.location
   server_name         = azurerm_sql_server.sqlserver.name
   tags = {
     environment = var.tags

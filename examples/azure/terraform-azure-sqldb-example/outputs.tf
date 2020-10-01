@@ -1,3 +1,7 @@
+output "resource_group_name" {
+  value = azurerm_resource_group.sql_rg.name
+}
+
 output "sql_database_id" {
   value = azurerm_sql_database.sqldb.id
 }
@@ -25,8 +29,4 @@ output "sql_server_admin_login" {
 output "sql_server_admin_login_pass" {
   value     = azurerm_sql_server.sqlserver.administrator_login_password
   sensitive = true
-}
-
-output "resource_group_name" {
-  value = azurerm_resource_group.sql.name
 }
