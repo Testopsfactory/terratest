@@ -41,24 +41,24 @@ func TestGetVirtualMachineInstanceE(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGetResourceGroupVirtualMachinesObjectsE(t *testing.T) {
+func TestListVirtualMachinesForResourceGroupE(t *testing.T) {
 	t.Parallel()
 
 	rgName := ""
 	subID := ""
 
-	_, err := GetResourceGroupVirtualMachinesObjectsE(rgName, subID)
+	_, err := ListVirtualMachinesForResourceGroupE(rgName, subID)
 
 	require.Error(t, err)
 }
 
-func TestGetResourceGroupVirtualMachinesE(t *testing.T) {
+func TestGetVirtualMachinesForResourceGroupE(t *testing.T) {
 	t.Parallel()
 
 	rgName := ""
 	subID := ""
 
-	_, err := GetResourceGroupVirtualMachinesE(rgName, subID)
+	_, err := GetVirtualMachinesForResourceGroupE(rgName, subID)
 
 	require.Error(t, err)
 }
