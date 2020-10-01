@@ -133,7 +133,7 @@ func GetMYSQLDBClient(subscriptionID string) (*mysql.DatabasesClient, error) {
 }
 
 //GetMYSQLDBStatus is a helper function that gets the database status
-func GetMYSQLDBStatus(t testing.TestingT, resGroupName string, serverName string, subscriptionID string, dbName string) string {
+func GetMYSQLDBStatus(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
 	dbStatus, err := GetMYSQLDBStatusE(t, subscriptionID, resGroupName, serverName, dbName)
 	require.NoError(t, err)
 
@@ -156,4 +156,30 @@ func GetMYSQLDBStatusE(t testing.TestingT, subscriptionID string, resGroupName s
 
 	//Return DB status
 	return mysqlDb.Status, nil
+}
+
+//ListMySQLDB is a helper function that gets all databases per server
+func ListMySQLDB(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) []mysql.Database {
+	dblist, err := ListMySQLDBE(t, subscriptionID, resGroupName, serverName)
+	require.NoError(t, err)
+
+	return dblist
+}
+
+//ListMySQLDBE is a helper function that gets all databases per server
+func ListMySQLDBE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) ([]mysql.Database, error) {
+	// Create a mySQl db client
+	mysqldbClient, err := GetMYSQLDBClient(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the corresponding db client
+	mysqlDbs, err := mysqldbClient.ListByServer(context.Background(), resGroupName, serverName)
+	if err != nil {
+		return nil, err
+	}
+
+	//Return DB lists
+	return *mysqlDbs.Value, nil
 }
