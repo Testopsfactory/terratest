@@ -26,7 +26,7 @@ terraform {
 # DEPLOY A RESOURCE GROUP
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "lb" {
+resource "azurerm_resource_group" "lb_rg" {
   name     = "terratest-lb-rg-${var.postfix}"
   location = var.location
 }
@@ -35,19 +35,18 @@ resource "azurerm_resource_group" "lb" {
 # DEPLOY VIRTUAL NETWORK
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_network" "lb" {
+resource "azurerm_virtual_network" "vnet" {
   name                = "vnet-${var.postfix}"
-  location            = azurerm_resource_group.lb.location
-  resource_group_name = azurerm_resource_group.lb.name
+  location            = azurerm_resource_group.lb_rg.location
+  resource_group_name = azurerm_resource_group.lb_rg.name
   address_space       = ["10.200.0.0/21"]
   dns_servers         = ["10.200.0.5", "10.200.0.6"]
-
 }
 
-resource "azurerm_subnet" "lb" {
+resource "azurerm_subnet" "subnet" {
   name                 = "subnet-${var.postfix}"
-  resource_group_name  = azurerm_resource_group.lb.name
-  virtual_network_name = azurerm_virtual_network.lb.name
+  resource_group_name  = azurerm_resource_group.lb_rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.200.2.0/25"]
 }
 
@@ -55,48 +54,48 @@ resource "azurerm_subnet" "lb" {
 # DEPLOY LOAD BALANCER WITH PUBLIC IP 
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_public_ip" "lb" {
+resource "azurerm_public_ip" "pip" {
   name                    = "pip-${var.postfix}"
-  resource_group_name     = azurerm_resource_group.lb.name
-  location                = azurerm_resource_group.lb.location
+  location                = azurerm_resource_group.lb_rg.location
+  resource_group_name     = azurerm_resource_group.lb_rg.name
   allocation_method       = "Static"
   ip_version              = "IPv4"
   sku                     = "Basic"
   idle_timeout_in_minutes = "4"
 }
 
-resource "azurerm_lb" "lb_public" {
+resource "azurerm_lb" "public" {
   name                = "lb-public-${var.postfix}"
-  location            = azurerm_resource_group.lb.location
-  resource_group_name = azurerm_resource_group.lb.name
+  location            = azurerm_resource_group.lb_rg.location
+  resource_group_name = azurerm_resource_group.lb_rg.name
   sku                 = "Basic"
 
   frontend_ip_configuration {
     name                 = "config-public"
-    public_ip_address_id = azurerm_public_ip.lb.id
+    public_ip_address_id = azurerm_public_ip.pip.id
   }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY LOAD BALANCER WITH PRIVATE IP 
+# DEPLOY LOAD BALANCER WITH PRIVATE IPs 
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_lb" "lb_private" {
+resource "azurerm_lb" "private" {
   name                = "lb-private-${var.postfix}"
-  location            = azurerm_resource_group.lb.location
-  resource_group_name = azurerm_resource_group.lb.name
+  location            = azurerm_resource_group.lb_rg.location
+  resource_group_name = azurerm_resource_group.lb_rg.name
   sku                 = "Basic"
 
   frontend_ip_configuration {
-    name                          = "config-private-01"
-    subnet_id                     = azurerm_subnet.lb.id
+    name                          = "config-private-static"
+    subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address            = var.lb_private_ip
     private_ip_address_allocation = "Static"
   }
 
   frontend_ip_configuration {
-    name                          = "config-private-02"
-    subnet_id                     = azurerm_subnet.lb.id
+    name                          = "config-private-dynamic"
+    subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
   }
 }
@@ -105,9 +104,9 @@ resource "azurerm_lb" "lb_private" {
 # DEPLOY LOAD BALANCER WITH NO FRONTEND CONFIGURATION
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_lb" "lb_no_fe_config" {
+resource "azurerm_lb" "default" {
   name                = "lb-no-frontend-${var.postfix}"
-  location            = azurerm_resource_group.lb.location
-  resource_group_name = azurerm_resource_group.lb.name
+  location            = azurerm_resource_group.lb_rg.location
+  resource_group_name = azurerm_resource_group.lb_rg.name
   sku                 = "Basic"
 }
