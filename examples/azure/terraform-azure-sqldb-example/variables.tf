@@ -27,7 +27,7 @@ variable location {
 variable sqlserver_admin_login {
     description = "The administrator login name for the sql server."
     type        = string
-    default     = "3cx1n1z5r079b"
+    default     = "AdminUser2314"
 }
 
 variable tags {
