@@ -50,7 +50,7 @@ func NewClientFactory() ClientFactory {
 }
 
 // GetVirtualMachinesClientE returns a configured compute client, setup for proper cloud environment use.
-func (factory multiEnvClientFactory) GetVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error) {
+func (factory *multiEnvClientFactory) GetVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -69,7 +69,7 @@ func (factory multiEnvClientFactory) GetVirtualMachinesClientE(subscriptionID st
 }
 
 // GetSubscriptionClientE returns a configured compute client, setup for proper cloud environment use.
-func (factory multiEnvClientFactory) GetSubscriptionClientE() (subscriptions.Client, error) {
+func (factory *multiEnvClientFactory) GetSubscriptionClientE() (subscriptions.Client, error) {
 	// Lookup environment URI
 	baseURI, err := factory.getEnvironmentBaseURI()
 	if err != nil {
@@ -82,7 +82,7 @@ func (factory multiEnvClientFactory) GetSubscriptionClientE() (subscriptions.Cli
 }
 
 // GetManagedClustersClientE returns a configured compute client, setup for proper cloud environment use.
-func (factory multiEnvClientFactory) GetManagedClustersClientE(subscriptionID string) (containerservice.ManagedClustersClient, error) {
+func (factory *multiEnvClientFactory) GetManagedClustersClientE(subscriptionID string) (containerservice.ManagedClustersClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -100,7 +100,7 @@ func (factory multiEnvClientFactory) GetManagedClustersClientE(subscriptionID st
 }
 
 // getDefaultEnvironmentName returns either a configured Azure environment name, or the public default
-func (factory multiEnvClientFactory) getDefaultEnvironmentName() string {
+func (factory *multiEnvClientFactory) getDefaultEnvironmentName() string {
 	envName, exists := os.LookupEnv(AzureEnvironmentEnvName)
 
 	if !exists || envName == "" {
@@ -111,7 +111,7 @@ func (factory multiEnvClientFactory) getDefaultEnvironmentName() string {
 }
 
 // getEnvironmentBaseUri returns the ARM management URI for the configured Azure environment.
-func (factory multiEnvClientFactory) getEnvironmentBaseURI() (string, error) {
+func (factory *multiEnvClientFactory) getEnvironmentBaseURI() (string, error) {
 	envName := factory.getDefaultEnvironmentName()
 	env, err := autorest.EnvironmentFromName(envName)
 	if err != nil {
@@ -121,7 +121,7 @@ func (factory multiEnvClientFactory) getEnvironmentBaseURI() (string, error) {
 }
 
 // getKeyVaultURISuffix returns the proper KeyVault URI suffix for the configured Azure environment.
-func (factory multiEnvClientFactory) getKeyVaultURISuffix() (string, error) {
+func (factory *multiEnvClientFactory) getKeyVaultURISuffix() (string, error) {
 	envName := factory.getDefaultEnvironmentName()
 	env, err := autorest.EnvironmentFromName(envName)
 	if err != nil {
@@ -131,7 +131,7 @@ func (factory multiEnvClientFactory) getKeyVaultURISuffix() (string, error) {
 }
 
 // getStorageURISuffix returns the proper storage URI suffix for the configured Azure environment
-func (factory multiEnvClientFactory) getStorageURISuffix() (string, error) {
+func (factory *multiEnvClientFactory) getStorageURISuffix() (string, error) {
 	envName := factory.getDefaultEnvironmentName()
 	env, err := autorest.EnvironmentFromName(envName)
 	if err != nil {
