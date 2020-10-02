@@ -30,8 +30,6 @@ func DiskExistsE(diskName string, resGroupName string, subscriptionID string) (b
 }
 
 // GetDiskType returns the Disk Storage Account Type of the Azure Managed Disk
-// This property also accessible from the VM client disk storage object but only works
-// when the VM is online, while this direct call to GetDiskType always works.
 // This function would fail the test if there is an error.
 func GetDiskType(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) compute.DiskStorageAccountTypes {
 	diskType, err := GetDiskTypeE(diskName, resGroupName, subscriptionID)
