@@ -77,6 +77,9 @@ func WithDefaultRetryableErrors(t *testing.T, originalOptions *Options) *Options
 		// See https://github.com/terraform-providers/terraform-provider-aws/issues/12449 for an example.
 		".*Provider produced inconsistent result after apply.*": "Provider eventual consistency error.",
 	}
+	if newOptions.RetryableTerraformErrors == nil {
+		newOptions.RetryableTerraformErrors = map[string]string{}
+	}
 	for k, v := range retryableTerraformErrors {
 		newOptions.RetryableTerraformErrors[k] = v
 	}
