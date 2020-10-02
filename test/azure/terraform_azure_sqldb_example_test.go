@@ -48,19 +48,15 @@ func TestTerraformAzureSQLDBExample(t *testing.T) {
 	expectedSQLDBStatus := "Online"
 
 	// website::tag::4:: Get the SQL server details and assert them against the terraform output
-	actualSQLServerID := azure.GetSQLServerID(t, expectedResourceGroupName, expectedSQLServerName, "")
-	actualSQLServerFullDomainName := azure.GetSQLServerFullDomainName(t, expectedResourceGroupName, expectedSQLServerName, "")
-	actualSQLServerState := azure.GetSQLServerState(t, expectedResourceGroupName, expectedSQLServerName, "")
+	actualSQLServer := azure.GetSQLServer(t, expectedResourceGroupName, expectedSQLServerName, "")
 
-	assert.Equal(t, expectedSQLServerID, actualSQLServerID)
-	assert.Equal(t, expectedSQLServerFullDomainName, actualSQLServerFullDomainName)
-	assert.Equal(t, actualSQLServerState, sql.ServerStateReady)
+	assert.Equal(t, expectedSQLServerID, *actualSQLServer.ID)
+	assert.Equal(t, expectedSQLServerFullDomainName, *actualSQLServer.FullyQualifiedDomainName)
+	assert.Equal(t, sql.ServerStateReady, actualSQLServer.State)
 
 	// website::tag::5:: Get the SQL server DB details and assert them against the terraform output
-	actualSQLDBID := azure.GetDatabaseID(t, expectedResourceGroupName, expectedSQLServerName, expectedSQLDBName, "")
-	actualSQLDBStatus := azure.GetDatabaseStatus(t, expectedResourceGroupName, expectedSQLServerName, expectedSQLDBName, "")
+	actualSQLDatabase := azure.GetSQLDatabase(t, expectedResourceGroupName, expectedSQLServerName, expectedSQLDBName, "")
 
-	assert.Equal(t, expectedSQLDBID, actualSQLDBID)
-	assert.Equal(t, expectedSQLDBStatus, actualSQLDBStatus)
-
+	assert.Equal(t, expectedSQLDBID, *actualSQLDatabase.ID)
+	assert.Equal(t, expectedSQLDBStatus, *actualSQLDatabase.Status)
 }

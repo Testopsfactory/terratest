@@ -31,82 +31,31 @@ func GetSQLServerClient(subscriptionID string) (*sql.ServersClient, error) {
 	return &sqlClient, nil
 }
 
-// GetSQLServerID is a helper function that gets the sql server ID
-func GetSQLServerID(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) string {
-	id, err := GetSQLServerIDE(t, subscriptionID, resGroupName, serverName)
+// GetSQLServer is a helper function that gets the sql server object.
+// This function would fail the test if there is an error.
+func GetSQLServer(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) *sql.Server {
+	sqlServer, err := GetSQLServerE(t, subscriptionID, resGroupName, serverName)
 	require.NoError(t, err)
 
-	return id
+	return sqlServer
 }
 
-// GetSQLServerIDE is a helper function that gets the sql server ID
-func GetSQLServerIDE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (string, error) {
+// GetSQLServerE is a helper function that gets the sql server object.
+func GetSQLServerE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (*sql.Server, error) {
 	// Create a SQl Server client
 	sqlClient, err := GetSQLServerClient(subscriptionID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	//Get the corresponding server client
 	sqlServer, err := sqlClient.Get(context.Background(), resGroupName, serverName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	//Return server ID
-	return *sqlServer.ID, nil
-}
-
-// GetSQLServerFullDomainName is a helper function that gets the sql server full domain name
-func GetSQLServerFullDomainName(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) string {
-	fullDomainName, err := GetSQLServerFullDomainNameE(t, subscriptionID, resGroupName, serverName)
-	require.NoError(t, err)
-
-	return fullDomainName
-}
-
-// GetSQLServerFullDomainNameE is a helper function that gets the sql server full domain name
-func GetSQLServerFullDomainNameE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (string, error) {
-	// Create a SQl Server client
-	sqlClient, err := GetSQLServerClient(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the corresponding server client
-	sqlServer, err := sqlClient.Get(context.Background(), resGroupName, serverName)
-	if err != nil {
-		return "", err
-	}
-
-	//Return server full domain name
-	return *sqlServer.FullyQualifiedDomainName, nil
-}
-
-// GetSQLServerState is a helper function that gets the sql server state
-func GetSQLServerState(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) sql.ServerState {
-	serverState, err := GetSQLServerStateE(t, subscriptionID, resGroupName, serverName)
-	require.NoError(t, err)
-
-	return serverState
-}
-
-// GetSQLServerStateE is a helper function that gets the sql server state
-func GetSQLServerStateE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (sql.ServerState, error) {
-	// Create a SQl Server client
-	sqlClient, err := GetSQLServerClient(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the corresponding server client
-	sqlServer, err := sqlClient.Get(context.Background(), resGroupName, serverName)
-	if err != nil {
-		return "", err
-	}
-
-	//Return server state
-	return sqlServer.State, nil
+	//Return sql server
+	return &sqlServer, nil
 }
 
 // GetDatabaseClient  is a helper function that will setup a sql DB client
@@ -158,54 +107,29 @@ func ListSQLServerDatabasesE(t testing.TestingT, resGroupName string, serverName
 	return sqlDbs.Value, nil
 }
 
-// GetDatabaseID is a helper function that gets the sql db id
-func GetDatabaseID(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
-	dbID, err := GetDatabaseIDE(t, subscriptionID, resGroupName, serverName, dbName)
+// GetSQLDatabase is a helper function that gets the sql db.
+// This function would fail the test if there is an error.
+func GetSQLDatabase(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) *sql.Database {
+	database, err := GetSQLDatabaseE(t, subscriptionID, resGroupName, serverName, dbName)
 	require.NoError(t, err)
 
-	return dbID
+	return database
 }
 
-// GetDatabaseIDE is a helper function that gets the sql db id
-func GetDatabaseIDE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
+// GetSQLDatabaseE is a helper function that gets the sql db.
+func GetSQLDatabaseE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (*sql.Database, error) {
 	// Create a SQl db client
 	sqlClient, err := GetDatabaseClient(subscriptionID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	//Get the corresponding DB client
 	sqlDb, err := sqlClient.Get(context.Background(), resGroupName, serverName, dbName, "")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	// Return DB ID
-	return *sqlDb.ID, nil
-}
-
-// GetDatabaseStatus is a helper function that gets the sql db state
-func GetDatabaseStatus(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
-	dbStatus, err := GetDatabaseStatusE(t, subscriptionID, resGroupName, serverName, dbName)
-	require.NoError(t, err)
-
-	return dbStatus
-}
-
-// GetDatabaseStatusE is a helper function that gets the sql db state
-func GetDatabaseStatusE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
-	// Create a SQl db client
-	sqlClient, err := GetDatabaseClient(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	//Get corresponding DB client
-	sqlDb, err := sqlClient.Get(context.Background(), resGroupName, serverName, dbName, "")
-	if err != nil {
-		return "", err
-	}
-
-	//Return DB status
-	return *sqlDb.Status, nil
+	// Return DB
+	return &sqlDb, nil
 }
