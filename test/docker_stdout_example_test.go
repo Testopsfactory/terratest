@@ -8,9 +8,10 @@ import (
 )
 
 func TestDockerComposeStdoutExample(t *testing.T) {
+	t.Parallel()
 	dockerComposeFile := "../examples/docker-compose-stdout-example/docker-compose.yml"
 
-	// Build the Docker image.
+	// Run the build step first so that the build output doesn't go to stdout during the compose step.
 	docker.RunDockerCompose(
 		t,
 		&docker.Options{},
@@ -19,7 +20,9 @@ func TestDockerComposeStdoutExample(t *testing.T) {
 		"build",
 	)
 
-	// Run the Docker image, read the text file from it, and make sure it contains the expected output.
+	// Run the Docker image, read the stdout from it, and make sure it contains the expected output.
+	// The script must be run using `run bash_script` rather than `up`, so that the echo output from the script
+	// is the only thing that outputs to stdout.
 	output := docker.RunDockerComposeAndGetStdOut(
 		t,
 		&docker.Options{},
