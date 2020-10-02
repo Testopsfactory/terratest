@@ -132,16 +132,16 @@ func GetMYSQLDBClient(subscriptionID string) (*mysql.DatabasesClient, error) {
 	return &mysqlDBClient, nil
 }
 
-//GetMYSQLDBStatus is a helper function that gets the database status
-func GetMYSQLDBStatus(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
-	dbStatus, err := GetMYSQLDBStatusE(t, subscriptionID, resGroupName, serverName, dbName)
+//GetMYSQLDBCharset is a helper function that gets the database charset
+func GetMYSQLDBCharset(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
+	dbCharset, err := GetMYSQLDBCharsetE(t, subscriptionID, resGroupName, serverName, dbName)
 	require.NoError(t, err)
 
-	return dbStatus
+	return dbCharset
 }
 
-//GetMYSQLDBStatusE is a helper function that gets the database status
-func GetMYSQLDBStatusE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
+//GetMYSQLDBCharsetE is a helper function that gets the database charset
+func GetMYSQLDBCharsetE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
 	// Create a mySQl db client
 	mysqldbClient, err := GetMYSQLDBClient(subscriptionID)
 	if err != nil {
@@ -154,8 +154,34 @@ func GetMYSQLDBStatusE(t testing.TestingT, subscriptionID string, resGroupName s
 		return "", err
 	}
 
-	//Return DB status
-	return mysqlDb.Status, nil
+	//Return DB charset
+	return *mysqlDb.DatabaseProperties.Charset, nil
+}
+
+//GetMYSQLDBCollation is a helper function that gets the database collation
+func GetMYSQLDBCollation(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
+	dbCollation, err := GetMYSQLDBCollationE(t, subscriptionID, resGroupName, serverName, dbName)
+	require.NoError(t, err)
+
+	return dbCollation
+}
+
+//GetMYSQLDBCollationE is a helper function that gets the database collation
+func GetMYSQLDBCollationE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
+	// Create a mySQl db client
+	mysqldbClient, err := GetMYSQLDBClient(subscriptionID)
+	if err != nil {
+		return "", err
+	}
+
+	// Get the corresponding db client
+	mysqlDb, err := mysqldbClient.Get(context.Background(), resGroupName, serverName, dbName)
+	if err != nil {
+		return "", err
+	}
+
+	//Return DB collation
+	return *mysqlDb.DatabaseProperties.Collation, nil
 }
 
 //ListMySQLDB is a helper function that gets all databases per server

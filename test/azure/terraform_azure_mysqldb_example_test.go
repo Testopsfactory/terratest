@@ -1,3 +1,5 @@
+// +build azure
+
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
@@ -21,6 +23,8 @@ func TestTerraformAzureMySQLDBExample(t *testing.T) {
 	uniquePostfix := strings.ToLower(random.UniqueId())
 	expectedServerSkuName := "GP_Gen5_2"
 	expectedServerStoragemMb := "5120"
+	expectedDatabaseCharSet := "utf8"
+	expectedDatabaseCollation := "utf8_unicode_ci"
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
@@ -30,6 +34,7 @@ func TestTerraformAzureMySQLDBExample(t *testing.T) {
 			"postfix":                uniquePostfix,
 			"mysqlserver_sku_name":   expectedServerSkuName,
 			"mysqlserver_storage_mb": expectedServerStoragemMb,
+			"mysqldb_charset":        expectedDatabaseCharSet,
 		},
 	}
 
@@ -44,11 +49,11 @@ func TestTerraformAzureMySQLDBExample(t *testing.T) {
 	expectedMYSQLServerName := terraform.Output(t, terraformOptions, "mysql_server_name")
 
 	expectedMYSQLDBName := terraform.Output(t, terraformOptions, "mysql_database_name")
-	expectedMySQLDbStatus := "Online"
 
 	// website::tag::4:: Get mySQL server details and assert them against the terraform output
 	actualMYSQLServerSkuName := azure.GetMYSQLServerSkuName(t, expectedResourceGroupName, expectedMYSQLServerName, "")
 	actualServerStoragemMb := azure.GetMYSQLServerStorageMB(t, expectedResourceGroupName, expectedMYSQLServerName, "")
+
 	actualServerState := azure.GetMYSQLServerState(t, expectedResourceGroupName, expectedMYSQLServerName, "")
 
 	assert.Equal(t, expectedServerSkuName, actualMYSQLServerSkuName)
@@ -57,7 +62,9 @@ func TestTerraformAzureMySQLDBExample(t *testing.T) {
 	assert.Equal(t, mysql.ServerStateReady, actualServerState)
 
 	// website::tag::5:: Get  mySQL server DB details and assert them against the terraform output
-	actualMYSQLDbStatus := azure.GetMYSQLDBStatus(t, expectedResourceGroupName, expectedMYSQLServerName, expectedMYSQLDBName, "")
+	actualDatabaseCharSet := azure.GetMYSQLDBCharset(t, expectedResourceGroupName, expectedMYSQLServerName, expectedMYSQLDBName, "")
+	actualDatabaseCollation := azure.GetMYSQLDBCollation(t, expectedResourceGroupName, expectedMYSQLServerName, expectedMYSQLDBName, "")
 
-	assert.Equal(t, expectedMySQLDbStatus, actualMYSQLDbStatus)
+	assert.Equal(t, expectedDatabaseCharSet, actualDatabaseCharSet)
+	assert.Equal(t, expectedDatabaseCollation, actualDatabaseCollation)
 }

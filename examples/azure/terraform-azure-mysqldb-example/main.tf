@@ -62,6 +62,6 @@ resource "azurerm_mysql_database" "mysqldb" {
   name                = "mysqldb-${var.postfix}"
   resource_group_name = azurerm_resource_group.mysql.name
   server_name         = azurerm_mysql_server.mysqlserver.name
-  charset             = "utf8"
-  collation           = "utf8_unicode_ci"
+  charset             = var.mysqldb_charset
+  collation           = var.mysqldb_collation
 }
