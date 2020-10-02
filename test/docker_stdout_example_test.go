@@ -25,7 +25,8 @@ func TestDockerComposeStdoutExample(t *testing.T) {
 		&docker.Options{},
 		"-f",
 		dockerComposeFile,
-		"up",
+		"run",
+		"bash_script",
 	)
 
 	assert.Contains(t, output, "stdout: message")
