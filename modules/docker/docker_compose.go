@@ -25,7 +25,8 @@ func RunDockerCompose(t testing.TestingT, options *Options, args ...string) stri
 
 // RunDockerComposeAndGetStdout runs docker-compose with the given arguments and options and returns only stdout.
 func RunDockerComposeAndGetStdOut(t testing.TestingT, options *Options, args ...string) string {
-	out, _ := runDockerComposeE(t, true, options, args...)
+	out, err := runDockerComposeE(t, true, options, args...)
+	require.NoError(t, err)
 	return out
 }
 
