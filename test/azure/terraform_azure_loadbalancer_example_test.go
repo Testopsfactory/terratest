@@ -19,7 +19,7 @@ func TestTerraformAzureLoadBalancerExample(t *testing.T) {
 
 	// subscriptionID is overridden by the environment variable "ARM_SUBSCRIPTION_ID"
 	subscriptionID := ""
-	uniquePostfix := random.UniqueId() // "resource"
+	uniquePostfix := random.UniqueId()
 	privateIPForLB02 := "10.200.2.10"
 
 	// Configure Terraform setting up a path to Terraform code.
