@@ -1,5 +1,3 @@
-// +build azure
-
 // NOTE: We use build tags to differentiate azure testing because we currently do not have azure access setup for
 // CircleCI.
 
@@ -51,20 +49,16 @@ func TestTerraformAzureMySQLDBExample(t *testing.T) {
 	expectedMYSQLDBName := terraform.Output(t, terraformOptions, "mysql_database_name")
 
 	// website::tag::4:: Get mySQL server details and assert them against the terraform output
-	actualMYSQLServerSkuName := azure.GetMYSQLServerSkuName(t, expectedResourceGroupName, expectedMYSQLServerName, "")
-	actualServerStoragemMb := azure.GetMYSQLServerStorageMB(t, expectedResourceGroupName, expectedMYSQLServerName, "")
+	actualMYSQLServer := azure.GetMYSQLServer(t, expectedResourceGroupName, expectedMYSQLServerName, "")
 
-	actualServerState := azure.GetMYSQLServerState(t, expectedResourceGroupName, expectedMYSQLServerName, "")
+	assert.Equal(t, expectedServerSkuName, *actualMYSQLServer.Sku.Name)
+	assert.Equal(t, expectedServerStoragemMb, fmt.Sprint(*actualMYSQLServer.ServerProperties.StorageProfile.StorageMB))
 
-	assert.Equal(t, expectedServerSkuName, actualMYSQLServerSkuName)
-	assert.Equal(t, expectedServerStoragemMb, fmt.Sprint(actualServerStoragemMb))
-
-	assert.Equal(t, mysql.ServerStateReady, actualServerState)
+	assert.Equal(t, mysql.ServerStateReady, actualMYSQLServer.ServerProperties.UserVisibleState)
 
 	// website::tag::5:: Get  mySQL server DB details and assert them against the terraform output
-	actualDatabaseCharSet := azure.GetMYSQLDBCharset(t, expectedResourceGroupName, expectedMYSQLServerName, expectedMYSQLDBName, "")
-	actualDatabaseCollation := azure.GetMYSQLDBCollation(t, expectedResourceGroupName, expectedMYSQLServerName, expectedMYSQLDBName, "")
+	actualDatabase := azure.GetMYSQLDB(t, expectedResourceGroupName, expectedMYSQLServerName, expectedMYSQLDBName, "")
 
-	assert.Equal(t, expectedDatabaseCharSet, actualDatabaseCharSet)
-	assert.Equal(t, expectedDatabaseCollation, actualDatabaseCollation)
+	assert.Equal(t, expectedDatabaseCharSet, *actualDatabase.DatabaseProperties.Charset)
+	assert.Equal(t, expectedDatabaseCollation, *actualDatabase.DatabaseProperties.Collation)
 }

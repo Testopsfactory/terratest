@@ -1,12 +1,13 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY AN AZURE MySQL Database
 # This is an example of how to deploy an Azure Mysql database.
+# See test/terraform_azure_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
 
-# ------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 # CONFIGURE OUR AZURE CONNECTION
-# ------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 
 provider "azurerm" {
   version = "~>2.29.0"
@@ -15,10 +16,9 @@ provider "azurerm" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A RESOURCE GROUP
-# See test/terraform_azure_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_resource_group" "mysql" {
+resource "azurerm_resource_group" "mysql_rg" {
   name     = "terratest-mysql-${var.postfix}"
   location = var.location
 }
@@ -35,8 +35,8 @@ resource "random_password" "password" {
 
 resource "azurerm_mysql_server" "mysqlserver" {
   name                = "mysqlserver-${var.postfix}"
-  location            = azurerm_resource_group.mysql.location
-  resource_group_name = azurerm_resource_group.mysql.name
+  location            = azurerm_resource_group.mysql_rg.location
+  resource_group_name = azurerm_resource_group.mysql_rg.name
 
   administrator_login          = var.mysqlserver_admin_login
   administrator_login_password = random_password.password.result
@@ -60,7 +60,7 @@ resource "azurerm_mysql_server" "mysqlserver" {
 
 resource "azurerm_mysql_database" "mysqldb" {
   name                = "mysqldb-${var.postfix}"
-  resource_group_name = azurerm_resource_group.mysql.name
+  resource_group_name = azurerm_resource_group.mysql_rg.name
   server_name         = azurerm_mysql_server.mysqlserver.name
   charset             = var.mysqldb_charset
   collation           = var.mysqldb_collation

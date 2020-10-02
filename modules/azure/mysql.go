@@ -31,82 +31,31 @@ func GetMYSQLServerClient(subscriptionID string) (*mysql.ServersClient, error) {
 	return &mysqlClient, nil
 }
 
-// GetMYSQLServerSkuName is a helper function that gets the server SKU Name
-func GetMYSQLServerSkuName(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) string {
-	skuName, err := GetMYSQLServerSkuNameE(t, subscriptionID, resGroupName, serverName)
+// GetMYSQLServer is a helper function that gets the server
+// This function would fail the test if there is an error.
+func GetMYSQLServer(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) *mysql.Server {
+	mysqlServer, err := GetMYSQLServerE(t, subscriptionID, resGroupName, serverName)
 	require.NoError(t, err)
 
-	return skuName
+	return mysqlServer
 }
 
-// GetMYSQLServerSkuNameE is a helper function that gets the server Sku Name
-func GetMYSQLServerSkuNameE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (string, error) {
+// GetMYSQLServerE is a helper function that gets the server
+func GetMYSQLServerE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (*mysql.Server, error) {
 	// Create a mySQl Server client
 	mysqlClient, err := GetMYSQLServerClient(subscriptionID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Get the corresponding server client
 	mysqlServer, err := mysqlClient.Get(context.Background(), resGroupName, serverName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	//Return server SKU name
-	return *mysqlServer.Sku.Name, nil
-}
-
-//GetMYSQLServerStorageMB  is a helper function that gets the server storage Mb
-func GetMYSQLServerStorageMB(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) int32 {
-	storageMb, err := GetMYSQLServerStorageMBE(t, subscriptionID, resGroupName, serverName)
-	require.NoError(t, err)
-
-	return storageMb
-}
-
-// GetMYSQLServerStorageMBE is a helper function that gets the server storage Mb
-func GetMYSQLServerStorageMBE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (int32, error) {
-	// Create a mySQl Server client
-	mysqlClient, err := GetMYSQLServerClient(subscriptionID)
-	if err != nil {
-		return -1, err
-	}
-
-	// Get the corresponding server client
-	mysqlServer, err := mysqlClient.Get(context.Background(), resGroupName, serverName)
-	if err != nil {
-		return -1, err
-	}
-
-	//Return server storage MB
-	return *mysqlServer.ServerProperties.StorageProfile.StorageMB, nil
-}
-
-//GetMYSQLServerState  is a helper function that gets the server state
-func GetMYSQLServerState(t testing.TestingT, resGroupName string, serverName string, subscriptionID string) mysql.ServerState {
-	serverState, err := GetMYSQLServerStateE(t, subscriptionID, resGroupName, serverName)
-	require.NoError(t, err)
-
-	return serverState
-}
-
-//GetMYSQLServerStateE is a helper function that gets the server state
-func GetMYSQLServerStateE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string) (mysql.ServerState, error) {
-	// Create a mySQl Server client
-	mysqlClient, err := GetMYSQLServerClient(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the corresponding server client
-	mysqlServer, err := mysqlClient.Get(context.Background(), resGroupName, serverName)
-	if err != nil {
-		return "", err
-	}
-
-	//Return server state
-	return mysqlServer.ServerProperties.UserVisibleState, nil
+	//Return server
+	return &mysqlServer, nil
 }
 
 // GetMYSQLDBClient is a helper function that will setup a mysql DB client
@@ -132,56 +81,31 @@ func GetMYSQLDBClient(subscriptionID string) (*mysql.DatabasesClient, error) {
 	return &mysqlDBClient, nil
 }
 
-//GetMYSQLDBCharset is a helper function that gets the database charset
-func GetMYSQLDBCharset(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
-	dbCharset, err := GetMYSQLDBCharsetE(t, subscriptionID, resGroupName, serverName, dbName)
+//GetMYSQLDB is a helper function that gets the database
+// This function would fail the test if there is an error.
+func GetMYSQLDB(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) *mysql.Database {
+	database, err := GetMYSQLDBE(t, subscriptionID, resGroupName, serverName, dbName)
 	require.NoError(t, err)
 
-	return dbCharset
+	return database
 }
 
-//GetMYSQLDBCharsetE is a helper function that gets the database charset
-func GetMYSQLDBCharsetE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
+//GetMYSQLDBE is a helper function that gets the database.
+func GetMYSQLDBE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (*mysql.Database, error) {
 	// Create a mySQl db client
 	mysqldbClient, err := GetMYSQLDBClient(subscriptionID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Get the corresponding db client
 	mysqlDb, err := mysqldbClient.Get(context.Background(), resGroupName, serverName, dbName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	//Return DB charset
-	return *mysqlDb.DatabaseProperties.Charset, nil
-}
-
-//GetMYSQLDBCollation is a helper function that gets the database collation
-func GetMYSQLDBCollation(t testing.TestingT, resGroupName string, serverName string, dbName string, subscriptionID string) string {
-	dbCollation, err := GetMYSQLDBCollationE(t, subscriptionID, resGroupName, serverName, dbName)
-	require.NoError(t, err)
-
-	return dbCollation
-}
-
-//GetMYSQLDBCollationE is a helper function that gets the database collation
-func GetMYSQLDBCollationE(t testing.TestingT, subscriptionID string, resGroupName string, serverName string, dbName string) (string, error) {
-	// Create a mySQl db client
-	mysqldbClient, err := GetMYSQLDBClient(subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the corresponding db client
-	mysqlDb, err := mysqldbClient.Get(context.Background(), resGroupName, serverName, dbName)
-	if err != nil {
-		return "", err
-	}
-
-	//Return DB collation
-	return *mysqlDb.DatabaseProperties.Collation, nil
+	//Return DB
+	return &mysqlDb, nil
 }
 
 //ListMySQLDB is a helper function that gets all databases per server
