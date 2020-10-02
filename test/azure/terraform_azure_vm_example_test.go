@@ -78,7 +78,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 		actualVMSize := azure.GetVirtualMachineSize(t, virtualMachineName, resourceGroupName, subscriptionID)
 		assert.Equal(t, expectedVMSize, actualVMSize)
 
-		// Check the VM Size by reference alternate example.
+		// An alternate example for checking the VM size by reference.
 		// This strategy is beneficial when checking multiple properties by using one VM reference, avoiding
 		// multiple SDK calls.
 		vmRef := azure.GetVirtualMachine(t, virtualMachineName, resourceGroupName, subscriptionID)
@@ -106,7 +106,7 @@ func TestTerraformAzureVmExample(t *testing.T) {
 		// multiple SDK calls. The penalty for this approach is introducing direct references
 		// which need to be checked for nil for optional configurations.
 		vmsByRef := azure.GetVirtualMachinesForResourceGroup(t, resourceGroupName, subscriptionID)
-		assert.True(t, len(*vmsByRef) > 0)
+		assert.Greater(t, len(*vmsByRef) > 0)
 
 		// Check for the VM.
 		thisVM := (*vmsByRef)[virtualMachineName]
