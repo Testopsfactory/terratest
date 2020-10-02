@@ -8,7 +8,7 @@ how you can use Terratest to write automated tests for your Azure Terraform code
 Check out [test/azure/terraform_azure_resourcegroup_example_test.go](/test/azure/terraform_azure_resourcegroup_example_test.go) to see how you can write
 automated tests for this module.
 
-Note that the Resouce Group this module don't actually do anything; it just runs the resources for
+Note that the Resouce Group this module creates does not actually do anything; it just runs the resources for
 demonstration purposes.
 
 **WARNING**: This module and the automated tests for it deploy real resources into your Azure account which can cost you

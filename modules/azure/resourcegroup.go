@@ -9,6 +9,7 @@ import (
 )
 
 // ResourceGroupExists indicates whether a resource group exists within a subscription; otherwise false
+// This function would fail the test if there is an error.
 func ResourceGroupExists(t *testing.T, resourceGroupName string, subscriptionID string) bool {
 	result, err := ResourceGroupExistsE(resourceGroupName, subscriptionID)
 	require.NoError(t, err)
@@ -16,25 +17,32 @@ func ResourceGroupExists(t *testing.T, resourceGroupName string, subscriptionID 
 }
 
 // ResourceGroupExistsE indicates whether a resource group exists within a subscription
-// This function would fail the test if there is an error.
 func ResourceGroupExistsE(resourceGroupName, subscriptionID string) (bool, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
+		if ResourceNotFoundErrorExists(err) {
+			return false, nil
+		}
 		return false, err
 	}
 	client, err := GetResourceGroupClientE(subscriptionID)
 	if err != nil {
+		if ResourceNotFoundErrorExists(err) {
+			return false, nil
+		}
 		return false, err
 	}
 	rg, err := client.Get(context.Background(), resourceGroupName)
 	if err != nil {
+		if ResourceNotFoundErrorExists(err) {
+			return false, nil
+		}
 		return false, err
 	}
 	return (resourceGroupName == *rg.Name), nil
 }
 
 //GetResourceGroupClientE gets a resource group client in a subscription
-// This function would fail the test if there is an error.
 func GetResourceGroupClientE(subscriptionID string) (*resources.GroupsClient, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
