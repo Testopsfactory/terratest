@@ -20,23 +20,14 @@ func ResourceGroupExists(t *testing.T, resourceGroupName string, subscriptionID 
 func ResourceGroupExistsE(resourceGroupName, subscriptionID string) (bool, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
-		if ResourceNotFoundErrorExists(err) {
-			return false, nil
-		}
 		return false, err
 	}
 	client, err := GetResourceGroupClientE(subscriptionID)
 	if err != nil {
-		if ResourceNotFoundErrorExists(err) {
-			return false, nil
-		}
 		return false, err
 	}
 	rg, err := client.Get(context.Background(), resourceGroupName)
 	if err != nil {
-		if ResourceNotFoundErrorExists(err) {
-			return false, nil
-		}
 		return false, err
 	}
 	return (resourceGroupName == *rg.Name), nil
