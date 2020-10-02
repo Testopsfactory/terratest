@@ -40,7 +40,6 @@ resource "azurerm_virtual_network" "vnet" {
   location            = azurerm_resource_group.lb_rg.location
   resource_group_name = azurerm_resource_group.lb_rg.name
   address_space       = ["10.200.0.0/21"]
-  dns_servers         = ["10.200.0.5", "10.200.0.6"]
 }
 
 resource "azurerm_subnet" "subnet" {
