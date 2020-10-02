@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY A VIRTUAL MACHINE
+# DEPLOY AN ADVANCED AZURE VIRTUAL MACHINE
 # This is an advanced example of how to deploy an Azure Virtual Machine in an availability set, managed disk 
-# and Networking with a Public IP.
+# and networking with a public IP.
 # ---------------------------------------------------------------------------------------------------------------------
 # See test/azure/terraform_azure_vm_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ resource "azurerm_resource_group" "vm_rg" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY NETWORK RESOURCES
-# This network includes a public address for integration tests
+# This network includes a public address for integration test demonstration purposes
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_network" "vnet" {
@@ -122,6 +122,7 @@ resource "azurerm_virtual_machine" "vm_example" {
     admin_username = var.user_name
     admin_password = random_password.rand.result
   }
+
   os_profile_windows_config {
     provision_vm_agent = true
   }
