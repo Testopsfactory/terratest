@@ -13,8 +13,7 @@ import (
 
 /*
 The below tests are currently stubbed out, with the expectation that they will throw errors.
-If/when CRUD methods are introduced for Azure Virtual Machines, these tests can be extended
-(see AWS S3 tests for reference).
+If/when CRUD methods are introduced for Azure Virtual Machines, these tests can be extended.
 */
 
 func TestGetVirtualMachineE(t *testing.T) {
@@ -75,14 +74,14 @@ func TestGetVirtualMachineTagsE(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGetVirtualMachineSizeE(t *testing.T) {
+func TestGetSizeOfVirtualMachineE(t *testing.T) {
 	t.Parallel()
 
 	vmName := ""
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineSizeE(vmName, rgName, subID)
+	_, err := GetSizeOfVirtualMachineE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
