@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY A SIMPLE AZURE VIRTUAL MACHINE
-# This is a simple example of how to deploy an Azure Virtual Machine with the minimum network resources.
+# DEPLOY AN AZURE VIRTUAL MACHINE
+# This is an example of how to deploy an Azure Virtual Machine with the minimum network resources.
 # ---------------------------------------------------------------------------------------------------------------------
 # See test/azure/terraform_azure_example_test.go for how to write automated tests for this code.
 # ---------------------------------------------------------------------------------------------------------------------

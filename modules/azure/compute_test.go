@@ -123,38 +123,14 @@ func TestGetVirtualMachineAvailabilitySetIDE(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGetVirtualMachineStateE(t *testing.T) {
+func TestGetVirtualMachineOSDiskNameE(t *testing.T) {
 	t.Parallel()
 
 	vmName := ""
 	rgName := ""
 	subID := ""
 
-	_, err := GetVirtualMachineStateE(vmName, rgName, subID)
-
-	require.Error(t, err)
-}
-
-func TestGetVirtualMachineOsDiskNameE(t *testing.T) {
-	t.Parallel()
-
-	vmName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := GetVirtualMachineOsDiskNameE(vmName, rgName, subID)
-
-	require.Error(t, err)
-}
-
-func TestGetVirtualMachineManagedDiskCountE(t *testing.T) {
-	t.Parallel()
-
-	vmName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := GetVirtualMachineManagedDiskCountE(vmName, rgName, subID)
+	_, err := GetVirtualMachineOSDiskNameE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -167,18 +143,6 @@ func TestGetVirtualMachineManagedDisksE(t *testing.T) {
 	subID := ""
 
 	_, err := GetVirtualMachineManagedDisksE(vmName, rgName, subID)
-
-	require.Error(t, err)
-}
-
-func TestGetVirtualMachineNicCountE(t *testing.T) {
-	t.Parallel()
-
-	vmName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := GetVirtualMachineNicCountE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }

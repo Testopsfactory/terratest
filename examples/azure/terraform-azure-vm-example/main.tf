@@ -61,6 +61,7 @@ resource "azurerm_public_ip" "pip" {
   idle_timeout_in_minutes = "4"
 }
 
+# Public and Private IPs assigned to one NIC for test demonstration purposes
 resource "azurerm_network_interface" "nic" {
   name                = "nic-${var.postfix}"
   location            = azurerm_resource_group.vm_rg.location

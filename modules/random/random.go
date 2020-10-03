@@ -24,7 +24,7 @@ func RandomString(elements []string) string {
 	return elements[index]
 }
 
-const base62chars = "0123456789012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const base62chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const uniqueIDLength = 6 // Should be good for 62^6 = 56+ billion combinations
 
 // UniqueId returns a unique (ish) id we can attach to resources and tfstate files so they don't conflict with each other
