@@ -48,39 +48,34 @@ func TestTerraformAzureVmExample(t *testing.T) {
 	testNetworkOfVM(t, terraformOptions, subscriptionID)
 }
 
+// These 3 tests check for the same property but illustrate different testing strategies for
+// retriving the data. The first strategy is used in the other tests of this module while
+// the other two can be extended by the user as needed.
 func testStrategiesForVMs(t *testing.T, terraformOptions *terraform.Options, subscriptionID string) {
-	// These 3 tests check for the same property but illustrate different testing strategies for
-	// retriving this data. The first strategy is used in the other tests of this module while
-	// the other two can be extended by the user as needed.
-
 	// Run `terraform output` to get the values of output variables.
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	virtualMachineName := terraform.Output(t, terraformOptions, "vm_name")
 	expectedVMSize := compute.VirtualMachineSizeTypes(terraform.Output(t, terraformOptions, "vm_size"))
 
-	// 1. Check the VM Size directly.
-	// This strategy gets one specific property of the VM per method.
+	// 1. Check the VM Size directly. This strategy gets one specific property of the VM per method.
 	actualVMSize := azure.GetSizeOfVirtualMachine(t, virtualMachineName, resourceGroupName, subscriptionID)
 	assert.Equal(t, expectedVMSize, actualVMSize)
 
-	// 2. Check the VM size by reference.
-	// This strategy is beneficial when checking multiple properties by using one VM reference, avoiding
-	// multiple SDK calls.
+	// 2. Check the VM size by reference. This strategy is beneficial when checking multiple properties
+	// by using one VM reference. Optional parameters have to be checked first to avoid nil panics.
 	vmByRef := azure.GetVirtualMachine(t, virtualMachineName, resourceGroupName, subscriptionID)
 	actualVMSize = vmByRef.HardwareProfile.VMSize
 	assert.Equal(t, expectedVMSize, actualVMSize)
 
-	// 3. Check the VM size by instance.
-	// This strategy is beneficial when checking multiple properties by using one VM instance and making
-	// calls against it with the added benefit of property checks and abstraction.
+	// 3. Check the VM size by instance. This strategy is beneficial when checking multiple properties
+	// by using one VM instance and making calls against it with the added benefit of property check abstraction.
 	vmInstance := azure.GetVirtualMachineInstance(t, virtualMachineName, resourceGroupName, subscriptionID)
 	actualVMSize = vmInstance.GetVirtualMachineInstanceSize()
 	assert.Equal(t, expectedVMSize, actualVMSize)
 }
 
+// These tests check for the multiple Virtual Machines in a Resource Group.
 func testMultipleVMs(t *testing.T, terraformOptions *terraform.Options, subscriptionID string) {
-	// These tests check for the multiple Virtual Machines in a Resource Group.
-
 	// Run `terraform output` to get the values of output variables.
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	expectedVMName := terraform.Output(t, terraformOptions, "vm_name")
@@ -109,12 +104,14 @@ func testMultipleVMs(t *testing.T, terraformOptions *terraform.Options, subscrip
 	assert.Nil(t, (vmsByRef)[fakeVM].VMID)
 }
 
+// These tests check information directly related to the specified Azure Virtual Machine.
 func testInformationOfVM(t *testing.T, terraformOptions *terraform.Options, subscriptionID string) {
-	// These tests check information directly related to the Virtual Machine resource.
-
 	// Run `terraform output` to get the values of output variables.
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	virtualMachineName := terraform.Output(t, terraformOptions, "vm_name")
+	expectedVmAdminUser := terraform.OutputList(t, terraformOptions, "vm_admin_username")
+	expectedImageSKU := terraform.OutputList(t, terraformOptions, "vm_image_sku")
+	expectedImageVersion := terraform.OutputList(t, terraformOptions, "vm_image_version")
 	expectedAvsName := terraform.Output(t, terraformOptions, "availability_set_name")
 
 	// Check if the Virtual Machine exists.
@@ -122,15 +119,12 @@ func testInformationOfVM(t *testing.T, terraformOptions *terraform.Options, subs
 
 	// Check the Admin User of the VM.
 	actualVmAdminUser := azure.GetVirtualMachineAdminUser(t, virtualMachineName, resourceGroupName, subscriptionID)
-	expectedVmAdminUser := "testadmin"
-	assert.Equal(t, expectedVmAdminUser, actualVmAdminUser)
+	assert.Equal(t, expectedVmAdminUser[0], actualVmAdminUser)
 
 	// Check the Storage Image properties of the VM.
 	actualImage := azure.GetVirtualMachineImage(t, virtualMachineName, resourceGroupName, subscriptionID)
-	expectedImageSKU := "2019-Datacenter-Core-smalldisk"
-	expectedImageVersion := "latest"
-	assert.Contains(t, expectedImageSKU, actualImage.SKU)
-	assert.Contains(t, expectedImageVersion, actualImage.Version)
+	assert.Contains(t, expectedImageSKU[0], actualImage.SKU)
+	assert.Contains(t, expectedImageVersion[0], actualImage.Version)
 
 	// Check the Availability Set of the VM.
 	// The AVS ID returned from the VM is always CAPS so ignoring case in the assertion.
@@ -138,13 +132,11 @@ func testInformationOfVM(t *testing.T, terraformOptions *terraform.Options, subs
 	assert.True(t, strings.EqualFold(expectedAvsName, actualexpectedAvsName))
 }
 
+// These tests check the OS Disk and Attached Managed Disks for the Azure Virtual Machine.
+// The following Terratest Azure module is utilized in addition to the compute module:
+// - disk
+// See the terraform_azure_disk_example_test.go for other related tests.
 func testDisksOfVM(t *testing.T, terraformOptions *terraform.Options, subscriptionID string) {
-	// These tests check the OS Disk and Attached Managed Disks for the Virtual Machine.
-	// The following Azure modules are utilized:
-	// - compute
-	// - disk
-	// See the terraform_azure_disk_example_test.go for other related tests.
-
 	// Run `terraform output` to get the values of output variables.
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	virtualMachineName := terraform.Output(t, terraformOptions, "vm_name")
@@ -169,16 +161,13 @@ func testDisksOfVM(t *testing.T, terraformOptions *terraform.Options, subscripti
 	assert.Equal(t, compute.DiskStorageAccountTypes(expectedDiskType), actualDiskType)
 }
 
+// These tests check the underlying Virtual Network, Network Interface and associated Public IP Address.
+// The following Terratest Azure modules are utilized in addition to the compute module:
+// - networkinterface
+// - publicaddress
+// - virtualnetwork
+// See the terraform_azure_network_example_test.go for other related tests.
 func testNetworkOfVM(t *testing.T, terraformOptions *terraform.Options, subscriptionID string) {
-	// These tests check the underlying virtual network and subnet as well as the network
-	// interface and associated public IP address resources attached to the VM.
-	// The following Azure modules are utilized:
-	// - compute
-	// - networkinterface
-	// - publicaddress
-	// - virtualnetwork
-	// See the terraform_azure_network_example_test.go for other related tests.
-
 	// Run `terraform output` to get the values of output variables.
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	virtualMachineName := terraform.Output(t, terraformOptions, "vm_name")
@@ -188,31 +177,31 @@ func testNetworkOfVM(t *testing.T, terraformOptions *terraform.Options, subscrip
 	expectedNicName := terraform.Output(t, terraformOptions, "network_interface_name")
 	expectedPrivateIPAddress := terraform.Output(t, terraformOptions, "private_ip")
 
-	t.Run("VirtualNetwork_Subnet", func(t *testing.T) {
-		// Check the Subnet exists in the Virtual Network.
-		actualVnetSubnets := azure.GetVirtualNetworkSubnets(t, expectedVNetName, resourceGroupName, subscriptionID)
-		assert.NotNil(t, actualVnetSubnets[expectedVNetName])
+	// VirtualNetwork and Subnet tests
+	// Check the Subnet exists in the Virtual Network.
+	actualVnetSubnets := azure.GetVirtualNetworkSubnets(t, expectedVNetName, resourceGroupName, subscriptionID)
+	assert.NotNil(t, actualVnetSubnets[expectedVNetName])
 
-		// Check the Private IP is in the Subnet Range.
-		actualVMNicIPInSubnet := azure.CheckSubnetContainsIP(t, expectedPrivateIPAddress, expectedSubnetName, expectedVNetName, resourceGroupName, subscriptionID)
-		assert.True(t, actualVMNicIPInSubnet)
-	})
+	// Check the Private IP is in the Subnet Range.
+	actualVMNicIPInSubnet := azure.CheckSubnetContainsIP(t, expectedPrivateIPAddress, expectedSubnetName, expectedVNetName, resourceGroupName, subscriptionID)
+	assert.True(t, actualVMNicIPInSubnet)
 
-	t.Run("NetworkInterfaceCard", func(t *testing.T) {
-		// Check the VM Network Interface exists in the list of all VM Network Interfaces.
-		actualNics := azure.GetVirtualMachineNics(t, virtualMachineName, resourceGroupName, subscriptionID)
-		assert.Contains(t, actualNics, expectedNicName)
+	// Network Interface Card tests
+	// Check the VM Network Interface exists in the list of all VM Network Interfaces.
+	actualNics := azure.GetVirtualMachineNics(t, virtualMachineName, resourceGroupName, subscriptionID)
+	assert.Contains(t, actualNics, expectedNicName)
 
-		// Check the Network Interface count of the VM.
-		expectedNICCount := 1
-		assert.Equal(t, expectedNICCount, len(actualNics))
+	// Check the Network Interface count of the VM.
+	expectedNICCount := 1
+	assert.Equal(t, expectedNICCount, len(actualNics))
 
-		// Check for the Private IP in the NICs IP list.
-		actualPrivateIPAddress := azure.GetNetworkInterfacePrivateIPs(t, expectedNicName, resourceGroupName, subscriptionID)
-		assert.Contains(t, actualPrivateIPAddress, expectedPrivateIPAddress)
+	// Check for the Private IP in the NICs IP list.
+	actualPrivateIPAddress := azure.GetNetworkInterfacePrivateIPs(t, expectedNicName, resourceGroupName, subscriptionID)
+	assert.Contains(t, actualPrivateIPAddress, expectedPrivateIPAddress)
 
-		// Check for the Public IP for the NIC. No expected value since it is assigned runtime.
-		actualPublicIP := azure.GetIPOfPublicIPAddressByName(t, expectedPublicAddressName, resourceGroupName, subscriptionID)
-		assert.NotNil(t, actualPublicIP)
-	})
+	// Public IP Address test
+	// Check for the Public IP for the NIC. No expected value since it is assigned runtime.
+	actualPublicIP := azure.GetIPOfPublicIPAddressByName(t, expectedPublicAddressName, resourceGroupName, subscriptionID)
+	assert.NotNil(t, actualPublicIP)
+
 }
