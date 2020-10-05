@@ -29,7 +29,7 @@ func ResourceGroupExistsE(resourceGroupName, subscriptionID string) (bool, error
 
 }
 
-// ResourceGroupE gets a resource group within a subscription
+// GetResourceGroupE gets a resource group within a subscription
 func GetResourceGroupE(resourceGroupName, subscriptionID string) (bool, error) {
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
