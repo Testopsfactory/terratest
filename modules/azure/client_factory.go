@@ -47,6 +47,9 @@ const (
 type ClientFactory interface {
 	// GetClientE returns a client instance based on the ClientType passed, or optionally an error.
 	GetClientE(clientType ClientType, subscriptionID string) (interface{}, error)
+
+	// GetClientBaseURIE returns the configured BaseURI for the given client, based on the passed ClientType.
+	GetClientBaseURIE(clientType ClientType, client interface{}) (string, error)
 }
 
 // multiEnvClientFactory is used to coordinate handing out properly configured Azure SDK clients
@@ -83,7 +86,23 @@ func (factory *multiEnvClientFactory) GetClientE(clientType ClientType, subscrip
 	}
 
 	// If nothing matched, this is an error
-	return nil, fmt.Errorf("Unknown client type %s", clientType)
+	return nil, fmt.Errorf("Unknown client type %s", string(clientType))
+}
+
+// GetClientBaseURIE returns the configured BaseURI for the given client, based on the passed ClientType.
+func (factory *multiEnvClientFactory) GetClientBaseURIE(clientType ClientType, client interface{}) (string, error) {
+	// Create correct client based on type passed
+	switch clientType {
+	case SubscriptionsClientType:
+		return client.(subscriptions.Client).BaseURI, nil
+	case VirtualMachinesClientType:
+		return client.(compute.VirtualMachinesClient).BaseURI, nil
+	case ManagedClustersClientType:
+		return client.(containerservice.ManagedClustersClient).BaseURI, nil
+	}
+
+	// If no matches, client was unknown
+	return "", fmt.Errorf("Unknown client type %s", string(clientType))
 }
 
 // getDefaultEnvironmentName returns either a configured Azure environment name, or the public default
