@@ -107,7 +107,7 @@ Modules authors will interact with the `client_factory` through the `NewClientFa
 
 	// Type cast and verify
 	vmClient, ok := client.(compute.VirtualMachinesClient)
-	if ok {
+	if !ok {
 		return nil, fmt.Errorf("Unable to convert client to type compute.VirtualMachinesClient")
 	}
 ```
