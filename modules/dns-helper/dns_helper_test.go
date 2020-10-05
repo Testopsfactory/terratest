@@ -95,7 +95,7 @@ func TestErrorLocalDNSLookupAuthoritative(t *testing.T) {
 	defer shutDownServers(t, s1, s2)
 	dnsQuery := DNSQuery{"A", "txt." + testDomain}
 	_, err := DNSLookupAuthoritativeE(t, dnsQuery, []string{s1.Address(), s2.Address()})
-	if _, ok := err.(*NotFoundAuthoritativeError); !ok {
+	if _, ok := err.(*NotFoundError); !ok {
 		t.Errorf("unexpected error, got %q", err)
 	}
 }

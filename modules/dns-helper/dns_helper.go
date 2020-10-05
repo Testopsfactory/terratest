@@ -88,8 +88,8 @@ func DNSLookupAuthoritative(t testing.TestingT, query DNSQuery, resolvers []stri
 
 // DNSLookupAuthoritativeE gets authoritative answers for the specified record and type.
 // If resolvers are defined, uses them instead of the default system ones to find the authoritative nameservers.
-// Returns NotFoundAuthoritativeError when no answer found in any authoritative nameserver.
-// Returns any underlying error other than NotFoundError from individual lookups.
+// Returns NotFoundError when no answer found in any authoritative nameserver.
+// Returns any underlying error from individual lookups.
 func DNSLookupAuthoritativeE(t testing.TestingT, query DNSQuery, resolvers []string) (DNSAnswers, error) {
 	nameservers, err := DNSFindNameserversE(t, query.Name, resolvers)
 
@@ -97,17 +97,7 @@ func DNSLookupAuthoritativeE(t testing.TestingT, query DNSQuery, resolvers []str
 		return nil, err
 	}
 
-	res, err := DNSLookupE(t, query, nameservers)
-
-	if err != nil {
-		if _, ok := err.(*NotFoundError); !ok {
-			return nil, err
-		}
-		err = &NotFoundAuthoritativeError{query, nameservers}
-		return nil, err
-	}
-
-	return res, nil
+	return DNSLookupE(t, query, nameservers)
 }
 
 // DNSLookupAuthoritativeWithRetry repeatedly gets authoritative answers for the specified record and type

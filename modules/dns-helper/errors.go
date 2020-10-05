@@ -28,16 +28,6 @@ func (err NotFoundError) Error() string {
 	return fmt.Sprintf("No %s record found for %s querying nameserver %s", err.Query.Type, err.Query.Name, err.Nameserver)
 }
 
-// NotFoundAuthoritativeError is an error that occurs if no authoritative answer found
-type NotFoundAuthoritativeError struct {
-	Query       DNSQuery
-	Nameservers []string
-}
-
-func (err NotFoundAuthoritativeError) Error() string {
-	return fmt.Sprintf("No %s record found for %s in any authoritative nameservers %s", err.Query.Type, err.Query.Name, err.Nameservers)
-}
-
 // InconsistentAuthoritativeError is an error that occurs if an authoritative answer is different from another
 type InconsistentAuthoritativeError struct {
 	Query           DNSQuery
