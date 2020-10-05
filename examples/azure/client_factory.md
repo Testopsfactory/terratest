@@ -98,16 +98,36 @@ Note that when using the "AzureStackCloud" setting, you must also set the `AZURE
 Modules authors will interact with the `client_factory` through the `NewClientFactory` method on the `azure` package as shown below:
 
 ```golang
-	// Create a VM client
+    // Get a new factory instance and get requested client
 	factory := NewClientFactory()
-	vmClient, err := factory.GetVirtualMachinesClientE(subscriptionID)
+	client, err := factory.GetClientE(VirtualMachinesClientType, subscriptionID)
 	if err != nil {
 		return nil, err
-    }
+	}
+
+	// Type cast and verify
+	vmClient, ok := client.(compute.VirtualMachinesClient)
+	if ok {
+		return nil, fmt.Errorf("Unable to convert client to type compute.VirtualMachinesClient")
+	}
 ```
 
 The `ClientFactory` interface currently exposes the following methods - these will be built out more as more modules are developed and integrated:
 
-* `GetVirtualMachinesClientE(subscriptionID string)`: returns a configured compute client, setup for proper cloud environment use
-* `GetSubscriptionClientE()`: returns a configured compute client, setup for proper cloud environment use
-* `GetManagedClustersClientE(subscriptionID string)`: returns a configured compute client, setup for proper cloud environment use.
+* `GetClientE(clientType ClientType, subscriptionID string)`: returns a client instance based on the ClientType passed, along with any error.
+* `GetClientBaseURIE(clientType ClientType, client interface{})`: returns the configured BaseURI for the given client, along with any error.
+
+For the `ClientType`, these are specified as follows and should be passed to the above methods:
+
+```golang
+const (
+	// SubscriptionsClientType represents a SubscriptionClient
+	SubscriptionsClientType ClientType = iota
+
+	// VirtualMachinesClientType represents a VirtualMachinesClient
+	VirtualMachinesClientType
+
+	// ManagedClustersClientType represents a ManagedClustersClient
+	ManagedClustersClientType
+)
+```
