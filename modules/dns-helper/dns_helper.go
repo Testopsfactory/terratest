@@ -26,9 +26,6 @@ func DNSFindNameservers(t testing.TestingT, fqdn string, resolvers []string) []s
 // DNSFindNameserversE tries to find the NS record for the given FQDN, iterating down the domain hierarchy
 // until it founds the NS records and returns it. Returns the last error if the apex domain is reached with no result.
 func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([]string, error) {
-	var res []string
-	var err error
-	var domain string
 	var lookupFunc func(domain string) ([]string, error)
 
 	if resolvers == nil {
@@ -55,9 +52,10 @@ func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([
 
 	parts := strings.Split(fqdn, ".")
 
+	var domain string
 	for i := range parts[:len(parts)-1] {
 		domain = strings.Join(parts[i:], ".")
-		res, err = lookupFunc(domain)
+		res, err := lookupFunc(domain)
 
 		if len(res) > 0 {
 			var nameservers []string
@@ -75,7 +73,7 @@ func DNSFindNameserversE(t testing.TestingT, fqdn string, resolvers []string) ([
 		}
 	}
 
-	err = &NSNotFoundError{fqdn, domain}
+	err := &NSNotFoundError{fqdn, domain}
 	return nil, err
 }
 
@@ -298,14 +296,13 @@ func DNSLookup(t testing.TestingT, query DNSQuery, resolvers []string) DNSAnswer
 // Returns any underlying error.
 // Supported record types: A, AAAA, CNAME, MX, NS, TXT
 func DNSLookupE(t testing.TestingT, query DNSQuery, resolvers []string) (DNSAnswers, error) {
-	var dnsAnswers DNSAnswers
-	var err error
-
 	if len(resolvers) == 0 {
 		err := &NoResolversError{}
 		return nil, err
 	}
 
+	var dnsAnswers DNSAnswers
+	var err error
 	for _, resolver := range resolvers {
 		dnsAnswers, err = dnsLookup(t, query, resolver)
 
