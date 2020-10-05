@@ -70,7 +70,7 @@ func (factory *multiEnvClientFactory) GetClientE(clientType ClientType, subscrip
 	}
 
 	// Lookup environment URI
-	baseURI, err := factory.getEnvironmentBaseURI()
+	baseURI, err := factory.getEnvironmentBaseURIE()
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +116,8 @@ func (factory *multiEnvClientFactory) getDefaultEnvironmentName() string {
 	return envName
 }
 
-// getEnvironmentBaseUri returns the ARM management URI for the configured Azure environment.
-func (factory *multiEnvClientFactory) getEnvironmentBaseURI() (string, error) {
+// getEnvironmentBaseUriE returns the ARM management URI for the configured Azure environment.
+func (factory *multiEnvClientFactory) getEnvironmentBaseURIE() (string, error) {
 	envName := factory.getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
@@ -126,8 +126,8 @@ func (factory *multiEnvClientFactory) getEnvironmentBaseURI() (string, error) {
 	return env.ResourceManagerEndpoint, nil
 }
 
-// getKeyVaultURISuffix returns the proper KeyVault URI suffix for the configured Azure environment.
-func (factory *multiEnvClientFactory) getKeyVaultURISuffix() (string, error) {
+// getKeyVaultURISuffixE returns the proper KeyVault URI suffix for the configured Azure environment.
+func (factory *multiEnvClientFactory) getKeyVaultURISuffixE() (string, error) {
 	envName := factory.getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
@@ -136,8 +136,8 @@ func (factory *multiEnvClientFactory) getKeyVaultURISuffix() (string, error) {
 	return env.KeyVaultDNSSuffix, nil
 }
 
-// getStorageURISuffix returns the proper storage URI suffix for the configured Azure environment
-func (factory *multiEnvClientFactory) getStorageURISuffix() (string, error) {
+// getStorageURISuffixE returns the proper storage URI suffix for the configured Azure environment
+func (factory *multiEnvClientFactory) getStorageURISuffixE() (string, error) {
 	envName := factory.getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
