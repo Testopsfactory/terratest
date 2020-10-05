@@ -43,7 +43,7 @@ func GetResourceGroupE(resourceGroupName, subscriptionID string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return true, nil
+	return (resourceGroupName == *rg.Name), nil
 }
 
 //GetResourceGroupClientE gets a resource group client in a subscription
