@@ -15,23 +15,29 @@ var testDomain = "gruntwork.io"
 // DNSData type
 type DNSData map[DNSQuery][]DNSAnswer
 
-func setupTestDNSServers() (ns1, ns2 string, dnsData1, dnsData2 *DNSData) {
-	ns1, mux1 := runTestDNSServer("0")
-	ns2, mux2 := runTestDNSServer("0")
+func setupTestDNSServers() (s1, s2 *dns.Server, ns1, ns2 string, dnsData1, dnsData2 *DNSData) {
+	s1 = runTestDNSServer("0")
+	s2 = runTestDNSServer("0")
+
+	ns1 = s1.PacketConn.LocalAddr().String()
+	ns2 = s2.PacketConn.LocalAddr().String()
 
 	q := DNSQuery{"NS", testDomain}
 	dnsData1 = &DNSData{q: DNSAnswers{{"NS", ns1}, {"NS", ns2}}}
 	dnsData2 = &DNSData{q: DNSAnswers{{"NS", ns1}, {"NS", ns2}}}
 
-	mux1.HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { stdDNSHandler(w, r, dnsData1, false) })
-	mux2.HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { stdDNSHandler(w, r, dnsData2, true) })
+	s1.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { stdDNSHandler(w, r, dnsData1, false) })
+	s2.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { stdDNSHandler(w, r, dnsData2, true) })
 
-	return
+	return s1, s2, ns1, ns2, dnsData1, dnsData2
 }
 
-func setupTestDNSServersRetry() (ns1, ns2 string, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 *DNSData) {
-	ns1, mux1 := runTestDNSServer("0")
-	ns2, mux2 := runTestDNSServer("0")
+func setupTestDNSServersRetry() (s1, s2 *dns.Server, ns1, ns2 string, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 *DNSData) {
+	s1 = runTestDNSServer("0")
+	s2 = runTestDNSServer("0")
+
+	ns1 = s1.PacketConn.LocalAddr().String()
+	ns2 = s2.PacketConn.LocalAddr().String()
 
 	q := DNSQuery{"NS", testDomain}
 	dnsData1 = &DNSData{q: DNSAnswers{{"NS", ns1}, {"NS", ns2}}}
@@ -39,13 +45,13 @@ func setupTestDNSServersRetry() (ns1, ns2 string, dnsData1, dnsData2, dnsDataRet
 	dnsDataRetry1 = &DNSData{q: DNSAnswers{{"NS", ns1}, {"NS", ns2}}}
 	dnsDataRetry2 = &DNSData{q: DNSAnswers{{"NS", ns1}, {"NS", ns2}}}
 
-	mux1.HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { retryDNSHandler(w, r, dnsData1, dnsDataRetry1, false) })
-	mux2.HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { retryDNSHandler(w, r, dnsData2, dnsDataRetry2, true) })
+	s1.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { retryDNSHandler(w, r, dnsData1, dnsDataRetry1, false) })
+	s2.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) { retryDNSHandler(w, r, dnsData2, dnsDataRetry2, true) })
 
-	return
+	return s1, s2, ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2
 }
 
-func runTestDNSServer(port string) (string, *dns.ServeMux) {
+func runTestDNSServer(port string) *dns.Server {
 	listener, err := net.ListenPacket("udp", "127.0.0.1:"+port)
 
 	if err != nil {
@@ -56,11 +62,12 @@ func runTestDNSServer(port string) (string, *dns.ServeMux) {
 	server := &dns.Server{PacketConn: listener, Net: "udp", Handler: mux}
 
 	go func() {
-		log.Fatal(server.ActivateAndServe())
-		defer server.Shutdown()
+		if err := server.ActivateAndServe(); err != nil {
+			log.Printf("Error in local DNS server: %s", err)
+		}
 	}()
 
-	return listener.LocalAddr().String(), mux
+	return server
 }
 
 func doDNSAnswer(w dns.ResponseWriter, r *dns.Msg, dnsData *DNSData, invertAnswers bool) {

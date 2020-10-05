@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/miekg/dns"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -77,7 +79,8 @@ func TestOkTerratestDNSLookupAuthoritative(t *testing.T) {
 
 func TestOkLocalDNSLookupAuthoritative(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2 := setupTestDNSServers()
+	s1, s2, ns1, ns2, dnsData1, dnsData2 := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsData1 = dnsData2
 	for dnsQuery, expected := range testDNSData {
 		(*dnsData1)[dnsQuery] = expected
@@ -89,7 +92,8 @@ func TestOkLocalDNSLookupAuthoritative(t *testing.T) {
 
 func TestErrorLocalDNSLookupAuthoritative(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, _, _ := setupTestDNSServers()
+	s1, s2, ns1, ns2, _, _ := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "txt." + testDomain}
 	_, err := DNSLookupAuthoritativeE(t, dnsQuery, []string{ns1, ns2})
 	if _, ok := err.(*NotFoundAuthoritativeError); !ok {
@@ -99,7 +103,8 @@ func TestErrorLocalDNSLookupAuthoritative(t *testing.T) {
 
 func TestOkLocalDNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2 := setupTestDNSServers()
+	s1, s2, ns1, ns2, dnsData1, dnsData2 := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	(*dnsData1) = (*dnsData2)
 	for dnsQuery, expected := range testDNSData {
 		(*dnsData1)[dnsQuery] = expected
@@ -111,7 +116,8 @@ func TestOkLocalDNSLookupAuthoritativeAll(t *testing.T) {
 
 func TestError1DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, _, _ := setupTestDNSServers()
+	s1, s2, ns1, ns2, _, _ := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "txt." + testDomain}
 	_, err := DNSLookupAuthoritativeAllE(t, dnsQuery, []string{ns1, ns2})
 	if _, ok := err.(*NotFoundError); !ok {
@@ -121,7 +127,8 @@ func TestError1DNSLookupAuthoritativeAll(t *testing.T) {
 
 func TestError2DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, _ := setupTestDNSServers()
+	s1, s2, ns1, ns2, dnsData1, _ := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	(*dnsData1)[dnsQuery] = DNSAnswers{{"A", "1.1.1.1"}}
 	_, err := DNSLookupAuthoritativeAllE(t, dnsQuery, []string{ns1, ns2})
@@ -132,7 +139,8 @@ func TestError2DNSLookupAuthoritativeAll(t *testing.T) {
 
 func TestError3DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2 := setupTestDNSServers()
+	s1, s2, ns1, ns2, dnsData1, dnsData2 := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	(*dnsData1)[dnsQuery] = DNSAnswers{{"A", "1.1.1.1"}}
 	(*dnsData2)[dnsQuery] = DNSAnswers{{"A", "2.2.2.2"}}
@@ -144,7 +152,8 @@ func TestError3DNSLookupAuthoritativeAll(t *testing.T) {
 
 func TestError4DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, _, _ := setupTestDNSServers()
+	s1, s2, ns1, ns2, _, _ := setupTestDNSServers()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "this.domain.doesnt.exist"}
 	_, err := DNSLookupAuthoritativeAllE(t, dnsQuery, []string{ns1, ns2})
 	if _, ok := err.(*NSNotFoundError); !ok {
@@ -155,7 +164,8 @@ func TestError4DNSLookupAuthoritativeAll(t *testing.T) {
 // Retry until any authoritative nameserver gives an answer
 func TestOkDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, _, _, dnsDataRetry1, _ := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, _, _, dnsDataRetry1, _ := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsDataRetry1)[dnsQuery] = expectedRes
@@ -167,7 +177,8 @@ func TestOkDNSLookupAuthoritativeWithRetry(t *testing.T) {
 // Retry will fail as the record will never exist
 func TestErrorDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, _, _, _, _ := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, _, _, _, _ := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "txt." + testDomain}
 	_, err := DNSLookupAuthoritativeWithRetryE(t, dnsQuery, []string{ns1, ns2}, 5, time.Second)
 	require.Error(t, err)
@@ -179,7 +190,8 @@ func TestErrorDNSLookupAuthoritativeWithRetry(t *testing.T) {
 // Retry until all authoritative nameservers give the same answers
 func TestOkDNSLookupAuthoritativeAllWithRetryNotfound(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, _, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, _, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsData1)[dnsQuery] = expectedRes
@@ -193,7 +205,8 @@ func TestOkDNSLookupAuthoritativeAllWithRetryNotfound(t *testing.T) {
 // Retry until all authoritative nameservers give the same answers
 func TestOkDNSLookupAuthoritativeAllWithRetryInconsistent(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsData1)[dnsQuery] = expectedRes
@@ -208,7 +221,8 @@ func TestOkDNSLookupAuthoritativeAllWithRetryInconsistent(t *testing.T) {
 // Retry will fail as one authoritative nameserver will always give an extra answer
 func TestErrorDNSLookupAuthoritativeAllWithRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, _, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, _, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	(*dnsData1)[dnsQuery] = DNSAnswers{{"A", "2.2.2.2"}}
 	(*dnsDataRetry1)[dnsQuery] = DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
@@ -223,7 +237,8 @@ func TestErrorDNSLookupAuthoritativeAllWithRetry(t *testing.T) {
 // Validate all authoritative nameservers give the expected answers
 func TestOkDNSLookupAuthoritativeAllWithValidation(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2, _, _ := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, dnsData2, _, _ := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsData1)[dnsQuery] = expectedRes
@@ -235,7 +250,8 @@ func TestOkDNSLookupAuthoritativeAllWithValidation(t *testing.T) {
 // Retry until all authoritative nameservers give the expected answers
 func TestOkDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, _, _, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, _, _, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsDataRetry1)[dnsQuery] = expectedRes
@@ -247,7 +263,8 @@ func TestOkDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 // Retry until all authoritative nameservers give the expected answers
 func TestOk2DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsData1)[dnsQuery] = DNSAnswers{{"A", "2.2.2.2"}}
@@ -261,7 +278,8 @@ func TestOk2DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 // Retry until all authoritative nameservers give the expected answers
 func TestOk3DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsData1)[dnsQuery] = expectedRes
@@ -275,7 +293,8 @@ func TestOk3DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 // Retry will fail as one authoritative nameserver will never give the expected answers
 func TestErrorDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
-	ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	s1, s2, ns1, ns2, dnsData1, dnsData2, dnsDataRetry1, dnsDataRetry2 := setupTestDNSServersRetry()
+	defer func() { shutDownServer(t, s1); shutDownServer(t, s2) }()
 	dnsQuery := DNSQuery{"A", "a." + testDomain}
 	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
 	(*dnsData1)[dnsQuery] = expectedRes
@@ -286,4 +305,9 @@ func TestErrorDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	if _, ok := err.(*MaxRetriesExceeded); !ok {
 		t.Errorf("unexpected error, got %q", err)
 	}
+}
+
+func shutDownServer(t *testing.T, s *dns.Server) {
+	err := s.Shutdown()
+	assert.NoError(t, err)
 }
