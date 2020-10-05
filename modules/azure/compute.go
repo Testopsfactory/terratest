@@ -20,7 +20,7 @@ func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesCl
 
 	// Type cast and verify
 	vmClient, ok := client.(compute.VirtualMachinesClient)
-	if ok {
+	if !ok {
 		return nil, fmt.Errorf("Unable to convert client to type compute.VirtualMachinesClient")
 	}
 

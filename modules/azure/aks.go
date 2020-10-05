@@ -19,7 +19,7 @@ func GetManagedClustersClientE(subscriptionID string) (*containerservice.Managed
 
 	// Type cast and verify
 	clustersClient, ok := client.(containerservice.ManagedClustersClient)
-	if ok {
+	if !ok {
 		return nil, fmt.Errorf("Unable to convert client to type containerservice.ManagedClustersClient")
 	}
 
