@@ -59,25 +59,26 @@ func TestDefaultEnvSetToGov(t *testing.T) {
 
 func TestClientsBaseURISetCorrectly(t *testing.T) {
 	var cases = []struct {
+		CaseName        string
 		EnvironmentName string
 		Client          ClientType
 		ExpectedBaseURI string
 	}{
-		{GovCloudEnvName, SubscriptionsClientType, autorest.USGovernmentCloud.ResourceManagerEndpoint},
-		{GovCloudEnvName, VirtualMachinesClientType, autorest.USGovernmentCloud.ResourceManagerEndpoint},
-		{GovCloudEnvName, ManagedClustersClientType, autorest.USGovernmentCloud.ResourceManagerEndpoint},
+		{"GovCloud/SubscriptionClient", GovCloudEnvName, SubscriptionsClientType, autorest.USGovernmentCloud.ResourceManagerEndpoint},
+		{"GovCloud/VMClient", GovCloudEnvName, VirtualMachinesClientType, autorest.USGovernmentCloud.ResourceManagerEndpoint},
+		{"GovCloud/ManagedClustersClient", GovCloudEnvName, ManagedClustersClientType, autorest.USGovernmentCloud.ResourceManagerEndpoint},
 
-		{PublicCloudEnvName, SubscriptionsClientType, autorest.PublicCloud.ResourceManagerEndpoint},
-		{PublicCloudEnvName, VirtualMachinesClientType, autorest.PublicCloud.ResourceManagerEndpoint},
-		{PublicCloudEnvName, ManagedClustersClientType, autorest.PublicCloud.ResourceManagerEndpoint},
+		{"PublicCloud/SubscriptionClient", PublicCloudEnvName, SubscriptionsClientType, autorest.PublicCloud.ResourceManagerEndpoint},
+		{"PublicCloud/VMClient", PublicCloudEnvName, VirtualMachinesClientType, autorest.PublicCloud.ResourceManagerEndpoint},
+		{"PublicCloud/ManagedClustersClient", PublicCloudEnvName, ManagedClustersClientType, autorest.PublicCloud.ResourceManagerEndpoint},
 
-		{ChinaCloudEnvName, SubscriptionsClientType, autorest.ChinaCloud.ResourceManagerEndpoint},
-		{ChinaCloudEnvName, VirtualMachinesClientType, autorest.ChinaCloud.ResourceManagerEndpoint},
-		{ChinaCloudEnvName, ManagedClustersClientType, autorest.ChinaCloud.ResourceManagerEndpoint},
+		{"ChinaCloud/SubscriptionClient", ChinaCloudEnvName, SubscriptionsClientType, autorest.ChinaCloud.ResourceManagerEndpoint},
+		{"ChinaCloud/VMClient", ChinaCloudEnvName, VirtualMachinesClientType, autorest.ChinaCloud.ResourceManagerEndpoint},
+		{"ChinaCloud/ManagedClustersClient", ChinaCloudEnvName, ManagedClustersClientType, autorest.ChinaCloud.ResourceManagerEndpoint},
 
-		{GermanyCloudEnvName, SubscriptionsClientType, autorest.GermanCloud.ResourceManagerEndpoint},
-		{GermanyCloudEnvName, VirtualMachinesClientType, autorest.GermanCloud.ResourceManagerEndpoint},
-		{GermanyCloudEnvName, ManagedClustersClientType, autorest.GermanCloud.ResourceManagerEndpoint},
+		{"GermanCloud/SubscriptionClient", GermanyCloudEnvName, SubscriptionsClientType, autorest.GermanCloud.ResourceManagerEndpoint},
+		{"GermanCloud/VMClient", GermanyCloudEnvName, VirtualMachinesClientType, autorest.GermanCloud.ResourceManagerEndpoint},
+		{"GermanCloud/ManagedClustersClient", GermanyCloudEnvName, ManagedClustersClientType, autorest.GermanCloud.ResourceManagerEndpoint},
 	}
 
 	// Get a client factory
@@ -88,12 +89,13 @@ func TestClientsBaseURISetCorrectly(t *testing.T) {
 	defer os.Setenv(AzureEnvironmentEnvName, currentEnv)
 
 	for _, tt := range cases {
-		t.Run(tt.EnvironmentName, func(t *testing.T) {
+		t.Run(tt.CaseName, func(t *testing.T) {
 			// Override env setting
 			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
 
 			// Get a VM client
-			client, _ := factory.GetClientE(tt.Client, "")
+			client, err := factory.GetClientE(tt.Client, "")
+			require.NoError(t, err)
 
 			// Check for correct ARM URI
 			baseURI, err := factory.GetClientBaseURIE(tt.Client, client)
