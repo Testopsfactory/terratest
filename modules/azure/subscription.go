@@ -1,6 +1,8 @@
 package azure
 
 import (
+	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
 )
 
@@ -8,9 +10,15 @@ import (
 func GetSubscriptionClient() (*subscriptions.Client, error) {
 	// Create a Subscription client
 	factory := NewClientFactory()
-	subscriptionClient, err := factory.GetSubscriptionClientE()
+	client, err := factory.GetClientE(SubscriptionsClientType, "")
 	if err != nil {
 		return nil, err
+	}
+
+	// type cast and verify
+	subscriptionClient, ok := client.(subscriptions.Client)
+	if !ok {
+		return nil, fmt.Errorf("Unable to convert client to subscriptions.Client")
 	}
 
 	// Create an authorizer
@@ -21,6 +29,5 @@ func GetSubscriptionClient() (*subscriptions.Client, error) {
 
 	// Attach authorizer to the client
 	subscriptionClient.Authorizer = *authorizer
-
 	return &subscriptionClient, nil
 }

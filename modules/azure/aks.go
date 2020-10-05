@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -9,11 +10,17 @@ import (
 
 // GetManagedClustersClientE is a helper function that will setup an Azure ManagedClusters client on your behalf
 func GetManagedClustersClientE(subscriptionID string) (*containerservice.ManagedClustersClient, error) {
-	// Get a client
+	// Create a cluster client
 	factory := NewClientFactory()
-	client, err := factory.GetManagedClustersClientE(subscriptionID)
+	client, err := factory.GetClientE(ManagedClustersClientType, subscriptionID)
 	if err != nil {
 		return nil, err
+	}
+
+	// Type cast and verify
+	clustersClient, ok := client.(containerservice.ManagedClustersClient)
+	if ok {
+		return nil, fmt.Errorf("Unable to convert client to type containerservice.ManagedClustersClient")
 	}
 
 	// setup authorizer
@@ -22,8 +29,8 @@ func GetManagedClustersClientE(subscriptionID string) (*containerservice.Managed
 		return nil, err
 	}
 
-	client.Authorizer = *authorizer
-	return &client, nil
+	clustersClient.Authorizer = *authorizer
+	return &clustersClient, nil
 }
 
 // GetManagedClusterE will return ManagedCluster

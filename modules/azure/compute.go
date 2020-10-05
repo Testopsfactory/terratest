@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -12,9 +13,15 @@ import (
 func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Create a VM client
 	factory := NewClientFactory()
-	vmClient, err := factory.GetVirtualMachinesClientE(subscriptionID)
+	client, err := factory.GetClientE(VirtualMachinesClientType, subscriptionID)
 	if err != nil {
 		return nil, err
+	}
+
+	// Type cast and verify
+	vmClient, ok := client.(compute.VirtualMachinesClient)
+	if ok {
+		return nil, fmt.Errorf("Unable to convert client to type compute.VirtualMachinesClient")
 	}
 
 	// Create an authorizer
