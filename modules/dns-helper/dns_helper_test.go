@@ -50,6 +50,8 @@ var testDNSDatabase = dnsDatabase{
 	},
 }
 
+// Lookup should succeed in finding the nameservers of the public domain
+// Uses system resolver config
 func TestOkDNSFindNameservers(t *testing.T) {
 	t.Parallel()
 	fqdn := "terratest.gruntwork.io"
@@ -59,6 +61,8 @@ func TestOkDNSFindNameservers(t *testing.T) {
 	require.ElementsMatch(t, nameservers, expectedNameservers)
 }
 
+// Lookup should fail because of inexistent domain
+// Uses system resolver config
 func TestErrorDNSFindNameservers(t *testing.T) {
 	t.Parallel()
 	fqdn := "this.domain.doesnt.exist"
@@ -67,6 +71,8 @@ func TestErrorDNSFindNameservers(t *testing.T) {
 	require.Nil(t, nameservers)
 }
 
+// Lookup should succeed with answers from just one authoritative nameserver
+// Uses system resolver config to lookup a public domain and its public nameservers
 func TestOkTerratestDNSLookupAuthoritative(t *testing.T) {
 	t.Parallel()
 	dnsQuery := DNSQuery{"CNAME", "terratest." + testDomain}
@@ -76,19 +82,23 @@ func TestOkTerratestDNSLookupAuthoritative(t *testing.T) {
 	require.ElementsMatch(t, res, expected)
 }
 
+// ***********************************
+// Tests that use local dnsTestServers
+
+// Lookup should succeed with answers from just one authoritative nameserver
 func TestOkLocalDNSLookupAuthoritative(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
 	defer shutDownServers(t, s1, s2)
 	for dnsQuery, expected := range testDNSDatabase {
 		s1.AddEntryToDNSDatabase(dnsQuery, expected)
-		s2.AddEntryToDNSDatabase(dnsQuery, expected)
 		res, err := DNSLookupAuthoritativeE(t, dnsQuery, []string{s1.Address(), s2.Address()})
 		require.NoError(t, err)
 		require.ElementsMatch(t, res, expected)
 	}
 }
 
+// Lookup should fail because of missing answers from all authoritative nameservers
 func TestErrorLocalDNSLookupAuthoritative(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -100,6 +110,7 @@ func TestErrorLocalDNSLookupAuthoritative(t *testing.T) {
 	}
 }
 
+// Lookup should succeed with consistent answers from all authoritative nameservers
 func TestOkLocalDNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -113,6 +124,7 @@ func TestOkLocalDNSLookupAuthoritativeAll(t *testing.T) {
 	}
 }
 
+// Lookup should fail because of missing answers from all authoritative nameservers
 func TestError1DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -124,6 +136,7 @@ func TestError1DNSLookupAuthoritativeAll(t *testing.T) {
 	}
 }
 
+// Lookup should fail because of missing answers from one authoritative nameserver
 func TestError2DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -136,6 +149,7 @@ func TestError2DNSLookupAuthoritativeAll(t *testing.T) {
 	}
 }
 
+// Lookup should fail because of inconsistent answers from authoritative nameservers
 func TestError3DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -149,6 +163,7 @@ func TestError3DNSLookupAuthoritativeAll(t *testing.T) {
 	}
 }
 
+// Lookup should fail because of inexistent domain
 func TestError4DNSLookupAuthoritativeAll(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -160,7 +175,8 @@ func TestError4DNSLookupAuthoritativeAll(t *testing.T) {
 	}
 }
 
-// Retry until any authoritative nameserver gives an answer
+// First lookups should fail because of missing answers from all authoritative nameservers
+// Retry lookups should succeed with answers from just one authoritative nameserver
 func TestOkDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -173,7 +189,8 @@ func TestOkDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	require.ElementsMatch(t, res, expectedRes)
 }
 
-// Retry will fail as the record will never exist
+// First lookups should fail because of missing answers from all authoritative nameservers
+// Retry lookups should fail because of missing answers from all authoritative nameservers
 func TestErrorDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -186,7 +203,8 @@ func TestErrorDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	}
 }
 
-// Retry until all authoritative nameservers give the same answers
+// First lookups should fail because of missing answers from one authoritative nameservers
+// Retry lookups should succeed with consistent answers
 func TestOkDNSLookupAuthoritativeAllWithRetryNotfound(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -201,7 +219,8 @@ func TestOkDNSLookupAuthoritativeAllWithRetryNotfound(t *testing.T) {
 	require.ElementsMatch(t, res, expectedRes)
 }
 
-// Retry until all authoritative nameservers give the same answers
+// First lookups should fail because of inconsistent answers from authoritative nameservers
+// Retry lookups should succeed with consistent answers
 func TestOkDNSLookupAuthoritativeAllWithRetryInconsistent(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -217,7 +236,8 @@ func TestOkDNSLookupAuthoritativeAllWithRetryInconsistent(t *testing.T) {
 	require.ElementsMatch(t, res, expectedRes)
 }
 
-// Retry will fail as one authoritative nameserver will always give an extra answer
+// First lookups should fail because of missing answer from one authoritative nameserver
+// Retry lookups should fail because of inconsistent answers from authoritative nameservers
 func TestErrorDNSLookupAuthoritativeAllWithRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -233,7 +253,7 @@ func TestErrorDNSLookupAuthoritativeAllWithRetry(t *testing.T) {
 	}
 }
 
-// Validate all authoritative nameservers give the expected answers
+// Lookup should succeed with consistent and validated replies
 func TestOkDNSLookupAuthoritativeAllWithValidation(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServers()
@@ -246,7 +266,53 @@ func TestOkDNSLookupAuthoritativeAllWithValidation(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Retry until all authoritative nameservers give the expected answers
+// Lookup should fail because of missing answers from all authoritative nameservers
+func TestErrorDNSLookupAuthoritativeAllWithValidation(t *testing.T) {
+	t.Parallel()
+	s1, s2 := setupTestDNSServers()
+	defer shutDownServers(t, s1, s2)
+	dnsQuery := DNSQuery{"A", "a." + testDomain}
+	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
+	err := DNSLookupAuthoritativeAllWithValidationE(t, dnsQuery, []string{s1.Address(), s2.Address()}, expectedRes)
+	require.Error(t, err)
+	if _, ok := err.(*NotFoundError); !ok {
+		t.Errorf("unexpected error, got %q", err)
+	}
+}
+
+// Lookup should fail because of missing answers from one authoritative nameservers
+func TestError2DNSLookupAuthoritativeAllWithValidation(t *testing.T) {
+	t.Parallel()
+	s1, s2 := setupTestDNSServers()
+	defer shutDownServers(t, s1, s2)
+	dnsQuery := DNSQuery{"A", "a." + testDomain}
+	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
+	s1.AddEntryToDNSDatabase(dnsQuery, expectedRes)
+	err := DNSLookupAuthoritativeAllWithValidationE(t, dnsQuery, []string{s1.Address(), s2.Address()}, expectedRes)
+	require.Error(t, err)
+	if _, ok := err.(*NotFoundError); !ok {
+		t.Errorf("unexpected error, got %q", err)
+	}
+}
+
+// Lookup should fail because of inconsistent authoritative replies
+func TestError3DNSLookupAuthoritativeAllWithValidation(t *testing.T) {
+	t.Parallel()
+	s1, s2 := setupTestDNSServers()
+	defer shutDownServers(t, s1, s2)
+	dnsQuery := DNSQuery{"A", "a." + testDomain}
+	expectedRes := DNSAnswers{{"A", "1.1.1.1"}, {"A", "2.2.2.2"}}
+	s1.AddEntryToDNSDatabase(dnsQuery, expectedRes)
+	s2.AddEntryToDNSDatabase(dnsQuery, DNSAnswers{{"A", "2.2.2.2"}})
+	err := DNSLookupAuthoritativeAllWithValidationE(t, dnsQuery, []string{s1.Address(), s2.Address()}, expectedRes)
+	require.Error(t, err)
+	if _, ok := err.(*InconsistentAuthoritativeError); !ok {
+		t.Errorf("unexpected error, got %q", err)
+	}
+}
+
+// First lookups should fail because of missing answers from all authoritative nameservers
+// Retry lookups should succeed with consistent and validated replies
 func TestOkDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -259,7 +325,8 @@ func TestOkDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Retry until all authoritative nameservers give the expected answers
+// First lookups should fail because of missing answer from one authoritative nameserver
+// Retry lookups should succeed with consistent and validated replies
 func TestOk2DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -273,7 +340,8 @@ func TestOk2DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Retry until all authoritative nameservers give the expected answers
+// First lookups should fail because of inconsistent authoritative replies
+// Retry lookups should succeed with consistent and validated replies
 func TestOk3DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()
@@ -288,7 +356,8 @@ func TestOk3DNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Retry will fail as one authoritative nameserver will never give the expected answers
+// First lookups should fail because of inconsistent authoritative replies
+// Retry lookups should fail also because of inconsistent authoritative replies
 func TestErrorDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	t.Parallel()
 	s1, s2 := setupTestDNSServersRetry()

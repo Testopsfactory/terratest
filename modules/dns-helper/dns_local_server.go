@@ -12,7 +12,7 @@ import (
 
 var testDomain = "gruntwork.io"
 
-// dnsDatabase holds DNSAnswers to a collection of DNSQuery, to be used by a local dnsTestServer
+// dnsDatabase stores a collection of DNSQuery with their respective DNSAnswers, to be used by a local dnsTestServer
 type dnsDatabase map[DNSQuery]DNSAnswers
 
 // dnsTestServer helper for testing this package using local DNS nameservers with test records
@@ -42,6 +42,8 @@ func (s *dnsTestServer) AddEntryToDNSDatabaseRetry(q DNSQuery, a DNSAnswers) {
 	s.DNSDatabaseRetry[q] = append(s.DNSDatabaseRetry[q], a...)
 }
 
+// setupTestDNSServers runs and returns 2x local dnsTestServer, initialized with NS records for the testDomain pointing to themselves
+// it uses a handler that will send replies stored in their internal DNSDatabase
 func setupTestDNSServers() (s1, s2 *dnsTestServer) {
 	s1 = runTestDNSServer("0")
 	s2 = runTestDNSServer("0")
@@ -61,6 +63,8 @@ func setupTestDNSServers() (s1, s2 *dnsTestServer) {
 	return s1, s2
 }
 
+// setupTestDNSServersRetry runs and returns 2x local dnsTestServer, initialized with NS records for the testDomain pointing to themselves
+// it uses a handler that will send replies stored in their internal DNSDatabase, and then switch to their DNSDatabaseRetry after some time
 func setupTestDNSServersRetry() (s1, s2 *dnsTestServer) {
 	s1 = runTestDNSServer("0")
 	s2 = runTestDNSServer("0")
@@ -82,6 +86,7 @@ func setupTestDNSServersRetry() (s1, s2 *dnsTestServer) {
 	return s1, s2
 }
 
+// runTestDNSServer starts and returns a new dnsTestServer listening in localhost and the given UDP port
 func runTestDNSServer(port string) *dnsTestServer {
 	listener, err := net.ListenPacket("udp", "127.0.0.1:"+port)
 
@@ -101,6 +106,8 @@ func runTestDNSServer(port string) *dnsTestServer {
 	return newDNSTestServer(server)
 }
 
+// doDNSAnswer sends replies to the DNS question from client, using the dnsDatabase to lookup the answers to the query
+// when invertAnswers is true, reverses the order of the answers from the dnsDatabase, useful to simulate realistic nameservers behaviours
 func doDNSAnswer(w dns.ResponseWriter, r *dns.Msg, d dnsDatabase, invertAnswers bool) {
 	m := new(dns.Msg)
 	m.SetReply(r)
@@ -135,12 +142,15 @@ func doDNSAnswer(w dns.ResponseWriter, r *dns.Msg, d dnsDatabase, invertAnswers 
 	w.WriteMsg(m)
 }
 
+// stdDNSHandler uses the internal DNSDatabase to send answers to DNS queries
 func stdDNSHandler(w dns.ResponseWriter, r *dns.Msg, s *dnsTestServer, invertAnswers bool) {
 	doDNSAnswer(w, r, s.DNSDatabase, invertAnswers)
 }
 
 var startTime = time.Now()
 
+// retryDNSHandler uses the internal DNSDatabase to send answers to DNS queries, and switches
+// to using the internal DNSDatabaseRetry after 3 seconds from startup
 func retryDNSHandler(w dns.ResponseWriter, r *dns.Msg, s *dnsTestServer, invertAnswers bool) {
 	if time.Now().Sub(startTime).Seconds() > 3 {
 		doDNSAnswer(w, r, s.DNSDatabaseRetry, invertAnswers)
