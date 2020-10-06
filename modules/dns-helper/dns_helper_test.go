@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -198,7 +199,7 @@ func TestErrorDNSLookupAuthoritativeWithRetry(t *testing.T) {
 	dnsQuery := DNSQuery{"A", "txt." + testDomain}
 	_, err := DNSLookupAuthoritativeWithRetryE(t, dnsQuery, []string{s1.Address(), s2.Address()}, 5, time.Second)
 	require.Error(t, err)
-	if _, ok := err.(*MaxRetriesExceeded); !ok {
+	if _, ok := err.(retry.MaxRetriesExceeded); !ok {
 		t.Errorf("unexpected error, got %q", err)
 	}
 }
@@ -248,7 +249,7 @@ func TestErrorDNSLookupAuthoritativeAllWithRetry(t *testing.T) {
 	s2.AddEntryToDNSDatabaseRetry(dnsQuery, DNSAnswers{{"A", "1.1.1.1"}})
 	_, err := DNSLookupAuthoritativeAllWithRetryE(t, dnsQuery, []string{s1.Address(), s2.Address()}, 5, time.Second)
 	require.Error(t, err)
-	if _, ok := err.(*MaxRetriesExceeded); !ok {
+	if _, ok := err.(retry.MaxRetriesExceeded); !ok {
 		t.Errorf("unexpected error, got %q", err)
 	}
 }
@@ -369,7 +370,7 @@ func TestErrorDNSLookupAuthoritativeAllWithValidationRetry(t *testing.T) {
 	s1.AddEntryToDNSDatabaseRetry(dnsQuery, expectedRes)
 	s2.AddEntryToDNSDatabaseRetry(dnsQuery, DNSAnswers{{"A", "2.2.2.2"}})
 	err := DNSLookupAuthoritativeAllWithValidationRetryE(t, dnsQuery, []string{s1.Address(), s2.Address()}, expectedRes, 5, time.Second)
-	if _, ok := err.(*MaxRetriesExceeded); !ok {
+	if _, ok := err.(retry.MaxRetriesExceeded); !ok {
 		t.Errorf("unexpected error, got %q", err)
 	}
 }

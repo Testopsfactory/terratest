@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/require"
@@ -116,14 +117,14 @@ func DNSLookupAuthoritativeWithRetry(t testing.TestingT, query DNSQuery, resolve
 // or until max retries has been exceeded.
 // If resolvers are defined, uses them instead of the default system ones to find the authoritative nameservers.
 func DNSLookupAuthoritativeWithRetryE(t testing.TestingT, query DNSQuery, resolvers []string, maxRetries int, sleepBetweenRetries time.Duration) (DNSAnswers, error) {
-	res, err := DNSDoWithRetryE(
+	res, err := retry.DoWithRetryInterfaceE(
 		t, fmt.Sprintf("DNSLookupAuthoritativeE %s record for %s using authoritative nameservers", query.Type, query.Name),
 		maxRetries, sleepBetweenRetries,
-		func() (DNSAnswers, error) {
+		func() (interface{}, error) {
 			return DNSLookupAuthoritativeE(t, query, resolvers)
 		})
 
-	return res, err
+	return res.(DNSAnswers), err
 }
 
 // DNSLookupAuthoritativeAll gets authoritative answers for the specified record and type.
@@ -183,14 +184,14 @@ func DNSLookupAuthoritativeAllWithRetry(t testing.TestingT, query DNSQuery, reso
 // until ALL authoritative nameservers reply with the exact same non-empty answers or until max retries has been exceeded.
 // If defined, uses the given resolvers instead of the default system ones to find the authoritative nameservers.
 func DNSLookupAuthoritativeAllWithRetryE(t testing.TestingT, query DNSQuery, resolvers []string, maxRetries int, sleepBetweenRetries time.Duration) (DNSAnswers, error) {
-	res, err := DNSDoWithRetryE(
+	res, err := retry.DoWithRetryInterfaceE(
 		t, fmt.Sprintf("DNSLookupAuthoritativeAllE %s record for %s using authoritative nameservers", query.Type, query.Name),
 		maxRetries, sleepBetweenRetries,
-		func() (DNSAnswers, error) {
+		func() (interface{}, error) {
 			return DNSLookupAuthoritativeAllE(t, query, resolvers)
 		})
 
-	return res, err
+	return res.(DNSAnswers), err
 }
 
 // DNSLookupAuthoritativeAllWithValidation gets authoritative answers for the specified record and type.
@@ -239,10 +240,10 @@ func DNSLookupAuthoritativeAllWithValidationRetry(t testing.TestingT, query DNSQ
 // or until max retries has been exceeded.
 // If resolvers are defined, uses them instead of the default system ones to find the authoritative nameservers.
 func DNSLookupAuthoritativeAllWithValidationRetryE(t testing.TestingT, query DNSQuery, resolvers []string, expectedAnswers DNSAnswers, maxRetries int, sleepBetweenRetries time.Duration) error {
-	_, err := DNSDoWithRetryE(
+	_, err := retry.DoWithRetryInterfaceE(
 		t, fmt.Sprintf("DNSLookupAuthoritativeAllWithValidationRetryE %s record for %s using authoritative nameservers", query.Type, query.Name),
 		maxRetries, sleepBetweenRetries,
-		func() (DNSAnswers, error) {
+		func() (interface{}, error) {
 			return nil, DNSLookupAuthoritativeAllWithValidationE(t, query, resolvers, expectedAnswers)
 		})
 
