@@ -104,9 +104,3 @@ Modules authors will interact with the `client_factory` through the `CreateXXXXC
 		return nil, err
 	}
 ```
-
-The `client_factory` currently exposes the following methods for creating clients. These will be built out more as more modules are developed and integrated:
-
-* `CreateSubscriptionsClientE() (subscriptions.Client, error)`: Returns a virtual machines client instance configured with the correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).
-* `CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error)`: Returns a virtual machines client instance configured with the correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).
-* `CreateManagedClustersClientE(subscriptionID string) (containerservice.ManagedClustersClient, error)`: Returns a virtual machines client instance configured with the correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).

@@ -8,6 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// GetVirtualMachineClient is a helper function that will setup an Azure Virtual Machine client on your behalf.
+func GetVirtualMachineClient(t testing.TestingT, subscriptionID string) *compute.VirtualMachinesClient {
+	vmClient, err := GetVirtualMachineClientE(subscriptionID)
+	require.NoError(t, err)
+	return vmClient
+}
+
 // GetVirtualMachineClientE is a helper function that will setup an Azure Virtual Machine client on your behalf.
 func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Create a VM client

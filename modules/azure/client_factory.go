@@ -27,6 +27,9 @@ const (
 	// "AzureUSGovernmentCloud": USGovernmentCloud
 	// "AzureStackCloud":		 Azure stack
 	AzureEnvironmentEnvName = "AZURE_ENVIRONMENT"
+
+	// ResourceManagerEndpointName is the name of the ResourceManagerEndpoint field in the Environment struct.
+	ResourceManagerEndpointName = "ResourceManagerEndpoint"
 )
 
 // ClientType describes the type of client a module can create.
@@ -36,7 +39,7 @@ type ClientType int
 // the Azure environment that is currently setup (or "Public", if none is setup).
 func CreateSubscriptionsClientE() (subscriptions.Client, error) {
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE("ResourceManagerEndpoint")
+	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
 	if err != nil {
 		return subscriptions.Client{}, err
 	}
@@ -55,7 +58,7 @@ func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachine
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE("ResourceManagerEndpoint")
+	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
 	if err != nil {
 		return compute.VirtualMachinesClient{}, err
 	}
@@ -74,7 +77,7 @@ func CreateManagedClustersClientE(subscriptionID string) (containerservice.Manag
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE("ResourceManagerEndpoint")
+	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
 	if err != nil {
 		return containerservice.ManagedClustersClient{}, err
 	}
