@@ -10,7 +10,7 @@ import (
 // GetManagedClustersClientE is a helper function that will setup an Azure ManagedClusters client on your behalf
 func GetManagedClustersClientE(subscriptionID string) (*containerservice.ManagedClustersClient, error) {
 	// Create a cluster client
-	client, err := GetClientForManagedClustersE(subscriptionID)
+	client, err := CreateManagedClustersClientE(subscriptionID)
 	if err != nil {
 		return nil, err
 	}

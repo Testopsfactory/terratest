@@ -73,7 +73,7 @@ func TestSubscriptionClientBaseURISetCorrectly(t *testing.T) {
 			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
 
 			// Get a VM client
-			client, err := GetClientForSubscriptionsE()
+			client, err := CreateSubscriptionsClientE()
 			require.NoError(t, err)
 
 			// Check for correct ARM URI
@@ -104,7 +104,7 @@ func TestVMClientBaseURISetCorrectly(t *testing.T) {
 			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
 
 			// Get a VM client
-			client, err := GetClientForVirtualMachinesE("")
+			client, err := CreateVirtualMachinesClientE("")
 			require.NoError(t, err)
 
 			// Check for correct ARM URI
@@ -135,7 +135,7 @@ func TestManagedClustersClientBaseURISetCorrectly(t *testing.T) {
 			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
 
 			// Get a VM client
-			client, err := GetClientForManagedClustersE("")
+			client, err := CreateManagedClustersClientE("")
 			require.NoError(t, err)
 
 			// Check for correct ARM URI

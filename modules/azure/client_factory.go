@@ -31,8 +31,9 @@ const (
 // ClientType describes the type of client a module can create.
 type ClientType int
 
-// GetClientForSubscriptionsE returns a client instance based on the ClientType passed, or optionally an error.
-func GetClientForSubscriptionsE() (subscriptions.Client, error) {
+// CreateSubscriptionsClientE returns a virtual machines client instance configured with the correct BaseURI depending on
+// the Azure environment that is currently setup (or "Public", if none is setup).
+func CreateSubscriptionsClientE() (subscriptions.Client, error) {
 	// Lookup environment URI
 	baseURI, err := getEnvironmentBaseURIE()
 	if err != nil {
@@ -43,8 +44,9 @@ func GetClientForSubscriptionsE() (subscriptions.Client, error) {
 	return subscriptions.NewClientWithBaseURI(baseURI), nil
 }
 
-// GetClientForVirtualMachinesE returns a client instance based on the ClientType passed, or optionally an error.
-func GetClientForVirtualMachinesE(subscriptionID string) (compute.VirtualMachinesClient, error) {
+// CreateVirtualMachinesClientE returns a virtual machines client instance configured with the correct BaseURI depending on
+// the Azure environment that is currently setup (or "Public", if none is setup).
+func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
@@ -61,8 +63,9 @@ func GetClientForVirtualMachinesE(subscriptionID string) (compute.VirtualMachine
 	return compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID), nil
 }
 
-// GetClientForManagedClustersE returns a client instance based on the ClientType passed, or optionally an error.
-func GetClientForManagedClustersE(subscriptionID string) (containerservice.ManagedClustersClient, error) {
+// CreateManagedClustersClientE returns a virtual machines client instance configured with the correct BaseURI depending on
+// the Azure environment that is currently setup (or "Public", if none is setup).
+func CreateManagedClustersClientE(subscriptionID string) (containerservice.ManagedClustersClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {

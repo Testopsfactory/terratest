@@ -7,7 +7,7 @@ import (
 // GetSubscriptionClient is a helper function that will setup an Azure Subscription client on your behalf
 func GetSubscriptionClient() (*subscriptions.Client, error) {
 	// Create a Subscription client
-	client, err := GetClientForSubscriptionsE()
+	client, err := CreateSubscriptionsClientE()
 	if err != nil {
 		return nil, err
 	}

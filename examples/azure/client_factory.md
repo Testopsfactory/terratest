@@ -95,39 +95,18 @@ Note that when using the "AzureStackCloud" setting, you must also set the `AZURE
 
 ## Usage Patterns
 
-Modules authors will interact with the `client_factory` through the `NewClientFactory` method on the `azure` package as shown below:
+Modules authors will interact with the `client_factory` through the `CreateXXXXClientE` methods on the `azure` package as shown in the following example:
 
 ```golang
-    // Get a new factory instance and get requested client
-	factory := NewClientFactory()
-	client, err := factory.GetClientE(VirtualMachinesClientType, subscriptionID)
+    // Create a new client instance
+	client, err := CreateVirtualMachinesClientE(VirtualMachinesClientType, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
-
-	// Type cast and verify
-	vmClient, ok := client.(compute.VirtualMachinesClient)
-	if !ok {
-		return nil, fmt.Errorf("Unable to convert client to type compute.VirtualMachinesClient")
-	}
 ```
 
-The `ClientFactory` interface currently exposes the following methods - these will be built out more as more modules are developed and integrated:
+The `client_factory` currently exposes the following methods for creating clients. These will be built out more as more modules are developed and integrated:
 
-* `GetClientE(clientType ClientType, subscriptionID string)`: returns a client instance based on the ClientType passed, along with any error.
-* `GetClientBaseURIE(clientType ClientType, client interface{})`: returns the configured BaseURI for the given client, along with any error.
-
-For the `ClientType`, these are specified as follows and should be passed to the above methods:
-
-```golang
-const (
-	// SubscriptionsClientType represents a SubscriptionClient
-	SubscriptionsClientType ClientType = iota
-
-	// VirtualMachinesClientType represents a VirtualMachinesClient
-	VirtualMachinesClientType
-
-	// ManagedClustersClientType represents a ManagedClustersClient
-	ManagedClustersClientType
-)
-```
+* `CreateSubscriptionsClientE() (subscriptions.Client, error)`: Returns a virtual machines client instance configured with the correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).
+* `CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error)`: Returns a virtual machines client instance configured with the correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).
+* `CreateManagedClustersClientE(subscriptionID string) (containerservice.ManagedClustersClient, error)`: Returns a virtual machines client instance configured with the correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).

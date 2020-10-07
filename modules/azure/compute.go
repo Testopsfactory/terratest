@@ -11,7 +11,7 @@ import (
 // GetVirtualMachineClientE is a helper function that will setup an Azure Virtual Machine client on your behalf.
 func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Create a VM client
-	vmClient, err := GetClientForVirtualMachinesE(subscriptionID)
+	vmClient, err := CreateVirtualMachinesClientE(subscriptionID)
 	if err != nil {
 		return nil, err
 	}
