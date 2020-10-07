@@ -10,6 +10,7 @@ package azure
 
 import (
 	"os"
+	"reflect"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
@@ -35,7 +36,7 @@ type ClientType int
 // the Azure environment that is currently setup (or "Public", if none is setup).
 func CreateSubscriptionsClientE() (subscriptions.Client, error) {
 	// Lookup environment URI
-	baseURI, err := getEnvironmentBaseURIE()
+	baseURI, err := getEnvironmentEndpointE("ResourceManagerEndpoint")
 	if err != nil {
 		return subscriptions.Client{}, err
 	}
@@ -54,7 +55,7 @@ func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachine
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentBaseURIE()
+	baseURI, err := getEnvironmentEndpointE("ResourceManagerEndpoint")
 	if err != nil {
 		return compute.VirtualMachinesClient{}, err
 	}
@@ -73,7 +74,7 @@ func CreateManagedClustersClientE(subscriptionID string) (containerservice.Manag
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentBaseURIE()
+	baseURI, err := getEnvironmentEndpointE("ResourceManagerEndpoint")
 	if err != nil {
 		return containerservice.ManagedClustersClient{}, err
 	}
@@ -93,32 +94,17 @@ func getDefaultEnvironmentName() string {
 	return autorestAzure.PublicCloud.Name
 }
 
-// getEnvironmentBaseUriE returns the ARM management URI for the configured Azure environment.
-func getEnvironmentBaseURIE() (string, error) {
+func getEnvironmentEndpointE(endpointName string) (string, error) {
 	envName := getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
 		return "", err
 	}
-	return env.ResourceManagerEndpoint, nil
+	return getFieldValue(&env, endpointName), nil
 }
 
-// getKeyVaultURISuffixE returns the proper KeyVault URI suffix for the configured Azure environment.
-func getKeyVaultURISuffixE() (string, error) {
-	envName := getDefaultEnvironmentName()
-	env, err := autorestAzure.EnvironmentFromName(envName)
-	if err != nil {
-		return "", err
-	}
-	return env.KeyVaultDNSSuffix, nil
-}
-
-// getStorageURISuffixE returns the proper storage URI suffix for the configured Azure environment
-func getStorageURISuffixE() (string, error) {
-	envName := getDefaultEnvironmentName()
-	env, err := autorestAzure.EnvironmentFromName(envName)
-	if err != nil {
-		return "", err
-	}
-	return env.StorageEndpointSuffix, nil
+func getFieldValue(v *autorestAzure.Environment, field string) string {
+	r := reflect.ValueOf(v)
+	f := reflect.Indirect(r).FieldByName(field)
+	return f.String()
 }
