@@ -4,9 +4,7 @@ This documentation provides and overview of the `client_factory.go` module, targ
 
 ## Multi-cloud environment support
 
-The Azure APIs need to support both Public and sovereign cloud environments (includes USGovernment, Germany, China, and Azure Stack).  To do this, we need to use the correct base URI's for the Azure management plane when using the REST API (either directly or via SDK). For the Go SDK, this can be accomplished by using the `WithBaseURI` suffixed calls when creating service clients.
-
-For example, when using the `VirtualMachinesClient`, a developer would normally write code like this:
+The Azure APIs need to support both Public and sovereign cloud environments (includes USGovernment, Germany, China, and Azure Stack).  To do this, you must use the correct base URI's for the Azure management plane when using the REST API (either directly or via SDK). For the Go SDK, this can be accomplished by using the `WithBaseURI` suffixed calls when creating service clients. For example, when using the `VirtualMachinesClient`, a developer would normally write code like this:
 
 ```golang
 import (
@@ -45,35 +43,7 @@ Now we have code that can be used with any cloud environment just by changing th
 
 ## Environment URI Lookups
 
-Rather than hardcode these URI's, they should be looked up from an authoritiative source. Fortunately, the Autorest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the Autorest `EnvironmentFromName(envName string)` function to return the appropriate structure. 
-
-This Environment structure has the following fields configured for each cloud environment:
-
-```golang
-ManagementPortalURL          
-PublishSettingsURL           
-ServiceManagementEndpoint    
-ResourceManagerEndpoint      
-ActiveDirectoryEndpoint      
-GalleryEndpoint              
-KeyVaultEndpoint             
-GraphEndpoint                
-ServiceBusEndpoint           
-BatchManagementEndpoint      
-StorageEndpointSuffix        
-SQLDatabaseDNSSuffix         
-TrafficManagerDNSSuffix      
-KeyVaultDNSSuffix            
-ServiceBusEndpointSuffix     
-ServiceManagementVMDNSSuffix 
-ResourceManagerVMDNSSuffix   
-ContainerRegistryDNSSuffix   
-CosmosDBDNSSuffix            
-TokenAudience                
-APIManagementHostNameSuffix  
-SynapseEndpointSuffix        
-ResourceIdentifiers          
-```
+Rather than hardcode these URI's, they should be looked up from an authoritiative source. Fortunately, the Autorest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the Autorest `EnvironmentFromName(envName string)` function to return the appropriate structure.  This Environment structure is documented on GoDoc at https://godoc.org/github.com/Azure/go-autorest/autorest/azure#EnvironmentFromName
 
 Using these URI's, `client_factory` is able to instantiate and return properly configured SDK clients without module developers having to duplicate this code.
 
