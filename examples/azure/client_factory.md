@@ -1,6 +1,6 @@
-## Azure SDK Client Factory 
+# Azure SDK Client Factory
 
-This documentation provides and overview of the `client_factory.go` module, targeted use cases, and behaviors. 
+This documentation provides and overview of the `client_factory.go` module, targeted use cases, and behaviors.
 
 ## Multi-cloud environment support
 
@@ -43,7 +43,7 @@ Using code similar to above, you can communicate with any cloud environment just
 
 ## Environment URI Lookups
 
-Rather than hardcode these URI's, they should be looked up from an authoritative source. Fortunately, the AutoRest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the AutoRest `EnvironmentFromName(envName string)` function to return the appropriate structure.  This Environment structure is documented on GoDoc at https://godoc.org/github.com/Azure/go-autorest/autorest/azure#EnvironmentFromName
+Rather than hardcode these URI's, they should be looked up from an authoritative source. Fortunately, the AutoRest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the AutoRest `EnvironmentFromName(envName string)` function to return the appropriate structure.  This Environment structure is documented on GoDoc [here](https://godoc.org/github.com/Azure/go-autorest/autorest/azure#EnvironmentFromName).
 
 Using these URI's, `client_factory` is able to instantiate and return properly configured SDK clients without module developers having to duplicate this code.  If you require a client that is not already in client factory you will need to create a corresponding method that instantiates the client and accepts base Uri following the patterns discussed.
 
@@ -59,7 +59,7 @@ To configure different cloud environments, we will use the same `AZURE_ENVIRONME
 |"AzureUSGovernmentCloud"   |USGovernmentCloud  |
 |"AzureStackCloud"          |Azure stack        |
 
-Note that when using the "AzureStackCloud" setting, you must also set the `AZURE_ENVIRONMENT_FILEPATH` variable to point to a JSON file containing your Azure Stack URI deatils.
+Note that when using the "AzureStackCloud" setting, you must also set the `AZURE_ENVIRONMENT_FILEPATH` variable to point to a JSON file containing your Azure Stack URI details.
 
 >NOTE: The default behavior of the `client_factory` is to use the AzurePublicCloud environment. This requires no work from the developer to configure, and ensures consistent behavior with the current SDK code.
 
