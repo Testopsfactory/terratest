@@ -8,7 +8,6 @@ package azure
 import (
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +18,7 @@ func TestGetDiskE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetDiskE(t, diskName, rgName, subID)
+	_, err := GetDiskE(diskName, rgName, subID)
 
 	require.Error(t, err)
 }
@@ -31,7 +30,7 @@ func TestGetDiskTypeE(t *testing.T) {
 	rgName := ""
 	subID := ""
 
-	_, err := azure.GetDiskTypeE(t, diskName, rgName, subID)
+	_, err := GetDiskTypeE(diskName, rgName, subID)
 
 	require.Error(t, err)
 }
