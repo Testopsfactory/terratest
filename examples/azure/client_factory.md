@@ -4,7 +4,7 @@ This documentation provides and overview of the `client_factory.go` module, targ
 
 ## Multi-cloud environment support
 
-In order to better support Azure customers, we needed to support both Public and sovereign cloud environments (includes USGovernment, Germany, China, and Azure Stack).  To do this, we need to use the correct base URI's for the Azure management plane when using the REST API (either directly or via SDK). For the Go SDK, this can be accomplished by using the `WithBaseURI` suffixed calls when creating service clients.
+The Azure APIs need to support both Public and sovereign cloud environments (includes USGovernment, Germany, China, and Azure Stack).  To do this, we need to use the correct base URI's for the Azure management plane when using the REST API (either directly or via SDK). For the Go SDK, this can be accomplished by using the `WithBaseURI` suffixed calls when creating service clients.
 
 For example, when using the `VirtualMachinesClient`, a developer would normally write code like this:
 

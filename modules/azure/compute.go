@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/gruntwork-io/terratest/modules/testing"
@@ -12,16 +11,9 @@ import (
 // GetVirtualMachineClientE is a helper function that will setup an Azure Virtual Machine client on your behalf.
 func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesClient, error) {
 	// Create a VM client
-	factory := NewClientFactory()
-	client, err := factory.GetClientE(VirtualMachinesClientType, subscriptionID)
+	vmClient, err := GetClientForVirtualMachinesE(subscriptionID)
 	if err != nil {
 		return nil, err
-	}
-
-	// Type cast and verify
-	vmClient, ok := client.(compute.VirtualMachinesClient)
-	if !ok {
-		return nil, fmt.Errorf("Unable to convert client to type compute.VirtualMachinesClient")
 	}
 
 	// Create an authorizer
@@ -32,7 +24,6 @@ func GetVirtualMachineClientE(subscriptionID string) (*compute.VirtualMachinesCl
 
 	// Attach authorizer to the client
 	vmClient.Authorizer = *authorizer
-
 	return &vmClient, nil
 }
 

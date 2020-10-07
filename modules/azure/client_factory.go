@@ -9,7 +9,6 @@ rather, additional clients will me added as-needed.
 package azure
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
@@ -32,93 +31,68 @@ const (
 // ClientType describes the type of client a module can create.
 type ClientType int
 
-const (
-	// SubscriptionsClientType represents a SubscriptionClient
-	SubscriptionsClientType ClientType = iota
+// GetClientForSubscriptionsE returns a client instance based on the ClientType passed, or optionally an error.
+func GetClientForSubscriptionsE() (subscriptions.Client, error) {
+	// Lookup environment URI
+	baseURI, err := getEnvironmentBaseURIE()
+	if err != nil {
+		return subscriptions.Client{}, err
+	}
 
-	// VirtualMachinesClientType represents a VirtualMachinesClient
-	VirtualMachinesClientType
-
-	// ManagedClustersClientType represents a ManagedClustersClient
-	ManagedClustersClientType
-)
-
-// ClientFactory describes the methods available on client factory implementatoins
-type ClientFactory interface {
-	// GetClientE returns a client instance based on the ClientType passed, or optionally an error.
-	GetClientE(clientType ClientType, subscriptionID string) (interface{}, error)
-
-	// GetClientBaseURIE returns the configured BaseURI for the given client, based on the passed ClientType.
-	GetClientBaseURIE(clientType ClientType, client interface{}) (string, error)
+	// Create correct client based on type passed
+	return subscriptions.NewClientWithBaseURI(baseURI), nil
 }
 
-// multiEnvClientFactory is used to coordinate handing out properly configured Azure SDK clients
-// that are properly setup for use with Public or Sovereign clouds (depending on configuration)
-type multiEnvClientFactory struct{}
-
-// NewClientFactory returns a new multi-environment client factory
-func NewClientFactory() ClientFactory {
-	return &multiEnvClientFactory{}
-}
-
-// GetClientE returns a client instance based on the ClientType passed, or optionally an error.
-func (factory *multiEnvClientFactory) GetClientE(clientType ClientType, subscriptionID string) (interface{}, error) {
+// GetClientForVirtualMachinesE returns a client instance based on the ClientType passed, or optionally an error.
+func GetClientForVirtualMachinesE(subscriptionID string) (compute.VirtualMachinesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
 	if err != nil {
-		return nil, err
+		return compute.VirtualMachinesClient{}, err
 	}
 
 	// Lookup environment URI
-	baseURI, err := factory.getEnvironmentBaseURIE()
+	baseURI, err := getEnvironmentBaseURIE()
 	if err != nil {
-		return nil, err
+		return compute.VirtualMachinesClient{}, err
 	}
 
 	// Create correct client based on type passed
-	switch clientType {
-	case SubscriptionsClientType:
-		return subscriptions.NewClientWithBaseURI(baseURI), nil
-	case VirtualMachinesClientType:
-		return compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID), nil
-	case ManagedClustersClientType:
-		return containerservice.NewManagedClustersClientWithBaseURI(baseURI, subscriptionID), nil
-	}
-
-	// If nothing matched, this is an error
-	return nil, fmt.Errorf("Unknown client type %s", string(clientType))
+	return compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID), nil
 }
 
-// GetClientBaseURIE returns the configured BaseURI for the given client, based on the passed ClientType.
-func (factory *multiEnvClientFactory) GetClientBaseURIE(clientType ClientType, client interface{}) (string, error) {
-	// Create correct client based on type passed
-	switch clientType {
-	case SubscriptionsClientType:
-		return client.(subscriptions.Client).BaseURI, nil
-	case VirtualMachinesClientType:
-		return client.(compute.VirtualMachinesClient).BaseURI, nil
-	case ManagedClustersClientType:
-		return client.(containerservice.ManagedClustersClient).BaseURI, nil
+// GetClientForManagedClustersE returns a client instance based on the ClientType passed, or optionally an error.
+func GetClientForManagedClustersE(subscriptionID string) (containerservice.ManagedClustersClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return containerservice.ManagedClustersClient{}, err
 	}
 
-	// If no matches, client was unknown
-	return "", fmt.Errorf("Unknown client type %s", string(clientType))
+	// Lookup environment URI
+	baseURI, err := getEnvironmentBaseURIE()
+	if err != nil {
+		return containerservice.ManagedClustersClient{}, err
+	}
+
+	// Create correct client based on type passed
+	return containerservice.NewManagedClustersClientWithBaseURI(baseURI, subscriptionID), nil
 }
 
 // getDefaultEnvironmentName returns either a configured Azure environment name, or the public default
-func (factory *multiEnvClientFactory) getDefaultEnvironmentName() string {
+func getDefaultEnvironmentName() string {
 	envName, exists := os.LookupEnv(AzureEnvironmentEnvName)
 
-	if !exists || envName == "" {
-		envName = autorestAzure.PublicCloud.Name
+	if exists && len(envName) > 0 {
+		return envName
 	}
 
-	return envName
+	return autorestAzure.PublicCloud.Name
 }
 
 // getEnvironmentBaseUriE returns the ARM management URI for the configured Azure environment.
-func (factory *multiEnvClientFactory) getEnvironmentBaseURIE() (string, error) {
-	envName := factory.getDefaultEnvironmentName()
+func getEnvironmentBaseURIE() (string, error) {
+	envName := getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
 		return "", err
@@ -127,8 +101,8 @@ func (factory *multiEnvClientFactory) getEnvironmentBaseURIE() (string, error) {
 }
 
 // getKeyVaultURISuffixE returns the proper KeyVault URI suffix for the configured Azure environment.
-func (factory *multiEnvClientFactory) getKeyVaultURISuffixE() (string, error) {
-	envName := factory.getDefaultEnvironmentName()
+func getKeyVaultURISuffixE() (string, error) {
+	envName := getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
 		return "", err
@@ -137,8 +111,8 @@ func (factory *multiEnvClientFactory) getKeyVaultURISuffixE() (string, error) {
 }
 
 // getStorageURISuffixE returns the proper storage URI suffix for the configured Azure environment
-func (factory *multiEnvClientFactory) getStorageURISuffixE() (string, error) {
-	envName := factory.getDefaultEnvironmentName()
+func getStorageURISuffixE() (string, error) {
+	envName := getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
 	if err != nil {
 		return "", err
