@@ -25,6 +25,11 @@ func getDockerHostFromEnv(env []string) string {
 		}
 	}
 
+	if len(dockerUrl) == 0 {
+		// no DOCKER_HOST variable, return default value
+		return "localhost"
+	}
+
 	switch dockerUrl[0] {
 	case "tcp", "ssh", "fd":
 		return strings.TrimPrefix(dockerUrl[1], "//")

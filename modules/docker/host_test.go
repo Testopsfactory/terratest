@@ -51,7 +51,7 @@ func TestGetDockerHostFromEnv(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(fmt.Sprintf("GetDockerHost: %s", test.Input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("GetDockerHostFromEnv: %s", test.Input), func(t *testing.T) {
 
 			testEnv := []string{
 				"FOO=bar",
@@ -63,4 +63,14 @@ func TestGetDockerHostFromEnv(t *testing.T) {
 			assert.Equal(t, test.Expected, host)
 		})
 	}
+
+	t.Run("GetDockerHostFromEnv: DOCKER_HOST unset", func(t *testing.T) {
+		testEnv := []string{
+			"FOO=bar",
+			"BAR=baz",
+		}
+
+		host := getDockerHostFromEnv(testEnv)
+		assert.Equal(t, "localhost", host)
+	})
 }
