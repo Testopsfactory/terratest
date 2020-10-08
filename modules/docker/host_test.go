@@ -2,11 +2,12 @@ package docker
 
 import (
 	"fmt"
-	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGetDockerHost(t *testing.T) {
+func TestGetDockerHostFromEnv(t *testing.T) {
 
 	tests := []struct {
 		Input    string
@@ -51,16 +52,15 @@ func TestGetDockerHost(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("GetDockerHost: %s", test.Input), func(t *testing.T) {
-			// GetHost() uses the DOCKER_HOST environment variable, so we need to set
-			// it to our test input and then reset it afterwards for other tests
-			defer os.Setenv("DOCKER_HOST", os.Getenv("DOCKER_HOST"))
-			os.Setenv("DOCKER_HOST", test.Input)
 
-			host := GetDockerHost()
-
-			if host != test.Expected {
-				t.Fatalf("Error: expected %s, got %s", test.Expected, host)
+			testEnv := []string{
+				"FOO=bar",
+				fmt.Sprintf("DOCKER_HOST=%s", test.Input),
+				"BAR=baz",
 			}
+
+			host := getDockerHostFromEnv(testEnv)
+			assert.Equal(t, test.Expected, host)
 		})
 	}
 }
