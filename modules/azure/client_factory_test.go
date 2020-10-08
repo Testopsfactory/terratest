@@ -1,8 +1,6 @@
-/*
+// +build azure
 
-This file contains unit tests for the client factory implementation(s).
-
-*/
+// This file contains unit tests for the client factory implementation(s).
 
 package azure
 
