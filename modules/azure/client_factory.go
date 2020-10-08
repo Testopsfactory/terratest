@@ -97,6 +97,7 @@ func getDefaultEnvironmentName() string {
 	return autorestAzure.PublicCloud.Name
 }
 
+// getEnvironmentEndpointE returns the endpoint identified by the endpoint name parameter.
 func getEnvironmentEndpointE(endpointName string) (string, error) {
 	envName := getDefaultEnvironmentName()
 	env, err := autorestAzure.EnvironmentFromName(envName)
@@ -106,8 +107,9 @@ func getEnvironmentEndpointE(endpointName string) (string, error) {
 	return getFieldValue(&env, endpointName), nil
 }
 
+// getFieldValue gets the field identified by the field parameter from the passed Environment struct
 func getFieldValue(v *autorestAzure.Environment, field string) string {
-	r := reflect.ValueOf(v)
-	f := reflect.Indirect(r).FieldByName(field)
-	return f.String()
+	structValue := reflect.ValueOf(v)
+	fieldVal := reflect.Indirect(structValue).FieldByName(field)
+	return fieldVal.String()
 }
