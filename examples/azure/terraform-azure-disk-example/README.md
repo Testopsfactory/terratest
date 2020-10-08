@@ -30,5 +30,4 @@ Note that the resources deployed in this module don't actually do anything; it j
 5. Install [Golang](https://golang.org/) and make sure this code is checked out into your `GOPATH`.
 6. `cd test`
 7. Make sure [the azure-sdk-for-go versions match](#check-go-dependencies) in [/test/go.mod](/test/go.mod) and in [test/azure/terraform_azure_disk_example_test.go](/test/azure/terraform_azure_disk_example_test.go).
-8. `go build azure/terraform_azure_disk_example_test.go`
-9. `go test -v -run TestTerraformAzureDiskExample`
+8. `go test -v -run TestTerraformAzureDiskExample`

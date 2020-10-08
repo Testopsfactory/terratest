@@ -46,6 +46,6 @@ func TestTerraformAzureDiskExample(t *testing.T) {
 	expectedDiskType := terraform.Output(t, terraformOptions, "disk_type")
 
 	// Check the Disk Type
-	actualDiskType := azure.GetDiskType(t, expectedDiskName, resourceGroupName, subID)
-	assert.Equal(t, compute.DiskStorageAccountTypes(expectedDiskType), actualDiskType)
+	actualDisk := azure.GetDisk(t, expectedDiskName, resourceGroupName, subID)
+	assert.Equal(t, compute.DiskStorageAccountTypes(expectedDiskType), actualDisk.Sku.Name)
 }
