@@ -157,39 +157,34 @@ If you're contributing code for the [Azure Platform](https://azure.com), please 
 
 We have a separate CI pipeline for Azure code. To run it on a forked repo:
 
-
 1. Run the following command on your preferred Terminal to create Azure credentials and copy the output:
-
 
     ```bash
     az ad sp create-for-rbac --name "terratest-az-cli" --role contributor --sdk-auth
     ```
 
+1. Go to Secrets page ([https://github.com/<GITHUB_ACCOUNT>/terratest/settings/secrets](https://github.com/<GITHUB_ACCOUNT>/terratest/settings/secrets)) under Settings tab ([https://github.com/<GITHUB_ACCOUNT>/terratest/settings](https://github.com/<GITHUB_ACCOUNT>/terratest/settings)) on GitHub
 
-2. Go to Secrets page ([https://github.com/<GITHUB_ACCOUNT>/terratest/settings/secrets](https://github.com/<GITHUB_ACCOUNT>/terratest/settings/secrets)) under Settings tab ([https://github.com/<GITHUB_ACCOUNT>/terratest/settings](https://github.com/<GITHUB_ACCOUNT>/terratest/settings)) on GitHub
+1. Create a new `Secret` named `AZURE_CREDENTIALS` and paste the Azure credentials you copied from the 1<sup>st</sup> step as the value
 
-3. Create a new `Secret` named `AZURE_CREDENTIALS` and paste the Azure credentials you copied from the 1<sup>st</sup> step as the value
+1. Create a [new Personal Access Token (PAT)](https://github.com/settings/tokens/new) page under [Settings](https://github.com/settings/profile) / [Developer Settings](https://github.com/settings/apps), making sure `write:discussion` is checked. Click the _Generate token_ button and copy the generated PAT.
 
+1. Create a new `Secret` named `PAT` and paste the output from the 4<sup>th</sup> step as the value
 
-4. Create a [new Personal Access Token (PAT)](https://github.com/settings/tokens/new) page under [Settings](https://github.com/settings/profile) / [Developer Settings](https://github.com/settings/apps), making sure `write:discussion` is checked. Click the _Generate token_ button and copy the generated PAT.
+1. Go to Actions tab on GitHub ([https://github.com/<GITHUB_ACCOUNT>/terratest/actions](https://github.com/<GITHUB_ACCOUNT>/terratest/actions))
 
+1. Click `ci-workflow` workflow
 
-5. Create a new `Secret` named `PAT` and paste the output from the 4<sup>th</sup> step as the value
-
-6. Go to Actions tab on GitHub ([https://github.com/<GITHUB_ACCOUNT>/terratest/actions](https://github.com/<GITHUB_ACCOUNT>/terratest/actions))
-
-7. Click `ci-workflow` workflow
-
-8. Click `Run workflow` button and fill the fields in the drop down
+1. Click `Run workflow` button and fill the fields in the drop down
     * _Repository Info_ : name of the forked repo (_e.g. xyz/terratest_)
     * _Name of the branch_ : branch name on the forked repo (_e.g. feature/adding-some-important-module_)
     * _Name of the official terratest repo_ : home of the target pr (_gruntwork-io/terratest_)
     * PR number on the official terratest repo : pr number on the official terratest repo (_e.g. 14, 25, etc._)
     * Skip provider registration : set true if you want to skip terraform provider registration for debug purposes (_false_ or _true_)
 
-9. Wait for the `ci-workflow` to be finished
+1. Wait for the `ci-workflow` to be finished
 
-10. PR with the given _PR Number_ will have the result of the `ci-workflow` as a comment
+1. PR with the given _PR Number_ will have the result of the `ci-workflow` as a comment
 
 ### Merge and release
 
