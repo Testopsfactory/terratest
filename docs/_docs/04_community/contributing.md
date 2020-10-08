@@ -158,7 +158,8 @@ If you're contributing code for the [Azure Platform](https://azure.com), please 
 We have a separate CI pipeline for Azure code. To run it on a forked repo:
 
 
-1. Run the following command on your preffered Terminal and copy the output
+1. Run the following command on your preferred Terminal to create Azure credentials and copy the output:
+
 
 ```bash
 az ad sp create-for-rbac --name "terratest-az-cli" --role contributor --sdk-auth
