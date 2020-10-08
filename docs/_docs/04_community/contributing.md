@@ -161,9 +161,10 @@ We have a separate CI pipeline for Azure code. To run it on a forked repo:
 1. Run the following command on your preferred Terminal to create Azure credentials and copy the output:
 
 
-```bash
-az ad sp create-for-rbac --name "terratest-az-cli" --role contributor --sdk-auth
-```
+    ```bash
+    az ad sp create-for-rbac --name "terratest-az-cli" --role contributor --sdk-auth
+    ```
+
 
 2. Go to Secrets page ([https://github.com/<GITHUB_ACCOUNT>/terratest/settings/secrets](https://github.com/<GITHUB_ACCOUNT>/terratest/settings/secrets)) under Settings tab ([https://github.com/<GITHUB_ACCOUNT>/terratest/settings](https://github.com/<GITHUB_ACCOUNT>/terratest/settings)) on GitHub
 
