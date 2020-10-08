@@ -2,7 +2,7 @@
 
 This file implements an Azure client factory that automatically handles setting up Base URI
 values for sovereign cloud support. Note the list of clients below is not initially exhaustive;
-rather, additional clients will me added as-needed.
+rather, additional clients will be added as-needed.
 
 */
 
