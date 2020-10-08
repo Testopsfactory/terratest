@@ -153,7 +153,10 @@ to include the following:
 
 If you're contributing code for the [Azure Platform](https://azure.com), please follow the below guidelines after [creating a pull request](https://help.github.com/articles/creating-a-pull-request/):
 
-##### To run the CI Pipeline on forked repo
+##### Run the Azure CI Pipeline on your forked repo
+
+We have a separate CI pipeline for Azure code. To run it on a forked repo:
+
 
 1. Run the following command on your preffered Terminal and copy the output
 
