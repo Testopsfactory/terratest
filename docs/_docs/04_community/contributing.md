@@ -191,7 +191,8 @@ We have a separate CI pipeline for Azure code. To run it on a forked repo:
 
 ### Merge and release
 
-The maintainers for this repo will review your code and provide feedback. If everything looks good, they will merge the
+The maintainers for this repo will review your code and provide feedback. Once the PR is accepted, they will merge the
+
 code and release a new version, which you'll be able to find in the [releases page](https://github.com/gruntwork-io/terratest/releases).
 
 ## Developing Terratest
