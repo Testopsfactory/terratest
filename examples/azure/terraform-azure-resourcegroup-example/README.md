@@ -1,7 +1,7 @@
-# Terraform Azure Resouce Group Example
+# Terraform Azure Resource Group Example
 
 This folder contains a simple Terraform module that deploys resources in [Azure](https://azure.microsoft.com/) to demonstrate
-how you can use Terratest to write automated tests for your Azure Terraform code. This module deploys a Resource Group.
+how you can use TerraTest to write automated tests for your Azure Terraform code. This module deploys a Resource Group.
 
 - A [Resource Group](https://docs.microsoft.com/azure/azure-resource-manager/management/overview) with no other resources.
 
@@ -32,7 +32,7 @@ it should be free, but you are completely responsible for all Azure charges.
 1. Configure your Azure credentials using one of the [supported methods for Azure CLI
    tools](https://docs.microsoft.com/cli/azure/azure-cli-configuration?view=azure-cli-latest)
 1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
-1. Configure your Terratest [Go test environment](../README.md)
+1. Configure your TerraTest [Go test environment](../README.md)
 1. `cd test/azure`
 1. `go build terraform_azure_resourcegroup_example_test.go`
 1. `go test -v -run TestTerraformAzureResourceGroupExample`
