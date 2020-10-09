@@ -36,5 +36,3 @@ it should be free, but you are completely responsible for all Azure charges.
 1. `cd test/azure`
 1. `go build terraform_azure_resourcegroup_example_test.go`
 1. `go test -v -run TestTerraformAzureResourceGroupExample`
-
-
