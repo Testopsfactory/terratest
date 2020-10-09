@@ -181,7 +181,8 @@ We have a separate CI pipeline for Azure code. To run it on a forked repo:
     * _Repository Info_ : name of the forked repo (_e.g. xyz/terratest_)
     * _Name of the branch_ : branch name on the forked repo (_e.g. feature/adding-some-important-module_)
     * _Name of the official terratest repo_ : home of the target pr (_gruntwork-io/terratest_)
-    * PR number on the official terratest repo : pr number on the official terratest repo (_e.g. 14, 25, etc._)
+    * PR number on the official terratest repo : pr number on the official terratest repo (_e.g. 14, 25, etc._).  Setting this value will leave a success/failure comment in the PR once CI completes execution.
+
     * Skip provider registration : set true if you want to skip terraform provider registration for debug purposes (_false_ or _true_)
 
 1. Wait for the `ci-workflow` to be finished
