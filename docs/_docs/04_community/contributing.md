@@ -171,7 +171,8 @@ We have a separate CI pipeline for Azure code. To run it on a forked repo:
 1. Create a [new Personal Access Token (PAT)](https://github.com/settings/tokens/new) page under [Settings](https://github.com/settings/profile) / [Developer Settings](https://github.com/settings/apps), making sure `write:discussion` scope is checked. Click the _Generate token_ button and copy the generated PAT.
 
 
-1. In your [fork project settings/secrets](https://github.com/{YOUR_GUTHIB_ACCOUNT}/terratest/settings/secrets), [Create a new Secret](https://docs.github.com/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) named `PAT` and paste the output from the 4<sup>th</sup> step as the value
+1. Go back to settings/secrets in your fork and [Create a new Secret](https://docs.github.com/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) named `PAT`.  Paste the output from the 4<sup>th</sup> step as the value
+
 
 
 1. Go to Actions tab on GitHub ([https://github.com/<GITHUB_ACCOUNT>/terratest/actions](https://github.com/<GITHUB_ACCOUNT>/terratest/actions))
