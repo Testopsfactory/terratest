@@ -69,7 +69,7 @@ func testStrategiesForVMs(t *testing.T, terraformOptions *terraform.Options, sub
 
 	// 3. Check the VM size by instance. This strategy is beneficial when checking multiple properties
 	// by using one VM instance and making calls against it with the added benefit of property check abstraction.
-	vmInstance := &(azure.Instance){vmByRef}
+	vmInstance := azure.Instance{vmByRef}
 	actualVMSize = vmInstance.GetVirtualMachineInstanceSize()
 	assert.Equal(t, expectedVMSize, actualVMSize)
 }
