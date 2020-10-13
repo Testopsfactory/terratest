@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// DiskExists indicates whether the specified Azure Managed Disk exists.
+// DiskExists indicates whether the specified Azure Managed Disk exists
 // This function would fail the test if there is an error.
 func DiskExists(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) bool {
 	exists, err := DiskExistsE(diskName, resGroupName, subscriptionID)
@@ -29,26 +29,7 @@ func DiskExistsE(diskName string, resGroupName string, subscriptionID string) (b
 	return true, nil
 }
 
-// GetDiskType returns the Disk Storage Account Type of the Azure Managed Disk.
-// This function would fail the test if there is an error.
-func GetDiskType(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) compute.DiskStorageAccountTypes {
-	diskType, err := GetDiskTypeE(diskName, resGroupName, subscriptionID)
-	require.NoError(t, err)
-	return diskType
-}
-
-// GetDiskTypeE returns the Disk Storage Account Type of the Azure Managed Disk.
-func GetDiskTypeE(diskName string, resGroupName string, subscriptionID string) (compute.DiskStorageAccountTypes, error) {
-	// Get the Disk object
-	disk, err := GetDiskE(diskName, resGroupName, subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	return disk.Sku.Name, nil
-}
-
-// GetDisk returns a Disk in the specified Azure Resource Group.
+// GetDisk returns a Disk in the specified Azure Resource Group
 // This function would fail the test if there is an error.
 func GetDisk(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) *compute.Disk {
 	disk, err := GetDiskE(diskName, resGroupName, subscriptionID)
@@ -56,7 +37,7 @@ func GetDisk(t testing.TestingT, diskName string, resGroupName string, subscript
 	return disk
 }
 
-// GetDiskE returns a Disk in the specified Azure Resource Group.
+// GetDiskE returns a Disk in the specified Azure Resource Group
 func GetDiskE(diskName string, resGroupName string, subscriptionID string) (*compute.Disk, error) {
 	// Validate resource group name and subscription ID
 	resGroupName, err := getTargetAzureResourceGroupName(resGroupName)
@@ -79,7 +60,7 @@ func GetDiskE(diskName string, resGroupName string, subscriptionID string) (*com
 	return &disk, nil
 }
 
-// GetDiskClientE returns a new Disk client in the specified Azure Subscription.
+// GetDiskClientE returns a new Disk client in the specified Azure Subscription
 func GetDiskClientE(subscriptionID string) (*compute.DisksClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)

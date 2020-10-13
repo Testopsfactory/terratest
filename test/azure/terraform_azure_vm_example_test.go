@@ -159,7 +159,8 @@ func testDisksOfVM(t *testing.T, terraformOptions *terraform.Options, subscripti
 
 	// Check the Disk Type of the Managed Disk of the VM.
 	// This does not apply to VHD disks saved under a storage account.
-	actualDiskType := azure.GetDiskType(t, expectedDiskName, resourceGroupName, subscriptionID)
+	actualDisk := azure.GetDisk(t, expectedDiskName, resourceGroupName, subscriptionID)
+	actualDiskType := actualDisk.Sku.Name
 	assert.Equal(t, compute.DiskStorageAccountTypes(expectedDiskType), actualDiskType)
 }
 
