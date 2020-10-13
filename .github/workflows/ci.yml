@@ -32,6 +32,10 @@ on:
       target_pr:
         description: 'PR number on the official terratest repo'
         required: false
+      skip_provider_registration:
+        description: 'When set to true, terraform will skip provider registration (see: https://www.terraform.io/docs/providers/azurerm/index.html#skip_provider_registration for more information)'
+        required: true
+        default: 'false'
 
 jobs:
   ci-job:
@@ -61,10 +65,34 @@ jobs:
 
           # run the linter
           ./bin/golangci-lint run ./test/azure/ --build-tags=azure --timeout 5m0s
+      - name: run terraform format
+        id: azure_terraform_format
+        run: terraform fmt -check -recursive ./examples/azure
       - name: login to azure cli
         uses: azure/login@v1.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: run go unit test for azure
+        id: azure_unit_test
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          cd modules
+
+          APP_ID=`echo $AZURE_CREDENTIALS | jq -r -c ".clientId"`
+          APP_PASSWORD=`echo $AZURE_CREDENTIALS | jq -r -c ".clientSecret"`
+          TENANT_ID=`echo $AZURE_CREDENTIALS | jq -r -c ".tenantId"`
+
+          # if clientId, subscriptionId, tenantId doesn't provide to the go tests
+          # by default, terratest reads them from below environment variables
+          export ARM_CLIENT_ID="$APP_ID"
+          export ARM_CLIENT_SECRET="$APP_PASSWORD"
+          export ARM_SUBSCRIPTION_ID=`az account show --query "id" --output tsv`
+          export ARM_TENANT_ID="$TENANT_ID"
+          export ARM_SKIP_PROVIDER_REGISTRATION=${{ github.event.inputs.skip_provider_registration }}
+
+          # run the unit tests under the `azure` subfolder
+          go test ./azure/* -v -timeout 90m
       - name: run go test for azure
         id: azure_test
         env:
@@ -82,6 +110,7 @@ jobs:
           export ARM_CLIENT_SECRET="$APP_PASSWORD"
           export ARM_SUBSCRIPTION_ID=`az account show --query "id" --output tsv`
           export ARM_TENANT_ID="$TENANT_ID"
+          export ARM_SKIP_PROVIDER_REGISTRATION=${{ github.event.inputs.skip_provider_registration }}
 
           # some resources may require ssh keys (e.g. Kubernetes, VMs, etc.)
           # terraform will read below environment variables
@@ -99,7 +128,7 @@ jobs:
         env:
           CURRENT_REPOSITORY: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT }}
           TARGET_REPOSITORY: ${{ github.event.inputs.target_repository }}
           TARGET_PR: ${{ github.event.inputs.target_pr }}
           TEST_RESULT: ${{ steps.azure_test.conclusion }}
@@ -108,6 +137,9 @@ jobs:
         run: |
           # if no PR number provided, simply exit...
           [[ -z "$TARGET_PR" ]] && { echo "No PR Number provided, exiting..." ; exit 0; }
+
+          # if no PAT provided, simply exit...
+          [[ -z "$GITHUB_TOKEN" ]] && { echo "No PAT provided, exiting..." ; exit 0; }
 
           echo "PR Number provided... ${TARGET_REPOSITORY}:#${TARGET_PR}"
 
