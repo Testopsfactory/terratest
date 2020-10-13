@@ -63,7 +63,10 @@ type Options struct {
 	Parallelism              int                    // Set the parallelism setting for Terraform
 }
 
-// Clone makes a deep copy of the Options object and returns it.
+// Clone makes a deep copy of most fields on the Options object and returns it. Note that the following fields will NOT
+// be a deep copy:
+// - SshAgent
+// - Logger
 func (options *Options) Clone() (*Options, error) {
 	newOptions := Options{}
 	if err := copier.Copy(&newOptions, options); err != nil {
