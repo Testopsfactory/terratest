@@ -85,7 +85,8 @@ func NewTunnelWithLogger(
 	resourceName string,
 	local int,
 	remote int,
-	logger logger.TestLogger) *Tunnel {
+	logger logger.TestLogger,
+) *Tunnel {
 	return &Tunnel{
 		out:            ioutil.Discard,
 		localPort:      local,
