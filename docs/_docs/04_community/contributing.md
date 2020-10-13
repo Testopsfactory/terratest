@@ -151,9 +151,8 @@ to include the following:
 
 #### Validate the Pull Request for Azure Platform
 
-If you're contributing code for the [Azure Platform](https://azure.com), please follow the below guidelines after [creating a pull request](https://help.github.com/articles/creating-a-pull-request/):
+If you're contributing code for the [Azure Platform](https://azure.com), please follow the below guidelines after [creating a pull request](https://help.github.com/articles/creating-a-pull-request/). If you're contributing code for any other platform (e.g., AWS, GCP, etc), you can skip these steps.
 
-##### Run the Azure CI Pipeline on your forked repo
 
 We have a separate CI pipeline for Azure code. To run it on a forked repo:
 
