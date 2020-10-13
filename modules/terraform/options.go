@@ -10,6 +10,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	DefaultRetryableTerraformErrors = map[string]string{
+		// Helm related terraform calls may fail when too many tests run in parallel. While the exact cause is unknown,
+		// this is presumably due to all the network contention involved. Usually a retry resolves the issue.
+		".*read: connection reset by peer.*": "Failed to reach helm charts repository.",
+		".*transport is closing.*":           "Failed to reach Kubernetes API.",
+
+		// `terraform init` frequently fails in CI due to network issues accessing plugins. The reason is unknown, but
+		// eventually these succeed after a few retries.
+		".*unable to verify signature.*":             "Failed to retrieve plugin due to transient network error.",
+		".*unable to verify checksum.*":              "Failed to retrieve plugin due to transient network error.",
+		".*no provider exists with the given name.*": "Failed to retrieve plugin due to transient network error.",
+		".*registry service is unreachable.*":        "Failed to retrieve plugin due to transient network error.",
+		".*Error installing provider.*":              "Failed to retrieve plugin due to transient network error.",
+
+		// Provider bugs where the data after apply is not propagated. This is usually an eventual consistency issue, so
+		// retrying should self resolve it.
+		// See https://github.com/terraform-providers/terraform-provider-aws/issues/12449 for an example.
+		".*Provider produced inconsistent result after apply.*": "Provider eventual consistency error.",
+	}
+)
+
 // Options for running Terraform commands
 type Options struct {
 	TerraformBinary string // Name of the binary that will be used
@@ -58,29 +80,10 @@ func WithDefaultRetryableErrors(t *testing.T, originalOptions *Options) *Options
 	newOptions, err := originalOptions.Clone()
 	require.NoError(t, err)
 
-	retryableTerraformErrors := map[string]string{
-		// Helm related terraform calls may fail when too many tests run in parallel. While the exact cause is unknown,
-		// this is presumably due to all the network contention involved. Usually a retry resolves the issue.
-		".*read: connection reset by peer.*": "Failed to reach helm charts repository.",
-		".*transport is closing.*":           "Failed to reach Kubernetes API.",
-
-		// `terraform init` frequently fails in CI due to network issues accessing plugins. The reason is unknown, but
-		// eventually these succeed after a few retries.
-		".*unable to verify signature.*":             "Failed to retrieve plugin due to transient network error.",
-		".*unable to verify checksum.*":              "Failed to retrieve plugin due to transient network error.",
-		".*no provider exists with the given name.*": "Failed to retrieve plugin due to transient network error.",
-		".*registry service is unreachable.*":        "Failed to retrieve plugin due to transient network error.",
-		".*Error installing provider.*":              "Failed to retrieve plugin due to transient network error.",
-
-		// Provider bugs where the data after apply is not propagated. This is usually an eventual consistency issue, so
-		// retrying should self resolve it.
-		// See https://github.com/terraform-providers/terraform-provider-aws/issues/12449 for an example.
-		".*Provider produced inconsistent result after apply.*": "Provider eventual consistency error.",
-	}
 	if newOptions.RetryableTerraformErrors == nil {
 		newOptions.RetryableTerraformErrors = map[string]string{}
 	}
-	for k, v := range retryableTerraformErrors {
+	for k, v := range DefaultRetryableTerraformErrors {
 		newOptions.RetryableTerraformErrors[k] = v
 	}
 
