@@ -84,7 +84,7 @@ func WithDefaultRetryableErrors(t *testing.T, originalOptions *Options) *Options
 		newOptions.RetryableTerraformErrors[k] = v
 	}
 
-	// These defaults for retry configuration are arbitrary, but has worked well in practice across Gruntwork
+	// These defaults for retry configuration are arbitrary, but have worked well in practice across Gruntwork
 	// modules.
 	newOptions.MaxRetries = 3
 	newOptions.TimeBetweenRetries = 5 * time.Second
