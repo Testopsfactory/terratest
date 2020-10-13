@@ -47,17 +47,16 @@ func GetVirtualMachineNicsE(vmName string, resGroupName string, subscriptionID s
 		return nil, err
 	}
 
+	// Get VM NIC(s); value always present, no nil checks needed.
 	vmNICs := *vm.NetworkProfile.NetworkInterfaces
-	if len(vmNICs) == 0 {
-		// No NIC present
-		return nil, nil
-	}
 
-	// Get the Names of the attached NICs
 	nics := make([]string, len(vmNICs))
-
 	for i, nic := range vmNICs {
-		nics[i] = GetNameFromResourceID(*nic.ID)
+		// Get ID from resource string.
+		nicName, err := GetNameFromResourceIDE(*nic.ID)
+		if err == nil {
+			nics[i] = nicName
+		}
 	}
 	return nics, nil
 }
@@ -80,17 +79,13 @@ func GetVirtualMachineManagedDisksE(vmName string, resGroupName string, subscrip
 		return nil, err
 	}
 
-	// Get VM attached Disks
+	// Get VM attached Disks; value always present even if no disks attached, no nil check needed.
 	vmDisks := *vm.StorageProfile.DataDisks
-
-	// No Attached Disks present
-	if len(vmDisks) == 0 {
-		return nil, nil
-	}
 
 	// Get the Names of the attached Managed Disks
 	diskNames := make([]string, len(vmDisks))
 	for i, v := range vmDisks {
+		// Disk names are required, no nil check needed.
 		diskNames[i] = *v.Name
 	}
 
@@ -139,7 +134,13 @@ func GetVirtualMachineAvailabilitySetIDE(vmName string, resGroupName string, sub
 		return "", nil
 	}
 
-	return GetNameFromResourceID(*vm.AvailabilitySet.ID), nil
+	// Get ID from resource string
+	avs, err := GetNameFromResourceIDE(*vm.AvailabilitySet.ID)
+	if err != nil {
+		return "", err
+	}
+
+	return avs, nil
 }
 
 // VMImage represents the storage image for the specified Azure Virtual Machine.
@@ -169,10 +170,6 @@ func GetVirtualMachineImageE(vmName string, resGroupName string, subscriptionID 
 		return vmImage, err
 	}
 
-	if vm.StorageProfile == nil {
-		return vmImage, NewNotFoundError("Image Reference", "Any", vmName)
-	}
-
 	// Populate VM Image; values always present, no nil checks needed
 	vmImage.Publisher = *vm.StorageProfile.ImageReference.Publisher
 	vmImage.Offer = *vm.StorageProfile.ImageReference.Offer
@@ -180,25 +177,6 @@ func GetVirtualMachineImageE(vmName string, resGroupName string, subscriptionID 
 	vmImage.Version = *vm.StorageProfile.ImageReference.Version
 
 	return vmImage, nil
-}
-
-// GetVirtualMachineAdminUser gets the Admin Username of the specified Azure Virtual Machine.
-// This function would fail the test if there is an error.
-func GetVirtualMachineAdminUser(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) string {
-	adminUser, err := GetVirtualMachineAdminUserE(vmName, resGroupName, subscriptionID)
-	require.NoError(t, err)
-	return adminUser
-}
-
-// GetVirtualMachineAdminUserE gets the Admin Username of the specified Azure Virtual Machine.
-func GetVirtualMachineAdminUserE(vmName string, resGroupName string, subscriptionID string) (string, error) {
-	// Get VM Object
-	vm, err := GetVirtualMachineE(vmName, resGroupName, subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	return string(*vm.OsProfile.AdminUsername), nil
 }
 
 // GetSizeOfVirtualMachine gets the Size Type of the specified Azure Virtual Machine.
@@ -293,19 +271,23 @@ func GetVirtualMachinesForResourceGroup(t testing.TestingT, resGroupName string,
 // GetVirtualMachinesForResourceGroupE gets all Virtual Machine objects in the specified Resource Group. Each
 // VM Object represents the entire set of VM compute properties accessible by using the VM name as the map key.
 func GetVirtualMachinesForResourceGroupE(resourceGroupName string, subscriptionID string) (map[string]compute.VirtualMachineProperties, error) {
+	// Create VM Client
 	vmClient, err := GetVirtualMachineClientE(subscriptionID)
 	if err != nil {
 		return nil, err
 	}
 
+	// Get the list of VMs in the Resource Group
 	vms, err := vmClient.List(context.Background(), resourceGroupName)
 	if err != nil {
 		return nil, err
 	}
 
+	// Get the VMs in the Resource Group.
 	vmDetails := make(map[string]compute.VirtualMachineProperties, len(vms.Values()))
 	for _, v := range vms.Values() {
-		vmDetails[string(*v.Name)] = *v.VirtualMachineProperties
+		// VM name and machine properties are required for each VM, no nill check required.
+		vmDetails[*v.Name] = *v.VirtualMachineProperties
 	}
 	return vmDetails, nil
 }
@@ -317,25 +299,6 @@ func GetVirtualMachinesForResourceGroupE(resourceGroupName string, subscriptionI
 // Instance of the VM
 type Instance struct {
 	*compute.VirtualMachine
-}
-
-// GetVirtualMachineInstance gets a local Virtual Machine instance in the specified Resource Group.
-// This function would fail the test if there is an error.
-func GetVirtualMachineInstance(t testing.TestingT, vmName string, resGroupName string, subscriptionID string) *Instance {
-	vm, err := GetVirtualMachineInstanceE(vmName, resGroupName, subscriptionID)
-	require.NoError(t, err)
-	return vm
-}
-
-// GetVirtualMachineInstanceE gets a local Virtual Machine instance in the specified Resource Group.
-func GetVirtualMachineInstanceE(vmName string, resGroupName string, subscriptionID string) (*Instance, error) {
-	// Get VM Object
-	vm, err := GetVirtualMachineE(vmName, resGroupName, subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Instance{vm}, nil
 }
 
 // GetVirtualMachineInstanceSize gets the size of the Virtual Machine.

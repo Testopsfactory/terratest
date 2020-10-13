@@ -12,8 +12,7 @@ provider "azurerm" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# PIN TERRAFORM VERSION TO >= 0.12
-# The examples have been upgraded to 0.12 syntax
+# PIN TERRAFORM VERSION
 # ---------------------------------------------------------------------------------------------------------------------
 
 terraform {
@@ -131,6 +130,8 @@ resource "azurerm_virtual_machine" "vm_example" {
   depends_on = [random_password.rand]
 }
 
+# Random password is used as an example to simplify the deployment and improve the security of the remote VM.
+# This is not as a production recommendation as the password is stored in the Terraform state file.
 resource "random_password" "rand" {
   length           = 16
   override_special = "-_%@"

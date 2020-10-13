@@ -102,6 +102,8 @@ resource "azurerm_virtual_machine" "main" {
   depends_on = [random_password.main]
 }
 
+# Random password is used as an example to simplify the deployment and improve the security of the remote VM.
+# This is not as a production recommendation as the password is stored in the Terraform state file.
 resource "random_password" "main" {
   length           = 16
   override_special = "-_%@"

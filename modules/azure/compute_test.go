@@ -28,18 +28,6 @@ func TestGetVirtualMachineE(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGetVirtualMachineInstanceE(t *testing.T) {
-	t.Parallel()
-
-	vmName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := GetVirtualMachineInstanceE(vmName, rgName, subID)
-
-	require.Error(t, err)
-}
-
 func TestListVirtualMachinesForResourceGroupE(t *testing.T) {
 	t.Parallel()
 
@@ -82,18 +70,6 @@ func TestGetSizeOfVirtualMachineE(t *testing.T) {
 	subID := ""
 
 	_, err := GetSizeOfVirtualMachineE(vmName, rgName, subID)
-
-	require.Error(t, err)
-}
-
-func TestGetVirtualMachineAdminUserE(t *testing.T) {
-	t.Parallel()
-
-	vmName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := GetVirtualMachineAdminUserE(vmName, rgName, subID)
 
 	require.Error(t, err)
 }

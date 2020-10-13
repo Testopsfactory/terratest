@@ -69,7 +69,7 @@ func testStrategiesForVMs(t *testing.T, terraformOptions *terraform.Options, sub
 
 	// 3. Check the VM size by instance. This strategy is beneficial when checking multiple properties
 	// by using one VM instance and making calls against it with the added benefit of property check abstraction.
-	vmInstance := azure.GetVirtualMachineInstance(t, virtualMachineName, resourceGroupName, subscriptionID)
+	vmInstance := &azure.Instance{vmByRef}
 	actualVMSize = vmInstance.GetVirtualMachineInstanceSize()
 	assert.Equal(t, expectedVMSize, actualVMSize)
 }
@@ -96,7 +96,7 @@ func testMultipleVMs(t *testing.T, terraformOptions *terraform.Options, subscrip
 	// multiple SDK calls. The penalty for this approach is introducing direct references
 	// which need to be checked for nil for optional configurations.
 	vmsByRef := azure.GetVirtualMachinesForResourceGroup(t, resourceGroupName, subscriptionID)
-	thisVM := (vmsByRef)[expectedVMName]
+	thisVM := vmsByRef[expectedVMName]
 	assert.Equal(t, expectedVMSize, thisVM.HardwareProfile.VMSize)
 
 	// Check for the VM negative test.
@@ -118,7 +118,8 @@ func testInformationOfVM(t *testing.T, terraformOptions *terraform.Options, subs
 	assert.True(t, azure.VirtualMachineExists(t, virtualMachineName, resourceGroupName, subscriptionID))
 
 	// Check the Admin User of the VM.
-	actualVmAdminUser := azure.GetVirtualMachineAdminUser(t, virtualMachineName, resourceGroupName, subscriptionID)
+	actualVM := azure.GetVirtualMachine(t, virtualMachineName, resourceGroupName, subscriptionID)
+	actualVmAdminUser := *actualVM.OsProfile.AdminUsername
 	assert.Equal(t, expectedVmAdminUser[0], actualVmAdminUser)
 
 	// Check the Storage Image properties of the VM.
@@ -157,6 +158,7 @@ func testDisksOfVM(t *testing.T, terraformOptions *terraform.Options, subscripti
 	assert.Equal(t, expectedManagedDiskCount, len(actualManagedDiskNames))
 
 	// Check the Disk Type of the Managed Disk of the VM.
+	// This does not apply to VHD disks saved under a storage account.
 	actualDiskType := azure.GetDiskType(t, expectedDiskName, resourceGroupName, subscriptionID)
 	assert.Equal(t, compute.DiskStorageAccountTypes(expectedDiskType), actualDiskType)
 }
