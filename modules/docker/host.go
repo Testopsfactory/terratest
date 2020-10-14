@@ -19,8 +19,12 @@ func getDockerHostFromEnv(env []string) string {
 
 	for _, item := range env {
 		envVar := strings.Split(item, "=")
-		if envVar[0] == "DOCKER_HOST" {
+		if envVar[0] == "DOCKER_HOST" && len(envVar) == 2 {
 			dockerUrl = strings.Split(envVar[1], ":")
+			if len(dockerUrl) < 2 {
+				// DOCKER_HOST did not split, is empty or ended with ":"
+				return "localhost"
+			}
 			break
 		}
 	}
@@ -34,7 +38,7 @@ func getDockerHostFromEnv(env []string) string {
 	case "tcp", "ssh", "fd":
 		return strings.TrimPrefix(dockerUrl[1], "//")
 	default:
-		// if DOCKER_HOST is empty, or not in one of the formats listed above
+		// if DOCKER_HOST is not in one of the formats listed above, return default
 		return "localhost"
 	}
 }
