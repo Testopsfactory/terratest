@@ -131,6 +131,9 @@ func TestManagedClustersClientBaseURISetCorrectly(t *testing.T) {
 	defer os.Setenv(AzureEnvironmentEnvName, currentEnv)
 
 	for _, tt := range cases {
+		// The following is necessary to make sure testCase's values don't
+		// get updated due to concurrency within the scope of t.Run(..) below	
+		tt := tt
 		t.Run(tt.CaseName, func(t *testing.T) {
 			// Override env setting
 			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
