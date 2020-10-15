@@ -28,8 +28,8 @@ resource "azurerm_resource_group" "sql_rg" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "random_password" "password" {
-  length = 16
-  special = true
+  length           = 16
+  special          = true
   override_special = "_%@"
 }
 
