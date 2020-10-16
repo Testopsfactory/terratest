@@ -108,8 +108,8 @@ func getEnvironmentEndpointE(endpointName string) (string, error) {
 }
 
 // getFieldValue gets the field identified by the field parameter from the passed Environment struct
-func getFieldValue(v *autorestAzure.Environment, field string) string {
-	structValue := reflect.ValueOf(v)
+func getFieldValue(env *autorestAzure.Environment, field string) string {
+	structValue := reflect.ValueOf(env)
 	fieldVal := reflect.Indirect(structValue).FieldByName(field)
 	return fieldVal.String()
 }
