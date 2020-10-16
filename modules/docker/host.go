@@ -19,18 +19,14 @@ func getDockerHostFromEnv(env []string) string {
 
 	for _, item := range env {
 		envVar := strings.Split(item, "=")
-		if envVar[0] == "DOCKER_HOST" && len(envVar) == 2 {
+		if len(envVar) == 2 && envVar[0] == "DOCKER_HOST" {
 			dockerUrl = strings.Split(envVar[1], ":")
-			if len(dockerUrl) < 2 {
-				// DOCKER_HOST did not split, is empty or ended with ":"
-				return "localhost"
-			}
 			break
 		}
 	}
 
-	if len(dockerUrl) == 0 {
-		// no DOCKER_HOST variable, return default value
+	if len(dockerUrl) < 2 {
+		// DOCKER_HOST was empty, not present or not a valid URL
 		return "localhost"
 	}
 

@@ -9,6 +9,8 @@ import (
 
 func TestGetDockerHostFromEnv(t *testing.T) {
 
+	t.Parallel()
+
 	tests := []struct {
 		Input    string
 		Expected string
