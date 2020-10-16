@@ -116,6 +116,55 @@ func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachine
 }
 ```
 
+### Add a unit test to client_factory_test.go
+
+In order to ensure that your CreateClient method works properly, add a unit test to `client_factory_test.go`.  The unit test MUST assert that the base URI is correctly set for your client.  Some key points for writing your unit test are:
+
+- Use table-driven testing to test the various combinations of cloud environments
+- Give the test case a descriptive name so it is easy to identify which test failed.
+- PRs will be rejected if a client is added without a corresponding unit test.
+
+Below is an example of the Virtual Machines client unit test:
+
+```go
+func TestVMClientBaseURISetCorrectly(t *testing.T) {
+    var cases = []struct {
+        CaseName        string
+        EnvironmentName string
+        ExpectedBaseURI string
+    }{
+        {"GovCloud/VMClient", govCloudEnvName, autorest.USGovernmentCloud.ResourceManagerEndpoint},
+        {"PublicCloud/VMClient", publicCloudEnvName, autorest.PublicCloud.ResourceManagerEndpoint},
+        {"ChinaCloud/VMClient", chinaCloudEnvName, autorest.ChinaCloud.ResourceManagerEndpoint},
+        {"GermanCloud/VMClient", germanyCloudEnvName, autorest.GermanCloud.ResourceManagerEndpoint},
+    }
+
+    // save any current env value and restore on exit
+    currentEnv := os.Getenv(AzureEnvironmentEnvName)
+    defer os.Setenv(AzureEnvironmentEnvName, currentEnv)
+
+    for _, tt := range cases {
+        // The following is necessary to make sure testCase's values don't
+        // get updated due to concurrency within the scope of t.Run(..) below
+        tt := tt
+        t.Run(tt.CaseName, func(t *testing.T) {
+            // Override env setting
+            os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
+
+            // Get a VM client
+            client, err := CreateVirtualMachinesClientE("")
+            require.NoError(t, err)
+
+            // Check for correct ARM URI
+            assert.Equal(t, tt.ExpectedBaseURI, client.BaseURI)
+        })
+    }
+}
+
+```
+
+### Use your CreateClient method in your helper
+
 We now can use this client creation method in our helpers to create a Virtual Machines client.  Below is an example for how to call into this create method from `client_factory`:
 
 ```go
