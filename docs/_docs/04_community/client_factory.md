@@ -1,53 +1,53 @@
 # Azure SDK Client Factory
 
-This documentation provides and overview of the `client_factory.go` module, targeted use cases, and behaviors.
+This documentation provides and overview of the `client_factory.go` module, targeted use cases, and behaviors.  This module is intended to provide support for and simplify working with Azure's multiple cloud environments (Azure Public, Azure Government, Azure China, Azure Germany and Azure Stack).  Developers looking to contribute to additional support for Azure to TerraTest should leverage client_factory and use the patterns below to add a resource REST client from Azure Go SDK.  By doing so, it provides a consistent means for developers using TerraTest to test their Azure Infrastructure to connect to the correct cloud and its associated REST apis.
 
-## Multi-cloud environment support
+## Background
 
-The Azure REST APIs support both Public and sovereign cloud environments (includes USGovernment, Germany, China, and Azure Stack).  You must use the correct base URI's for the Azure management plane when using the REST API's (either directly or via SDK) to communicate with a cloud other than Azure Public. The Azure Go SDK supports this by using the `WithBaseURI` suffixed calls when creating service clients. For example, when using the `VirtualMachinesClient`, a developer would normally write code like this:
+The Azure REST APIs support both Public and sovereign cloud environments (at the moment this includes Public, US Government, Germany, China, and Azure Stack environments).  If you are interacting with an environment other than public cloud, you need to set the base URI for the Azure REST API you are interacting with.
+
+### Base URI
+
+You must use the correct base URI's for the Azure REST API's (either directly or via Azure SDK for GO) to communicate with a cloud environment other than Azure Public. The Azure Go SDK supports this by using the `WithBaseURI` suffixed calls when creating service clients. For example, when using the `VirtualMachinesClient` with the public cloud, a developer would normally write code for the public cloud like so:
 
 ```golang
 import (
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 )
 
-func SomeMethod() {
+func SomeVMHelperMethod() {
     subscriptionID := "your subscription ID"
 
     // Create a VM client and return
-	vmClient := compute.NewVirtualMachinesClient(subscriptionID)
+    vmClient, err := compute.NewVirtualMachinesClient(subscriptionID)
 
     // Use client / etc
 }
 ```
 
-However, this code will not work in non-Public cloud environments.  Instead, you need to use an alternative method (provided in the Azure REST SDK for Go) to get a properly configured client:
+However, this code will not work in non-Public cloud environments as the REST endpoints have different URIs depending on environment.  Instead, you need to use an alternative method (provided in the Azure REST SDK for Go) to get a properly configured client(*all REST API clients should support this alternate method*):
 
 ```golang
 import (
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 )
 
-func SomeMethod() {
+func SomeVMHelperMethod() {
     subscriptionID := "your subscription ID"
     baseURI := "management.azure.com"
 
     // Create a VM client and return
-	vmClient := compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID)
+    vmClient, err := compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID)
 
     // Use client / etc
 }
 ```
 
-Using code similar to above, you can communicate with any cloud environment just by changing the base URI that is passed to the clients (Azure Public shown in above example).
+Using code similar to above, you can communicate with any Azure cloud environment just by changing the base URI that is passed to the clients (Azure Public shown in above example).
 
-## Environment URI Lookups
+## Lookup Environment Metadata
 
-Rather than hardcode these URI's, they should be looked up from an authoritative source. Fortunately, the AutoRest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the AutoRest `EnvironmentFromName(envName string)` function to return the appropriate structure.  This Environment structure is documented on GoDoc [here](https://godoc.org/github.com/Azure/go-autorest/autorest/azure#EnvironmentFromName).
-
-Using these URI's, `client_factory` is able to instantiate and return properly configured SDK clients without module developers having to duplicate this code.  If you require a client that is not already in client factory you will need to create a corresponding method that instantiates the client and accepts base Uri following the patterns discussed.
-
-## Configuration and Defaults
+Developers MUST avoid hardcoding these base URI's.  Instead, they should be looked up from an authoritative source. The AutoRest-GO library (used by the Go SDK) provides such functionality. The `client_factory` module makes use of the AutoRest `EnvironmentFromName(envName string)` function to return the appropriate structure.  This method and Environment structure is documented on GoDoc [here](https://godoc.org/github.com/Azure/go-autorest/autorest/azure#EnvironmentFromName).
 
 To configure different cloud environments, we will use the same `AZURE_ENVIRONMENT` environment variable that the Go SDK uses. This can currently be set to one of the following values:
 
@@ -59,18 +59,69 @@ To configure different cloud environments, we will use the same `AZURE_ENVIRONME
 |"AzureUSGovernmentCloud"   |USGovernmentCloud  |
 |"AzureStackCloud"          |Azure stack        |
 
-Note that when using the "AzureStackCloud" setting, you must also set the `AZURE_ENVIRONMENT_FILEPATH` variable to point to a JSON file containing your Azure Stack URI details.
+When using the "AzureStackCloud" setting, you MUST also set the `AZURE_ENVIRONMENT_FILEPATH` variable to point to a JSON file containing your Azure Stack URI details.
 
+## Putting it all together
+
+ `client_factory` implements this pattern described above in order to instantiate and return properly configured *REST SDK for GO* clients so that test implementers don't have to consider REST API client implementation as long as they have the correct `AZURE_ENVIRONMENT` env setting.  If this environment variable is not set, the client will assume public cloud as the cloud environment to communicate with.  We strongly recommend developers creating TerraTest helper methods for Azure use this pattern with client factory to create REST API clients.  This will reduce effort for TerraTest users creating test for Azure resources.
+
+>NOTE: TERRAFORM uses [ARM_ENVIRONMENT](https://www.terraform.io/docs/backends/types/azurerm.html#environment) environment variable to set the correct cloud environment.  
+<!-- -->
 >NOTE: The default behavior of the `client_factory` is to use the AzurePublicCloud environment. This requires no work from the developer to configure, and ensures consistent behavior with the current SDK code.
 
-## Usage Patterns
+### Wait, I don't see the client in client factory for the rest api I want to interact with
 
-Modules authors will interact with the `client_factory` through the `CreateXXXXClientE` methods on the `azure` package as shown in the following example:
+ If you require a client that is not already implemented in client factory for your helper method you will need to create a corresponding method that instantiates the client and accepts base URI following the patterns discussed.  Below is a walkthrough for adding a client to client factory.
 
-```golang
+## Walkthrough, adding a client to client_factory
+
+### Add your client namespace to client factory
+
+In the Azure SDK for GO, each service should have a module that implements that services client.  You can find the correct module [here](https://godoc.org/github.com/Azure/azure-sdk-for-go).  Add that module to the client factory imports.  Below is an example for client imports that shows clients for compute, container service and subscriptions.
+
+```go
+import (
+    "os"
+    "reflect"
+
+    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+    "github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
+    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
+    autorestAzure "github.com/Azure/go-autorest/autorest/azure"
+)
+```
+
+### Add your client method to instantiate the client
+
+The next step is to add your method to instantiate the client.  Below is an example of adding the method to create a client for Virtual Machines, note that we lookup the environment using `getEnvironmentEndpointE` and then pass that base URI to the actual method on the Virtual Machines Module to create the client `NewVirtualMachinesClientWithBaseURI`.
+
+```go
+// CreateVirtualMachinesClientE returns a virtual machines client instance configured with the correct BaseURI depending on
+// the Azure environment that is currently setup (or "Public", if none is setup).
+func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error) {
+    // Validate Azure subscription ID
+    subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+    if err != nil {
+        return compute.VirtualMachinesClient{}, err
+    }
+
+    // Lookup environment URI
+    baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+    if err != nil {
+        return compute.VirtualMachinesClient{}, err
+    }
+
+    // Create correct client based on type passed
+    return compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID), nil
+}
+```
+
+We now can use this client creation method in our helpers to create a Virtual Machines client.  Below is an example for how to call into this create method from `client_factory`:
+
+```go
     // Create a new client instance
-	client, err := CreateVirtualMachinesClientE(VirtualMachinesClientType, subscriptionID)
-	if err != nil {
-		return nil, err
-	}
+    client, err := CreateVirtualMachinesClientE(VirtualMachinesClientType, subscriptionID)
+    if err != nil {
+        return nil, err
+    }
 ```
