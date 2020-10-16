@@ -151,10 +151,11 @@ to include the following:
 
 #### Validate the Pull Request for Azure Platform
 
-If you're contributing code for the [Azure Platform](https://azure.com), please follow the below guidelines after [creating a pull request](https://help.github.com/articles/creating-a-pull-request/). If you're contributing code for any other platform (e.g., AWS, GCP, etc), you can skip these steps.
+If you're contributing code for the [Azure Platform](https://azure.com) and if you have and active _Azure subscription_, it's recommended to follow the below guidelines after [creating a pull request](https://help.github.com/articles/creating-a-pull-request/). If you're contributing code for any other platform (e.g., AWS, GCP, etc), you can skip these steps.
 
+> Once the PR has `Azure` tag and _Approved_, following pipeline will run automatically on an active Azure subscription, which [Microsoft](https://microsoft.com) provides.
 
-We have a separate CI pipeline for Azure code. To run it on a forked repo:
+We have a separate CI pipeline for _Azure_ code. To run it on a forked repo:
 
 1. Run the following [Azure Cli](https://docs.microsoft.com/cli/azure/) command on your preferred Terminal to create Azure credentials and copy the output:
 
@@ -166,9 +167,13 @@ We have a separate CI pipeline for Azure code. To run it on a forked repo:
 
 1. Create a new `Secret` named `AZURE_CREDENTIALS` and paste the Azure credentials you copied from the 1<sup>st</sup> step as the value
 
+    > `AZURE_CREDENTIALS` will be stored on _your GitHub account_. GitHub stores your secrets, encrypted an in a very secure place ([GitHub Actions Secrets Reference](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets)). Once the secret created, it's only possible to update or delete it, value of the secrets can't be viewed. GitHub uses a [libsodium sealed box](https://libsodium.gitbook.io/doc/public-key_cryptography/sealed_boxes) to help ensure that secrets are encrypted before they reach GitHub.
+
 1. Create a [new Personal Access Token (PAT)](https://github.com/settings/tokens/new) page under [Settings](https://github.com/settings/profile) / [Developer Settings](https://github.com/settings/apps), making sure `write:discussion` and `public_repo` scopes are checked. Click the _Generate token_ button and copy the generated PAT.
 
 1. Go back to settings/secrets in your fork and [Create a new Secret](https://docs.github.com/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository) named `PAT`.  Paste the output from the 4<sup>th</sup> step as the value
+
+    > `PAT` will be stored on _your GitHub account_. GitHub stores your secrets, encrypted an in a very secure place ([GitHub Actions Secrets Reference](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets)). Once the secret created, it's only possible to update or delete it, value of the secrets can't be viewed. GitHub uses a [libsodium sealed box](https://libsodium.gitbook.io/doc/public-key_cryptography/sealed_boxes) to help ensure that secrets are encrypted before they reach GitHub.
 
 1. Go to Actions tab on GitHub ([https://github.com/<GITHUB_ACCOUNT>/terratest/actions](https://github.com/<GITHUB_ACCOUNT>/terratest/actions))
 
@@ -183,6 +188,8 @@ We have a separate CI pipeline for Azure code. To run it on a forked repo:
     * Skip provider registration : set true if you want to skip terraform provider registration for debug purposes (_false_ or _true_)
 
 1. Wait for the `ci-workflow` to be finished
+
+    > The pipeline will use the given Azure subscription and create resources on it. When the test finish, resources will be tear-down. Creating resources may cost to the Azure subscription, though. We didn't expect a left-over resource, but please keep in mind that, sometimes due to a bug or a glitch, some resources may be left behind.
 
 1. PR with the given _PR Number_ will have the result of the `ci-workflow` as a comment
 
