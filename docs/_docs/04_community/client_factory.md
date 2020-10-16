@@ -25,7 +25,7 @@ func SomeVMHelperMethod() {
 }
 ```
 
-However, this code will not work in non-Public cloud environments as the REST endpoints have different URIs depending on environment.  Instead, you need to use an alternative method (provided in the Azure REST SDK for Go) to get a properly configured client(*all REST API clients should support this alternate method*):
+However, this code will not work in non-Public cloud environments as the REST endpoints have different URIs depending on environment.  Instead, you need to use an alternative method (provided in the Azure REST SDK for Go) to get a properly configured client (*all REST API clients should support this alternate method*):
 
 ```golang
 import (
