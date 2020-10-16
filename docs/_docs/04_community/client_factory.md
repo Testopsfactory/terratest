@@ -63,7 +63,7 @@ When using the "AzureStackCloud" setting, you MUST also set the `AZURE_ENVIRONME
 
 ## Putting it all together
 
- `client_factory` implements this pattern described above in order to instantiate and return properly configured *REST SDK for GO* clients so that test implementers don't have to consider REST API client implementation as long as they have the correct `AZURE_ENVIRONMENT` env setting.  If this environment variable is not set, the client will assume public cloud as the cloud environment to communicate with.  We strongly recommend developers creating TerraTest helper methods for Azure use this pattern with client factory to create REST API clients.  This will reduce effort for TerraTest users creating test for Azure resources.
+ `client_factory` implements this pattern described above in order to instantiate and return properly configured *REST SDK for GO* clients so that test implementers don't have to consider REST API client implementation as long as they have the correct `AZURE_ENVIRONMENT` env setting.  If this environment variable is not set, the client will assume public cloud as the cloud environment to communicate with.  We strongly recommend developers creating Terratest helper methods for Azure use this pattern with client factory to create REST API clients.  This will reduce effort for Terratest users creating test for Azure resources.
 
 >NOTE: TERRAFORM uses [ARM_ENVIRONMENT](https://www.terraform.io/docs/backends/types/azurerm.html#environment) environment variable to set the correct cloud environment.  
 <!-- -->
