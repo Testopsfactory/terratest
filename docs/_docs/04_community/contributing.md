@@ -167,7 +167,7 @@ We have a separate CI pipeline for _Azure_ code. To run it on a forked repo:
 
 1. Create a new `Secret` named `AZURE_CREDENTIALS` and paste the Azure credentials you copied from the 1<sup>st</sup> step as the value
 
-    > `AZURE_CREDENTIALS` will be stored on _your GitHub account_. GitHub stores your secrets, encrypted an in a very secure place ([GitHub Actions Secrets Reference](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets)). Once the secret created, it's only possible to update or delete it, value of the secrets can't be viewed. GitHub uses a [libsodium sealed box](https://libsodium.gitbook.io/doc/public-key_cryptography/sealed_boxes) to help ensure that secrets are encrypted before they reach GitHub.
+    > `AZURE_CREDENTIALS` will be stored in _your_ GitHub account; neither the Terratest maintainers nor anyone else will have any access to it. Under the hood, GitHub stores your secrets in a secure, encrypted format (see: [GitHub Actions Secrets Reference](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets)). Once the secret is created, it's only possible to update or delete it; the value of the secret can't be viewed. GitHub uses a [libsodium sealed box](https://libsodium.gitbook.io/doc/public-key_cryptography/sealed_boxes) to help ensure that secrets are encrypted before they reach GitHub.
 
 1. Create a [new Personal Access Token (PAT)](https://github.com/settings/tokens/new) page under [Settings](https://github.com/settings/profile) / [Developer Settings](https://github.com/settings/apps), making sure `write:discussion` and `public_repo` scopes are checked. Click the _Generate token_ button and copy the generated PAT.
 
