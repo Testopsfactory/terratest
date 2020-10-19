@@ -190,7 +190,8 @@ We have a separate CI pipeline for _Azure_ code. To run it on a forked repo:
 
 1. Wait for the `ci-workflow` to be finished
 
-    > The pipeline will use the given Azure subscription and create resources on it. When the test finish, resources will be tear-down. Creating resources may cost to the Azure subscription, though. We didn't expect a left-over resource, but please keep in mind that, sometimes due to a bug or a glitch, some resources may be left behind.
+    > The pipeline will use the given Azure subscription and deploy real resources in your Azure account. When the tests finish, they will tear down the resources they created. Of course, if there is a bug or glitch that prevents the clean up code from running, some resources may be left behind, but this is rare. Note that these resources may cost you money! You are responsible for all charges in your Azure subscription.
+
 
 1. PR with the given _PR Number_ will have the result of the `ci-workflow` as a comment
 
