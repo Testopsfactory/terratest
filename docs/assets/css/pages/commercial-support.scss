@@ -239,13 +239,15 @@
         padding: 0;
 
         .footer-cell-contact {
-          padding: 1rem 0;
+          padding: 3rem 0;
           border-bottom: none;
           background: none;
           text-align: center;
 
           .btn-contact-pricing {
             font-size: 14px;
+            height: 45px;
+            padding: 15px 25px;
           }
         }
       }
@@ -334,7 +336,7 @@
         }
 
         .footer-price-card {
-          padding: 14px 0;
+          padding: 3rem 0;
           display: flex;
           justify-content: center;
           
