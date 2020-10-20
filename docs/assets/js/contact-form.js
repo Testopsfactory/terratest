@@ -1,16 +1,16 @@
-var params = window.location.search;
-if (params === "?plan=enterprise") {
-  var plan = document.getElementById("enterprise");
-  plan.checked = true
-} else {
-  var plan = document.getElementById("pro");
-  plan.checked = true
-}
 
 /* Contact form */
 $(function() {
   var submitButton = $("#submit-button");
   var form = $("#contact-form");
+  var params = window.location.search;
+  if (params === "?plan=enterprise") {
+    var plan = document.getElementById("enterprise");
+    plan.checked = true
+  } else {
+    var plan = document.getElementById("pro");
+    plan.checked = true
+  }
 
   function submitForm() {
 
