@@ -2,16 +2,6 @@
   <img class='contact-form-back' src='{{ site.baseurl}}/assets/img/contact/right.svg' alt='contact-form-back' />
   <div id="error-message"></div>
   <form id="contact-form" method="post" target="_blank" action="https://api.formbucket.com/f/buk_eldvLHDisTrizpsFPDfOm7fY">
-    <input type="text" name="hello_terra" style="display: none">
-    <input
-      type="hidden"
-      name="_subject"
-      id="_subject"
-      value="New inquiry from {{ site.url }}"
-    />
-    <input type="hidden" name="_viewing" id="_viewing" value="v1-static" />
-    <input type="hidden" name="_next" value="{{ site.url }}/thanks/" />
-    <input type="text" name="_gotcha" style="display:none" />
     <label>Name</label>
     <input required type="text" name="name" id="name" value="" placeholder="Jon Doe" />
     <label>Email</label>
