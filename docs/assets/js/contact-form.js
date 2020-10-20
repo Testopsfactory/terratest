@@ -3,13 +3,18 @@
 $(function() {
   var submitButton = $("#submit-button");
   var form = $("#contact-form");
-  var params = window.location.search;
-  if (params === "?plan=enterprise") {
-    var plan = document.getElementById("enterprise");
-    plan.checked = true
-  } else {
-    var plan = document.getElementById("pro");
-    plan.checked = true
+
+  setRadioSelectFromUrl();
+ 
+  function setRadioSelectFromUrl() {
+    var params = window.location.search;
+    if (params === "?plan=enterprise") {
+      var plan = $("#enterprise");
+      plan.prop('checked',true)
+    } else {
+      var plan = $("#pro");
+      plan.prop('checked',true)
+    }
   }
 
   function submitForm() {
