@@ -540,13 +540,23 @@ p code, h1 code, h2 code, h3 code, h4 code, h5 code {
   }
 }
 
-.section-thanks {
-  min-height: 60vh;
-  
-  .copy-container {
-    margin-top: 10px;
+.thanks-page {
+  .header {
+    background: linear-gradient(135deg, #001191, #06a3ff);
+  }
+
+  .section-thanks {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    
+    .copy-container {
+      margin-top: 10px;
+    }
   }
 }
+
 
 .section-heading {
   padding-bottom: 0;
