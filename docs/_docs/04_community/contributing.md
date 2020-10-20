@@ -153,7 +153,8 @@ to include the following:
 
 If you're contributing code for the [Azure Platform](https://azure.com) and if you have and active _Azure subscription_, it's recommended to follow the below guidelines after [creating a pull request](https://help.github.com/articles/creating-a-pull-request/). If you're contributing code for any other platform (e.g., AWS, GCP, etc), you can skip these steps.
 
-> Once the Terratest maintainers add `Azure` tag and _Approve_ the PR, following pipeline will run automatically on an active Azure subscription, which [Microsoft](https://microsoft.com) provides. You can run the pipeline manually on your forked repo by following the below guideline.
+> Once the Terratest maintainers add `Azure` tag and _Approve_ the PR, following pipeline will run automatically to perform a full validation of the Azure contribution. You also can run the pipeline manually on your forked repo by following the below guideline.
+
 
 We have a separate CI pipeline for _Azure_ code. To run it on a forked repo:
 
