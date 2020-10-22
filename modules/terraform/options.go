@@ -63,15 +63,29 @@ type Options struct {
 	Parallelism              int                    // Set the parallelism setting for Terraform
 }
 
-// Clone makes a deep copy of most fields on the Options object and returns it. Note that the following fields will NOT
-// be a deep copy:
-// - SshAgent
-// - Logger
+// Clone makes a deep copy of most fields on the Options object and returns it.
 func (options *Options) Clone() (*Options, error) {
 	newOptions := Options{}
 	if err := copier.Copy(&newOptions, options); err != nil {
 		return nil, err
 	}
+
+	// Deep copy nested structs by calling the copier and updating the ref. This is necessary because the copier library
+	// does not handle struct pointers for the deep copy.
+	// See https://github.com/jinzhu/copier/issues/61
+	// Logger
+	clonedLogger := logger.Logger{}
+	if err := copier.Copy(&clonedLogger, options.Logger); err != nil {
+		return nil, err
+	}
+	newOptions.Logger = &clonedLogger
+	// SshAgent
+	clonedSshAgent := ssh.SshAgent{}
+	if err := copier.Copy(&clonedSshAgent, options.SshAgent); err != nil {
+		return nil, err
+	}
+	newOptions.SshAgent = &clonedSshAgent
+
 	return &newOptions, nil
 }
 
