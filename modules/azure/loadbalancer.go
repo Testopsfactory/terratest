@@ -8,20 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// IPType enumerator for IP Types, Public or Private.
-type IPType int
-
-// IPType values listed using iota
-const (
-	PublicIP IPType = iota
-	PrivateIP
-)
-
-// String values for IPType
-func (ipType IPType) String() string {
-	return [...]string{"PublicIP", "PrivateIP"}[ipType]
-}
-
 // LoadBalancerExists indicates whether the specified Load Balancer exists.
 // This function would fail the test if there is an error.
 func LoadBalancerExists(t testing.TestingT, loadBalancerName string, resourceGroupName string, subscriptionID string) bool {
@@ -74,20 +60,20 @@ func GetLoadBalancerFrontendIPConfigNamesE(loadBalancerName string, resourceGrou
 	return configNames, nil
 }
 
-// GetIPOfLoadBalancerFrontendIPConfig gets the IP and IPType for the specified Load Balancer Frontend IP Configuration.
+// GetIPOfLoadBalancerFrontendIPConfig gets the IP and LoadBalancerIPType for the specified Load Balancer Frontend IP Configuration.
 // This function would fail the test if there is an error.
-func GetIPOfLoadBalancerFrontendIPConfig(t testing.TestingT, feConfigName string, loadBalancerName string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate IPType) {
+func GetIPOfLoadBalancerFrontendIPConfig(t testing.TestingT, feConfigName string, loadBalancerName string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate LoadBalancerIPType) {
 	ipAddress, ipType, err := GetIPOfLoadBalancerFrontendIPConfigE(feConfigName, loadBalancerName, resourceGroupName, subscriptionID)
 	require.NoError(t, err)
 	return ipAddress, ipType
 }
 
-// GetIPOfLoadBalancerFrontendIPConfigE gets the IP and IPType for the specified Load Balancer Frontend IP Configuration.
-func GetIPOfLoadBalancerFrontendIPConfigE(feConfigName string, loadBalancerName string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate IPType, err1 error) {
+// GetIPOfLoadBalancerFrontendIPConfigE gets the IP and LoadBalancerIPType for the specified Load Balancer Frontend IP Configuration.
+func GetIPOfLoadBalancerFrontendIPConfigE(feConfigName string, loadBalancerName string, resourceGroupName string, subscriptionID string) (ipAddress string, publicOrPrivate LoadBalancerIPType, err1 error) {
 	// Get the specified Load Balancer Frontend Config
 	feConfig, err := GetLoadBalancerFrontendIPConfigE(feConfigName, loadBalancerName, resourceGroupName, subscriptionID)
 	if err != nil {
-		return "", -1, err
+		return "", NoIP, err
 	}
 
 	// Get the Properties of the Frontend Configuration
@@ -101,14 +87,14 @@ func GetIPOfLoadBalancerFrontendIPConfigE(feConfigName string, loadBalancerName 
 		// Get the Public IP of the PublicIPAddress
 		ipValue, err := GetIPOfPublicIPAddressByNameE(pipName, resourceGroupName, subscriptionID)
 		if err != nil {
-			return "", -1, err
+			return "", NoIP, err
 		}
 
-		return ipValue, IPType(PublicIP), nil
+		return ipValue, PublicIP, nil
 	}
 
 	// Return the Private IP as there are no other option available
-	return *feProps.PrivateIPAddress, IPType(PrivateIP), nil
+	return *feProps.PrivateIPAddress, PrivateIP, nil
 
 }
 
