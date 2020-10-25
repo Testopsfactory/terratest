@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/miekg/dns"
@@ -44,9 +45,9 @@ func (s *dnsTestServer) AddEntryToDNSDatabaseRetry(q DNSQuery, a DNSAnswers) {
 
 // setupTestDNSServers runs and returns 2x local dnsTestServer, initialized with NS records for the testDomain pointing to themselves
 // it uses a handler that will send replies stored in their internal DNSDatabase
-func setupTestDNSServers() (s1, s2 *dnsTestServer) {
-	s1 = runTestDNSServer("0")
-	s2 = runTestDNSServer("0")
+func setupTestDNSServers(t *testing.T) (s1, s2 *dnsTestServer) {
+	s1 = runTestDNSServer(t, "0")
+	s2 = runTestDNSServer(t, "0")
 
 	q := DNSQuery{"NS", testDomain}
 	a := DNSAnswers{{"NS", s1.Address() + "."}, {"NS", s2.Address() + "."}}
@@ -54,10 +55,10 @@ func setupTestDNSServers() (s1, s2 *dnsTestServer) {
 	s2.AddEntryToDNSDatabase(q, a)
 
 	s1.Server.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) {
-		stdDNSHandler(w, r, s1, false)
+		stdDNSHandler(t, w, r, s1, false)
 	})
 	s2.Server.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) {
-		stdDNSHandler(w, r, s2, true)
+		stdDNSHandler(t, w, r, s2, true)
 	})
 
 	return s1, s2
@@ -65,9 +66,9 @@ func setupTestDNSServers() (s1, s2 *dnsTestServer) {
 
 // setupTestDNSServersRetry runs and returns 2x local dnsTestServer, initialized with NS records for the testDomain pointing to themselves
 // it uses a handler that will send replies stored in their internal DNSDatabase, and then switch to their DNSDatabaseRetry after some time
-func setupTestDNSServersRetry() (s1, s2 *dnsTestServer) {
-	s1 = runTestDNSServer("0")
-	s2 = runTestDNSServer("0")
+func setupTestDNSServersRetry(t *testing.T) (s1, s2 *dnsTestServer) {
+	s1 = runTestDNSServer(t, "0")
+	s2 = runTestDNSServer(t, "0")
 
 	q := DNSQuery{"NS", testDomain}
 	a := DNSAnswers{{"NS", s1.Address() + "."}, {"NS", s2.Address() + "."}}
@@ -77,21 +78,21 @@ func setupTestDNSServersRetry() (s1, s2 *dnsTestServer) {
 	s2.AddEntryToDNSDatabaseRetry(q, a)
 
 	s1.Server.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) {
-		retryDNSHandler(w, r, s1, false)
+		retryDNSHandler(t, w, r, s1, false)
 	})
 	s2.Server.Handler.(*dns.ServeMux).HandleFunc(testDomain+".", func(w dns.ResponseWriter, r *dns.Msg) {
-		retryDNSHandler(w, r, s2, true)
+		retryDNSHandler(t, w, r, s2, true)
 	})
 
 	return s1, s2
 }
 
 // runTestDNSServer starts and returns a new dnsTestServer listening in localhost and the given UDP port
-func runTestDNSServer(port string) *dnsTestServer {
+func runTestDNSServer(t *testing.T, port string) *dnsTestServer {
 	listener, err := net.ListenPacket("udp", "127.0.0.1:"+port)
 
 	if err != nil {
-		log.Fatal(err)
+		t.Fatal(err)
 	}
 
 	mux := dns.NewServeMux()
@@ -108,7 +109,7 @@ func runTestDNSServer(port string) *dnsTestServer {
 
 // doDNSAnswer sends replies to the DNS question from client, using the dnsDatabase to lookup the answers to the query
 // when invertAnswers is true, reverses the order of the answers from the dnsDatabase, useful to simulate realistic nameservers behaviours
-func doDNSAnswer(w dns.ResponseWriter, r *dns.Msg, d dnsDatabase, invertAnswers bool) {
+func doDNSAnswer(t *testing.T, w dns.ResponseWriter, r *dns.Msg, d dnsDatabase, invertAnswers bool) {
 	m := new(dns.Msg)
 	m.SetReply(r)
 	m.Authoritative = true
@@ -127,7 +128,7 @@ func doDNSAnswer(w dns.ResponseWriter, r *dns.Msg, d dnsDatabase, invertAnswers 
 		rr, err := dns.NewRR(fmt.Sprintf("%s %s", q.Name, r.String()))
 
 		if err != nil {
-			log.Fatalf("err: %s", err)
+			t.Fatalf("err: %s", err)
 		}
 
 		m.Answer = append(m.Answer, rr)
@@ -143,18 +144,18 @@ func doDNSAnswer(w dns.ResponseWriter, r *dns.Msg, d dnsDatabase, invertAnswers 
 }
 
 // stdDNSHandler uses the internal DNSDatabase to send answers to DNS queries
-func stdDNSHandler(w dns.ResponseWriter, r *dns.Msg, s *dnsTestServer, invertAnswers bool) {
-	doDNSAnswer(w, r, s.DNSDatabase, invertAnswers)
+func stdDNSHandler(t *testing.T, w dns.ResponseWriter, r *dns.Msg, s *dnsTestServer, invertAnswers bool) {
+	doDNSAnswer(t, w, r, s.DNSDatabase, invertAnswers)
 }
 
 var startTime = time.Now()
 
 // retryDNSHandler uses the internal DNSDatabase to send answers to DNS queries, and switches
 // to using the internal DNSDatabaseRetry after 3 seconds from startup
-func retryDNSHandler(w dns.ResponseWriter, r *dns.Msg, s *dnsTestServer, invertAnswers bool) {
+func retryDNSHandler(t *testing.T, w dns.ResponseWriter, r *dns.Msg, s *dnsTestServer, invertAnswers bool) {
 	if time.Now().Sub(startTime).Seconds() > 3 {
-		doDNSAnswer(w, r, s.DNSDatabaseRetry, invertAnswers)
+		doDNSAnswer(t, w, r, s.DNSDatabaseRetry, invertAnswers)
 	} else {
-		doDNSAnswer(w, r, s.DNSDatabase, invertAnswers)
+		doDNSAnswer(t, w, r, s.DNSDatabase, invertAnswers)
 	}
 }
