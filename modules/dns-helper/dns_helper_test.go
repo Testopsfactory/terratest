@@ -9,6 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// These are the current public nameservers for gruntwork.io domain
+// They should be updated whenever they change to pass the tests
+// relying on the public DNS infrastructure
 var publicDomainNameservers = []string{
 	"ns-1499.awsdns-59.org",
 	"ns-190.awsdns-23.com",
