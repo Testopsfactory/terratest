@@ -250,29 +250,6 @@ func DNSLookupAuthoritativeAllWithValidationRetryE(t testing.TestingT, query DNS
 	return err
 }
 
-// DNSDoWithRetryE sends a DNS query for the specified record and type to the given nameserver.
-// If it returns a response with records, return their values.
-// If it returns an error, sleep for sleepBetweenRetries and try again, up to a maximum of
-// maxRetries retries. If maxRetries is exceeded, return a MaxRetriesExceeded error.
-func DNSDoWithRetryE(t testing.TestingT, actionDescription string, maxRetries int, sleepBetweenRetries time.Duration, action func() (DNSAnswers, error)) (DNSAnswers, error) {
-	var res DNSAnswers
-	var err error
-
-	for i := 0; i <= maxRetries; i++ {
-		res, err = action()
-		if err == nil {
-			return res, nil
-		}
-
-		if i < maxRetries {
-			logger.Logf(t, "%s returned an error: %s. Sleeping for %s and will try again.", actionDescription, err.Error(), sleepBetweenRetries)
-			time.Sleep(sleepBetweenRetries)
-		}
-	}
-
-	return res, &MaxRetriesExceeded{Description: actionDescription, MaxRetries: maxRetries}
-}
-
 // DNSLookup sends a DNS query for the specified record and type using the given resolvers.
 // Fails on any error.
 // Supported record types: A, AAAA, CNAME, MX, NS, TXT
