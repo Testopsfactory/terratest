@@ -24,7 +24,7 @@ $(function() {
 
     if(validateForm()) {
       var data = form.serialize(form.get(0), { hash: true });
-      submitToFormSpree(data)
+      submitToFormSpree(data);
     }
 
     function submitToFormSpree(data) {
@@ -32,7 +32,7 @@ $(function() {
       submitButton.prop("disabled", true);
 
       var postParams = {
-        url: 'https://api.formbucket.com/f/buk_eldvLHDisTrizpsFPDfOm7fY',
+        url: form.attr('action'),
         type: "POST",
         data: data,
         dataType: "json"
