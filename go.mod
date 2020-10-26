@@ -24,6 +24,7 @@ require (
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gruntwork-io/gruntwork-cli v0.7.0
 	github.com/imdario/mergo v0.3.7 // indirect
+	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jstemmer/go-junit-report v0.9.1
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-zglob v0.0.2-0.20190814121620-e3c945676326 // indirect
