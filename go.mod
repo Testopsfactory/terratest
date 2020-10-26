@@ -27,6 +27,7 @@ require (
 	github.com/jstemmer/go-junit-report v0.9.1
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-zglob v0.0.2-0.20190814121620-e3c945676326 // indirect
+	github.com/miekg/dns v1.1.31
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/oracle/oci-go-sdk v7.1.0+incompatible
 	github.com/pkg/errors v0.9.0 // indirect
