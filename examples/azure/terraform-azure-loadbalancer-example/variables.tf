@@ -18,6 +18,13 @@
 # These parameters have reasonable defaults.
 # ---------------------------------------------------------------------------------------------------------------------
 
+
+variable "lb_private_ip" {
+  description = "Private IP for the Private Load Balancer"
+  type        = string
+  default     = "10.200.2.10"
+}
+
 variable "location" {
   description = "The Azure location where to deploy your resources too"
   type        = string
@@ -29,10 +36,3 @@ variable "postfix" {
   type        = string
   default     = "resource"
 }
-
-variable "username" {
-  description = "The username to be provisioned into your VM"
-  type        = string
-  default     = "testadmin"
-}
-
