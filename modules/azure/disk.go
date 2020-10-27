@@ -29,25 +29,6 @@ func DiskExistsE(diskName string, resGroupName string, subscriptionID string) (b
 	return true, nil
 }
 
-// GetDiskType returns the Disk Storage Account Type of the Azure Managed Disk
-// This function would fail the test if there is an error.
-func GetDiskType(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) compute.DiskStorageAccountTypes {
-	diskType, err := GetDiskTypeE(diskName, resGroupName, subscriptionID)
-	require.NoError(t, err)
-	return diskType
-}
-
-// GetDiskTypeE returns the Disk Storage Account Type of the Azure Managed Disk
-func GetDiskTypeE(diskName string, resGroupName string, subscriptionID string) (compute.DiskStorageAccountTypes, error) {
-	// Get the Disk object
-	disk, err := GetDiskE(diskName, resGroupName, subscriptionID)
-	if err != nil {
-		return "", err
-	}
-
-	return disk.Sku.Name, nil
-}
-
 // GetDisk returns a Disk in the specified Azure Resource Group
 // This function would fail the test if there is an error.
 func GetDisk(t testing.TestingT, diskName string, resGroupName string, subscriptionID string) *compute.Disk {

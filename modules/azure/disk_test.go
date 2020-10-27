@@ -22,15 +22,3 @@ func TestGetDiskE(t *testing.T) {
 
 	require.Error(t, err)
 }
-
-func TestGetDiskTypeE(t *testing.T) {
-	t.Parallel()
-
-	diskName := ""
-	rgName := ""
-	subID := ""
-
-	_, err := GetDiskTypeE(diskName, rgName, subID)
-
-	require.Error(t, err)
-}
