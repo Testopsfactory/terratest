@@ -101,6 +101,7 @@ $(document).ready(function () {
       const $activeCodeSnippet = $(activeCodeSnippet)
       const exampleTarget = $(this).data('example')
       const fileId = $(this).data('target')
+      const rangeId = $(this).data('range-id')
       if (!$activeCodeSnippet.data('loaded')) {
         try {
           const response = await fetch($activeCodeSnippet.data('url'))
@@ -114,7 +115,29 @@ $(document).ready(function () {
             // Remove the website::tag::xxx:: comment entirely from the code snippet
             content = content.replace(/^.*website::tag.*\n?/mg, '')
           }
-          $activeCodeSnippet.find('code').text(content)
+          // Find the range specified by range-id if specified
+          if (rangeId != "") {
+            // Split the content into an array of lines
+            lines = content.split('\n')
+            // Search the array for "// snippet-tag-start::{id}" - save location
+            //startLine = lines.indexOf(`// snippet-tag-start::${rangeId}`)
+            startLine = searchTagInLines(`\/\/ snippet-tag-start::${rangeId}`, lines)
+
+            // Search the array for "// snippet-tag-end::{id}" - save location
+            //endLine = lines.indexOf(`// snippet-tag-end::${rangeId}`)
+            endLine = searchTagInLines(`\/\/ snippet-tag-end::${rangeId}`, lines)
+
+            // If you have both a start and end, slice as below
+            if ((startLine != -1) && (endLine != -1)) {
+              range = lines.slice(startLine + 2, endLine)
+              $activeCodeSnippet.find('code').text(range.join('\n'))
+            } else {
+              console.error('Could not find specified range.')
+            }
+          } else {
+            $activeCodeSnippet.find('code').text(content)
+          }
+
           Prism.highlightAll()
         } catch(err) {
           $activeCodeSnippet.find('code').text('Resource could not be loaded.')
@@ -125,6 +148,13 @@ $(document).ready(function () {
       openPopup(exampleTarget, 1)
     })
   }
+
+  function searchTagInLines (tagRegExp, lines) {
+    for (var i=0; i<lines.length; i++) {
+        if (lines[i].match(tagRegExp)) return i;
+    }
+    return -1;
+}
 
   function findTags(content, exampleTarget, fileId) {
     let tags = []

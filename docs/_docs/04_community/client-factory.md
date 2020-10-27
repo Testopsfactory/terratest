@@ -1,3 +1,21 @@
+---
+layout: collection-browser-doc
+title: Azure SDK Client Factory
+category: community
+excerpt: >-
+  Overview of the client factory pattern to be used with the Azure SDK when creating test modules.
+tags: ["contributing", "azure"]
+order: 403
+nav_title: Documentation
+nav_title_link: /docs/
+custom_js:
+  - examples
+  - prism
+  - collection-browser_scroll
+  - collection-browser_search
+  - collection-browser_toc
+---
+
 # Azure SDK Client Factory
 
 This documentation provides and overview of the `client_factory.go` module, targeted use cases, and behaviors.  This module is intended to provide support for and simplify working with Azure's multiple cloud environments (Azure Public, Azure Government, Azure China, Azure Germany and Azure Stack).  Developers looking to contribute to additional support for Azure to Terratest should leverage client_factory and use the patterns below to add a resource REST client from Azure Go SDK.  By doing so, it provides a consistent means for developers using Terratest to test their Azure Infrastructure to connect to the correct cloud and its associated REST apis.
@@ -79,42 +97,13 @@ When using the "AzureStackCloud" setting, you MUST also set the `AZURE_ENVIRONME
 
 In the Azure SDK for GO, each service should have a module that implements that services client.  You can find the correct module [here](https://godoc.org/github.com/Azure/azure-sdk-for-go).  Add that module to the client factory imports.  Below is an example for client imports that shows clients for compute, container service and subscriptions.
 
-```go
-import (
-    "os"
-    "reflect"
-
-    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-    "github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
-    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
-    autorestAzure "github.com/Azure/go-autorest/autorest/azure"
-)
-```
+{% include examples/explorer.html example_id='client-factory' file_id='client_factory_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true range_id='client_factory_example.imports' %}
 
 ### Add your client method to instantiate the client
 
 The next step is to add your method to instantiate the client.  Below is an example of adding the method to create a client for Virtual Machines, note that we lookup the environment using `getEnvironmentEndpointE` and then pass that base URI to the actual method on the Virtual Machines Module to create the client `NewVirtualMachinesClientWithBaseURI`.
 
-```go
-// CreateVirtualMachinesClientE returns a virtual machines client instance configured with the correct BaseURI depending on
-// the Azure environment that is currently setup (or "Public", if none is setup).
-func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachinesClient, error) {
-    // Validate Azure subscription ID
-    subscriptionID, err := getTargetAzureSubscription(subscriptionID)
-    if err != nil {
-        return compute.VirtualMachinesClient{}, err
-    }
-
-    // Lookup environment URI
-    baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
-    if err != nil {
-        return compute.VirtualMachinesClient{}, err
-    }
-
-    // Create correct client based on type passed
-    return compute.NewVirtualMachinesClientWithBaseURI(baseURI, subscriptionID), nil
-}
-```
+{% include examples/explorer.html example_id='client-factory' file_id='client_factory_code' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true range_id='client_factory_example.CreateClient' %}
 
 ### Add a unit test to client_factory_test.go
 
@@ -126,51 +115,10 @@ In order to ensure that your CreateClient method works properly, add a unit test
 
 Below is an example of the Virtual Machines client unit test:
 
-```go
-func TestVMClientBaseURISetCorrectly(t *testing.T) {
-    var cases = []struct {
-        CaseName        string
-        EnvironmentName string
-        ExpectedBaseURI string
-    }{
-        {"GovCloud/VMClient", govCloudEnvName, autorest.USGovernmentCloud.ResourceManagerEndpoint},
-        {"PublicCloud/VMClient", publicCloudEnvName, autorest.PublicCloud.ResourceManagerEndpoint},
-        {"ChinaCloud/VMClient", chinaCloudEnvName, autorest.ChinaCloud.ResourceManagerEndpoint},
-        {"GermanCloud/VMClient", germanyCloudEnvName, autorest.GermanCloud.ResourceManagerEndpoint},
-    }
-
-    // save any current env value and restore on exit
-    currentEnv := os.Getenv(AzureEnvironmentEnvName)
-    defer os.Setenv(AzureEnvironmentEnvName, currentEnv)
-
-    for _, tt := range cases {
-        // The following is necessary to make sure testCase's values don't
-        // get updated due to concurrency within the scope of t.Run(..) below
-        tt := tt
-        t.Run(tt.CaseName, func(t *testing.T) {
-            // Override env setting
-            os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
-
-            // Get a VM client
-            client, err := CreateVirtualMachinesClientE("")
-            require.NoError(t, err)
-
-            // Check for correct ARM URI
-            assert.Equal(t, tt.ExpectedBaseURI, client.BaseURI)
-        })
-    }
-}
-
-```
+{% include examples/explorer.html example_id='client-factory' file_id='client_factory_test' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true range_id='client_factory_example.UnitTest' %}
 
 ### Use your CreateClient method in your helper
 
 We now can use this client creation method in our helpers to create a Virtual Machines client.  Below is an example for how to call into this create method from `client_factory`:
 
-```go
-    // Create a new client instance
-    client, err := CreateVirtualMachinesClientE(VirtualMachinesClientType, subscriptionID)
-    if err != nil {
-        return nil, err
-    }
-```
+{% include examples/explorer.html example_id='client-factory' file_id='client_factory_helper' class='wide quick-start-examples' skip_learn_more=true skip_view_on_github=true skip_tags=true range_id='client_factory_example.helper' %}
