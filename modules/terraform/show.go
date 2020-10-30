@@ -15,5 +15,12 @@ func Show(t testing.TestingT, options *Options) string {
 
 // ShowE calls terraform show for the given plan output file and returns it.
 func ShowE(t testing.TestingT, options *Options) (string, error) {
-	return RunTerraformCommandE(t, options, FormatArgs(options, "show", "-no-color", "-json")...)
+	// We can only run show if PlanFilePath is set.
+	if options.PlanFilePath == "" {
+		return "", PlanFilePathRequired
+	}
+
+	// We manually construct the args here instead of using `FormatArgs`, because show only accepts a limited set of
+	// args.
+	return RunTerraformCommandE(t, options, "show", "-no-color", "-json", options.PlanFilePath)
 }
