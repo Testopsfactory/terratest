@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFormatTerraformOutAsArgs(t *testing.T) {
+func TestFormatTerraformPlanFileAsArgs(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -24,8 +24,8 @@ func TestFormatTerraformOutAsArgs(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		checkResultWithRetry(t, 100, testCase.expected, fmt.Sprintf("FormatTerraformOutAsArgs(%v)", testCase.out), func() interface{} {
-			return FormatTerraformOutAsArg(testCase.command, testCase.out)
+		checkResultWithRetry(t, 100, testCase.expected, fmt.Sprintf("FormatTerraformPlanFileAsArgs(%v)", testCase.out), func() interface{} {
+			return FormatTerraformPlanFileAsArg(testCase.command, testCase.out)
 		})
 	}
 }

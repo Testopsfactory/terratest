@@ -60,9 +60,9 @@ type Options struct {
 	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
 	NoStderr                 bool                   // Disable stderr redirection
 	OutputMaxLineSize        int                    // The max size of one line in stdout and stderr (in bytes)
-	Out                      string                 // The path to output a plan file to
 	Logger                   *logger.Logger         // Set a non-default logger that should be used. See the logger package for more info.
 	Parallelism              int                    // Set the parallelism setting for Terraform
+	PlanFilePath             string                 // The path to output a plan file to
 }
 
 // Clone makes a deep copy of most fields on the Options object and returns it.

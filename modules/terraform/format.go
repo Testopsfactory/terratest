@@ -22,12 +22,22 @@ var TerraformCommandsWithLockSupport = []string{
 	"import",
 }
 
+// TerraformCommandsWithPlanFileSupport is a list of all the Terraform commands that support interacting with plan
+// files.
+var TerraformCommandsWithPlanFileSupport = []string{
+	"plan",
+	"apply",
+	"show",
+	"graph",
+}
+
 // FormatArgs converts the inputs to a format palatable to terraform. This includes converting the given vars to the
 // format the Terraform CLI expects (-var key=value).
 func FormatArgs(options *Options, args ...string) []string {
 	var terraformArgs []string
 	commandType := args[0]
 	lockSupported := collections.ListContains(TerraformCommandsWithLockSupport, commandType)
+	planFileSupported := collections.ListContains(TerraformCommandsWithPlanFileSupport, commandType)
 
 	terraformArgs = append(terraformArgs, args...)
 	terraformArgs = append(terraformArgs, FormatTerraformVarsAsArgs(options.Vars)...)
@@ -39,15 +49,18 @@ func FormatArgs(options *Options, args ...string) []string {
 		terraformArgs = append(terraformArgs, FormatTerraformLockAsArgs(options.Lock, options.LockTimeout)...)
 	}
 
-	// The out arg should be last in the terraformArgs slice. Some commands use it as an input (e.g. show, apply)
-	terraformArgs = append(terraformArgs, FormatTerraformOutAsArg(commandType, options.Out)...)
+	if planFileSupported {
+		// The plan file arg should be last in the terraformArgs slice. Some commands use it as an input (e.g. show, apply)
+		terraformArgs = append(terraformArgs, FormatTerraformPlanFileAsArg(commandType, options.PlanFilePath)...)
+	}
 
 	return terraformArgs
 }
 
-// FormatTerraformOutAsArg formats the out variable as a command-line arg for Terraform (e.g. of the format
-// -out=/some/path/to/plan.out or /some/path/to/plan.out).
-func FormatTerraformOutAsArg(commandType string, outPath string) []string {
+// FormatTerraformPlanFileAsArg formats the out variable as a command-line arg for Terraform (e.g. of the format
+// -out=/some/path/to/plan.out or /some/path/to/plan.out). Only plan supports passing in the plan file as -out; the
+// other commands expect it as the first positional argument.
+func FormatTerraformPlanFileAsArg(commandType string, outPath string) []string {
 	if outPath == "" {
 		return nil
 	}
