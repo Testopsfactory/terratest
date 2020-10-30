@@ -47,6 +47,9 @@ type RunOptions struct {
 	// Terratest to not have to support every single command-line option offered by the 'docker run' command, and
 	// solely focus on the most important ones.
 	OtherOptions []string
+
+	// Set a logger that should be used. See the logger package for more info.
+	Logger *logger.Logger
 }
 
 // Run runs the 'docker run' command on the given image with the given options and return stdout/stderr. This method
@@ -59,7 +62,7 @@ func Run(t testing.TestingT, image string, options *RunOptions) string {
 
 // RunE runs the 'docker run' command on the given image with the given options and return stdout/stderr, or any error.
 func RunE(t testing.TestingT, image string, options *RunOptions) (string, error) {
-	logger.Logf(t, "Running 'docker run' on image '%s'", image)
+	options.Logger.Logf(t, "Running 'docker run' on image '%s'", image)
 
 	args, err := formatDockerRunArgs(image, options)
 	if err != nil {
@@ -69,9 +72,37 @@ func RunE(t testing.TestingT, image string, options *RunOptions) (string, error)
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    args,
+		Logger:  options.Logger,
 	}
 
 	return shell.RunCommandAndGetOutputE(t, cmd)
+}
+
+// RunAndGetID runs the 'docker run' command on the given image with the given options and returns the container ID
+// that is returned in stdout. This method fails the test if there are any errors.
+func RunAndGetID(t testing.TestingT, image string, options *RunOptions) string {
+	out, err := RunAndGetIDE(t, image, options)
+	require.NoError(t, err)
+	return out
+}
+
+// RunAndGetIDE runs the 'docker run' command on the given image with the given options and returns the container ID
+// that is returned in stdout, or any error.
+func RunAndGetIDE(t testing.TestingT, image string, options *RunOptions) (string, error) {
+	options.Logger.Logf(t, "Running 'docker run' on image '%s', returning stdout", image)
+
+	args, err := formatDockerRunArgs(image, options)
+	if err != nil {
+		return "", err
+	}
+
+	cmd := shell.Command{
+		Command: "docker",
+		Args:    args,
+		Logger:  options.Logger,
+	}
+
+	return shell.RunCommandAndGetStdOutE(t, cmd)
 }
 
 // formatDockerRunArgs formats the arguments for the 'docker run' command.
@@ -118,15 +149,11 @@ func formatDockerRunArgs(image string, options *RunOptions) ([]string, error) {
 		args = append(args, "--volume", volume)
 	}
 
-	for _, opt := range options.OtherOptions {
-		args = append(args, opt)
-	}
+	args = append(args, options.OtherOptions...)
 
 	args = append(args, image)
 
-	for _, arg := range options.Command {
-		args = append(args, arg)
-	}
+	args = append(args, options.Command...)
 
 	return args, nil
 }

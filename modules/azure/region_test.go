@@ -24,7 +24,7 @@ func TestGetRandomRegionExcludesForbiddenRegions(t *testing.T) {
 	approvedRegions := []string{"canadacentral", "eastus", "eastus2", "westus", "westus2", "westeurope", "northeurope", "uksouth", "southeastasia", "eastasia", "japaneast", "australiacentral"}
 	forbiddenRegions := []string{"westus2", "japaneast"}
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 48; i++ {
 		randomRegion := GetRandomRegion(t, approvedRegions, forbiddenRegions, "")
 		assert.NotContains(t, forbiddenRegions, randomRegion)
 	}
@@ -35,7 +35,8 @@ func TestGetAllAzureRegions(t *testing.T) {
 
 	regions := GetAllAzureRegions(t, "")
 
-	// The typical subscription had access to 30+ live regions as of July 2019: https://azure.microsoft.com/en-us/global-infrastructure/regions/
+	// The typical subscription had access to 30+ live regions as of
+	// July 2019: https://azure.microsoft.com/en-us/global-infrastructure/regions/
 	assert.True(t, len(regions) >= 30, "Number of regions: %d", len(regions))
 	for _, region := range regions {
 		assertLooksLikeRegionName(t, region)

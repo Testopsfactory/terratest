@@ -32,9 +32,8 @@ func HttpGetE(t testing.TestingT, url string, tlsConfig *tls.Config) (int, strin
 	logger.Logf(t, "Making an HTTP GET call to URL %s", url)
 
 	// Set HTTP client transport config
-	tr := &http.Transport{
-		TLSClientConfig: tlsConfig,
-	}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = tlsConfig
 
 	client := http.Client{
 		// By default, Go does not impose a timeout, so an HTTP connection attempt can hang for a LONG time.
@@ -244,7 +243,7 @@ func HTTPDoWithValidationRetryE(
 	body []byte, headers map[string]string, expectedStatus int,
 	expectedBody string, retries int, sleepBetweenRetries time.Duration, tlsConfig *tls.Config,
 ) error {
-	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries,
+	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP %s to URL %s", method, url), retries,
 		sleepBetweenRetries, func() (string, error) {
 			bodyReader := bytes.NewReader(body)
 			return "", HTTPDoWithValidationE(t, method, url, bodyReader, headers, expectedStatus, expectedBody, tlsConfig)

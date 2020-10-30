@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
@@ -31,7 +32,7 @@ func ListServicesE(t testing.TestingT, options *KubectlOptions, filters metav1.L
 	if err != nil {
 		return nil, err
 	}
-	resp, err := clientset.CoreV1().Services(options.Namespace).List(filters)
+	resp, err := clientset.CoreV1().Services(options.Namespace).List(context.Background(), filters)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func GetServiceE(t testing.TestingT, options *KubectlOptions, serviceName string
 	if err != nil {
 		return nil, err
 	}
-	return clientset.CoreV1().Services(options.Namespace).Get(serviceName, metav1.GetOptions{})
+	return clientset.CoreV1().Services(options.Namespace).Get(context.Background(), serviceName, metav1.GetOptions{})
 }
 
 // WaitUntilServiceAvailable waits until the service endpoint is ready to accept traffic.
@@ -226,7 +227,7 @@ func findAwsNodeHostnameE(t testing.TestingT, node corev1.Node, awsIDUri *url.UR
 	}
 
 	publicIP, containsIP := ipMap[instanceID]
-	if !containsIP {
+	if !containsIP || publicIP == "" {
 		// return default hostname
 		return findDefaultNodeHostnameE(node)
 	}

@@ -198,6 +198,10 @@ func mapToHclString(m map[string]interface{}) string {
 // Convert a primitive, such as a bool, int, or string, to an HCL string. If this isn't a primitive, force its value
 // using Sprintf. See ToHclString for details.
 func primitiveToHclString(value interface{}, isNested bool) string {
+	if value == nil {
+		return "null"
+	}
+
 	switch v := value.(type) {
 
 	case bool:

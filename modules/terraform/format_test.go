@@ -41,6 +41,7 @@ func TestFormatTerraformVarsAsArgs(t *testing.T) {
 		{map[string]interface{}{"foo": "bar"}, []string{"-var", "foo=bar"}},
 		{map[string]interface{}{"foo": 123}, []string{"-var", "foo=123"}},
 		{map[string]interface{}{"foo": true}, []string{"-var", "foo=true"}},
+		{map[string]interface{}{"foo": nil}, []string{"-var", "foo=null"}},
 		{map[string]interface{}{"foo": []int{1, 2, 3}}, []string{"-var", "foo=[1, 2, 3]"}},
 		{map[string]interface{}{"foo": map[string]string{"baz": "blah"}}, []string{"-var", "foo={\"baz\" = \"blah\"}"}},
 		{
@@ -68,6 +69,7 @@ func TestPrimitiveToHclString(t *testing.T) {
 		{"true", "true"},
 		{true, "true"},
 		{3, "3"},
+		{nil, "null"},
 		{[]int{1, 2, 3}, "[1 2 3]"}, // Anything that isn't a primitive is forced into a string
 	}
 

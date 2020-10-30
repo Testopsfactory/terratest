@@ -60,7 +60,7 @@ var stableRegions = []string{
 	"uaenorth",
 }
 
-// GetStableRandomRegion gets a randomly chosen Azure region that is considered stable. Like GetRandomRegion, you can
+// GetRandomStableRegion gets a randomly chosen Azure region that is considered stable. Like GetRandomRegion, you can
 // further restrict the stable region list using approvedRegions and forbiddenRegions. We consider stable regions to be
 // those that have been around for at least 1 year.
 // Note that regions in the approvedRegions list that are not considered stable are ignored.
@@ -94,7 +94,7 @@ func GetRandomRegion(t testing.TestingT, approvedRegions []string, forbiddenRegi
 
 // GetRandomRegionE gets a randomly chosen Azure region. If approvedRegions is not empty, this will be a region from the approvedRegions
 // list; otherwise, this method will fetch the latest list of regions from the Azure APIs and pick one of those. If
-// forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list.
+// forbiddenRegions is not empty, this method will make sure the returned region is not in the forbiddenRegions list
 func GetRandomRegionE(t testing.TestingT, approvedRegions []string, forbiddenRegions []string, subscriptionID string) (string, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
@@ -136,7 +136,7 @@ func GetAllAzureRegions(t testing.TestingT, subscriptionID string) []string {
 	return out
 }
 
-// GetAllAzureRegionsE gets the list of Azure regions available in this subscription.
+// GetAllAzureRegionsE gets the list of Azure regions available in this subscription
 func GetAllAzureRegionsE(t testing.TestingT, subscriptionID string) ([]string, error) {
 	logger.Log(t, "Looking up all Azure regions available in this account")
 

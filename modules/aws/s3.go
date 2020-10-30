@@ -227,6 +227,14 @@ func EmptyS3BucketE(t testing.TestingT, region string, name string) error {
 			objectsToDelete = append(objectsToDelete, &obj)
 		}
 
+		for _, object := range (*bucketObjects).DeleteMarkers {
+			obj := s3.ObjectIdentifier{
+				Key:       object.Key,
+				VersionId: object.VersionId,
+			}
+			objectsToDelete = append(objectsToDelete, &obj)
+		}
+
 		//Creating JSON payload for bulk delete
 		deleteArray := s3.Delete{Objects: objectsToDelete}
 		deleteParams := &s3.DeleteObjectsInput{

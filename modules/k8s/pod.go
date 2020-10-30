@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -28,7 +29,7 @@ func ListPodsE(t testing.TestingT, options *KubectlOptions, filters metav1.ListO
 		return nil, err
 	}
 
-	resp, err := clientset.CoreV1().Pods(options.Namespace).List(filters)
+	resp, err := clientset.CoreV1().Pods(options.Namespace).List(context.Background(), filters)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func GetPodE(t testing.TestingT, options *KubectlOptions, podName string) (*core
 	if err != nil {
 		return nil, err
 	}
-	return clientset.CoreV1().Pods(options.Namespace).Get(podName, metav1.GetOptions{})
+	return clientset.CoreV1().Pods(options.Namespace).Get(context.Background(), podName, metav1.GetOptions{})
 }
 
 // WaitUntilNumPodsCreated waits until the desired number of pods are created that match the provided filter. This will

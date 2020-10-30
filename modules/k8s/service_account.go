@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -31,7 +32,7 @@ func GetServiceAccountE(t testing.TestingT, options *KubectlOptions, serviceAcco
 	if err != nil {
 		return nil, err
 	}
-	return clientset.CoreV1().ServiceAccounts(options.Namespace).Get(serviceAccountName, metav1.GetOptions{})
+	return clientset.CoreV1().ServiceAccounts(options.Namespace).Get(context.Background(), serviceAccountName, metav1.GetOptions{})
 }
 
 // CreateServiceAccount will create a new service account resource in the provided namespace with the given name. The
@@ -54,7 +55,7 @@ func CreateServiceAccountE(t testing.TestingT, options *KubectlOptions, serviceA
 			Namespace: options.Namespace,
 		},
 	}
-	_, err = clientset.CoreV1().ServiceAccounts(options.Namespace).Create(&serviceAccount)
+	_, err = clientset.CoreV1().ServiceAccounts(options.Namespace).Create(context.Background(), &serviceAccount, metav1.CreateOptions{})
 	return err
 }
 

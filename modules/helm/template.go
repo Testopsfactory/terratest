@@ -15,15 +15,15 @@ import (
 // RenderTemplate runs `helm template` to render the template given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates. This function will fail
 // the test if there is an error rendering the template.
-func RenderTemplate(t testing.TestingT, options *Options, chartDir string, releaseName string, templateFiles []string) string {
-	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles)
+func RenderTemplate(t testing.TestingT, options *Options, chartDir string, releaseName string, templateFiles []string, extraHelmArgs ...string) string {
+	out, err := RenderTemplateE(t, options, chartDir, releaseName, templateFiles, extraHelmArgs...)
 	require.NoError(t, err)
 	return out
 }
 
 // RenderTemplateE runs `helm template` to render the template given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates.
-func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, releaseName string, templateFiles []string) (string, error) {
+func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, releaseName string, templateFiles []string, extraHelmArgs ...string) (string, error) {
 	// First, verify the charts dir exists
 	absChartDir, err := filepath.Abs(chartDir)
 	if err != nil {
@@ -54,6 +54,9 @@ func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, rele
 		// expects the relative path from the chart.
 		args = append(args, "--show-only", templateFile)
 	}
+	// deal extraHelmArgs
+	args = append(args, extraHelmArgs...)
+
 	// ... and add the name and chart at the end as the command expects
 	args = append(args, releaseName, chartDir)
 

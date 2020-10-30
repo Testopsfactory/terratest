@@ -106,8 +106,14 @@ $(document).ready(function () {
           const response = await fetch($activeCodeSnippet.data('url'))
           let content = await response.text()
           $activeCodeSnippet.attr('data-loaded', true)
-          findTags(content, exampleTarget, fileId)
-          content = content.replace(/^.*website::tag.*\n?/mg, '')
+          if ($activeCodeSnippet.data('skip-tags')) {
+            // Remove the website::tag::xxx:: prefix from the code snippet
+            content = content.replace(/website::tag::.*?:: ?/mg, '')
+          } else {
+            findTags(content, exampleTarget, fileId)
+            // Remove the website::tag::xxx:: comment entirely from the code snippet
+            content = content.replace(/^.*website::tag.*\n?/mg, '')
+          }
           $activeCodeSnippet.find('code').text(content)
           Prism.highlightAll()
         } catch(err) {
@@ -153,33 +159,38 @@ $(document).ready(function () {
     const activeCode = $('.examples__block.active .examples__code.active')
     const exampleTarget = activeCode.data('example')
     const fileId = activeCode.data('target')
-    const tagsLen = window.examples.tags[exampleTarget][fileId].length
+    const exampleTargetTags = window.examples.tags[exampleTarget] || {};
+    const fileTags = exampleTargetTags[fileId];
 
-    window.examples.tags[exampleTarget][fileId].map( function(v,k) {
-      const top = (CODE_LINE_HEIGHT * (v.line - k)) + CODE_BLOCK_PADDING;
+    if (fileTags) {
+      const tagsLen = fileTags.length
 
-      // If two pop-ups are close to each other, add CSS class that will scale them down
-      let scaleClass = ''
-      if (
-        (k > 0 && Math.abs(v.line - window.examples.tags[exampleTarget][fileId][k-1].line) < 3 )
-        || (k < tagsLen - 1 && Math.abs(v.line - window.examples.tags[exampleTarget][fileId][k+1].line) < 3 )
-      ) {
-        scaleClass = 'sm-scale'
-      }
+      fileTags.map( function(v,k) {
+        const top = (CODE_LINE_HEIGHT * (v.line - k)) + CODE_BLOCK_PADDING;
 
-      const elToAppend =
-        '<div class="code-popup-handler '+scaleClass+'" style="top: '+top+'px" data-step="'+v.step+'">' +
-          '<span class="number">' + v.step + '</span>' +
-          '<div class="shadow-bg-1"></div><div class="shadow-bg-2"></div>' +
-          '<div class="popup">' +
+        // If two pop-ups are close to each other, add CSS class that will scale them down
+        let scaleClass = ''
+        if (
+            (k > 0 && Math.abs(v.line - fileTags[k-1].line) < 3 )
+            || (k < tagsLen - 1 && Math.abs(v.line - fileTags[k+1].line) < 3 )
+        ) {
+          scaleClass = 'sm-scale'
+        }
+
+        const elToAppend =
+            '<div class="code-popup-handler '+scaleClass+'" style="top: '+top+'px" data-step="'+v.step+'">' +
+            '<span class="number">' + v.step + '</span>' +
+            '<div class="shadow-bg-1"></div><div class="shadow-bg-2"></div>' +
+            '<div class="popup">' +
             '<div class="left-border"></div>' +
             '<div class="content">' +
-              '<p class="text">' + v.text + '</p>' +
+            '<p class="text">' + v.text + '</p>' +
             '</div>' +
-        '</div>'
-      const code = $("#example__code-"+exampleTarget+"-"+fileId)
-      code.append(elToAppend)
-    })
+            '</div>'
+        const code = $("#example__code-"+exampleTarget+"-"+fileId)
+        code.append(elToAppend)
+      })
+    }
 
     openPopup(exampleTarget, 0)
   }

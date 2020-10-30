@@ -13,6 +13,9 @@ import (
 type StopOptions struct {
 	// Seconds to wait for stop before killing the container (default 10)
 	Time int
+
+	// Set a logger that should be used. See the logger package for more info.
+	Logger *logger.Logger
 }
 
 // Stop runs the 'docker stop' command for the given containers and return the stdout/stderr. This method fails
@@ -25,7 +28,7 @@ func Stop(t testing.TestingT, containers []string, options *StopOptions) string 
 
 // StopE runs the 'docker stop' command for the given containers and returns any errors.
 func StopE(t testing.TestingT, containers []string, options *StopOptions) (string, error) {
-	logger.Logf(t, "Running 'docker stop' on containers '%s'", containers)
+	options.Logger.Logf(t, "Running 'docker stop' on containers '%s'", containers)
 
 	args, err := formatDockerStopArgs(containers, options)
 	if err != nil {
@@ -35,6 +38,7 @@ func StopE(t testing.TestingT, containers []string, options *StopOptions) (strin
 	cmd := shell.Command{
 		Command: "docker",
 		Args:    args,
+		Logger:  options.Logger,
 	}
 
 	return shell.RunCommandAndGetOutputE(t, cmd)
