@@ -27,21 +27,16 @@ var stableRegions = []string{
 	"us-west-1",      // Launched 2009
 	"us-west-2",      // Launched 2011
 	"ca-central-1",   // Launched 2016
+	"sa-east-1",      // Launched 2011
 	"eu-west-1",      // Launched 2007
 	"eu-west-2",      // Launched 2016
 	"eu-west-3",      // Launched 2017
 	"eu-central-1",   // Launched 2014
+	"ap-southeast-1", // Launched 2010
 	"ap-southeast-2", // Launched 2012
 	"ap-northeast-1", // Launched 2011
 	"ap-northeast-2", // Launched 2016
-
-	// Temporarily disable, as we are intermittently getting errors like this:
-	//
-	// Error waiting for instance (xxx) to become ready: Failed to reach target state. Reason: Client.InternalError: Client error on launch
-	//
-	//"ap-southeast-1", // Launched 2010
-	//"ap-south-1",     // Launched 2016
-	//"sa-east-1",      // Launched 2011
+	"ap-south-1",     // Launched 2016
 }
 
 // GetRandomStableRegion gets a randomly chosen AWS region that is considered stable. Like GetRandomRegion, you can
