@@ -62,7 +62,7 @@ type Options struct {
 	OutputMaxLineSize        int                    // The max size of one line in stdout and stderr (in bytes)
 	Logger                   *logger.Logger         // Set a non-default logger that should be used. See the logger package for more info.
 	Parallelism              int                    // Set the parallelism setting for Terraform
-	PlanFilePath             string                 // The path to output a plan file to
+	PlanFilePath             string                 // The path to output a plan file to (for the plan command) or read one from (for the apply command)
 }
 
 // Clone makes a deep copy of most fields on the Options object and returns it.
