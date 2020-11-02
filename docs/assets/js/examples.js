@@ -116,23 +116,22 @@ $(document).ready(function () {
             content = content.replace(/^.*website::tag.*\n?/mg, '')
           }
           // Find the range specified by range-id if specified
-          if (rangeId != "") {
+          if (rangeId) {
             // Split the content into an array of lines
             lines = content.split('\n')
-            // Search the array for "// snippet-tag-start::{id}" - save location
-            //startLine = lines.indexOf(`// snippet-tag-start::${rangeId}`)
-            startLine = searchTagInLines(`\/\/ snippet-tag-start::${rangeId}`, lines)
+            // Search the array for "snippet-tag-start::{id}" - save location
+            const startLine = searchTagInLines(`snippet-tag-start::${rangeId}`, lines)
 
-            // Search the array for "// snippet-tag-end::{id}" - save location
-            //endLine = lines.indexOf(`// snippet-tag-end::${rangeId}`)
-            endLine = searchTagInLines(`\/\/ snippet-tag-end::${rangeId}`, lines)
+            // Search the array for "snippet-tag-end::{id}" - save location
+            const endLine = searchTagInLines(`snippet-tag-end::${rangeId}`, lines)
 
             // If you have both a start and end, slice as below
-            if ((startLine != -1) && (endLine != -1)) {
-              range = lines.slice(startLine + 2, endLine)
+            if (startLine >= 0 && endLine >= 0) {
+              const range = lines.slice(startLine + 2, endLine)
               $activeCodeSnippet.find('code').text(range.join('\n'))
             } else {
               console.error('Could not find specified range.')
+              $activeCodeSnippet.find('code').text(content)
             }
           } else {
             $activeCodeSnippet.find('code').text(content)
@@ -150,10 +149,7 @@ $(document).ready(function () {
   }
 
   function searchTagInLines (tagRegExp, lines) {
-    for (var i=0; i<lines.length; i++) {
-        if (lines[i].match(tagRegExp)) return i;
-    }
-    return -1;
+    return lines.findIndex(line => line.match(tagRegExp))
 }
 
   function findTags(content, exampleTarget, fileId) {

@@ -1,7 +1,7 @@
 ---
 layout: collection-browser-doc
 title: Azure SDK Client Factory
-category: community
+category: contributing
 excerpt: >-
   Overview of the client factory pattern to be used with the Azure SDK when creating test modules.
 tags: ["contributing", "azure"]
@@ -89,7 +89,7 @@ When using the "AzureStackCloud" setting, you MUST also set the `AZURE_ENVIRONME
 
 ### Wait, I don't see the client in client factory for the rest api I want to interact with
 
- If you require a client that is not already implemented in client factory for your helper method you will need to create a corresponding method that instantiates the client and accepts base URI following the patterns discussed.  Below is a walkthrough for adding a client to client factory.
+ If you require a client that is not already implemented in client factory for your helper method, you will need to create a corresponding method that instantiates the client and accepts base URI following the patterns discussed.  Below is a walkthrough for adding a client to client factory.
 
 ## Walkthrough, adding a client to client_factory
 
