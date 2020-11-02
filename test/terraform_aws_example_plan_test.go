@@ -1,17 +1,16 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // An example of how to test the Terraform module in examples/terraform-aws-example using Terratest.
@@ -54,35 +53,15 @@ func TestTerraformAwsExamplePlan(t *testing.T) {
 	// website::tag::2::Run `terraform init`, `terraform plan`, and `terraform show` and fail the test if there are any errors
 	jsonOut := terraform.InitAndPlanAndShow(t, terraformOptions)
 
-	// website::tag::3::Parse out the plan json into a generic map structure so that we can introspect it. You can
-	// alternatively use https://github.com/hashicorp/terraform-json to get a concrete struct with all the types
-	// resolved.
-	var plan map[string]interface{}
-	require.NoError(
+	// website::tag::3::Use jsonpath to extract the expected tags on the instance from the plan. You can alternatively
+	// use https://github.com/hashicorp/terraform-json to get a concrete struct with all the types resolved.
+	var ec2Tags []map[string]interface{}
+	k8s.UnmarshalJSONPath(
 		t,
-		json.Unmarshal([]byte(jsonOut), &plan),
+		[]byte(jsonOut),
+		"{ .planned_values.root_module.resources[0].values.tags }",
+		&ec2Tags,
 	)
-
-	// Assert that the instance that is planned to be created has the expected tag set.
-	plannedValues, hasType := plan["planned_values"].(map[string]interface{})
-	require.True(t, hasType, "planned_values key in plan object is not a map")
-	rootModule, hasType := plannedValues["root_module"].(map[string]interface{})
-	require.True(t, hasType, "root_module key in planned_values in plan object is not a map")
-	rootModuleResources, hasType := rootModule["resources"].([]interface{})
-	require.True(t, hasType, "resources key in root_module in planned_values in plan object is not a list")
-	require.Equal(t, 1, len(rootModuleResources))
-	ec2InstanceResourcePlan, hasType := rootModuleResources[0].(map[string]interface{})
-	require.True(t, hasType, "EC2 instance resource in plan object is not a map")
-
-	resourceAddress, hasType := ec2InstanceResourcePlan["address"].(string)
-	require.True(t, hasType, "Address is not a string")
-	assert.Equal(t, "aws_instance.example", resourceAddress)
-
-	resourceValues, hasType := ec2InstanceResourcePlan["values"].(map[string]interface{})
-	require.True(t, hasType, "Values is not a map")
-	tags, hasType := resourceValues["tags"].(map[string]interface{})
-	require.True(t, hasType, "Tags in resource values is not a map")
-	nameTagValue, hasType := tags["Name"].(string)
-	require.True(t, hasType, "Name tag in tags is not a map")
-	assert.Equal(t, expectedName, nameTagValue)
+	tags := ec2Tags[0]
+	assert.Equal(t, map[string]interface{}{"Name": expectedName}, tags)
 }
