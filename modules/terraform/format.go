@@ -59,7 +59,7 @@ func FormatArgs(options *Options, args ...string) []string {
 
 // FormatTerraformPlanFileAsArg formats the out variable as a command-line arg for Terraform (e.g. of the format
 // -out=/some/path/to/plan.out or /some/path/to/plan.out). Only plan supports passing in the plan file as -out; the
-// other commands expect it as the first positional argument.
+// other commands expect it as the first positional argument. This returns an empty string if outPath is empty string.
 func FormatTerraformPlanFileAsArg(commandType string, outPath string) []string {
 	if outPath == "" {
 		return nil
