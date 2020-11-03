@@ -6,7 +6,6 @@ import (
 
 	"k8s.io/client-go/util/jsonpath"
 
-	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -45,28 +44,24 @@ func UnmarshalJSONPathE(t testing.TestingT, jsonData []byte, jsonpathStr string,
 	// it for us.
 	var blob interface{}
 	if err := json.Unmarshal(jsonData, &blob); err != nil {
-		logger.Logf(t, "Error unmarshaling original json blob")
-		return err
+		return JSONPathMalformedJSONErr{err}
 	}
 
 	// Then, query the json object with the given jsonpath to get the output string.
 	jsonpathParser := jsonpath.New(t.Name())
 	jsonpathParser.EnableJSONOutput(true)
 	if err := jsonpathParser.Parse(jsonpathStr); err != nil {
-		logger.Logf(t, "Error parsing json path")
-		return err
+		return JSONPathMalformedJSONPathErr{err}
 	}
 	outputJSONBuffer := new(bytes.Buffer)
 	if err := jsonpathParser.Execute(outputJSONBuffer, blob); err != nil {
-		logger.Logf(t, "Error extracing json path")
-		return err
+		return JSONPathExtractJSONPathErr{err}
 	}
 	outputJSON := outputJSONBuffer.Bytes()
 
 	// Finally, we need to unmarshal the output object into the given output var.
 	if err := json.Unmarshal(outputJSON, output); err != nil {
-		logger.Logf(t, "Error unmarshaling json path output")
-		return err
+		return JSONPathMalformedJSONPathResultErr{err}
 	}
 	return nil
 }
