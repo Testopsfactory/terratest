@@ -13,19 +13,19 @@ func TestUnmarshalJSONPath(t *testing.T) {
 
 	testCases := []struct {
 		name        string
-		jsonBlob    []byte
+		jsonBlob    string
 		jsonPath    string
 		expectedOut interface{}
 	}{
 		{
 			"boolField",
-			[]byte(`{"key": true}`),
+			`{"key": true}`,
 			"{ .key }",
 			[]bool{true},
 		},
 		{
 			"nestedObject",
-			[]byte(`{"key": {"data": [1,2,3]}}`),
+			`{"key": {"data": [1,2,3]}}`,
 			"{ .key }",
 			[]map[string][]int{
 				map[string][]int{
@@ -35,7 +35,7 @@ func TestUnmarshalJSONPath(t *testing.T) {
 		},
 		{
 			"nestedArray",
-			[]byte(`{"key": {"data": [1,2,3]}}`),
+			`{"key": {"data": [1,2,3]}}`,
 			"{ .key.data[*] }",
 			[]int{1, 2, 3},
 		},
@@ -47,7 +47,7 @@ func TestUnmarshalJSONPath(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			var output interface{}
-			UnmarshalJSONPath(t, testCase.jsonBlob, testCase.jsonPath, &output)
+			UnmarshalJSONPath(t, []byte(testCase.jsonBlob), testCase.jsonPath, &output)
 			// NOTE: we have to do equality check on the marshalled json data to allow equality checks over dynamic
 			// types in this table driven test.
 			expectedOutJSON, err := json.Marshal(testCase.expectedOut)
