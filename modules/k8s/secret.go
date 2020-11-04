@@ -31,7 +31,8 @@ func GetSecretE(t testing.TestingT, options *KubectlOptions, secretName string) 
 	return clientset.CoreV1().Secrets(options.Namespace).Get(context.Background(), secretName, metav1.GetOptions{})
 }
 
-// WaitUntilSecretAvailable waits until the secret is present on the cluster.
+// WaitUntilSecretAvailable waits until the secret is present on the cluster in cases where it is not immediately
+// available (for example, when using ClusterIssuer to request a certificate).
 func WaitUntilSecretAvailable(t testing.TestingT, options *KubectlOptions, secretName string, retries int, sleepBetweenRetries time.Duration) {
 	statusMsg := fmt.Sprintf("Wait for secret %s to be provisioned.", secretName)
 	message := retry.DoWithRetry(
