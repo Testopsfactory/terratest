@@ -101,7 +101,7 @@ $(document).ready(function () {
       const $activeCodeSnippet = $(activeCodeSnippet)
       const exampleTarget = $(this).data('example')
       const fileId = $(this).data('target')
-      const rangeId = $(this).data('range-id')
+      const rangeId = $(this).data('snippet-id')
       if (!$activeCodeSnippet.data('loaded')) {
         try {
           const response = await fetch($activeCodeSnippet.data('url'))
@@ -150,7 +150,7 @@ $(document).ready(function () {
 
   function searchTagInLines (tagRegExp, lines) {
     return lines.findIndex(line => line.match(tagRegExp))
-}
+  }
 
   function findTags(content, exampleTarget, fileId) {
     let tags = []
