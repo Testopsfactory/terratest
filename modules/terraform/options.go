@@ -67,7 +67,7 @@ type Options struct {
 
 // Clone makes a deep copy of most fields on the Options object and returns it.
 //
-// NOTE: options.SshAgent and options.Logger can NOT be deep copied (e.g., the SshAgent struct contains channels and
+// NOTE: options.SshAgent and options.Logger CANNOT be deep copied (e.g., the SshAgent struct contains channels and
 // listeners that can't be meaningfully copied), so the original values are retained.
 func (options *Options) Clone() (*Options, error) {
 	newOptions := &Options{}
