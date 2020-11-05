@@ -101,7 +101,7 @@ $(document).ready(function () {
       const $activeCodeSnippet = $(activeCodeSnippet)
       const exampleTarget = $(this).data('example')
       const fileId = $(this).data('target')
-      const rangeId = $(this).data('snippet-id')
+      const snippetId = $(this).data('snippet-id')
       if (!$activeCodeSnippet.data('loaded')) {
         try {
           const response = await fetch($activeCodeSnippet.data('url'))
@@ -116,14 +116,14 @@ $(document).ready(function () {
             content = content.replace(/^.*website::tag.*\n?/mg, '')
           }
           // Find the range specified by range-id if specified
-          if (rangeId) {
+          if (snippetId) {
             // Split the content into an array of lines
             lines = content.split('\n')
             // Search the array for "snippet-tag-start::{id}" - save location
-            const startLine = searchTagInLines(`snippet-tag-start::${rangeId}`, lines)
+            const startLine = searchTagInLines(`snippet-tag-start::${snippetId}`, lines)
 
             // Search the array for "snippet-tag-end::{id}" - save location
-            const endLine = searchTagInLines(`snippet-tag-end::${rangeId}`, lines)
+            const endLine = searchTagInLines(`snippet-tag-end::${snippetId}`, lines)
 
             // If you have both a start and end, slice as below
             if (startLine >= 0 && endLine >= 0) {
