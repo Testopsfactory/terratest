@@ -2,9 +2,11 @@ package test
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/aws"
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
@@ -12,7 +14,7 @@ import (
 )
 
 // An example of how to test the Terraform module in examples/terraform-aws-example using Terratest.
-func TestTerraformAwsExample(t *testing.T) {
+func TestTerraformAwsExamplePlan(t *testing.T) {
 	t.Parallel()
 
 	// Make a copy of the terraform module to a temporary directory. This allows running multiple tests in parallel
@@ -29,9 +31,10 @@ func TestTerraformAwsExample(t *testing.T) {
 	// website::tag::1::Configure Terraform setting path to Terraform code, EC2 instance name, and AWS Region. We also
 	// configure the options with default retryable errors to handle the most common retryable errors encountered in
 	// terraform testing.
+	planFilePath := filepath.Join(exampleFolder, "plan.out")
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: exampleFolder,
+		TerraformDir: "../examples/terraform-aws-example",
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
@@ -42,29 +45,23 @@ func TestTerraformAwsExample(t *testing.T) {
 		EnvVars: map[string]string{
 			"AWS_DEFAULT_REGION": awsRegion,
 		},
+
+		// Configure a plan file path so we can introspect the plan and make assertions about it.
+		PlanFilePath: planFilePath,
 	})
 
-	// website::tag::4::At the end of the test, run `terraform destroy` to clean up any resources that were created
-	defer terraform.Destroy(t, terraformOptions)
+	// website::tag::2::Run `terraform init`, `terraform plan`, and `terraform show` and fail the test if there are any errors
+	jsonOut := terraform.InitAndPlanAndShow(t, terraformOptions)
 
-	// website::tag::2::Run `terraform init` and `terraform apply` and fail the test if there are any errors
-	terraform.InitAndApply(t, terraformOptions)
-
-	// Run `terraform output` to get the value of an output variable
-	instanceID := terraform.Output(t, terraformOptions, "instance_id")
-
-	aws.AddTagsToResource(t, awsRegion, instanceID, map[string]string{"testing": "testing-tag-value"})
-
-	// Look up the tags for the given Instance ID
-	instanceTags := aws.GetTagsForEc2Instance(t, awsRegion, instanceID)
-
-	// website::tag::3::Check if the EC2 instance with a given tag and name is set.
-	testingTag, containsTestingTag := instanceTags["testing"]
-	assert.True(t, containsTestingTag)
-	assert.Equal(t, "testing-tag-value", testingTag)
-
-	// Verify that our expected name tag is one of the tags
-	nameTag, containsNameTag := instanceTags["Name"]
-	assert.True(t, containsNameTag)
-	assert.Equal(t, expectedName, nameTag)
+	// website::tag::3::Use jsonpath to extract the expected tags on the instance from the plan. You can alternatively
+	// use https://github.com/hashicorp/terraform-json to get a concrete struct with all the types resolved.
+	var ec2Tags []map[string]interface{}
+	k8s.UnmarshalJSONPath(
+		t,
+		[]byte(jsonOut),
+		"{ .planned_values.root_module.resources[0].values.tags }",
+		&ec2Tags,
+	)
+	tags := ec2Tags[0]
+	assert.Equal(t, map[string]interface{}{"Name": expectedName}, tags)
 }
