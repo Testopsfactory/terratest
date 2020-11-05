@@ -117,22 +117,8 @@ $(document).ready(function () {
           }
           // Find the range specified by range-id if specified
           if (snippetId) {
-            // Split the content into an array of lines
-            lines = content.split('\n')
-            // Search the array for "snippet-tag-start::{id}" - save location
-            const startLine = searchTagInLines(`snippet-tag-start::${snippetId}`, lines)
-
-            // Search the array for "snippet-tag-end::{id}" - save location
-            const endLine = searchTagInLines(`snippet-tag-end::${snippetId}`, lines)
-
-            // If you have both a start and end, slice as below
-            if (startLine >= 0 && endLine >= 0) {
-              const range = lines.slice(startLine + 2, endLine)
-              $activeCodeSnippet.find('code').text(range.join('\n'))
-            } else {
-              console.error('Could not find specified range.')
-              $activeCodeSnippet.find('code').text(content)
-            }
+            snippet = extractSnippet(content, snippetId)
+            $activeCodeSnippet.find('code').text(snippet)
           } else {
             $activeCodeSnippet.find('code').text(content)
           }
@@ -146,6 +132,24 @@ $(document).ready(function () {
       updatePopups()
       openPopup(exampleTarget, 1)
     })
+  }
+
+  function extractSnippet(content, snippetId) {
+    // Split the content into an array of lines
+    lines = content.split('\n')
+    // Search the array for "snippet-tag-start::{id}" - save location
+    const startLine = searchTagInLines(`snippet-tag-start::${snippetId}`, lines)
+    // Search the array for "snippet-tag-end::{id}" - save location
+    const endLine = searchTagInLines(`snippet-tag-end::${snippetId}`, lines)
+
+    // If you have both a start and end, slice as below
+    if (startLine >= 0 && endLine >= 0) {
+      const range = lines.slice(startLine + 2, endLine)
+      return range.join('\n')
+    } else {
+      console.error('Could not find specified range.')
+      return content
+    }
   }
 
   function searchTagInLines (tagRegExp, lines) {
