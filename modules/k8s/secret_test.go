@@ -50,7 +50,7 @@ func TestWaitUntilSecretAvailableReturnsSuccessfully(t *testing.T) {
 	defer KubectlDeleteFromString(t, options, configData)
 
 	KubectlApplyFromString(t, options, configData)
-	WaitUntilSecretAvailable(t, options, uniqueID, 10, 1*time.Second)
+	WaitUntilSecretAvailable(t, options, "master-password", 10, 1*time.Second)
 }
 
 const EXAMPLE_SECRET_YAML_TEMPLATE = `---
