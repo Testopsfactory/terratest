@@ -59,34 +59,22 @@ type Options struct {
 	NoColor                  bool                   // Whether the -no-color flag will be set for any Terraform command or not
 	SshAgent                 *ssh.SshAgent          // Overrides local SSH agent with the given in-process agent
 	NoStderr                 bool                   // Disable stderr redirection
+	OutputMaxLineSize        int                    // The max size of one line in stdout and stderr (in bytes)
 	Logger                   *logger.Logger         // Set a non-default logger that should be used. See the logger package for more info.
 	Parallelism              int                    // Set the parallelism setting for Terraform
+	PlanFilePath             string                 // The path to output a plan file to (for the plan command) or read one from (for the apply command)
 }
 
 // Clone makes a deep copy of most fields on the Options object and returns it.
+//
+// NOTE: options.SshAgent and options.Logger CANNOT be deep copied (e.g., the SshAgent struct contains channels and
+// listeners that can't be meaningfully copied), so the original values are retained.
 func (options *Options) Clone() (*Options, error) {
-	newOptions := Options{}
-	if err := copier.Copy(&newOptions, options); err != nil {
+	newOptions := &Options{}
+	if err := copier.Copy(newOptions, options); err != nil {
 		return nil, err
 	}
-
-	// Deep copy nested structs by calling the copier and updating the ref. This is necessary because the copier library
-	// does not handle struct pointers for the deep copy.
-	// See https://github.com/jinzhu/copier/issues/61
-	// Logger
-	clonedLogger := logger.Logger{}
-	if err := copier.Copy(&clonedLogger, options.Logger); err != nil {
-		return nil, err
-	}
-	newOptions.Logger = &clonedLogger
-	// SshAgent
-	clonedSshAgent := ssh.SshAgent{}
-	if err := copier.Copy(&clonedSshAgent, options.SshAgent); err != nil {
-		return nil, err
-	}
-	newOptions.SshAgent = &clonedSshAgent
-
-	return &newOptions, nil
+	return newOptions, nil
 }
 
 // WithDefaultRetryableErrors makes a copy of the Options object and returns an updated object with sensible defaults
