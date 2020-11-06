@@ -27,6 +27,8 @@ resource "azurerm_resource_group" "mysql_rg" {
 # DEPLOY AZURE MySQL SERVER
 # ---------------------------------------------------------------------------------------------------------------------
 
+# Random password is used as an example to simplify the deployment and improve the security of the remote VM.
+# This is not as a production recommendation as the password is stored in the Terraform state file.
 resource "random_password" "password" {
   length = 16
   special = true
@@ -55,7 +57,7 @@ resource "azurerm_mysql_server" "mysqlserver" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# DEPLOY AZURE MySQL DATA BASE
+# DEPLOY AZURE MySQL DATABASE
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_mysql_database" "mysqldb" {

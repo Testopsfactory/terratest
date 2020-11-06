@@ -34,7 +34,6 @@ variable "mysqlserver_sku_name" {
   description = "The SKU name for the mysql server."
   type        = string
   default     = "GP_Gen5_2"
-
 }
 
 variable "mysqlserver_storage_mb" {
