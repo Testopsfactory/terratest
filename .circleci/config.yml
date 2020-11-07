@@ -3,8 +3,8 @@ defaults: &defaults
     enabled: true
     image: "ubuntu-1604:201903-01"
   environment:
-    GRUNTWORK_INSTALLER_VERSION: v0.0.21
-    MODULE_CI_VERSION: v0.16.0
+    GRUNTWORK_INSTALLER_VERSION: v0.0.30
+    MODULE_CI_VERSION: v0.29.1
     TERRAFORM_VERSION: 0.13.2
     TERRAGRUNT_VERSION: v0.24.2
     PACKER_VERSION: 1.5.1
@@ -214,13 +214,13 @@ jobs:
 
 
   deploy:
-    machine: true
+    <<: *defaults
     steps:
       - checkout
       - attach_workspace:
           at: /home/circleci
-      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version v0.0.21
-      - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "v0.13.2"
+      - run: curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "$GRUNTWORK_INSTALLER_VERSION"
+      - run: gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "$MODULE_CI_VERSION"
       - run: cd cmd/bin && sha256sum * > SHA256SUMS
       - run: upload-github-release-assets cmd/bin/*
 
@@ -267,9 +267,7 @@ workflows:
           context:
             - Gruntwork Admin
           requires:
-            - test
-            - kubernetes_test
-            - helm_test
+            - setup
           filters:
             tags:
               only: /^v.*/
