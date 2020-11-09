@@ -25,9 +25,9 @@ variable "location" {
 }
 
 variable "mysqlserver_admin_login" {
-    description = "The administrator login name for the mysql server."
-    type        = string
-    default     = "mysqladmin"
+  description = "The administrator login name for the mysql server."
+  type        = string
+  default     = "mysqladmin"
 }
 
 variable "mysqlserver_sku_name" {

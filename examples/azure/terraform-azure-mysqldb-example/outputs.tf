@@ -1,6 +1,6 @@
 output "resource_group_name" {
   value = azurerm_resource_group.mysql_rg.name
-} 
+}
 
 output "mysql_server_name" {
   value = azurerm_mysql_server.mysqlserver.name
