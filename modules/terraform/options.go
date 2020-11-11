@@ -19,11 +19,12 @@ var (
 
 		// `terraform init` frequently fails in CI due to network issues accessing plugins. The reason is unknown, but
 		// eventually these succeed after a few retries.
-		".*unable to verify signature.*":             "Failed to retrieve plugin due to transient network error.",
-		".*unable to verify checksum.*":              "Failed to retrieve plugin due to transient network error.",
-		".*no provider exists with the given name.*": "Failed to retrieve plugin due to transient network error.",
-		".*registry service is unreachable.*":        "Failed to retrieve plugin due to transient network error.",
-		".*Error installing provider.*":              "Failed to retrieve plugin due to transient network error.",
+		".*unable to verify signature.*":                  "Failed to retrieve plugin due to transient network error.",
+		".*unable to verify checksum.*":                   "Failed to retrieve plugin due to transient network error.",
+		".*no provider exists with the given name.*":      "Failed to retrieve plugin due to transient network error.",
+		".*registry service is unreachable.*":             "Failed to retrieve plugin due to transient network error.",
+		".*Error installing provider.*":                   "Failed to retrieve plugin due to transient network error.",
+		".*Failed to query available provider packages.*": "Failed to retrieve plugin due to transient network error.",
 
 		// Provider bugs where the data after apply is not propagated. This is usually an eventual consistency issue, so
 		// retrying should self resolve it.
