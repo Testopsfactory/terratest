@@ -52,7 +52,7 @@ jobs:
   setup:
     <<: *env
     docker:
-      - image: circleci/python:3.8.1
+      - image: circleci/python:3.8.5
 
     steps:
       - checkout
@@ -68,6 +68,9 @@ jobs:
           key: gomod-{{ checksum "go.sum" }}
           paths:
           - $HOME/go/src/
+
+      # The weird way you have to set PATH in Circle 2.0
+      - run: echo 'export PATH=$HOME/.local/bin:$HOME/go/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
 
       # Run pre-commit hooks and fail the build if any hook finds required changes.
       - run:
