@@ -47,7 +47,7 @@ func TestRemoteChartInstall(t *testing.T) {
 	}
 
 	// Add the stable repo under a random name so as not to touch existing repo configs
-	uniqueName := random.UniqueId()
+	uniqueName := strings.ToLower(fmt.Sprintf("terratest-%s", random.UniqueId()))
 	defer RemoveRepo(t, options, uniqueName)
 	AddRepo(t, options, uniqueName, "https://charts.helm.sh/stable")
 	helmChart := fmt.Sprintf("%s/chartmuseum", uniqueName)
