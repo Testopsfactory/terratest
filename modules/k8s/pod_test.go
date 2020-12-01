@@ -112,7 +112,7 @@ func TestWaitUntilPodAvailableWithFailingReadinessProbe(t *testing.T) {
 
 	uniqueID := strings.ToLower(random.UniqueId())
 	options := NewKubectlOptions("", "", uniqueID)
-	configData := fmt.Sprintf(EXAMPLE_POD_WITH_READINESS_PROBE, uniqueID, uniqueID)
+	configData := fmt.Sprintf(EXAMPLE_POD_WITH_FAILING_READINESS_PROBE, uniqueID, uniqueID)
 	defer KubectlDeleteFromString(t, options, configData)
 	KubectlApplyFromString(t, options, configData)
 
