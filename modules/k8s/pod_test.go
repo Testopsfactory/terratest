@@ -164,7 +164,7 @@ const EXAMPLE_POD_WITH_FAILING_READINESS_PROBE = EXAMPLE_POD_YAML_TEMPLATE + `
 func TestIsPodAvailable(t *testing.T) {
 	t.Parallel()
 
-	cases := []struct{
+	cases := []struct {
 		title          string
 		pod            *corev1.Pod
 		expectedResult bool
@@ -175,8 +175,8 @@ func TestIsPodAvailable(t *testing.T) {
 				Status: corev1.PodStatus{
 					ContainerStatuses: []corev1.ContainerStatus{
 						{
-							Name: "container1",
-							Ready: false,
+							Name:    "container1",
+							Ready:   false,
 							Started: &[]bool{true}[0],
 						},
 					},
@@ -191,8 +191,8 @@ func TestIsPodAvailable(t *testing.T) {
 				Status: corev1.PodStatus{
 					ContainerStatuses: []corev1.ContainerStatus{
 						{
-							Name: "container1",
-							Ready: true,
+							Name:    "container1",
+							Ready:   true,
 							Started: &[]bool{true}[0],
 						},
 					},
