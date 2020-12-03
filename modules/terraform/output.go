@@ -20,15 +20,10 @@ func Output(t testing.TestingT, options *Options, key string) string {
 
 // OutputE calls terraform output for the given variable and return its value.
 func OutputE(t testing.TestingT, options *Options, key string) (string, error) {
-	output, err := RunTerraformCommandAndGetStdoutE(t, options, "output", "-no-color", "-json", key)
+	var str string
+	err := terraform.OutputStructE(t, options, key, &str)
 
-	if err != nil {
-		return "", err
-	}
-
-	var v string
-	err = json.Unmarshal([]byte(output), &v)
-	return v, err
+	return str, err
 }
 
 // OutputRequired calls terraform output for the given variable and return its value. If the value is empty, fail the test.
