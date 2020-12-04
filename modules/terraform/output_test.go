@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestOutput1(t *testing.T) {
+func TestOutputString(t *testing.T) {
 	t.Parallel()
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-output", t.Name())
@@ -28,6 +28,9 @@ func TestOutput1(t *testing.T) {
 
 	num := Output(t, options, "number")
 	require.Equal(t, num, "3.14", "Number %q should match %q", "3.14", num)
+
+	num1 := Output(t, options, "number1")
+	require.Equal(t, num1, "3", "Number %q should match %q", "3", num1)
 }
 
 func TestOutputList(t *testing.T) {
