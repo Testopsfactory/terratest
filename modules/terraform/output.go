@@ -11,14 +11,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Output calls terraform output for the given variable and return its value.
+// Output calls terraform output for the given variable and return its string value representation.
 func Output(t testing.TestingT, options *Options, key string) string {
 	out, err := OutputE(t, options, key)
 	require.NoError(t, err)
 	return out
 }
 
-// OutputE calls terraform output for the given variable and return its value.
+// OutputE calls terraform output for the given variable and return its string value representation.
 func OutputE(t testing.TestingT, options *Options, key string) (string, error) {
 	var val interface{}
 	err := OutputStructE(t, options, key, &val)
