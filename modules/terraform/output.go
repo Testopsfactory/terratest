@@ -12,6 +12,8 @@ import (
 )
 
 // Output calls terraform output for the given variable and return its string value representation.
+// It is only designed to work for primitive terraform types: string, number and bool.
+// Please use OutputStruct for anything else.
 func Output(t testing.TestingT, options *Options, key string) string {
 	out, err := OutputE(t, options, key)
 	require.NoError(t, err)
@@ -19,6 +21,8 @@ func Output(t testing.TestingT, options *Options, key string) string {
 }
 
 // OutputE calls terraform output for the given variable and return its string value representation.
+// It is only designed to work for primitive terraform types: string, number and bool.
+// Please use OutputStructE for anything else.
 func OutputE(t testing.TestingT, options *Options, key string) (string, error) {
 	var val interface{}
 	err := OutputStructE(t, options, key, &val)
