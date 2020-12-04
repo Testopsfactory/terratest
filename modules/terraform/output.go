@@ -21,8 +21,7 @@ func Output(t testing.TestingT, options *Options, key string) string {
 // OutputE calls terraform output for the given variable and return its value.
 func OutputE(t testing.TestingT, options *Options, key string) (string, error) {
 	var str string
-	err := terraform.OutputStructE(t, options, key, &str)
-
+	err := OutputStructE(t, options, key, &str)
 	return str, err
 }
 
