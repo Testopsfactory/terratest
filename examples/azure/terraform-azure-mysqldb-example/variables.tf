@@ -42,7 +42,7 @@ variable "mysqlserver_storage_mb" {
   default     = "5120"
 }
 
-variable mysqldb_charset {
+variable "mysqldb_charset" {
   description = "The charset for mysql data base."
   type        = string
   default     = "utf8"
