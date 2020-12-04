@@ -60,4 +60,9 @@ func TestTerraformAwsS3Example(t *testing.T) {
 
 	// Verify that our Bucket has a policy attached
 	aws.AssertS3BucketPolicyExists(t, awsRegion, bucketID)
+
+	// Verify that our bucket has server access logging TargetBucket set to what's expected
+	loggingTargetBucket := aws.GetS3BucketLoggingTarget(t, awsRegion, bucketID)
+	expectedLogsTargetBucket := fmt.Sprintf("%s-logs", bucketID)
+	assert.Equal(t, expectedLogsTargetBucket, loggingTargetBucket)
 }
