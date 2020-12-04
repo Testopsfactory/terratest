@@ -12,7 +12,7 @@ import (
 )
 
 // Output calls terraform output for the given variable and return its string value representation.
-// It is only designed to work for primitive terraform types: string, number and bool.
+// It only designed to work with primitive terraform types: string, number and bool.
 // Please use OutputStruct for anything else.
 func Output(t testing.TestingT, options *Options, key string) string {
 	out, err := OutputE(t, options, key)
@@ -21,7 +21,7 @@ func Output(t testing.TestingT, options *Options, key string) string {
 }
 
 // OutputE calls terraform output for the given variable and return its string value representation.
-// It is only designed to work for primitive terraform types: string, number and bool.
+// It only designed to work with primitive terraform types: string, number and bool.
 // Please use OutputStructE for anything else.
 func OutputE(t testing.TestingT, options *Options, key string) (string, error) {
 	var val interface{}
@@ -263,7 +263,7 @@ func OutputForKeys(t testing.TestingT, options *Options, keys []string) map[stri
 
 // OutputJson calls terraform output for the given variable and returns the
 // result as the json string.
-// If v is an empty string, it will return entire output.
+// If v is an empty string, it will return the entire output.
 func OutputJson(t testing.TestingT, options *Options, key string) string {
 	str, err := OutputJsonE(t, options, key)
 	require.NoError(t, err)
@@ -272,7 +272,7 @@ func OutputJson(t testing.TestingT, options *Options, key string) string {
 
 // OutputJsonE calls terraform output for the given variable and returns the
 // result as the json string.
-// If v is an empty string, it will return entire output.
+// If v is an empty string, it will return the entire output.
 func OutputJsonE(t testing.TestingT, options *Options, key string) (string, error) {
 	args := []string{"output", "-no-color", "-json"}
 	if key != "" {

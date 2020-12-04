@@ -301,6 +301,11 @@ func TestOutputJson(t *testing.T) {
     "type": "number",
     "value": 3.14
   },
+  "number1": {
+    "sensitive": false,
+    "type": "number",
+    "value": 3
+  },
   "string": {
     "sensitive": false,
     "type": "string",
