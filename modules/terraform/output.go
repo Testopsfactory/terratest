@@ -279,12 +279,7 @@ func OutputJsonE(t testing.TestingT, options *Options, key string) (string, erro
 		args = append(args, key)
 	}
 
-	out, err := RunTerraformCommandAndGetStdoutE(t, options, args...)
-	if err != nil {
-		return "", err
-	}
-
-	return out, nil
+	return RunTerraformCommandAndGetStdoutE(t, options, args...)
 }
 
 // OutputStruct calls terraform output for the given variable and stores the
