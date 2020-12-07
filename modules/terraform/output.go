@@ -263,7 +263,7 @@ func OutputForKeys(t testing.TestingT, options *Options, keys []string) map[stri
 
 // OutputJson calls terraform output for the given variable and returns the
 // result as the json string.
-// If v is an empty string, it will return the entire output.
+// If key is an empty string, it will return all the output variables.
 func OutputJson(t testing.TestingT, options *Options, key string) string {
 	str, err := OutputJsonE(t, options, key)
 	require.NoError(t, err)
