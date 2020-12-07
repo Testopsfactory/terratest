@@ -272,7 +272,7 @@ func OutputJson(t testing.TestingT, options *Options, key string) string {
 
 // OutputJsonE calls terraform output for the given variable and returns the
 // result as the json string.
-// If v is an empty string, it will return the entire output.
+// If key is an empty string, it will return all the output variables.
 func OutputJsonE(t testing.TestingT, options *Options, key string) (string, error) {
 	args := []string{"output", "-no-color", "-json"}
 	if key != "" {
