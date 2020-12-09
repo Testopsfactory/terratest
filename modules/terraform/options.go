@@ -1,11 +1,15 @@
 package terraform
 
 import (
+	"errors"
+	"fmt"
+	"io/ioutil"
 	"testing"
 	"time"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/ssh"
+	"github.com/hashicorp/hcl"
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/require"
 )
@@ -102,4 +106,35 @@ func WithDefaultRetryableErrors(t *testing.T, originalOptions *Options) *Options
 	newOptions.TimeBetweenRetries = 5 * time.Second
 
 	return newOptions
+}
+
+// GetVariablesFromVarFiles Parses all data from each input file provided in VarFile and returns them as a key-value map,
+// in the order that they appear in the VarFiles array
+// Note that the values in the map are interface{} type so you will need to convert them to the expected data type
+func GetVariablesFromVarFiles(option *Options) ([]map[string]interface{}, error) {
+	variableMaps := []map[string]interface{}{}
+
+	if len(option.VarFiles) == 0 {
+		return variableMaps, nil
+	}
+
+	for _, file := range(option.VarFiles) {
+		fileContents, err := ioutil.ReadFile(file)
+
+		if err != nil {
+			return nil, err
+		}
+
+		var parsedFile map[string]interface{}
+		err = hcl.Decode(&parsedFile, string(fileContents))
+
+		if err != nil{
+			decodeErr := errors.New(fmt.Sprintf("%s - %s", file, err.Error()))
+			return nil, decodeErr
+		}
+
+		variableMaps = append(variableMaps, parsedFile)
+	}
+
+	return variableMaps, nil
 }
