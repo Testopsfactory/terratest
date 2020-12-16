@@ -66,7 +66,8 @@ func TestRemoteChartInstall(t *testing.T) {
 	// Fix chart version and retry install
 	options.Version = "2.3.0"
 	// Test that passing extra arguments doesn't error, by changing default timeout
-	options.ExtraArgs = []string{"--timeout", "5m1s"}
+	options.ExtraArgs = map[string][]string{"install": []string{"--timeout", "5m1s"}}
+	options.ExtraArgs["delete"] = []string{"--timeout", "5m1s"}
 	require.NoError(t, InstallE(t, options, helmChart, releaseName))
 	waitForRemoteChartPods(t, kubectlOptions, releaseName, 1)
 

@@ -30,7 +30,9 @@ func UpgradeE(t testing.TestingT, options *Options, chart string, releaseName st
 	var err error
 	args := []string{}
 	if options.ExtraArgs != nil {
-		args = append(args, options.ExtraArgs...)
+		if upgradeArgs, ok := options.ExtraArgs["upgrade"]; ok {
+			args = append(args, upgradeArgs...)
+		}
 	}
 	args = append(args, getNamespaceArgs(options)...)
 	args, err = getValuesArgsE(t, options, args...)
