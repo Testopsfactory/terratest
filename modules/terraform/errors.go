@@ -56,3 +56,21 @@ type UnexpectedOutputType struct {
 func (err UnexpectedOutputType) Error() string {
 	return fmt.Sprintf("Expected output '%s' to be of type '%s' but got '%s'", err.Key, err.ExpectedType, err.ActualType)
 }
+
+// VarFileNotFound is an error that occurs when a var file cannot be found in an option's VarFile list
+type VarFileNotFound struct {
+	Path string
+}
+
+func (err VarFileNotFound) Error() string {
+	return fmt.Sprintf("Could not resolve var file %s", err.Path)
+}
+
+type HclDecodeError struct {
+	FilePath string
+	ErrorText string
+}
+
+func (err HclDecodeError) Error() string {
+	return fmt.Sprintf("%s - %s", err.FilePath, err.ErrorText)
+}
