@@ -17,15 +17,23 @@ func CreateNamespace(t testing.TestingT, options *KubectlOptions, namespaceName 
 
 // CreateNamespaceE will create a new Kubernetes namespace on the cluster targeted by the provided options.
 func CreateNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName string) error {
+	namespaceObject := metav1.ObjectMeta{
+		Name: namespaceName,
+	}
+	err := CreateNamespaceWithMetadataE(t, options, namespaceObject)
+	return err
+}
+
+// CreateNamespaceWithMetadataE will create a new Kubernetes namespace on the cluster targeted by the provided options and
+// expects the entire namespace ObjectMeta to be passed in.
+func CreateNamespaceWithMetadataE(t testing.TestingT, options *KubectlOptions, namespaceObjectMeta metav1.ObjectMeta) error {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return err
 	}
 
 	namespace := corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: namespaceName,
-		},
+		ObjectMeta: namespaceObjectMeta,
 	}
 	_, err = clientset.CoreV1().Namespaces().Create(context.Background(), &namespace, metav1.CreateOptions{})
 	return err
