@@ -220,7 +220,7 @@ To test this code manually, you would:
 1. Run `kubectl apply` to deploy the Docker training webapp.
 1. Use the Kubernetes APIs to figure out the endpoint to hit for the load balancer.
 1. Open the endpoint in your web browser on port 5000 and make sure it says “Hello, World”. Note that, depending on 
-   your Kubernetes cluster, it could take a minute or two for the Docker container to come p, so you may have to retry 
+   your Kubernetes cluster, it could take a minute or two for the Docker container to come up, so you may have to retry 
    a few times.
 1. When you're done testing, run `kubectl delete` to clean everything up.
 
