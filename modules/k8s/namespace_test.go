@@ -36,7 +36,7 @@ func TestNamespaces(t *testing.T) {
 	require.Equal(t, namespace.Name, namespaceName)
 }
 
-func TestNamespaceWithLabels(t *testing.T) {
+func TestNamespaceWithMetadataE(t *testing.T) {
 	t.Parallel()
 
 	uniqueId := random.UniqueId()
@@ -49,6 +49,29 @@ func TestNamespaceWithLabels(t *testing.T) {
 	}
 	err := CreateNamespaceWithMetadataE(t, options, namespaceObjectMetaWithLabels)
 	require.NoError(t, err)
+	defer func() {
+		DeleteNamespace(t, options, namespaceName)
+		namespace := GetNamespace(t, options, namespaceName)
+		require.Equal(t, namespace.Status.Phase, corev1.NamespaceTerminating)
+	}()
+
+	namespace := GetNamespace(t, options, namespaceName)
+	require.Equal(t, namespace.Name, namespaceName)
+	require.Equal(t, namespace.Labels, namespaceLabels)
+}
+
+func TestNamespaceWithMetadata(t *testing.T) {
+	t.Parallel()
+
+	uniqueId := random.UniqueId()
+	namespaceName := strings.ToLower(uniqueId)
+	options := NewKubectlOptions("", "", namespaceName)
+	namespaceLabels := map[string]string{"foo": "bar"}
+	namespaceObjectMetaWithLabels := metav1.ObjectMeta{
+		Name:   namespaceName,
+		Labels: namespaceLabels,
+	}
+	CreateNamespaceWithMetadata(t, options, namespaceObjectMetaWithLabels)
 	defer func() {
 		DeleteNamespace(t, options, namespaceName)
 		namespace := GetNamespace(t, options, namespaceName)

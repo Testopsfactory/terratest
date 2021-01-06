@@ -20,12 +20,11 @@ func CreateNamespaceE(t testing.TestingT, options *KubectlOptions, namespaceName
 	namespaceObject := metav1.ObjectMeta{
 		Name: namespaceName,
 	}
-	err := CreateNamespaceWithMetadataE(t, options, namespaceObject)
-	return err
+	return CreateNamespaceWithMetadataE(t, options, namespaceObject)
 }
 
 // CreateNamespaceWithMetadataE will create a new Kubernetes namespace on the cluster targeted by the provided options and
-// expects the entire namespace ObjectMeta to be passed in.
+// with the provided metadata. This method expects the entire namespace ObjectMeta to be passed in, so you'll need to set the name within the ObjectMeta struct yourself.
 func CreateNamespaceWithMetadataE(t testing.TestingT, options *KubectlOptions, namespaceObjectMeta metav1.ObjectMeta) error {
 	clientset, err := GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
@@ -37,6 +36,19 @@ func CreateNamespaceWithMetadataE(t testing.TestingT, options *KubectlOptions, n
 	}
 	_, err = clientset.CoreV1().Namespaces().Create(context.Background(), &namespace, metav1.CreateOptions{})
 	return err
+}
+
+// CreateNamespaceWithMetadata will create a new Kubernetes namespace on the cluster targeted by the provided options and
+// with the provided metadata. This method expects the entire namespace ObjectMeta to be passed in, so you'll need to set the name within the ObjectMeta struct yourself.
+func CreateNamespaceWithMetadata(t testing.TestingT, options *KubectlOptions, namespaceObjectMeta metav1.ObjectMeta) {
+	clientset, err := GetKubernetesClientFromOptionsE(t, options)
+	require.NoError(t, err)
+
+	namespace := corev1.Namespace{
+		ObjectMeta: namespaceObjectMeta,
+	}
+	_, err = clientset.CoreV1().Namespaces().Create(context.Background(), &namespace, metav1.CreateOptions{})
+	require.NoError(t, err)
 }
 
 // GetNamespace will query the Kubernetes cluster targeted by the provided options for the requested namespace. This will
