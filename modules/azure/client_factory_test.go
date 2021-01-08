@@ -154,3 +154,71 @@ func TestManagedClustersClientBaseURISetCorrectly(t *testing.T) {
 		})
 	}
 }
+
+func TestCosmosDBAccountClientBaseURISetCorrectly(t *testing.T) {
+	var cases = []struct {
+		CaseName        string
+		EnvironmentName string
+		ExpectedBaseURI string
+	}{
+		{"GovCloud/CosmosDBAccountClient", govCloudEnvName, autorest.USGovernmentCloud.ResourceManagerEndpoint},
+		{"PublicCloud/CosmosDBAccountClient", publicCloudEnvName, autorest.PublicCloud.ResourceManagerEndpoint},
+		{"ChinaCloud/CosmosDBAccountClient", chinaCloudEnvName, autorest.ChinaCloud.ResourceManagerEndpoint},
+		{"GermanCloud/CosmosDBAccountClient", germanyCloudEnvName, autorest.GermanCloud.ResourceManagerEndpoint},
+	}
+
+	// save any current env value and restore on exit
+	currentEnv := os.Getenv(AzureEnvironmentEnvName)
+	defer os.Setenv(AzureEnvironmentEnvName, currentEnv)
+
+	for _, tt := range cases {
+		// The following is necessary to make sure testCase's values don't
+		// get updated due to concurrency within the scope of t.Run(..) below
+		tt := tt
+		t.Run(tt.CaseName, func(t *testing.T) {
+			// Override env setting
+			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
+
+			// Get a VM client
+			client, err := CreateCosmosDBAccountClientE("")
+			require.NoError(t, err)
+
+			// Check for correct ARM URI
+			assert.Equal(t, tt.ExpectedBaseURI, client.BaseURI)
+		})
+	}
+}
+
+func TestCosmosDBSQLClientBaseURISetCorrectly(t *testing.T) {
+	var cases = []struct {
+		CaseName        string
+		EnvironmentName string
+		ExpectedBaseURI string
+	}{
+		{"GovCloud/CosmosDBAccountClient", govCloudEnvName, autorest.USGovernmentCloud.ResourceManagerEndpoint},
+		{"PublicCloud/CosmosDBAccountClient", publicCloudEnvName, autorest.PublicCloud.ResourceManagerEndpoint},
+		{"ChinaCloud/CosmosDBAccountClient", chinaCloudEnvName, autorest.ChinaCloud.ResourceManagerEndpoint},
+		{"GermanCloud/CosmosDBAccountClient", germanyCloudEnvName, autorest.GermanCloud.ResourceManagerEndpoint},
+	}
+
+	// save any current env value and restore on exit
+	currentEnv := os.Getenv(AzureEnvironmentEnvName)
+	defer os.Setenv(AzureEnvironmentEnvName, currentEnv)
+
+	for _, tt := range cases {
+		// The following is necessary to make sure testCase's values don't
+		// get updated due to concurrency within the scope of t.Run(..) below
+		tt := tt
+		t.Run(tt.CaseName, func(t *testing.T) {
+			// Override env setting
+			os.Setenv(AzureEnvironmentEnvName, tt.EnvironmentName)
+
+			// Get a VM client
+			client, err := CreateCosmosDBSQLClientE("")
+			require.NoError(t, err)
+
+			// Check for correct ARM URI
+			assert.Equal(t, tt.ExpectedBaseURI, client.BaseURI)
+		})
+	}
+}
