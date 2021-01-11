@@ -10,9 +10,42 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetVariablesFromVarFiles(t *testing.T) {
+func TestGetVariablesFromVarFilesAsString(t *testing.T) {
 	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
-	randomFileName2 := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		number_type = 2
+		boolean_type = true
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	stringVal := GetVariableAsStringFromVarFile(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "aws_region")
+
+	boolString := GetVariableAsStringFromVarFile(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "boolean_type")
+
+	numString := GetVariableAsStringFromVarFile(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "number_type")
+
+	require.Equal(t, "us-east-2", stringVal)
+	require.Equal(t, "true", boolString)
+	require.Equal(t, "2", numString)
+
+}
+
+func TestGetVariablesFromVarFilesAsStringKeyDoesNotExist(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
 
 	testHcl := []byte(`
 		aws_region     = "us-east-2"
@@ -22,45 +55,167 @@ func TestGetVariablesFromVarFiles(t *testing.T) {
 		}
 		list = ["item1"]`)
 
-	testHcl2 := []byte(`
-		aws_region     = "us-west-2"`)
-	
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	WriteFile(t, randomFileName2, testHcl2)
-	defer os.Remove(randomFileName2)
+	_, err := GetVariableAsStringFromVarFileE(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "badkey")
 
-	varMap, err := GetVariablesFromVarFiles(&Options{
-		VarFiles: []string{randomFileName, randomFileName2},
-	})
-
-	if err != nil {
-		fmt.Println(err.Error())
-		t.FailNow()
-	}
-
-	require.Equal(t, 2, len(varMap))
-	require.Equal(t, "us-east-2", varMap[0]["aws_region"])
-	require.Equal(t, "111111111111", varMap[0]["aws_account_id"])
-	require.Equal(t, map[string]interface{}{ "foo": "bar", }, varMap[0]["tags"].([]map[string]interface{})[0])
-	require.Equal(t, []interface{}{ "item1" }, varMap[0]["list"].([]interface{}))
-	require.Equal(t, "us-west-2", varMap[1]["aws_region"])
+	require.Error(t, err)
 }
 
-func TestGetVariablesFromVarFilesNoFileError(t *testing.T) {
-	_, err := GetVariablesFromVarFiles(&Options{
-		VarFiles: []string{"thisdoesntexist"},
-	})
+func TestGetVariableAsMapFromVarFile(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+	expected := make(map[string]string)
+	expected["foo"] = "bar"
 
-	require.Equal(t, "open thisdoesntexist: no such file or directory", err.Error())
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	val := GetVariableAsMapFromVarFile(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "tags")
+
+	require.Equal(t, expected, val)
 }
 
-func TestGetVariablesFromVarFilesBadFile(t *testing.T) {
+func TestGetVariableAsMapFromVarFileNotMap(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	_, err := GetVariableAsMapFromVarFileE(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "aws_region")
+
+	require.Error(t, err)
+}
+
+func TestGetVariableAsMapFromVarFileKeyDoesNotExist(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	_, err := GetVariableAsMapFromVarFileE(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "badkey")
+
+	require.Error(t, err)
+}
+
+func TestGetVariableAsListFromVarFile(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+	expected := []string{"item1"}
+
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	val := GetVariableAsListFromVarFile(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "list")
+
+	require.Equal(t, expected, val)
+}
+
+func TestGetVariableAsListNotList(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	_, err := GetVariableAsListFromVarFileE(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "tags")
+
+	require.Error(t, err)
+}
+
+func TestGetVariableAsListKeyDoesNotExist(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+
+	testHcl := []byte(`
+		aws_region     = "us-east-2"
+		aws_account_id = "111111111111"
+		tags = {
+			foo = "bar"
+		}
+		list = ["item1"]`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	_, err := GetVariableAsListFromVarFileE(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName, "badkey")
+
+	require.Error(t, err)
+}
+
+func TestGetAllVariablesFromVarFileENotInVarFiles(t *testing.T) {
+	_, err := GetAllVariablesFromVarFileE(t, &Options{
+		VarFiles: []string{"filea"},
+	}, "fileb")
+
+	//require.Equal(t, "open thisdoesntexist: no such file or directory", err.Error())
+	require.Error(t, err)
+}
+
+func TestGetAllVariablesFromVarFileEFileDoesNotExist(t *testing.T) {
+	_, err := GetAllVariablesFromVarFileE(t, &Options{
+		VarFiles: []string{"filea"},
+	}, "filea")
+
+	require.Equal(t, "open filea: no such file or directory", err.Error())
+}
+
+func TestGetAllVariablesFromVarFileBadFile(t *testing.T) {
 	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
 	testHcl := []byte(`
 		thiswillnotwork`)
-	
+
 	err := ioutil.WriteFile(randomFileName, testHcl, 0644)
 
 	if err != nil {
@@ -70,9 +225,9 @@ func TestGetVariablesFromVarFilesBadFile(t *testing.T) {
 
 	defer os.Remove(randomFileName)
 
-	_, err = GetVariablesFromVarFiles(&Options{
+	_, err = GetAllVariablesFromVarFileE(t, &Options{
 		VarFiles: []string{randomFileName},
-	})
+	}, randomFileName)
 
 	if err == nil {
 		t.FailNow()
@@ -80,6 +235,36 @@ func TestGetVariablesFromVarFilesBadFile(t *testing.T) {
 
 	// HCL library could change their error string, so we are only testing the error string contains what we add to it
 	require.Regexp(t, fmt.Sprintf("^%s - ", randomFileName), err.Error())
+
+}
+
+func TestGetAllVariablesFromVarFile(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+	testHcl := []byte(`
+	aws_region     = "us-east-2"
+	`)
+
+	err := ioutil.WriteFile(randomFileName, testHcl, 0644)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		t.FailNow()
+	}
+
+	defer os.Remove(randomFileName)
+
+	val, err := GetAllVariablesFromVarFileE(t, &Options{
+		VarFiles: []string{randomFileName},
+	}, randomFileName)
+
+	if err != nil {
+		t.FailNow()
+	}
+
+	expected := make(map[string]interface{})
+	expected["aws_region"] = "us-east-2"
+
+	require.Equal(t, expected, val)
 
 }
 

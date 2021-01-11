@@ -66,8 +66,16 @@ func (err VarFileNotFound) Error() string {
 	return fmt.Sprintf("Could not resolve var file %s", err.Path)
 }
 
+// InputFileKeyNotFound occurs when tfvar file does not contain a value for the key
+// specified in the function call
+type InputFileKeyNotFound string
+
+func (err InputFileKeyNotFound) Error() string {
+	return fmt.Sprintf("tfvar file doesn't contain a value for the key %q", string(err))
+}
+
 type HclDecodeError struct {
-	FilePath string
+	FilePath  string
 	ErrorText string
 }
 

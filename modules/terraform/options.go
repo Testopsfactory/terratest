@@ -109,16 +109,19 @@ func WithDefaultRetryableErrors(t *testing.T, originalOptions *Options) *Options
 }
 
 // GetVariableAsStringFromVarFile Gets the string represention of a variable from a provided input file found in VarFile
-// For list or map
+// For list or map, use GetVariableAsListFromVarFile or GetVariableAsMapFromVarFile, respectively.
 func GetVariableAsStringFromVarFile(t *testing.T, option *Options, fileName string, key string) string {
-	result, err := GetVariableAsStringFromVarFileE(option, fileName, key)
+	result, err := GetVariableAsStringFromVarFileE(t, option, fileName, key)
 	require.NoError(t, err)
 
 	return result
 }
 
-func GetVariableAsStringFromVarFileE(option *Options, fileName string, key string) (string, error) {
-	variables, err := GetAllVariablesFromVarFileE(option, fileName)
+// GetVariableAsStringFromVarFileE Gets the string represention of a variable from a provided input file found in VarFile
+// Will return an error if GetAllVariablesFromVarFileE returns an error or the key provided does not exist in the file.
+// For list or map, use GetVariableAsListFromVarFile or GetVariableAsMapFromVarFile, respectively.
+func GetVariableAsStringFromVarFileE(t *testing.T, option *Options, fileName string, key string) (string, error) {
+	variables, err := GetAllVariablesFromVarFileE(t, option, fileName)
 
 	if err != nil {
 		return "", err
@@ -127,25 +130,34 @@ func GetVariableAsStringFromVarFileE(option *Options, fileName string, key strin
 	variable, exists := variables[key]
 
 	if !exists {
-		return "", OutputKeyNotFound(key)
+		return "", InputFileKeyNotFound(key)
 	}
 
 	return fmt.Sprintf("%v", variable), nil
 }
 
+// GetVariableAsMapFromVarFile Gets the map represention of a variable from a provided input file found in VarFile
 func GetVariableAsMapFromVarFile(t *testing.T, option *Options, fileName string, key string) map[string]string {
-	result, err := GetVariableAsMapFromVarFileE(option, fileName, key)
+	result, err := GetVariableAsMapFromVarFileE(t, option, fileName, key)
 	require.NoError(t, err)
 
 	return result
 }
 
-func GetVariableAsMapFromVarFileE(option *Options, fileName string, key string) (map[string]string, error) {
+// GetVariableAsMapFromVarFileE Gets the map represention of a variable from a provided input file found in VarFile
+// Returns an error if GetAllVariablesFromVarFileE returns an error, the key provided does not exist, or the value associated with the key is not a map
+func GetVariableAsMapFromVarFileE(t *testing.T, option *Options, fileName string, key string) (map[string]string, error) {
 	resultMap := make(map[string]string)
-	variables, err := GetAllVariablesFromVarFileE(option, fileName)
+	variables, err := GetAllVariablesFromVarFileE(t, option, fileName)
 
 	if err != nil {
 		return nil, err
+	}
+
+	_, exists := variables[key]
+
+	if !exists {
+		return nil, InputFileKeyNotFound(key)
 	}
 
 	if reflect.TypeOf(variables[key]).String() != "[]map[string]interface {}" {
@@ -161,19 +173,26 @@ func GetVariableAsMapFromVarFileE(option *Options, fileName string, key string) 
 	return resultMap, nil
 }
 
+// GetVariableAsListFromVarFile Gets the string list represention of a variable from a provided input file found in VarFile
 func GetVariableAsListFromVarFile(t *testing.T, option *Options, fileName string, key string) []string {
-	result, err := GetVariableAsListFromVarFileE(option, fileName, key)
+	result, err := GetVariableAsListFromVarFileE(t, option, fileName, key)
 	require.NoError(t, err)
 
 	return result
 }
 
-func GetVariableAsListFromVarFileE(option *Options, fileName string, key string) ([]string, error) {
+// GetVariableAsListFromVarFileE Gets the string list represention of a variable from a provided input file found in VarFile
+// Will return error if GetAllVariablesFromVarFileE returns an error, the key provided does not exist, or the value associated with the key is not a list
+func GetVariableAsListFromVarFileE(t *testing.T, option *Options, fileName string, key string) ([]string, error) {
 	resultArray := []string{}
-	variables, err := GetAllVariablesFromVarFileE(option, fileName)
+	variables, err := GetAllVariablesFromVarFileE(t, option, fileName)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if _, exists := variables[key]; !exists {
+		return nil, InputFileKeyNotFound(key)
 	}
 
 	if reflect.TypeOf(variables[key]).String() != "[]interface {}" {
@@ -187,18 +206,17 @@ func GetVariableAsListFromVarFileE(option *Options, fileName string, key string)
 	return resultArray, nil
 }
 
-// GetVariablesFromVarFiles Parses all data from a provided input file found in VarFile and returns them as a key-value map
-// Note that the values in the map are interface{} type so you will need to convert them to the expected data type
+// GetAllVariablesFromVarFile Parses all data from a provided input file found in VarFile and returns them as a key-value map
 func GetAllVariablesFromVarFile(t *testing.T, option *Options, fileName string) map[string]interface{} {
-	variableMaps, err := GetAllVariablesFromVarFileE(option, fileName)
+	variableMaps, err := GetAllVariablesFromVarFileE(t, option, fileName)
 	require.NoError(t, err)
 
 	return variableMaps
 }
 
-// GetVariablesFromVarFilesE Parses all data from a provided input file found ind in VarFile and returns them as a key-value map
-// Note that the values in the map are interface{} type so you will need to convert them to the expected data type
-func GetAllVariablesFromVarFileE(option *Options, fileName string) (map[string]interface{}, error) {
+// GetAllVariablesFromVarFileE Parses all data from a provided input file found ind in VarFile and returns them as a key-value map
+// Retursn an error if the specified file does not exist, the specified file is not readable, or the specified file cannot be decoded from HCL
+func GetAllVariablesFromVarFileE(t *testing.T, option *Options, fileName string) (map[string]interface{}, error) {
 	variableMap := map[string]interface{}{}
 	fileIndex := -1
 	if len(option.VarFiles) == 0 {
@@ -227,7 +245,6 @@ func GetAllVariablesFromVarFileE(option *Options, fileName string) (map[string]i
 	if err != nil {
 		return nil, HclDecodeError{FilePath: option.VarFiles[fileIndex], ErrorText: err.Error()}
 	}
-	
 
 	return variableMap, nil
 }
