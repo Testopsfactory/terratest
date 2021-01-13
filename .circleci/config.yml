@@ -116,24 +116,9 @@ jobs:
       # The weird way you have to set PATH in Circle 2.0
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
 
-      # update gcloud dependencies
-      - run:
-          command: |
-            sudo apt-get remove -y google-cloud-sdk
-            sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update
-            sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update beta kubectl
-
       # Make GCP Service Account creds available as a file
       - run: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
       - run: echo 'export GOOGLE_APPLICATION_CREDENTIALS=${HOME}/gcloud-service-key.json' >> $BASH_ENV
-
-      # required for gcloud and kubectl to authenticate correctly
-      - run:
-          command: |
-            pyenv local 3.5.2
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
-            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
       # Run the tests. Note that we set the "-p 1" flag to tell Go to run tests in each package sequentially. Without
       # this, Go buffers all log output until all packages are done, which with slower running tests can cause CircleCI
