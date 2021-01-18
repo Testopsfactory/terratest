@@ -37,7 +37,6 @@
     "project_id": "{{user `gcp_project_id`}}",
     "source_image_family": "ubuntu-1804-lts",
     "zone": "{{user `gcp_zone`}}",
-    "use_os_login": true,
     "ssh_username": "ubuntu"
   }, {
     "type": "oracle-oci",
