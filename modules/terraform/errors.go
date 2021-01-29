@@ -63,7 +63,7 @@ type VarFileNotFound struct {
 }
 
 func (err VarFileNotFound) Error() string {
-	return fmt.Sprintf("Could not resolve var file %s", err.Path)
+	return fmt.Sprintf("Var file '%s' not found", err.Path)
 }
 
 // InputFileKeyNotFound occurs when tfvar file does not contain a value for the key
