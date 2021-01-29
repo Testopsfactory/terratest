@@ -68,10 +68,13 @@ func (err VarFileNotFound) Error() string {
 
 // InputFileKeyNotFound occurs when tfvar file does not contain a value for the key
 // specified in the function call
-type InputFileKeyNotFound string
+type InputFileKeyNotFound struct {
+	FilePath string
+	Key      string
+}
 
 func (err InputFileKeyNotFound) Error() string {
-	return fmt.Sprintf("tfvar file doesn't contain a value for the key %q", string(err))
+	return fmt.Sprintf("tfvar file %q doesn't contain a value for the key %q", err.FilePath, err.Key)
 }
 
 type HclDecodeError struct {

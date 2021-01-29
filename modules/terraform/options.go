@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -110,8 +111,8 @@ func WithDefaultRetryableErrors(t *testing.T, originalOptions *Options) *Options
 
 // GetVariableAsStringFromVarFile Gets the string represention of a variable from a provided input file found in VarFile
 // For list or map, use GetVariableAsListFromVarFile or GetVariableAsMapFromVarFile, respectively.
-func GetVariableAsStringFromVarFile(t *testing.T, option *Options, fileName string, key string) string {
-	result, err := GetVariableAsStringFromVarFileE(t, option, fileName, key)
+func GetVariableAsStringFromVarFile(t *testing.T, fileName string, key string) string {
+	result, err := GetVariableAsStringFromVarFileE(t, fileName, key)
 	require.NoError(t, err)
 
 	return result
@@ -120,8 +121,10 @@ func GetVariableAsStringFromVarFile(t *testing.T, option *Options, fileName stri
 // GetVariableAsStringFromVarFileE Gets the string represention of a variable from a provided input file found in VarFile
 // Will return an error if GetAllVariablesFromVarFileE returns an error or the key provided does not exist in the file.
 // For list or map, use GetVariableAsListFromVarFile or GetVariableAsMapFromVarFile, respectively.
-func GetVariableAsStringFromVarFileE(t *testing.T, option *Options, fileName string, key string) (string, error) {
-	variables, err := GetAllVariablesFromVarFileE(t, option, fileName)
+func GetVariableAsStringFromVarFileE(t *testing.T, fileName string, key string) (string, error) {
+	var variables map[string]interface{}
+
+	err := GetAllVariablesFromVarFileE(t, fileName, &variables)
 
 	if err != nil {
 		return "", err
@@ -130,43 +133,51 @@ func GetVariableAsStringFromVarFileE(t *testing.T, option *Options, fileName str
 	variable, exists := variables[key]
 
 	if !exists {
-		return "", InputFileKeyNotFound(key)
+		return "", InputFileKeyNotFound{FilePath: fileName, Key: key}
 	}
 
 	return fmt.Sprintf("%v", variable), nil
 }
 
 // GetVariableAsMapFromVarFile Gets the map represention of a variable from a provided input file found in VarFile
-func GetVariableAsMapFromVarFile(t *testing.T, option *Options, fileName string, key string) map[string]string {
-	result, err := GetVariableAsMapFromVarFileE(t, option, fileName, key)
+// Note that this returns a map of strings. For maps containing complex types, use GetAllVariablesFromVarFile.
+func GetVariableAsMapFromVarFile(t *testing.T, fileName string, key string) map[string]string {
+	result, err := GetVariableAsMapFromVarFileE(t, fileName, key)
 	require.NoError(t, err)
 
 	return result
 }
 
-// GetVariableAsMapFromVarFileE Gets the map represention of a variable from a provided input file found in VarFile
+// GetVariableAsMapFromVarFileE Gets the map represention of a variable from a provided input file found in VarFile.
+// Note that this returns a map of strings. For maps containing complex types, use GetAllVariablesFromVarFile
 // Returns an error if GetAllVariablesFromVarFileE returns an error, the key provided does not exist, or the value associated with the key is not a map
-func GetVariableAsMapFromVarFileE(t *testing.T, option *Options, fileName string, key string) (map[string]string, error) {
+func GetVariableAsMapFromVarFileE(t *testing.T, fileName string, key string) (map[string]string, error) {
+	var variables map[string]interface{}
+
 	resultMap := make(map[string]string)
-	variables, err := GetAllVariablesFromVarFileE(t, option, fileName)
+	err := GetAllVariablesFromVarFileE(t, fileName, &variables)
 
 	if err != nil {
 		return nil, err
 	}
 
-	_, exists := variables[key]
+	variable, exists := variables[key]
 
 	if !exists {
-		return nil, InputFileKeyNotFound(key)
+		return nil, InputFileKeyNotFound{FilePath: fileName, Key: key}
 	}
 
-	if reflect.TypeOf(variables[key]).String() != "[]map[string]interface {}" {
-		return nil, UnexpectedOutputType{Key: key, ExpectedType: "map", ActualType: reflect.TypeOf(variables[key]).String()}
+	if reflect.TypeOf(variable).String() != "[]map[string]interface {}" {
+		return nil, UnexpectedOutputType{Key: key, ExpectedType: "[]map[string]interface {}", ActualType: reflect.TypeOf(variable).String()}
 	}
 
-	mapKeys := variables[key].([]map[string]interface{})[0]
+	mapKeys := variable.([]map[string]interface{})
 
-	for mapKey, mapVal := range mapKeys {
+	if len(mapKeys) == 0 {
+		return nil, errors.New("no map keys could be found for given map")
+	}
+
+	for mapKey, mapVal := range mapKeys[0] {
 		resultMap[mapKey] = fmt.Sprintf("%v", mapVal)
 	}
 
@@ -174,77 +185,63 @@ func GetVariableAsMapFromVarFileE(t *testing.T, option *Options, fileName string
 }
 
 // GetVariableAsListFromVarFile Gets the string list represention of a variable from a provided input file found in VarFile
-func GetVariableAsListFromVarFile(t *testing.T, option *Options, fileName string, key string) []string {
-	result, err := GetVariableAsListFromVarFileE(t, option, fileName, key)
+// Note that this returns a list of strings. For lists containing complex types, use GetAllVariablesFromVarFile.
+func GetVariableAsListFromVarFile(t *testing.T, fileName string, key string) []string {
+	result, err := GetVariableAsListFromVarFileE(t, fileName, key)
 	require.NoError(t, err)
 
 	return result
 }
 
 // GetVariableAsListFromVarFileE Gets the string list represention of a variable from a provided input file found in VarFile
+// Note that this returns a list of strings. For lists containing complex types, use GetAllVariablesFromVarFile.
 // Will return error if GetAllVariablesFromVarFileE returns an error, the key provided does not exist, or the value associated with the key is not a list
-func GetVariableAsListFromVarFileE(t *testing.T, option *Options, fileName string, key string) ([]string, error) {
+func GetVariableAsListFromVarFileE(t *testing.T, fileName string, key string) ([]string, error) {
+	var variables map[string]interface{}
 	resultArray := []string{}
-	variables, err := GetAllVariablesFromVarFileE(t, option, fileName)
+	err := GetAllVariablesFromVarFileE(t, fileName, &variables)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if _, exists := variables[key]; !exists {
-		return nil, InputFileKeyNotFound(key)
+	variable, exists := variables[key]
+
+	if !exists {
+		return nil, InputFileKeyNotFound{FilePath: fileName, Key: key}
 	}
 
-	if reflect.TypeOf(variables[key]).String() != "[]interface {}" {
-		return nil, UnexpectedOutputType{Key: key, ExpectedType: "list", ActualType: reflect.TypeOf(variables[key]).String()}
+	if reflect.TypeOf(variable).String() != "[]interface {}" {
+		return nil, UnexpectedOutputType{Key: key, ExpectedType: "[]interface {}", ActualType: reflect.TypeOf(variable).String()}
 	}
 
-	for _, item := range variables[key].([]interface{}) {
+	for _, item := range variable.([]interface{}) {
 		resultArray = append(resultArray, fmt.Sprintf("%v", item))
 	}
 
 	return resultArray, nil
 }
 
-// GetAllVariablesFromVarFile Parses all data from a provided input file found in VarFile and returns them as a key-value map
-func GetAllVariablesFromVarFile(t *testing.T, option *Options, fileName string) map[string]interface{} {
-	variableMaps, err := GetAllVariablesFromVarFileE(t, option, fileName)
+// GetAllVariablesFromVarFile Parses all data from a provided input file found in VarFile and stores the result in the value pointed to by out
+func GetAllVariablesFromVarFile(t *testing.T, fileName string, out interface{}) {
+	err := GetAllVariablesFromVarFileE(t, fileName, out)
 	require.NoError(t, err)
-
-	return variableMaps
 }
 
-// GetAllVariablesFromVarFileE Parses all data from a provided input file found ind in VarFile and returns them as a key-value map
-// Retursn an error if the specified file does not exist, the specified file is not readable, or the specified file cannot be decoded from HCL
-func GetAllVariablesFromVarFileE(t *testing.T, option *Options, fileName string) (map[string]interface{}, error) {
-	variableMap := map[string]interface{}{}
-	fileIndex := -1
-	if len(option.VarFiles) == 0 {
-		return variableMap, nil
-	}
-
-	for index, file := range option.VarFiles {
-		if file == fileName {
-			fileIndex = index
-			break
-		}
-	}
-
-	if fileIndex == -1 {
-		return nil, VarFileNotFound{Path: fileName}
-	}
-
-	fileContents, err := ioutil.ReadFile(option.VarFiles[fileIndex])
+// GetAllVariablesFromVarFileE Parses all data from a provided input file found ind in VarFile and stores the result in the value pointed to by out
+// Returns an error if the specified file does not exist, the specified file is not readable, or the specified file cannot be decoded from HCL
+func GetAllVariablesFromVarFileE(t *testing.T, fileName string, out interface{}) error {
+	fileContents, err := ioutil.ReadFile(fileName)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = hcl.Decode(&variableMap, string(fileContents))
+	err = hcl.Decode(out, string(fileContents))
 
 	if err != nil {
-		return nil, HclDecodeError{FilePath: option.VarFiles[fileIndex], ErrorText: err.Error()}
+		return HclDecodeError{FilePath: fileName, ErrorText: err.Error()}
 	}
 
-	return variableMap, nil
+	return nil
 }

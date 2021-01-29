@@ -26,17 +26,11 @@ func TestGetVariablesFromVarFilesAsString(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	stringVal := GetVariableAsStringFromVarFile(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "aws_region")
+	stringVal := GetVariableAsStringFromVarFile(t, randomFileName, "aws_region")
 
-	boolString := GetVariableAsStringFromVarFile(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "boolean_type")
+	boolString := GetVariableAsStringFromVarFile(t, randomFileName, "boolean_type")
 
-	numString := GetVariableAsStringFromVarFile(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "number_type")
+	numString := GetVariableAsStringFromVarFile(t, randomFileName, "number_type")
 
 	require.Equal(t, "us-east-2", stringVal)
 	require.Equal(t, "true", boolString)
@@ -58,9 +52,7 @@ func TestGetVariablesFromVarFilesAsStringKeyDoesNotExist(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	_, err := GetVariableAsStringFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "badkey")
+	_, err := GetVariableAsStringFromVarFileE(t, randomFileName, "badkey")
 
 	require.Error(t, err)
 }
@@ -81,9 +73,7 @@ func TestGetVariableAsMapFromVarFile(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	val := GetVariableAsMapFromVarFile(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "tags")
+	val := GetVariableAsMapFromVarFile(t, randomFileName, "tags")
 
 	require.Equal(t, expected, val)
 }
@@ -102,9 +92,7 @@ func TestGetVariableAsMapFromVarFileNotMap(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	_, err := GetVariableAsMapFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "aws_region")
+	_, err := GetVariableAsMapFromVarFileE(t, randomFileName, "aws_region")
 
 	require.Error(t, err)
 }
@@ -123,9 +111,7 @@ func TestGetVariableAsMapFromVarFileKeyDoesNotExist(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	_, err := GetVariableAsMapFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "badkey")
+	_, err := GetVariableAsMapFromVarFileE(t, randomFileName, "badkey")
 
 	require.Error(t, err)
 }
@@ -145,9 +131,7 @@ func TestGetVariableAsListFromVarFile(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	val := GetVariableAsListFromVarFile(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "list")
+	val := GetVariableAsListFromVarFile(t, randomFileName, "list")
 
 	require.Equal(t, expected, val)
 }
@@ -166,9 +150,7 @@ func TestGetVariableAsListNotList(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	_, err := GetVariableAsListFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "tags")
+	_, err := GetVariableAsListFromVarFileE(t, randomFileName, "tags")
 
 	require.Error(t, err)
 }
@@ -187,31 +169,21 @@ func TestGetVariableAsListKeyDoesNotExist(t *testing.T) {
 	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	_, err := GetVariableAsListFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName, "badkey")
+	_, err := GetVariableAsListFromVarFileE(t, randomFileName, "badkey")
 
 	require.Error(t, err)
 }
-
-func TestGetAllVariablesFromVarFileENotInVarFiles(t *testing.T) {
-	_, err := GetAllVariablesFromVarFileE(t, &Options{
-		VarFiles: []string{"filea"},
-	}, "fileb")
-
-	//require.Equal(t, "open thisdoesntexist: no such file or directory", err.Error())
-	require.Error(t, err)
-}
-
 func TestGetAllVariablesFromVarFileEFileDoesNotExist(t *testing.T) {
-	_, err := GetAllVariablesFromVarFileE(t, &Options{
-		VarFiles: []string{"filea"},
-	}, "filea")
+	var variables map[string]interface{}
+
+	err := GetAllVariablesFromVarFileE(t, "filea", variables)
 
 	require.Equal(t, "open filea: no such file or directory", err.Error())
 }
 
 func TestGetAllVariablesFromVarFileBadFile(t *testing.T) {
+	var variables map[string]interface{}
+
 	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
 	testHcl := []byte(`
 		thiswillnotwork`)
@@ -225,9 +197,7 @@ func TestGetAllVariablesFromVarFileBadFile(t *testing.T) {
 
 	defer os.Remove(randomFileName)
 
-	_, err = GetAllVariablesFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName)
+	err = GetAllVariablesFromVarFileE(t, randomFileName, variables)
 
 	if err == nil {
 		t.FailNow()
@@ -239,6 +209,8 @@ func TestGetAllVariablesFromVarFileBadFile(t *testing.T) {
 }
 
 func TestGetAllVariablesFromVarFile(t *testing.T) {
+	var variables map[string]interface{}
+
 	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
 	testHcl := []byte(`
 	aws_region     = "us-east-2"
@@ -253,9 +225,7 @@ func TestGetAllVariablesFromVarFile(t *testing.T) {
 
 	defer os.Remove(randomFileName)
 
-	val, err := GetAllVariablesFromVarFileE(t, &Options{
-		VarFiles: []string{randomFileName},
-	}, randomFileName)
+	err = GetAllVariablesFromVarFileE(t, randomFileName, &variables)
 
 	if err != nil {
 		t.FailNow()
@@ -264,7 +234,7 @@ func TestGetAllVariablesFromVarFile(t *testing.T) {
 	expected := make(map[string]interface{})
 	expected["aws_region"] = "us-east-2"
 
-	require.Equal(t, expected, val)
+	require.Equal(t, expected, variables)
 
 }
 
