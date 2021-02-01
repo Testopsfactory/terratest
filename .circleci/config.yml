@@ -35,7 +35,7 @@ install_gruntwork_utils: &install_gruntwork_utils
     curl -Ls https://raw.githubusercontent.com/gruntwork-io/gruntwork-installer/master/bootstrap-gruntwork-installer.sh | bash /dev/stdin --version "${GRUNTWORK_INSTALLER_VERSION}"
     gruntwork-install --module-name "gruntwork-module-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
     gruntwork-install --module-name "kubernetes-circleci-helpers" --repo "https://github.com/gruntwork-io/module-ci" --tag "${MODULE_CI_VERSION}"
-    gruntwork-install --module-name "gcp-helpers" --repo "https://github.com/gruntwork-io/module-ci" --branch "gcp-helpers"
+    gruntwork-install --module-name "gcp-helpers" --repo "https://github.com/gruntwork-io/terraform-google-ci" --branch "gcp-helpers"
     configure-environment-for-gruntwork-module \
       --terraform-version ${TERRAFORM_VERSION} \
       --terragrunt-version ${TERRAGRUNT_VERSION} \
