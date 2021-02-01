@@ -54,6 +54,7 @@
     "inline": [
       "sudo DEBIAN_FRONTEND=noninteractive apt-get update",
       "sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y"
-    ]
+    ],
+    "pause_before": "30s"
   }]
 }
