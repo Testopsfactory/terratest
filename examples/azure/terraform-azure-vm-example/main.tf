@@ -127,6 +127,11 @@ resource "azurerm_virtual_machine" "vm_example" {
     provision_vm_agent = true
   }
 
+  tags = {
+    "Version"     = "0.0.1"
+    "Environment" = "dev"
+  }
+
   depends_on = [random_password.rand]
 }
 
