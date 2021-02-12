@@ -243,8 +243,5 @@ func TestGetAllVariablesFromVarFile(t *testing.T) {
 func WriteFile(t *testing.T, fileName string, bytes []byte) {
 	err := ioutil.WriteFile(fileName, bytes, 0644)
 
-	if err != nil {
-		fmt.Println(err.Error())
-		t.FailNow()
-	}
+	require.NoError(t, err)
 }
