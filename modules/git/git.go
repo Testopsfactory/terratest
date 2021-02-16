@@ -21,7 +21,7 @@ func GetCurrentBranchName(t testing.TestingT) string {
 // GetCurrentBranchNameE retrieves the current branch name or
 // empty string in case of detached state.
 func GetCurrentBranchNameE(t testing.TestingT) (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--abbrev-ref", "HEAD")
+	cmd := exec.Command("git", "branch", "--show-current")
 	bytes, err := cmd.Output()
 	if err != nil {
 		return "", err
