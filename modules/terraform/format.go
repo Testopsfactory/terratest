@@ -14,7 +14,9 @@ import (
 var TerraformCommandsWithLockSupport = []string{
 	"plan",
 	"apply",
+	"apply-all",
 	"destroy",
+	"destroy-all",
 	"init",
 	"refresh",
 	"taint",
