@@ -74,7 +74,6 @@ func TestGetVariableAsMapFromVarFile(t *testing.T) {
 	defer os.Remove(randomFileName)
 
 	val := GetVariableAsMapFromVarFile(t, randomFileName, "tags")
-
 	require.Equal(t, expected, val)
 }
 
@@ -175,64 +174,60 @@ func TestGetVariableAsListKeyDoesNotExist(t *testing.T) {
 }
 func TestGetAllVariablesFromVarFileEFileDoesNotExist(t *testing.T) {
 	var variables map[string]interface{}
-
-	err := GetAllVariablesFromVarFileE(t, "filea", variables)
-
+	err := GetAllVariablesFromVarFileE(t, "filea", &variables)
 	require.Equal(t, "open filea: no such file or directory", err.Error())
 }
 
 func TestGetAllVariablesFromVarFileBadFile(t *testing.T) {
-	var variables map[string]interface{}
-
 	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
 	testHcl := []byte(`
 		thiswillnotwork`)
 
-	err := ioutil.WriteFile(randomFileName, testHcl, 0644)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		t.FailNow()
-	}
-
+	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	err = GetAllVariablesFromVarFileE(t, randomFileName, variables)
-
+	var variables map[string]interface{}
+	err := GetAllVariablesFromVarFileE(t, randomFileName, &variables)
 	require.Error(t, err)
 
 	// HCL library could change their error string, so we are only testing the error string contains what we add to it
-	require.Regexp(t, fmt.Sprintf("^%s - ", randomFileName), err.Error())
-
+	require.Regexp(t, fmt.Sprintf("^%s:2,3-18: ", randomFileName), err.Error())
 }
 
 func TestGetAllVariablesFromVarFile(t *testing.T) {
-	var variables map[string]interface{}
-
 	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
 	testHcl := []byte(`
 	aws_region     = "us-east-2"
 	`)
 
-	err := ioutil.WriteFile(randomFileName, testHcl, 0644)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		t.FailNow()
-	}
-
+	WriteFile(t, randomFileName, testHcl)
 	defer os.Remove(randomFileName)
 
-	err = GetAllVariablesFromVarFileE(t, randomFileName, &variables)
-
-	if err != nil {
-		t.FailNow()
-	}
+	var variables map[string]interface{}
+	err := GetAllVariablesFromVarFileE(t, randomFileName, &variables)
+	require.NoError(t, err)
 
 	expected := make(map[string]interface{})
 	expected["aws_region"] = "us-east-2"
 
 	require.Equal(t, expected, variables)
+}
+
+func TestGetAllVariablesFromVarFileStructOut(t *testing.T) {
+	randomFileName := fmt.Sprintf("./%s.tfvars", random.UniqueId())
+	testHcl := []byte(`
+	aws_region     = "us-east-2"
+	`)
+
+	WriteFile(t, randomFileName, testHcl)
+	defer os.Remove(randomFileName)
+
+	var region struct {
+		AwsRegion string `cty:"aws_region"`
+	}
+	err := GetAllVariablesFromVarFileE(t, randomFileName, &region)
+	require.NoError(t, err)
+	require.Equal(t, "us-east-2", region.AwsRegion)
 
 }
 
