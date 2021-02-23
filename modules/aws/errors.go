@@ -113,3 +113,14 @@ func (err NoInstanceTypeError) Error() string {
 		err.Azs,
 	)
 }
+
+type NoRdsInstanceTypeError struct {
+	InstanceTypeOptions []string
+}
+
+func (err NoRdsInstanceTypeError) Error() string {
+	return fmt.Sprintf(
+		"None of the given RDS instance types (%v) is available in this region.",
+		err.InstanceTypeOptions,
+	)
+}

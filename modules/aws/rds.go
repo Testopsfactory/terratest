@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/rds"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/stretchr/testify/require"
 )
 
 // GetAddressOfRdsInstance gets the address of the given RDS Instance in the given region.
@@ -216,6 +217,70 @@ func NewRdsClientE(t testing.TestingT, region string) (*rds.RDS, error) {
 
 	return rds.New(sess), nil
 }
+
+func GetRecommendedRdsInstanceType(t testing.TestingT, region string, engine string, instanceTypeOptions []string) string {
+	out, err := GetRecommendedRdsInstanceTypeE(t, region, engine, instanceTypeOptions)
+	require.NoError(t, err)
+	return out
+}
+
+func GetRecommendedRdsInstanceTypeE(t testing.TestingT, region string, engine string, instanceTypeOptions []string) (string, error) {
+	client, err := NewRdsClientE(t, region)
+	if err != nil {
+		return "", err
+	}
+	return GetRecommendedRdsInstanceTypeWithClientE(t, client, engine, instanceTypeOptions)
+}
+
+func GetRecommendedRdsInstanceTypeWithClientE(t testing.TestingT, rdsClient *rds.RDS, engine string, instanceTypeOptions []string) (string, error) {
+	instanceTypeOfferings, err := getRdsInstanceTypeOfferingsE(rdsClient, engine)
+	if err != nil {
+		return "", err
+	}
+
+	return pickRecommendedRdsInstanceTypeE(instanceTypeOfferings, instanceTypeOptions)
+}
+
+// getInstanceTypeOfferingsE returns the instance types from the given list that are available in the region configured
+// in the given EC2 client
+func getRdsInstanceTypeOfferingsE(client *rds.RDS, engine string) ([]*rds.OrderableDBInstanceOption, error) {
+	input := rds.DescribeOrderableDBInstanceOptionsInput{
+		Engine: aws.String(engine),
+	}
+
+	out, err := client.DescribeOrderableDBInstanceOptions(&input)
+	if err != nil {
+		return nil, err
+	}
+
+	return out.OrderableDBInstanceOptions, nil
+}
+
+func pickRecommendedRdsInstanceTypeE(instanceTypeOfferings []*rds.OrderableDBInstanceOption, instanceTypeOptions []string) (string, error) {
+	for _, instanceType := range instanceTypeOptions {
+		if instanceTypeExistsInRegion(instanceType, instanceTypeOfferings) {
+			return instanceType, nil
+		}
+	}
+
+	return "", NoRdsInstanceTypeError{InstanceTypeOptions: instanceTypeOptions}
+}
+
+func instanceTypeExistsInRegion(instanceType string, instanceTypeOfferings []*rds.OrderableDBInstanceOption) bool {
+	if len(instanceTypeOfferings) == 0 {
+		return false
+	}
+
+	for _, instanceTypeOffering := range instanceTypeOfferings {
+		if aws.String(instanceTypeOffering.DBInstanceClass) == instanceType {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Notes -  Use https://docs.aws.amazon.com/sdk-for-go/api/service/rds/#RDS.DescribeOrderableDBInstanceOptions
 
 // ParameterForDbInstanceNotFound is an error that occurs when the parameter group specified is not found for the DB instance
 type ParameterForDbInstanceNotFound struct {
