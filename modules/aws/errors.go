@@ -116,11 +116,13 @@ func (err NoInstanceTypeError) Error() string {
 
 type NoRdsInstanceTypeError struct {
 	InstanceTypeOptions []string
+	DatabaseEngine      string
 }
 
 func (err NoRdsInstanceTypeError) Error() string {
 	return fmt.Sprintf(
-		"None of the given RDS instance types (%v) is available in this region.",
+		"None of the given RDS instance types (%v) is available in this region for database engine (%v).",
 		err.InstanceTypeOptions,
+		err.DatabaseEngine,
 	)
 }
