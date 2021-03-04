@@ -70,7 +70,7 @@
   files:
     - url: /examples/terraform-gcp-hello-world-example/main.tf
       id: terraform_code
-    - url: /test/terraform_gcp_hello_world_example_test.go
+    - url: /test/gcp/terraform_gcp_hello_world_example_test.go
       id: test_code
       default: true
   learn_more:
