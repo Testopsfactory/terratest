@@ -240,7 +240,7 @@ func GetRecommendedRdsInstanceTypeE(t testing.TestingT, region string, engine st
 
 // GetRecommendedRdsInstanceTypeWithClientE takes in a list of RDS instance types (e.g., "db.t2.micro", "db.t3.micro") and returns the
 // first instance type in the list that is available in the given region and for the given database engine type.
-// If none of the instances provided are avaiable for your combination of region and database engine, this function will exit with an error.
+// If none of the instances provided are avaiable for your combination of region and database engine, this function will return an error.
 // This function expects an authenticated RDS client from the AWS SDK Go library.
 func GetRecommendedRdsInstanceTypeWithClientE(t testing.TestingT, rdsClient *rds.RDS, engine string, engineVersion string, instanceTypeOptions []string) (string, error) {
 	for _, instanceTypeOption := range instanceTypeOptions {
