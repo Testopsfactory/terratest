@@ -33,8 +33,8 @@ func TestGetReplicaSets(t *testing.T) {
 	uniqueID := strings.ToLower(random.UniqueId())
 	options := NewKubectlOptions("", "", uniqueID)
 	configData := fmt.Sprintf(EXAMPLE_REPLICASET_YAML_TEMPLATE, uniqueID, uniqueID)
-	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
+	KubectlApplyFromString(t, options, configData)
 
 	replicaSet := GetReplicaSet(t, options, "sample-rs")
 	require.Equal(t, replicaSet.Name, "sample-rs")
@@ -47,8 +47,8 @@ func TestListReplicaSets(t *testing.T) {
 	uniqueID := strings.ToLower(random.UniqueId())
 	options := NewKubectlOptions("", "", uniqueID)
 	configData := fmt.Sprintf(EXAMPLE_REPLICASET_YAML_TEMPLATE, uniqueID, uniqueID)
-	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
+	KubectlApplyFromString(t, options, configData)
 
 	replicaSets := ListReplicaSets(t, options, metav1.ListOptions{})
 	require.Equal(t, len(replicaSets), 1)
