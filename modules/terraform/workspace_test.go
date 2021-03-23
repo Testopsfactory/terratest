@@ -1,6 +1,7 @@
 package terraform
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -218,7 +219,7 @@ func TestWorkspaceDeleteE(t *testing.T) {
 
 			// Check for errors
 			if testCase.expectedError != nil {
-				assert.EqualError(t, gotErr, testCase.expectedError.Error())
+				assert.True(t, errors.As(gotErr, &testCase.expectedError))
 			} else {
 				assert.NoError(t, gotErr)
 				// Check for results
