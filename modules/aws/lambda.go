@@ -49,6 +49,37 @@ func InvokeFunctionE(t testing.TestingT, region, functionName string, payload in
 	return out.Payload, nil
 }
 
+// InvokeDryRun invokes a lambda function with an invocation type of DryRun
+// and returns a status code of 204 if the invocation is permissable.  Any
+// other status code indicates an error and further details should be available
+// in the returned error.
+func InvokeDryRunE(t testing.TestingT, region, functionName string, payload interface{}) (int, error) {
+	lambdaClient, err := NewLambdaClientE(t, region)
+	if err != nil {
+		// 401 - Unauthorized.
+		return 401, err
+	}
+
+	typeDryRun := lambda.InvocationTypeDryRun
+	invokeInput := &lambda.InvokeInput{
+		FunctionName:   &functionName,
+		InvocationType: &typeDryRun,
+	}
+
+	if payload != nil {
+		payloadJson, err := json.Marshal(payload)
+
+		if err != nil {
+			// 400 - Bad Request
+			return 400, err
+		}
+		invokeInput.Payload = payloadJson
+	}
+
+	out, err := lambdaClient.Invoke(invokeInput)
+	return int(*out.StatusCode), err
+}
+
 type FunctionError struct {
 	Message    string
 	StatusCode int64

@@ -60,6 +60,14 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 
 	// Make sure the function-specific error comes back
 	assert.Contains(t, string(functionError.Payload), "Failed to handle")
+
+	// Conduct a "DryRun" invocation to confirm that the user has
+	// permission to invoke the function.  A "DryRun" invocation does
+	// not execute the function, so the example test function will not
+	// be checking the payload.
+	statusCode, err := aws.InvokeDryRunE(t, awsRegion, functionName, ExampleFunctionPayload{ShouldFail: true, Echo: "bye!"})
+	require.NoError(t, err)
+	assert.Equal(t, statusCode, 204)
 }
 
 type ExampleFunctionPayload struct {
