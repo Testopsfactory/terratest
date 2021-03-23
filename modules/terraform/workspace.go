@@ -103,10 +103,6 @@ func WorkspaceDeleteE(t testing.TestingT, options *Options, name string) (string
 // If the workspace to delete is the current one, then it tries to switch to the "default" workspace.
 // Deleting the workspace "default" is not supported and only return an empty string (to avoid a fatal error).
 func WorkspaceDelete(t testing.TestingT, options *Options, name string) string {
-	if name == "default" {
-		return name
-	}
-
 	out, err := WorkspaceDeleteE(t, options, name)
 	require.NoError(t, err)
 	return out
