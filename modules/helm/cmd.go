@@ -50,8 +50,19 @@ func getValuesArgsE(t testing.TestingT, options *Options, args ...string) ([]str
 	return args, nil
 }
 
-// RunHelmCommandAndGetOutputE runs helm with the given arguments and options and returns stdout/stderr.
+// RunHelmCommandAndGetOutputE runs helm with the given arguments and options and returns combined, interleaved stdout/stderr.
 func RunHelmCommandAndGetOutputE(t testing.TestingT, options *Options, cmd string, additionalArgs ...string) (string, error) {
+	helmCmd := prepareHelmCommand(t, options, cmd, additionalArgs...)
+	return shell.RunCommandAndGetOutputE(t, helmCmd)
+}
+
+// RunHelmCommandAndGetStdOutE runs helm with the given arguments and options and returns stdout.
+func RunHelmCommandAndGetStdOutE(t testing.TestingT, options *Options, cmd string, additionalArgs ...string) (string, error) {
+	helmCmd := prepareHelmCommand(t, options, cmd, additionalArgs...)
+	return shell.RunCommandAndGetStdOutE(t, helmCmd)
+}
+
+func prepareHelmCommand(t testing.TestingT, options *Options, cmd string, additionalArgs ...string) shell.Command {
 	args := []string{cmd}
 	args = getCommonArgs(options, args...)
 	args = append(args, additionalArgs...)
@@ -63,5 +74,5 @@ func RunHelmCommandAndGetOutputE(t testing.TestingT, options *Options, cmd strin
 		Env:        options.EnvVars,
 		Logger:     options.Logger,
 	}
-	return shell.RunCommandAndGetOutputE(t, helmCmd)
+	return helmCmd
 }
