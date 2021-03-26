@@ -52,7 +52,7 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 	assert.Equal(t, `"hi!"`, string(response))
 
 	// Invoke the function, this time causing it to error and capturing the error
-	response, err := aws.InvokeFunctionE(t, awsRegion, functionName, ExampleFunctionPayload{ShouldFail: true, Echo: "hi!"})
+	_, err := aws.InvokeFunctionE(t, awsRegion, functionName, ExampleFunctionPayload{ShouldFail: true, Echo: "hi!"})
 
 	// Function-specific errors have their own special return
 	functionError, ok := err.(*aws.FunctionError)
@@ -60,14 +60,84 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 
 	// Make sure the function-specific error comes back
 	assert.Contains(t, string(functionError.Payload), "Failed to handle")
+}
 
-	// Conduct a "DryRun" invocation to confirm that the user has
-	// permission to invoke the function.  A "DryRun" invocation does
-	// not execute the function, so the example test function will not
-	// be checking the payload.
-	statusCode, err := aws.InvokeDryRunE(t, awsRegion, functionName, ExampleFunctionPayload{ShouldFail: true, Echo: "bye!"})
-	require.NoError(t, err)
-	assert.Equal(t, statusCode, 204)
+// Annother example of how to test the Terraform module in
+// examples/terraform-aws-lambda-example using Terratest, this time with
+// the aws.InvokeFunctionWithParams.
+func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
+	t.Parallel()
+
+	// Give this lambda function a unique ID for a name so we can distinguish it from any other lambdas
+	// in your AWS account
+	functionName := fmt.Sprintf("terratest-aws-lambda-withparams-example-%s", random.UniqueId())
+
+	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
+	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
+
+	// Construct the terraform options with default retryable errors to handle the most common retryable errors in
+	// terraform testing.
+	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		// The path to where our Terraform code is located
+		TerraformDir: "../examples/terraform-aws-lambda-example",
+
+		// Variables to pass to our Terraform code using -var options
+		Vars: map[string]interface{}{
+			"function_name": functionName,
+		},
+
+		// Environment variables to set when running Terraform
+		EnvVars: map[string]string{
+			"AWS_DEFAULT_REGION": awsRegion,
+		},
+	})
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.InitAndApply(t, terraformOptions)
+
+	// Call InvokeFunctionWithParms with an InvocationType of "DryRun".
+	// A "DryRun" invocation does not execute the function, so the example
+	// test function will not be checking the payload.
+	invocationType := "DryRun"
+	input := &aws.LambdaOptions{
+		FunctionName:   &functionName,
+		InvocationType: &invocationType,
+	}
+	out, err := aws.InvokeFunctionWithParams(t, awsRegion, input)
+
+	// With "DryRun", there's no message in the output, but there is
+	// a status code which will have a value of 204 for a successful
+	// invocation.
+	require.Nil(t, err)
+	assert.Equal(t, int(*out.StatusCode), 204)
+
+	// Call InvokeFunctionWithParams with a LambdaOptions struct that's
+	// missing a function name.  The function should fail.
+	input = &aws.LambdaOptions{
+		Payload: ExampleFunctionPayload{ShouldFail: false, Echo: "hi!"},
+	}
+	out, err = aws.InvokeFunctionWithParams(t, awsRegion, input)
+	require.NotNil(t, err)
+	msg := "LambdaOptions.FunctionName is a required field"
+	assert.Contains(t, err.Error(), msg)
+	assert.Contains(t, *out.FunctionError, msg)
+
+	// Call InvokeFunctionWithParams with a LambdaOptions struct with an
+	// unsupported InvocationType.  The function should fail.
+	invocationType = "Event"
+	input = &aws.LambdaOptions{
+		FunctionName:   &functionName,
+		InvocationType: &invocationType,
+		Payload:        ExampleFunctionPayload{ShouldFail: false, Echo: "hi!"},
+	}
+	out, err = aws.InvokeFunctionWithParams(t, awsRegion, input)
+	require.NotNil(t, err)
+	msg = "LambdaOptions.InvocationType, if specified, must either be \"RequestResponse\" or \"DryRun\""
+	assert.Contains(t, err.Error(), msg)
+	assert.Contains(t, *out.FunctionError, msg)
 }
 
 type ExampleFunctionPayload struct {

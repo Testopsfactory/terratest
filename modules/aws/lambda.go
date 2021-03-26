@@ -2,6 +2,7 @@ package aws
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/lambda"
@@ -9,35 +10,60 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// LambdaOptions contains additional parameters for InvokeFunctionWithParams().
+// It contains a subset of the fields found in the lambda.InvokeInput struct.
+type LambdaOptions struct {
+	// FunctionName is a required field containing the lambda function name.
+	FunctionName *string
+
+	// InvocationType can be one of "RequestResponse" or "DryRun".
+	//    * RequestResponse (default) - Invoke the function synchronously.
+	//    Keep the connection open until the function returns a response
+	//    or times out.
+	//
+	//    * DryRun - Validate parameter values and verify that the user or
+	//    role has permission to invoke the function.
+	InvocationType *string
+
+	// Lambda function input; will be converted to JSON.
+	Payload interface{}
+}
+
+// LambdaOutput contains the output from InvokeFunctionWithParams().  The
+// fields may or may not have a value depending on the invocation type and
+// whether an error occurred or not.
+type LambdaOutput struct {
+	// If present, indicates that an error occurred during function execution.
+	// Error details are included in the response payload.
+	FunctionError *string
+
+	// The response from the function, or an error object.
+	Payload []byte
+
+	// The HTTP status code for a successful request is in the 200 range.
+	// For RequestResponse invocation type, the status code is 200.
+	// For the DryRun invocation type, the status code is 204.
+	StatusCode *int64
+}
+
 // InvokeFunction invokes a lambda function.
 func InvokeFunction(t testing.TestingT, region, functionName string, payload interface{}) []byte {
-	out, err := InvokeFunctionE(t, region, functionName, payload)
+	input := &LambdaOptions{
+		FunctionName: &functionName,
+		Payload:      &payload,
+	}
+	out, err := InvokeFunctionWithParams(t, region, input)
 	require.NoError(t, err)
-	return out
+	return out.Payload
 }
 
 // InvokeFunctionE invokes a lambda function.
 func InvokeFunctionE(t testing.TestingT, region, functionName string, payload interface{}) ([]byte, error) {
-	lambdaClient, err := NewLambdaClientE(t, region)
-	if err != nil {
-		return nil, err
-	}
-
-	invokeInput := &lambda.InvokeInput{
+	input := &LambdaOptions{
 		FunctionName: &functionName,
+		Payload:      &payload,
 	}
-
-	if payload != nil {
-		payloadJson, err := json.Marshal(payload)
-
-		if err != nil {
-			return nil, err
-		}
-		invokeInput.Payload = payloadJson
-	}
-
-	out, err := lambdaClient.Invoke(invokeInput)
-	require.NoError(t, err)
+	out, err := InvokeFunctionWithParams(t, region, input)
 	if err != nil {
 		return nil, err
 	}
@@ -49,35 +75,63 @@ func InvokeFunctionE(t testing.TestingT, region, functionName string, payload in
 	return out.Payload, nil
 }
 
-// InvokeDryRun invokes a lambda function with an invocation type of DryRun
-// and returns a status code of 204 if the invocation is permissable.  Any
-// other status code indicates an error and further details should be available
-// in the returned error.
-func InvokeDryRunE(t testing.TestingT, region, functionName string, payload interface{}) (int, error) {
+// InvokeFunctionWithParams invokes a lambda function using parameters
+// supplied in the LambdaOptions struct and returns values in a LambdaOutput
+// struct.
+func InvokeFunctionWithParams(t testing.TestingT, region string, input *LambdaOptions) (*LambdaOutput, error) {
 	lambdaClient, err := NewLambdaClientE(t, region)
 	if err != nil {
-		// 401 - Unauthorized.
-		return 401, err
+		return nil, err
 	}
 
-	typeDryRun := lambda.InvocationTypeDryRun
+	// The function name is a required field in LambdaOptions. If missing,
+	// report the error.
+	if input.FunctionName == nil {
+		msg := "LambdaOptions.FunctionName is a required field"
+		return &LambdaOutput{FunctionError: &msg}, errors.New(msg)
+	}
+
+	// Verify the InvocationType is one of the allowed values and report
+	// an error if its not.  By default the InvocationType will be
+	// "RequestResponse".
+	invocationType := lambda.InvocationTypeRequestResponse
+	if input.InvocationType != nil {
+		switch *input.InvocationType {
+		case
+			lambda.InvocationTypeRequestResponse,
+			lambda.InvocationTypeDryRun:
+			invocationType = *input.InvocationType
+		default:
+			msg := fmt.Sprintf("LambdaOptions.InvocationType, if specified, must either be \"%s\" or \"%s\"",
+				lambda.InvocationTypeRequestResponse,
+				lambda.InvocationTypeDryRun)
+			return &LambdaOutput{FunctionError: &msg}, errors.New(msg)
+		}
+	}
+
 	invokeInput := &lambda.InvokeInput{
-		FunctionName:   &functionName,
-		InvocationType: &typeDryRun,
+		FunctionName:   input.FunctionName,
+		InvocationType: &invocationType,
 	}
 
-	if payload != nil {
-		payloadJson, err := json.Marshal(payload)
-
+	if input.Payload != nil {
+		payloadJson, err := json.Marshal(input.Payload)
 		if err != nil {
-			// 400 - Bad Request
-			return 400, err
+			return nil, err
 		}
 		invokeInput.Payload = payloadJson
 	}
 
 	out, err := lambdaClient.Invoke(invokeInput)
-	return int(*out.StatusCode), err
+
+	// As this function supports different invocation types, so it must
+	// support different combinations of output.
+	lambdaOutput := LambdaOutput{
+		FunctionError: out.FunctionError,
+		Payload:       out.Payload,
+		StatusCode:    out.StatusCode,
+	}
+	return &lambdaOutput, err
 }
 
 type FunctionError struct {
