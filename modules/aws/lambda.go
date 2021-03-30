@@ -13,16 +13,13 @@ import (
 // LambdaOptions contains additional parameters for InvokeFunctionWithParams().
 // It contains a subset of the fields found in the lambda.InvokeInput struct.
 type LambdaOptions struct {
-	// FunctionName is a required field containing the lambda function name.
-	FunctionName *string
-
-	// InvocationType can be one of "RequestResponse" or "DryRun".
-	//    * RequestResponse (default) - Invoke the function synchronously.
-	//    Keep the connection open until the function returns a response
-	//    or times out.
-	//
-	//    * DryRun - Validate parameter values and verify that the user or
-	//    role has permission to invoke the function.
+	// InvocationType can be one of lambda.InvocationTypeRequestResponse
+	// or lambda.InvocationTypeDryRun.
+	//    * InvocationTypeRequestResponse (default) - Invoke the function
+	//      synchronously.  Keep the connection open until the function
+	//      returns a response or times out.
+	//    * InvocationTypeDryRun - Validate parameter values and verify
+	//      that the user or role has permission to invoke the function.
 	InvocationType *string
 
 	// Lambda function input; will be converted to JSON.
@@ -48,22 +45,15 @@ type LambdaOutput struct {
 
 // InvokeFunction invokes a lambda function.
 func InvokeFunction(t testing.TestingT, region, functionName string, payload interface{}) []byte {
-	input := &LambdaOptions{
-		FunctionName: &functionName,
-		Payload:      &payload,
-	}
-	out, err := InvokeFunctionWithParams(t, region, input)
+	out, err := InvokeFunctionE(t, region, functionName, payload)
 	require.NoError(t, err)
-	return out.Payload
+	return out
 }
 
 // InvokeFunctionE invokes a lambda function.
 func InvokeFunctionE(t testing.TestingT, region, functionName string, payload interface{}) ([]byte, error) {
-	input := &LambdaOptions{
-		FunctionName: &functionName,
-		Payload:      &payload,
-	}
-	out, err := InvokeFunctionWithParams(t, region, input)
+	input := &LambdaOptions{Payload: &payload}
+	out, err := InvokeFunctionWithParamsE(t, region, functionName, input)
 	if err != nil {
 		return nil, err
 	}
@@ -77,18 +67,20 @@ func InvokeFunctionE(t testing.TestingT, region, functionName string, payload in
 
 // InvokeFunctionWithParams invokes a lambda function using parameters
 // supplied in the LambdaOptions struct and returns values in a LambdaOutput
-// struct.
-func InvokeFunctionWithParams(t testing.TestingT, region string, input *LambdaOptions) (*LambdaOutput, error) {
+// struct.  Checks for failure using "require".
+func InvokeFunctionWithParams(t testing.TestingT, region, functionName string, input *LambdaOptions) *LambdaOutput {
+	out, err := InvokeFunctionWithParamsE(t, region, functionName, input)
+	require.NoError(t, err)
+	return out
+}
+
+// InvokeFunctionWithParamsE invokes a lambda function using parameters
+// supplied in the LambdaOptions struct and returns values in a LambdaOutput
+// struct and the error.
+func InvokeFunctionWithParamsE(t testing.TestingT, region, functionName string, input *LambdaOptions) (*LambdaOutput, error) {
 	lambdaClient, err := NewLambdaClientE(t, region)
 	if err != nil {
 		return nil, err
-	}
-
-	// The function name is a required field in LambdaOptions. If missing,
-	// report the error.
-	if input.FunctionName == nil {
-		msg := "LambdaOptions.FunctionName is a required field"
-		return &LambdaOutput{FunctionError: &msg}, errors.New(msg)
 	}
 
 	// Verify the InvocationType is one of the allowed values and report
@@ -110,7 +102,7 @@ func InvokeFunctionWithParams(t testing.TestingT, region string, input *LambdaOp
 	}
 
 	invokeInput := &lambda.InvokeInput{
-		FunctionName:   input.FunctionName,
+		FunctionName:   &functionName,
 		InvocationType: &invocationType,
 	}
 

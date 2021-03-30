@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -101,41 +102,41 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	// Call InvokeFunctionWithParms with an InvocationType of "DryRun".
 	// A "DryRun" invocation does not execute the function, so the example
 	// test function will not be checking the payload.
-	invocationType := "DryRun"
-	input := &aws.LambdaOptions{
-		FunctionName:   &functionName,
-		InvocationType: &invocationType,
-	}
-	out, err := aws.InvokeFunctionWithParams(t, awsRegion, input)
+	invocationType := lambda.InvocationTypeDryRun
+	input := &aws.LambdaOptions{InvocationType: &invocationType}
+	out := aws.InvokeFunctionWithParams(t, awsRegion, functionName, input)
 
 	// With "DryRun", there's no message in the output, but there is
 	// a status code which will have a value of 204 for a successful
 	// invocation.
-	require.Nil(t, err)
 	assert.Equal(t, int(*out.StatusCode), 204)
 
-	// Call InvokeFunctionWithParams with a LambdaOptions struct that's
-	// missing a function name.  The function should fail.
+	// Invoke the function, this time causing the Lambda to error and
+	// capturing the error.
+	invocationType = lambda.InvocationTypeRequestResponse
 	input = &aws.LambdaOptions{
-		Payload: ExampleFunctionPayload{ShouldFail: false, Echo: "hi!"},
+		InvocationType: &invocationType,
+		Payload:        ExampleFunctionPayload{ShouldFail: true, Echo: "hi!"},
 	}
-	out, err = aws.InvokeFunctionWithParams(t, awsRegion, input)
-	require.NotNil(t, err)
-	msg := "LambdaOptions.FunctionName is a required field"
-	assert.Contains(t, err.Error(), msg)
-	assert.Contains(t, *out.FunctionError, msg)
+	out, err := aws.InvokeFunctionWithParamsE(t, awsRegion, functionName, input)
 
-	// Call InvokeFunctionWithParams with a LambdaOptions struct with an
-	// unsupported InvocationType.  The function should fail.
+	// No error in the invocation as Lambda was found and executed.
+	require.Nil(t, err)
+	assert.Equal(t, int(*out.StatusCode), 200)
+
+	// Make sure the function-specific error comes back
+	assert.Contains(t, string(out.Payload), "Failed to handle")
+
+	// Call InvokeFunctionWithParamsE with a LambdaOptions struct that has
+	// an unsupported InvocationType.  The function should fail.
 	invocationType = "Event"
 	input = &aws.LambdaOptions{
-		FunctionName:   &functionName,
 		InvocationType: &invocationType,
 		Payload:        ExampleFunctionPayload{ShouldFail: false, Echo: "hi!"},
 	}
-	out, err = aws.InvokeFunctionWithParams(t, awsRegion, input)
+	out, err = aws.InvokeFunctionWithParamsE(t, awsRegion, functionName, input)
 	require.NotNil(t, err)
-	msg = "LambdaOptions.InvocationType, if specified, must either be \"RequestResponse\" or \"DryRun\""
+	msg := "LambdaOptions.InvocationType, if specified, must either be \"RequestResponse\" or \"DryRun\""
 	assert.Contains(t, err.Error(), msg)
 	assert.Contains(t, *out.FunctionError, msg)
 }
