@@ -10,17 +10,40 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type InvocationTypeOption string
+
+const (
+	InvocationTypeRequestResponse InvocationTypeOption = "RequestResponse"
+	InvocationTypeDryRun                               = "DryRun"
+)
+
+func (itype *InvocationTypeOption) Value() (string, error) {
+	if itype != nil {
+		switch *itype {
+		case
+			InvocationTypeRequestResponse,
+			InvocationTypeDryRun:
+			return string(*itype), nil
+		default:
+			msg := fmt.Sprintf("LambdaOptions.InvocationType, if specified, must either be \"%s\" or \"%s\"",
+				InvocationTypeRequestResponse,
+				InvocationTypeDryRun)
+			return "", errors.New(msg)
+		}
+	}
+	return string(InvocationTypeRequestResponse), nil
+}
+
 // LambdaOptions contains additional parameters for InvokeFunctionWithParams().
 // It contains a subset of the fields found in the lambda.InvokeInput struct.
 type LambdaOptions struct {
-	// InvocationType can be one of lambda.InvocationTypeRequestResponse
-	// or lambda.InvocationTypeDryRun.
+	// InvocationType can be one of InvocationTypeOption values:
 	//    * InvocationTypeRequestResponse (default) - Invoke the function
 	//      synchronously.  Keep the connection open until the function
 	//      returns a response or times out.
 	//    * InvocationTypeDryRun - Validate parameter values and verify
 	//      that the user or role has permission to invoke the function.
-	InvocationType *string
+	InvocationType *InvocationTypeOption
 
 	// Lambda function input; will be converted to JSON.
 	Payload interface{}
@@ -84,21 +107,12 @@ func InvokeFunctionWithParamsE(t testing.TestingT, region, functionName string, 
 	}
 
 	// Verify the InvocationType is one of the allowed values and report
-	// an error if its not.  By default the InvocationType will be
+	// an error if it's not.  By default the InvocationType will be
 	// "RequestResponse".
-	invocationType := lambda.InvocationTypeRequestResponse
-	if input.InvocationType != nil {
-		switch *input.InvocationType {
-		case
-			lambda.InvocationTypeRequestResponse,
-			lambda.InvocationTypeDryRun:
-			invocationType = *input.InvocationType
-		default:
-			msg := fmt.Sprintf("LambdaOptions.InvocationType, if specified, must either be \"%s\" or \"%s\"",
-				lambda.InvocationTypeRequestResponse,
-				lambda.InvocationTypeDryRun)
-			return &LambdaOutput{FunctionError: &msg}, errors.New(msg)
-		}
+	invocationType, err := input.InvocationType.Value()
+	if err != nil {
+		msg := err.Error()
+		return &LambdaOutput{FunctionError: &msg}, err
 	}
 
 	invokeInput := &lambda.InvokeInput{

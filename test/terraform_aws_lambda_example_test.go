@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -102,7 +101,7 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	// Call InvokeFunctionWithParms with an InvocationType of "DryRun".
 	// A "DryRun" invocation does not execute the function, so the example
 	// test function will not be checking the payload.
-	invocationType := lambda.InvocationTypeDryRun
+	var invocationType aws.InvocationTypeOption = aws.InvocationTypeDryRun
 	input := &aws.LambdaOptions{InvocationType: &invocationType}
 	out := aws.InvokeFunctionWithParams(t, awsRegion, functionName, input)
 
@@ -113,7 +112,7 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 
 	// Invoke the function, this time causing the Lambda to error and
 	// capturing the error.
-	invocationType = lambda.InvocationTypeRequestResponse
+	invocationType = aws.InvocationTypeRequestResponse
 	input = &aws.LambdaOptions{
 		InvocationType: &invocationType,
 		Payload:        ExampleFunctionPayload{ShouldFail: true, Echo: "hi!"},
