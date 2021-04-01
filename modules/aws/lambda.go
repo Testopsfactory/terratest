@@ -53,10 +53,6 @@ type LambdaOptions struct {
 // fields may or may not have a value depending on the invocation type and
 // whether an error occurred or not.
 type LambdaOutput struct {
-	// If present, indicates that an error occurred during function execution.
-	// Error details are included in the response payload.
-	FunctionError *string
-
 	// The response from the function, or an error object.
 	Payload []byte
 
@@ -75,8 +71,26 @@ func InvokeFunction(t testing.TestingT, region, functionName string, payload int
 
 // InvokeFunctionE invokes a lambda function.
 func InvokeFunctionE(t testing.TestingT, region, functionName string, payload interface{}) ([]byte, error) {
-	input := &LambdaOptions{Payload: &payload}
-	out, err := InvokeFunctionWithParamsE(t, region, functionName, input)
+	lambdaClient, err := NewLambdaClientE(t, region)
+	if err != nil {
+		return nil, err
+	}
+
+	invokeInput := &lambda.InvokeInput{
+		FunctionName: &functionName,
+	}
+
+	if payload != nil {
+		payloadJson, err := json.Marshal(payload)
+
+		if err != nil {
+			return nil, err
+		}
+		invokeInput.Payload = payloadJson
+	}
+
+	out, err := lambdaClient.Invoke(invokeInput)
+	require.NoError(t, err)
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +112,10 @@ func InvokeFunctionWithParams(t testing.TestingT, region, functionName string, i
 }
 
 // InvokeFunctionWithParamsE invokes a lambda function using parameters
-// supplied in the LambdaOptions struct and returns values in a LambdaOutput
-// struct and the error.
+// supplied in the LambdaOptions struct.  Returns the status code and payload
+// in a LambdaOutput struct and the error.  A non-nil error will either reflect
+// a problem with the parameters supplied to this function or an error returned
+// by the Lambda.
 func InvokeFunctionWithParamsE(t testing.TestingT, region, functionName string, input *LambdaOptions) (*LambdaOutput, error) {
 	lambdaClient, err := NewLambdaClientE(t, region)
 	if err != nil {
@@ -111,8 +127,7 @@ func InvokeFunctionWithParamsE(t testing.TestingT, region, functionName string, 
 	// "RequestResponse".
 	invocationType, err := input.InvocationType.Value()
 	if err != nil {
-		msg := err.Error()
-		return &LambdaOutput{FunctionError: &msg}, err
+		return nil, err
 	}
 
 	invokeInput := &lambda.InvokeInput{
@@ -129,15 +144,23 @@ func InvokeFunctionWithParamsE(t testing.TestingT, region, functionName string, 
 	}
 
 	out, err := lambdaClient.Invoke(invokeInput)
-
-	// As this function supports different invocation types, so it must
-	// support different combinations of output.
-	lambdaOutput := LambdaOutput{
-		FunctionError: out.FunctionError,
-		Payload:       out.Payload,
-		StatusCode:    out.StatusCode,
+	if err != nil {
+		return nil, err
 	}
-	return &lambdaOutput, err
+
+	// As this function supports different invocation types, it must
+	// then support different combinations of output other than just
+	// payload.
+	lambdaOutput := LambdaOutput{
+		Payload:    out.Payload,
+		StatusCode: out.StatusCode,
+	}
+
+	if out.FunctionError != nil {
+		return &lambdaOutput, errors.New(*out.FunctionError)
+	}
+
+	return &lambdaOutput, nil
 }
 
 type FunctionError struct {

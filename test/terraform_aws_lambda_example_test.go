@@ -119,8 +119,9 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	}
 	out, err := aws.InvokeFunctionWithParamsE(t, awsRegion, functionName, input)
 
-	// No error in the invocation as Lambda was found and executed.
-	require.Nil(t, err)
+	// The Lambda executed, but should have failed.
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Unhandled")
 	assert.Equal(t, int(*out.StatusCode), 200)
 
 	// Make sure the function-specific error comes back
@@ -135,9 +136,7 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	}
 	out, err = aws.InvokeFunctionWithParamsE(t, awsRegion, functionName, input)
 	require.NotNil(t, err)
-	msg := "LambdaOptions.InvocationType, if specified, must either be \"RequestResponse\" or \"DryRun\""
-	assert.Contains(t, err.Error(), msg)
-	assert.Contains(t, *out.FunctionError, msg)
+	assert.Contains(t, err.Error(), "LambdaOptions.InvocationType, if specified, must either be \"RequestResponse\" or \"DryRun\"")
 }
 
 type ExampleFunctionPayload struct {
