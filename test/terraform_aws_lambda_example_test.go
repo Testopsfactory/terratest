@@ -7,6 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,6 +15,10 @@ import (
 // An example of how to test the Terraform module in examples/terraform-aws-lambda-example using Terratest.
 func TestTerraformAwsLambdaExample(t *testing.T) {
 	t.Parallel()
+
+	// Make a copy of the terraform module to a temporary directory. This allows running multiple tests in parallel
+	// against the same terraform module.
+	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-aws-lambda-example")
 
 	// Give this lambda function a unique ID for a name so we can distinguish it from any other lambdas
 	// in your AWS account
@@ -26,7 +31,7 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 	// terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../examples/terraform-aws-lambda-example",
+		TerraformDir: exampleFolder,
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
@@ -68,6 +73,10 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	t.Parallel()
 
+	// Make a copy of the terraform module to a temporary directory. This allows running multiple tests in parallel
+	// against the same terraform module.
+	exampleFolder := test_structure.CopyTerraformFolderToTemp(t, "../", "examples/terraform-aws-lambda-example")
+
 	// Give this lambda function a unique ID for a name so we can distinguish it from any other lambdas
 	// in your AWS account
 	functionName := fmt.Sprintf("terratest-aws-lambda-withparams-example-%s", random.UniqueId())
@@ -79,7 +88,7 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	// terraform testing.
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		// The path to where our Terraform code is located
-		TerraformDir: "../examples/terraform-aws-lambda-example",
+		TerraformDir: exampleFolder,
 
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
@@ -120,9 +129,7 @@ func TestTerraformAwsLambdaWithParamsExample(t *testing.T) {
 	out, err := aws.InvokeFunctionWithParamsE(t, awsRegion, functionName, input)
 
 	// The Lambda executed, but should have failed.
-	require.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Unhandled")
-	assert.Equal(t, int(*out.StatusCode), 200)
+	assert.Error(t, err, "Unhandled")
 
 	// Make sure the function-specific error comes back
 	assert.Contains(t, string(out.Payload), "Failed to handle")
