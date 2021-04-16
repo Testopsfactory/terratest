@@ -19,6 +19,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
 	kvmng "github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2016-10-01/keyvault"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	autorestAzure "github.com/Azure/go-autorest/autorest/azure"
 )
 
@@ -45,7 +46,7 @@ type ClientType int
 // the Azure environment that is currently setup (or "Public", if none is setup).
 func CreateSubscriptionsClientE() (subscriptions.Client, error) {
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	baseURI, err := getBaseURI()
 	if err != nil {
 		return subscriptions.Client{}, err
 	}
@@ -66,7 +67,7 @@ func CreateVirtualMachinesClientE(subscriptionID string) (compute.VirtualMachine
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	baseURI, err := getBaseURI()
 	if err != nil {
 		return compute.VirtualMachinesClient{}, err
 	}
@@ -87,7 +88,7 @@ func CreateManagedClustersClientE(subscriptionID string) (containerservice.Manag
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	baseURI, err := getBaseURI()
 	if err != nil {
 		return containerservice.ManagedClustersClient{}, err
 	}
@@ -106,7 +107,7 @@ func CreateCosmosDBAccountClientE(subscriptionID string) (*documentdb.DatabaseAc
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	baseURI, err := getBaseURI()
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +128,7 @@ func CreateCosmosDBSQLClientE(subscriptionID string) (*documentdb.SQLResourcesCl
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	baseURI, err := getBaseURI()
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +149,7 @@ func CreateKeyVaultManagementClientE(subscriptionID string) (*kvmng.VaultsClient
 	}
 
 	// Lookup environment URI
-	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	baseURI, err := getBaseURI()
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +158,52 @@ func CreateKeyVaultManagementClientE(subscriptionID string) (*kvmng.VaultsClient
 	vaultClient := kvmng.NewVaultsClientWithBaseURI(baseURI, subscriptionID)
 
 	return &vaultClient, nil
+}
+
+// CreateStorageAccountClientE creates a storage account client.
+func CreateStorageAccountClientE(subscriptionID string) (*storage.AccountsClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	storageAccountClient := storage.NewAccountsClientWithBaseURI(baseURI, subscriptionID)
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+	storageAccountClient.Authorizer = *authorizer
+	return &storageAccountClient, nil
+}
+
+// CreateStorageBlobContainerClientE creates a storage container client.
+func CreateStorageBlobContainerClientE(subscriptionID string) (*storage.BlobContainersClient, error) {
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	blobContainerClient := storage.NewBlobContainersClientWithBaseURI(baseURI, subscriptionID)
+	authorizer, err := NewAuthorizer()
+
+	if err != nil {
+		return nil, err
+	}
+	blobContainerClient.Authorizer = *authorizer
+	return &blobContainerClient, nil
 }
 
 // GetKeyVaultURISuffixE returns the proper KeyVault URI suffix for the configured Azure environment.
@@ -196,4 +243,14 @@ func getFieldValue(env *autorestAzure.Environment, field string) string {
 	structValue := reflect.ValueOf(env)
 	fieldVal := reflect.Indirect(structValue).FieldByName(field)
 	return fieldVal.String()
+}
+
+// getBaseURI gets the base URI endpoint.
+func getBaseURI() (string, error) {
+	// Lookup environment URI
+	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	if err != nil {
+		return "", err
+	}
+	return baseURI, nil
 }
