@@ -14,6 +14,9 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/mysql/mgmt/mysql"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/sql/mgmt/sql"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/cosmos-db/mgmt/documentdb"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
@@ -232,6 +235,168 @@ func CreateAvailabilitySetClientE(subscriptionID string) (*compute.AvailabilityS
 	client.Authorizer = *authorizer
 
 	return &client, nil
+}
+
+// CreateResourceGroupClientE gets a resource group client in a subscription
+func CreateResourceGroupClientE(subscriptionID string) (*resources.GroupsClient, error) {
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	resourceGroupClient := resources.NewGroupsClientWithBaseURI(baseURI, subscriptionID)
+
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+	resourceGroupClient.Authorizer = *authorizer
+	return &resourceGroupClient, nil
+}
+
+// CreateSQLServerClient is a helper function that will create and setup a sql server client
+func CreateSQLServerClient(subscriptionID string) (*sql.ServersClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a sql server client
+	sqlClient := sql.NewServersClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	sqlClient.Authorizer = *authorizer
+
+	return &sqlClient, nil
+}
+
+// CreateDatabaseClient is a helper function that will create and setup a SQL DB client
+func CreateDatabaseClient(subscriptionID string) (*sql.DatabasesClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a sql DB client
+	sqlDBClient := sql.NewDatabasesClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	sqlDBClient.Authorizer = *authorizer
+
+	return &sqlDBClient, nil
+}
+
+// CreateMySQLServerClientE is a helper function that will setup a mysql server client.
+func CreateMySQLServerClientE(subscriptionID string) (*mysql.ServersClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a mysql server client
+	mysqlClient := mysql.NewServersClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	mysqlClient.Authorizer = *authorizer
+
+	return &mysqlClient, nil
+}
+
+// CreateDisksClientE returns a new Disks client in the specified Azure Subscription
+func CreateDisksClientE(subscriptionID string) (*compute.DisksClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the Disks client
+	client := compute.NewDisksClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	client.Authorizer = *authorizer
+
+	return &client, nil
+}
+
+func CreateActionGroupClient(subscriptionID string) (*insights.ActionGroupsClient, error) {
+	subID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	metricAlertsClient := insights.NewActionGroupsClientWithBaseURI(baseURI, subID)
+
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	metricAlertsClient.Authorizer = *authorizer
+
+	return &metricAlertsClient, nil
 }
 
 // CreateVMInsightsClientE gets a VM Insights client
