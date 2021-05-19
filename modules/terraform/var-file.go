@@ -15,7 +15,7 @@ import (
 	ctyjson "github.com/zclconf/go-cty/cty/json"
 )
 
-// GetVariableAsStringFromVarFile Gets the string represention of a variable from a provided input file found in VarFile
+// GetVariableAsStringFromVarFile Gets the string representation of a variable from a provided input file found in VarFile
 // For list or map, use GetVariableAsListFromVarFile or GetVariableAsMapFromVarFile, respectively.
 func GetVariableAsStringFromVarFile(t testing.TestingT, fileName string, key string) string {
 	result, err := GetVariableAsStringFromVarFileE(t, fileName, key)
@@ -24,7 +24,7 @@ func GetVariableAsStringFromVarFile(t testing.TestingT, fileName string, key str
 	return result
 }
 
-// GetVariableAsStringFromVarFileE Gets the string represention of a variable from a provided input file found in VarFile
+// GetVariableAsStringFromVarFileE Gets the string representation of a variable from a provided input file found in VarFile
 // Will return an error if GetAllVariablesFromVarFileE returns an error or the key provided does not exist in the file.
 // For list or map, use GetVariableAsListFromVarFile or GetVariableAsMapFromVarFile, respectively.
 func GetVariableAsStringFromVarFileE(t testing.TestingT, fileName string, key string) (string, error) {
@@ -43,7 +43,7 @@ func GetVariableAsStringFromVarFileE(t testing.TestingT, fileName string, key st
 	return fmt.Sprintf("%v", variable), nil
 }
 
-// GetVariableAsMapFromVarFile Gets the map represention of a variable from a provided input file found in VarFile
+// GetVariableAsMapFromVarFile Gets the map representation of a variable from a provided input file found in VarFile
 // Note that this returns a map of strings. For maps containing complex types, use GetAllVariablesFromVarFile.
 func GetVariableAsMapFromVarFile(t testing.TestingT, fileName string, key string) map[string]string {
 	result, err := GetVariableAsMapFromVarFileE(t, fileName, key)
@@ -51,7 +51,7 @@ func GetVariableAsMapFromVarFile(t testing.TestingT, fileName string, key string
 	return result
 }
 
-// GetVariableAsMapFromVarFileE Gets the map represention of a variable from a provided input file found in VarFile.
+// GetVariableAsMapFromVarFileE Gets the map representation of a variable from a provided input file found in VarFile.
 // Note that this returns a map of strings. For maps containing complex types, use GetAllVariablesFromVarFile
 // Returns an error if GetAllVariablesFromVarFileE returns an error, the key provided does not exist, or the value associated with the key is not a map
 func GetVariableAsMapFromVarFileE(t testing.TestingT, fileName string, key string) (map[string]string, error) {
@@ -78,7 +78,7 @@ func GetVariableAsMapFromVarFileE(t testing.TestingT, fileName string, key strin
 	return resultMap, nil
 }
 
-// GetVariableAsListFromVarFile Gets the string list represention of a variable from a provided input file found in VarFile
+// GetVariableAsListFromVarFile Gets the string list representation of a variable from a provided input file found in VarFile
 // Note that this returns a list of strings. For lists containing complex types, use GetAllVariablesFromVarFile.
 func GetVariableAsListFromVarFile(t testing.TestingT, fileName string, key string) []string {
 	result, err := GetVariableAsListFromVarFileE(t, fileName, key)
@@ -87,7 +87,7 @@ func GetVariableAsListFromVarFile(t testing.TestingT, fileName string, key strin
 	return result
 }
 
-// GetVariableAsListFromVarFileE Gets the string list represention of a variable from a provided input file found in VarFile
+// GetVariableAsListFromVarFileE Gets the string list representation of a variable from a provided input file found in VarFile
 // Note that this returns a list of strings. For lists containing complex types, use GetAllVariablesFromVarFile.
 // Will return error if GetAllVariablesFromVarFileE returns an error, the key provided does not exist, or the value associated with the key is not a list
 func GetVariableAsListFromVarFileE(t testing.TestingT, fileName string, key string) ([]string, error) {
@@ -114,7 +114,7 @@ func GetVariableAsListFromVarFileE(t testing.TestingT, fileName string, key stri
 	return resultArray, nil
 }
 
-// GetAllVariablesFromVarFileE Parses all data from a provided input file found ind in VarFile and stores the result in
+// GetAllVariablesFromVarFile Parses all data from a provided input file found ind in VarFile and stores the result in
 // the value pointed to by out.
 func GetAllVariablesFromVarFile(t testing.TestingT, fileName string, out interface{}) {
 	err := GetAllVariablesFromVarFileE(t, fileName, out)
