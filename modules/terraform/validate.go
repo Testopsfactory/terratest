@@ -5,6 +5,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Automatically finds all folders specified in RootDir that contain .tf files and runs InitAndValidate in all of them
+// Excludes any folders specified in the ExcludeDirs slice
+func ValidateAllTerraformModules(t testing.TestingT, opts ValidationOptions) error {
+	dirsToValidate, readErr := readModuleAndExampleSubDirs(opts)
+	if readErr != nil {
+		return readErr
+	}
+	for _, dir := range dirsToValidate {
+		tfOpts := &Options{TerraformDir: dir}
+		InitAndValidate(t, tfOpts)
+	}
+	return nil
+}
+
 // Validate calls terraform validate and returns stdout/stderr.
 func Validate(t testing.TestingT, options *Options) string {
 	out, err := ValidateE(t, options)
