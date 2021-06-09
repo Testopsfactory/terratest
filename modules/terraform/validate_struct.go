@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -14,11 +13,17 @@ type ValidationOptions struct {
 	ExcludeDirs []string
 }
 
+type ValidationUndefinedRootDirErr struct{}
+
+func (e ValidationUndefinedRootDirErr) Error() string {
+	return "RootDir must be defined in ValidationOptions passed to ValidateAllTerraformModules"
+}
+
 // readModuleAndExampleSubDirs returns a slice strings representing the filepaths for all valid Terraform modules
 // in both the "modules" directory and "examples" directories in the project root, if they exist.
 func readModuleAndExampleSubDirs(opts ValidationOptions) ([]string, error) {
 	if opts.RootDir == "" {
-		return nil, errors.New("RootDir must be defined in ValidationOptions passed to ValidateAllTerraformModules")
+		return nil, ValidationUndefinedRootDirErr{}
 	}
 	var validationCandidates []string
 	// We want to run InitAndValidate on all valid subdirectories of both the modules and examples dirs
