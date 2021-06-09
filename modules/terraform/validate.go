@@ -1,20 +1,25 @@
 package terraform
 
 import (
+	go_test "testing"
+
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
 
 // Automatically finds all folders specified in RootDir that contain .tf files and runs InitAndValidate in all of them
 // Excludes any folders specified in the ExcludeDirs slice
-func ValidateAllTerraformModules(t testing.TestingT, opts ValidationOptions) error {
+func ValidateAllTerraformModules(t *go_test.T, opts ValidationOptions) error {
 	dirsToValidate, readErr := readModuleAndExampleSubDirs(opts)
 	if readErr != nil {
 		return readErr
 	}
 	for _, dir := range dirsToValidate {
-		tfOpts := &Options{TerraformDir: dir}
-		InitAndValidate(t, tfOpts)
+		t.Run(dir, func(t *go_test.T) {
+			t.Parallel()
+			tfOpts := &Options{TerraformDir: dir}
+			InitAndValidate(t, tfOpts)
+		})
 	}
 	return nil
 }
