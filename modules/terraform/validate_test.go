@@ -60,7 +60,7 @@ func TestReadModuleAndExampleSubDirsExamples(t *testing.T) {
 
 	subDirs, err := readModuleAndExampleSubDirs(opts)
 	require.NoError(t, err)
-	// There are many valid Terraform modules in the root/examples directory of the Terratest project, so we should get back 0 results
+	// There are many valid Terraform modules in the root/examples directory of the Terratest project, so we should get back many results
 	require.Greater(t, len(subDirs), 0)
 }
 
