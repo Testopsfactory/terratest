@@ -1,7 +1,6 @@
 package terraform
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -75,7 +74,7 @@ func ReadModuleAndExampleSubDirs(opts ValidationOptions) ([]string, error) {
 			return nil
 		})
 		if err != nil {
-			fmt.Println(err)
+			return terraformModuleCandidates, err
 		}
 	}
 
