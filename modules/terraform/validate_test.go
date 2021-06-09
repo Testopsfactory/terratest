@@ -58,7 +58,7 @@ func TestReadModuleAndExampleSubDirsExamples(t *testing.T) {
 	require.Greater(t, len(subDirs), 0)
 }
 
-// Verify ExcludeDirs is working properly, by explicitly passing a list of two modules and two examples to exclude
+// Verify ExcludeDirs is working properly, by explicitly passing a list of two test fixture modules to exclude
 // and ensuring at the end that they do not appear in the returned slice of sub directories to validate
 // Then, re-run the function with no exclusions and ensure the excluded paths ARE returned in the result set when no
 // exclusions are passed
@@ -73,11 +73,9 @@ func TestReadModuleAndExampleSubDirsWithResultsExclusion(t *testing.T) {
 	exclusions := []string{
 		filepath.Join("test", "fixtures", "terraform-output"),
 		filepath.Join("test", "fixtures", "terraform-output-map"),
-		filepath.Join("examples", "terraform-packer-example"),
-		filepath.Join("examples", "terraform-hello-world-example"),
 	}
 
-	opts, optsErr := NewValidationOptions(projectRootDir, []string{"examples", "test/fixtures"}, exclusions)
+	opts, optsErr := NewValidationOptions(projectRootDir, []string{"test/fixtures"}, exclusions)
 	require.NoError(t, optsErr)
 
 	subDirs, err := ReadModuleAndExampleSubDirs(opts)
