@@ -83,10 +83,9 @@ func ReadModuleAndExampleSubDirs(opts ValidationOptions) ([]string, error) {
 	return collections.ListSubtract(terraformModuleCandidates, opts.ExcludeDirs), nil
 }
 
-// filterTerraformModulesFromDirs accepts a slice of fs.DirEntry representing subDirectories
-// (under "modules" or "examples"), for instance, returning only those that contain a main.tf file in their root. This
-// is useful for filtering out any sub directories that might ship alongside Terraform modules, but actually be
-// Terraform modules themselves
+// IsTerraformModuleDirectory accepts a slice of string paths representing sub directories (under "modules" or "examples"),
+// for instance, returning true for any.tf files. This is useful for filtering out any sub directories that might ship
+// alongside Terraform modules, but not actually be Terraform modules themselves
 func IsTerraformModuleDirectory(path string) (bool, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
