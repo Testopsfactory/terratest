@@ -11,46 +11,52 @@ import (
 )
 
 type ValidationOptions struct {
+	// The target directory to recursively search for all Terraform directories (those that contain .tf files)
+	// If you provide RootDir and do not pass entries in either IncludeDirs or ExcludeDirs, then all Terraform directories
+	// From the RootDir, recursively, will be validated
 	RootDir string
-	//Sub-directories relative to the RootDir to walk recursively for all Terraform modules. For example, if your
-	// RootDir is /home/project and you want to validate all modules in home/project/terraform then pass "terraform"
-	// in IncludeDirs
+	// If you only want to include certain sub directories, add them as paths relative to RootDir. For example, if the
+	// RootDir is /home/project and you want to only include /home/project/examples, add "examples" to this slice
+	// IncludeDirs takes precedence over ExcludeDirs, meaning that if you provide both IncludeDirs and ExcludeDirs, only
+	// IncludeDirs will be honored
 	IncludeDirs []string
-	//ExcludeDirs must be relative to the RootDir. For example if your RootDir is home/project and you want to exclude
-	// the path /home/project/test, pass "test" in ExcludeDirs
+	// If you want to explicitly exclude certain sub directories, add them as paths relative to RootDir. For example, if the
+	// RootDir is /home/project and you want to include everything EXCEPT /home/project/modules, add "modules"
+	// to this slice. Note that ExcludeDirs is only considered when IncludeDirs is not passed
 	ExcludeDirs []string
 }
 
 // NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults
 func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (ValidationOptions, error) {
 	vo := ValidationOptions{
+		RootDir:     "",
+		IncludeDirs: []string{},
 		ExcludeDirs: []string{},
 	}
 
 	if rootDir == "" {
 		return vo, ValidationUndefinedRootDirErr{}
 	}
+
 	vo.RootDir = rootDir
 
-	// If no target sub directories are passed, default to recursively searching "modules" and "examples"
-	if len(includeDirs) == 0 {
-		vo.IncludeDirs = []string{
-			"modules",
-			"examples",
-		}
-	} else {
-		vo.IncludeDirs = includeDirs
+	if len(includeDirs) > 0 {
+		vo.IncludeDirs = buildFullPathsFromRelative(vo.RootDir, includeDirs)
 	}
 
 	if len(excludeDirs) > 0 {
-		var fullExclusionPaths []string
-		for _, excludedPath := range excludeDirs {
-			fullExclusionPaths = append(fullExclusionPaths, filepath.Join(rootDir, excludedPath))
-		}
-		vo.ExcludeDirs = fullExclusionPaths
+		vo.ExcludeDirs = buildFullPathsFromRelative(vo.RootDir, excludeDirs)
 	}
 
 	return vo, nil
+}
+
+func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string {
+	var fullPaths []string
+	for _, relativePath := range relativePaths {
+		fullPaths = append(fullPaths, filepath.Join(rootDir, relativePath))
+	}
+	return fullPaths
 }
 
 // readModuleAndExampleSubDirs returns a slice strings representing the filepaths for all valid Terraform modules
@@ -75,6 +81,11 @@ func FindTerraformModulePathsInRootE(opts ValidationOptions) ([]string, error) {
 	terraformDirs := make([]string, 0, len(terraformDirSet))
 	for dir := range terraformDirSet {
 		terraformDirs = append(terraformDirs, dir)
+	}
+
+	// If opts.IncludeDirs is specified, it takes precedence over opts.ExcludeDirs
+	if len(opts.IncludeDirs) > 0 {
+		return collections.ListIntersection(terraformDirs, opts.IncludeDirs), nil
 	}
 
 	// Filter out any filepaths that were explicitly included in opts.ExcludeDirs
