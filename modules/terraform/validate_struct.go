@@ -1,25 +1,28 @@
 package terraform
 
 import (
+	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/gruntwork-io/terratest/modules/collections"
+	"github.com/mattn/go-zglob"
 )
 
 type ValidationOptions struct {
 	RootDir string
 	//Sub-directories relative to the RootDir to walk recursively for all Terraform modules. For example, if your
 	// RootDir is /home/project and you want to validate all modules in home/project/terraform then pass "terraform"
-	// in TargetSubDirs
-	TargetSubDirs []string
+	// in IncludeDirs
+	IncludeDirs []string
 	//ExcludeDirs must be relative to the RootDir. For example if your RootDir is home/project and you want to exclude
 	// the path /home/project/test, pass "test" in ExcludeDirs
 	ExcludeDirs []string
 }
 
 // NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults
-func NewValidationOptions(rootDir string, targetSubDirs, excludeDirs []string) (ValidationOptions, error) {
+func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (ValidationOptions, error) {
 	vo := ValidationOptions{
 		ExcludeDirs: []string{},
 	}
@@ -30,13 +33,13 @@ func NewValidationOptions(rootDir string, targetSubDirs, excludeDirs []string) (
 	vo.RootDir = rootDir
 
 	// If no target sub directories are passed, default to recursively searching "modules" and "examples"
-	if len(targetSubDirs) == 0 {
-		vo.TargetSubDirs = []string{
+	if len(includeDirs) == 0 {
+		vo.IncludeDirs = []string{
 			"modules",
 			"examples",
 		}
 	} else {
-		vo.TargetSubDirs = targetSubDirs
+		vo.IncludeDirs = includeDirs
 	}
 
 	if len(excludeDirs) > 0 {
@@ -52,28 +55,30 @@ func NewValidationOptions(rootDir string, targetSubDirs, excludeDirs []string) (
 
 // readModuleAndExampleSubDirs returns a slice strings representing the filepaths for all valid Terraform modules
 // in both the "modules" directory and "examples" directories in the project root, if they exist.
-func ReadModuleAndExampleSubDirs(opts ValidationOptions) ([]string, error) {
-	var terraformModuleCandidates []string
-	// We want to run InitAndValidate on all valid subdirectories of both the modules and examples dirs
+func FindTerraformModulePathsInRootE(opts ValidationOptions) ([]string, error) {
+	// Find all Terraform files from the configured RootDir
+	pattern := fmt.Sprintf("%s/**/*.tf", opts.RootDir)
+	matches, err := zglob.Glob(pattern)
+	if err != nil {
+		return matches, err
+	}
+	// Keep a unique set of the base dirs that contain Terraform files
+	terraformDirSet := make(map[string]bool)
+	for _, match := range matches {
+		// The glob match returns all full paths to every .tf file, whereas we're only interested in their root
+		// directories for the purposes of running Terraform validate
+		rootDir := path.Dir(match)
+		terraformDirSet[rootDir] = true
+	}
 
-	for _, dir := range opts.TargetSubDirs {
-		target := filepath.Join(opts.RootDir, dir)
-		err := filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if yes, err := IsTerraformModuleDirectory(path); err == nil && yes {
-				terraformModuleCandidates = append(terraformModuleCandidates, path)
-			}
-			return nil
-		})
-		if err != nil {
-			return terraformModuleCandidates, err
-		}
+	// Return the unique slice of Terraform directories found starting at opts.RootDir
+	terraformDirs := make([]string, 0, len(terraformDirSet))
+	for dir := range terraformDirSet {
+		terraformDirs = append(terraformDirs, dir)
 	}
 
 	// Filter out any filepaths that were explicitly included in opts.ExcludeDirs
-	return collections.ListSubtract(terraformModuleCandidates, opts.ExcludeDirs), nil
+	return collections.ListSubtract(terraformDirs, opts.ExcludeDirs), nil
 }
 
 // IsTerraformModuleDirectory accepts a slice of string paths representing sub directories (under "modules" or "examples"),

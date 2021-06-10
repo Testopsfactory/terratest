@@ -10,11 +10,12 @@ import (
 // Automatically finds all folders specified in RootDir that contain .tf files and runs InitAndValidate in all of them
 // Excludes any folders specified in the ExcludeDirs slice
 func ValidateAllTerraformModules(t *go_test.T, opts ValidationOptions) error {
-	dirsToValidate, readErr := ReadModuleAndExampleSubDirs(opts)
+	dirsToValidate, readErr := FindTerraformModulePathsInRootE(opts)
 	if readErr != nil {
 		return readErr
 	}
 	for _, dir := range dirsToValidate {
+		dir := dir
 		t.Run(dir, func(t *go_test.T) {
 			t.Parallel()
 			tfOpts := &Options{TerraformDir: dir}
