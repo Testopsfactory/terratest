@@ -60,7 +60,7 @@ func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string
 	return fullPaths
 }
 
-// readModuleAndExampleSubDirs returns a slice strings representing the filepaths for all valid Terraform modules
+// FindTerraformModulePathsInRootE returns a slice strings representing the filepaths for all valid Terraform modules
 // in both the "modules" directory and "examples" directories in the project root, if they exist.
 func FindTerraformModulePathsInRootE(opts ValidationOptions) ([]string, error) {
 	// Find all Terraform files from the configured RootDir
