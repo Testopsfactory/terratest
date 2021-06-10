@@ -27,7 +27,14 @@ type ValidationOptions struct {
 	ExcludeDirs []string
 }
 
-// NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults
+// NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults. Note that the
+// ValidationOptions's fields IncludeDirs and ExcludeDirs must be full paths, but this method will accept relative paths
+// and build the full paths when instantiating the ValidationOptions struct,  making it the preferred means of configuring
+// ValidationOptions.
+//
+// For example, if your RootDir is /home/project/ and you want to exclude "modules" and "test" you need
+// only pass the relative paths in your excludeDirs slice like so:
+// opts, err := NewValidationOptions("/home/project", []string{}, []string{"modules", "test"})
 func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (ValidationOptions, error) {
 	vo := ValidationOptions{
 		RootDir:     "",
