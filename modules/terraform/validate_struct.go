@@ -50,12 +50,6 @@ func NewValidationOptions(rootDir string, targetSubDirs, excludeDirs []string) (
 	return vo, nil
 }
 
-type ValidationUndefinedRootDirErr struct{}
-
-func (e ValidationUndefinedRootDirErr) Error() string {
-	return "RootDir must be defined in ValidationOptions passed to ValidateAllTerraformModules"
-}
-
 // readModuleAndExampleSubDirs returns a slice strings representing the filepaths for all valid Terraform modules
 // in both the "modules" directory and "examples" directories in the project root, if they exist.
 func ReadModuleAndExampleSubDirs(opts ValidationOptions) ([]string, error) {
@@ -96,4 +90,13 @@ func IsTerraformModuleDirectory(path string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// Custom error types
+
+// ValidationUndefinedRootDirErr is returned when NewValidationOptions is called without a RootDir argument
+type ValidationUndefinedRootDirErr struct{}
+
+func (e ValidationUndefinedRootDirErr) Error() string {
+	return "RootDir must be defined in ValidationOptions passed to ValidateAllTerraformModules"
 }
