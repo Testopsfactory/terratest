@@ -16,13 +16,15 @@ type ValidationOptions struct {
 	// From the RootDir, recursively, will be validated
 	RootDir string
 	// If you only want to include certain sub directories, add them as paths relative to RootDir. For example, if the
-	// RootDir is /home/project and you want to only include /home/project/examples, add "examples" to this slice
-	// IncludeDirs takes precedence over ExcludeDirs, meaning that if you provide both IncludeDirs and ExcludeDirs, only
-	// IncludeDirs will be honored
+	// RootDir is /home/project and you want to only include /home/project/examples, add /home/project/examples here
+	// Note that while the struct requires full paths, you can pass relative paths to the NewValidationOptions function
+	// which will build the full paths based on the supplied RootDir
 	IncludeDirs []string
 	// If you want to explicitly exclude certain sub directories, add them as paths relative to RootDir. For example, if the
-	// RootDir is /home/project and you want to include everything EXCEPT /home/project/modules, add "modules"
-	// to this slice. Note that ExcludeDirs is only considered when IncludeDirs is not passed
+	// RootDir is /home/project and you want to include everything EXCEPT /home/project/modules, add
+	// /home/project/modules to this slice. Note that ExcludeDirs is only considered when IncludeDirs is not passed
+	// Note that while the struct requires full paths, you can pass relative paths to the NewValidationOptions function
+	// which will build the full paths based on the supplied RootDir
 	ExcludeDirs []string
 }
 
