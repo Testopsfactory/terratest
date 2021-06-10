@@ -2,7 +2,6 @@ package terraform
 
 import (
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 
@@ -92,22 +91,6 @@ func FindTerraformModulePathsInRootE(opts ValidationOptions) ([]string, error) {
 
 	// Filter out any filepaths that were explicitly included in opts.ExcludeDirs
 	return collections.ListSubtract(terraformDirs, opts.ExcludeDirs), nil
-}
-
-// IsTerraformModuleDirectory accepts a slice of string paths representing sub directories (under "modules" or "examples"),
-// for instance, returning true for any.tf files. This is useful for filtering out any sub directories that might ship
-// alongside Terraform modules, but not actually be Terraform modules themselves
-func IsTerraformModuleDirectory(path string) (bool, error) {
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return false, err
-	}
-	for _, f := range files {
-		if filepath.Ext(filepath.Join(path, f.Name())) == ".tf" {
-			return true, nil
-		}
-	}
-	return false, nil
 }
 
 // Custom error types
