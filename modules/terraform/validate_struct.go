@@ -28,7 +28,7 @@ type ValidationOptions struct {
 }
 
 // NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults. Note that the
-// ValidationOptions's fields IncludeDirs and ExcludeDirs must be full paths, but this method will accept relative paths
+// ValidationOptions's fields IncludeDirs and ExcludeDirs must be absolute paths, but this method will accept relative paths
 // and build the full paths when instantiating the ValidationOptions struct,  making it the preferred means of configuring
 // ValidationOptions.
 //
