@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// ValidateAllTerraformModules rutomatically finds all folders specified in RootDir that contain .tf files and runs
+// ValidateAllTerraformModules automatically finds all folders specified in RootDir that contain .tf files and runs
 // InitAndValidate in all of them.
 // Filters down to only those paths passed in ValidationOptions.IncludeDirs, if passed.
 // Excludes any folders specified in the ValidationOptions.ExcludeDirs. IncludeDirs will take precedence over ExcludeDirs
