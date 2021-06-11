@@ -91,13 +91,16 @@ func FindTerraformModulePathsInRootE(opts ValidationOptions) ([]string, error) {
 		terraformDirs = append(terraformDirs, dir)
 	}
 
-	// If opts.IncludeDirs is specified, it takes precedence over opts.ExcludeDirs
 	if len(opts.IncludeDirs) > 0 {
-		return collections.ListIntersection(terraformDirs, opts.IncludeDirs), nil
+		terraformDirs = collections.ListIntersection(terraformDirs, opts.IncludeDirs)
+	}
+
+	if len(opts.ExcludeDirs) > 0 {
+		terraformDirs = collections.ListSubtract(terraformDirs, opts.ExcludeDirs)
 	}
 
 	// Filter out any filepaths that were explicitly included in opts.ExcludeDirs
-	return collections.ListSubtract(terraformDirs, opts.ExcludeDirs), nil
+	return terraformDirs, nil
 }
 
 // Custom error types
