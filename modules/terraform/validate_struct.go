@@ -46,7 +46,15 @@ func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*V
 		return nil, ValidationUndefinedRootDirErr{}
 	}
 
-	vo.RootDir = rootDir
+	if !filepath.IsAbs(rootDir) {
+		rootDirAbs, err := filepath.Abs(rootDir)
+		if err != nil {
+			return nil, ValidationAbsolutePathErr{rootDir: rootDir}
+		}
+		rootDir = rootDirAbs
+	}
+
+	vo.RootDir = filepath.Clean(rootDir)
 
 	if len(includeDirs) > 0 {
 		vo.IncludeDirs = buildFullPathsFromRelative(vo.RootDir, includeDirs)
@@ -64,9 +72,9 @@ func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string
 	for _, maybeRelativePath := range relativePaths {
 		// If the relativePath is already an absolute path, don't modify it
 		if filepath.IsAbs(maybeRelativePath) {
-			fullPaths = append(fullPaths, maybeRelativePath)
+			fullPaths = append(fullPaths, filepath.Clean(maybeRelativePath))
 		} else {
-			fullPaths = append(fullPaths, filepath.Join(rootDir, maybeRelativePath))
+			fullPaths = append(fullPaths, filepath.Clean(filepath.Join(rootDir, maybeRelativePath)))
 		}
 	}
 	return fullPaths
@@ -109,6 +117,15 @@ func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) 
 }
 
 // Custom error types
+// ValidationAbsolutePathErr is returned when NewValidationOptions was unable to convert a non-absolute RootDir to
+// an absolute path
+type ValidationAbsolutePathErr struct {
+	rootDir string
+}
+
+func (e ValidationAbsolutePathErr) Error() string {
+	return fmt.Sprintf("Could not convert RootDir: %s to absolute path", e.rootDir)
+}
 
 // ValidationUndefinedRootDirErr is returned when NewValidationOptions is called without a RootDir argument
 type ValidationUndefinedRootDirErr struct{}
