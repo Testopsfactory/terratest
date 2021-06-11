@@ -14,7 +14,7 @@ type ValidationOptions struct {
 	// If you provide RootDir and do not pass entries in either IncludeDirs or ExcludeDirs, then all Terraform directories
 	// From the RootDir, recursively, will be validated
 	RootDir string
-	// If you only want to include certain sub directories, add them as paths relative to RootDir. For example, if the
+	// If you only want to include certain sub directories of RootDir, add the absolute paths here. For example, if the
 	// RootDir is /home/project and you want to only include /home/project/examples, add /home/project/examples here
 	// Note that while the struct requires full paths, you can pass relative paths to the NewValidationOptions function
 	// which will build the full paths based on the supplied RootDir
