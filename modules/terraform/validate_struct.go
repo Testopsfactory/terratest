@@ -5,6 +5,7 @@ import (
 	"path"
 	"path/filepath"
 
+	go_commons_collections "github.com/gruntwork-io/go-commons/collections"
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/mattn/go-zglob"
 )
@@ -90,19 +91,16 @@ func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) 
 		return matches, err
 	}
 	// Keep a unique set of the base dirs that contain Terraform files
-	terraformDirSet := make(map[string]bool)
+	terraformDirSet := make(map[string]string)
 	for _, match := range matches {
 		// The glob match returns all full paths to every .tf file, whereas we're only interested in their root
 		// directories for the purposes of running Terraform validate
 		rootDir := path.Dir(match)
-		terraformDirSet[rootDir] = true
+		terraformDirSet[rootDir] = "exists"
 	}
 
-	// Return the unique slice of Terraform directories found starting at opts.RootDir
-	terraformDirs := make([]string, 0, len(terraformDirSet))
-	for dir := range terraformDirSet {
-		terraformDirs = append(terraformDirs, dir)
-	}
+	// Retrieve just the unique paths to each Terraform module directory from the map we're using as a set
+	terraformDirs := go_commons_collections.Keys(terraformDirSet)
 
 	if len(opts.IncludeDirs) > 0 {
 		terraformDirs = collections.ListIntersection(terraformDirs, opts.IncludeDirs)
@@ -117,6 +115,7 @@ func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) 
 }
 
 // Custom error types
+
 // ValidationAbsolutePathErr is returned when NewValidationOptions was unable to convert a non-absolute RootDir to
 // an absolute path
 type ValidationAbsolutePathErr struct {
