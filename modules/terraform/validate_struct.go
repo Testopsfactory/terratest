@@ -35,15 +35,15 @@ type ValidationOptions struct {
 // For example, if your RootDir is /home/project/ and you want to exclude "modules" and "test" you need
 // only pass the relative paths in your excludeDirs slice like so:
 // opts, err := NewValidationOptions("/home/project", []string{}, []string{"modules", "test"})
-func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (ValidationOptions, error) {
-	vo := ValidationOptions{
+func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
+	vo := &ValidationOptions{
 		RootDir:     "",
 		IncludeDirs: []string{},
 		ExcludeDirs: []string{},
 	}
 
 	if rootDir == "" {
-		return vo, ValidationUndefinedRootDirErr{}
+		return nil, ValidationUndefinedRootDirErr{}
 	}
 
 	vo.RootDir = rootDir
@@ -69,7 +69,7 @@ func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string
 
 // FindTerraformModulePathsInRootE returns a slice strings representing the filepaths for all valid Terraform modules
 // in the given RootDir, subject to the include / exclude filters.
-func FindTerraformModulePathsInRootE(opts ValidationOptions) ([]string, error) {
+func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) {
 	// Find all Terraform files from the configured RootDir
 	pattern := fmt.Sprintf("%s/**/*.tf", opts.RootDir)
 	matches, err := zglob.Glob(pattern)
