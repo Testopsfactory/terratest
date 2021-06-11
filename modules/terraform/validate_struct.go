@@ -61,8 +61,13 @@ func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*V
 
 func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string {
 	var fullPaths []string
-	for _, relativePath := range relativePaths {
-		fullPaths = append(fullPaths, filepath.Join(rootDir, relativePath))
+	for _, maybeRelativePath := range relativePaths {
+		// If the relativePath is already an absolute path, don't modify it
+		if filepath.IsAbs(maybeRelativePath) {
+			fullPaths = append(fullPaths, maybeRelativePath)
+		} else {
+			fullPaths = append(fullPaths, filepath.Join(rootDir, maybeRelativePath))
+		}
 	}
 	return fullPaths
 }
