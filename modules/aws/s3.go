@@ -37,6 +37,9 @@ func FindS3BucketWithTagE(t testing.TestingT, awsRegion string, key string, valu
 		tagResponse, err := s3Client.GetBucketTagging(&s3.GetBucketTaggingInput{Bucket: bucket.Name})
 
 		if err != nil {
+			if strings.Contains(err.Error(), "NoSuchBucket") {
+				continue
+			}
 			if !strings.Contains(err.Error(), "AuthorizationHeaderMalformed") &&
 				!strings.Contains(err.Error(), "BucketRegionError") &&
 				!strings.Contains(err.Error(), "NoSuchTagSet") {
