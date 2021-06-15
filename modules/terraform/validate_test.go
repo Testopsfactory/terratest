@@ -98,3 +98,31 @@ func TestFindTerraformModulePathsInRootEWithResultsExclusion(t *testing.T) {
 		assert.True(t, collections.ListContains(subDirsWithoutExclusions, filepath.Join(projectRootDir, exclusion)))
 	}
 }
+
+// TestValidateAllTerraformModulesSucceedsOnValidTerraform points at a simple text fixture Terraform module that is
+// known to be valid
+func TestValidateAllTerraformModulesSucceedsOnValidTerraform(t *testing.T) {
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	// Use the test fixtures directory as the RootDir for ValidationOptions
+	projectRootDir := filepath.Join(cwd, "../../test/fixtures")
+
+	opts, optsErr := NewValidationOptions(projectRootDir, []string{"terraform-validation-valid"}, []string{})
+	require.NoError(t, optsErr)
+
+	ValidateAllTerraformModules(t, opts)
+}
+
+// This test calls ValidateAllTerraformModules on the Terratest root directory
+func TestValidateAllTerraformModulesOnTerratest(t *testing.T) {
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	projectRootDir := filepath.Join(cwd, "../..")
+
+	opts, optsErr := NewValidationOptions(projectRootDir, []string{}, []string{})
+	require.NoError(t, optsErr)
+
+	ValidateAllTerraformModules(t, opts)
+}

@@ -2,6 +2,7 @@ package terraform
 
 import (
 	// We alias Golang's native testing package to go_test to avoid naming conflicts with terratest's own testing module
+
 	go_test "testing"
 
 	"github.com/gruntwork-io/terratest/modules/testing"
