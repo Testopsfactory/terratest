@@ -47,6 +47,8 @@ func TestTerraformAwsRdsExample(t *testing.T) {
 			"engine_version":       "5.7.21",
 			"port":                 expectedPort,
 			"database_name":        expectedDatabaseName,
+			// Passing region here to Terraform is required to get terraform validate to pass
+			"region": awsRegion,
 		},
 
 		// Environment variables to set when running Terraform
