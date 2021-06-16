@@ -121,7 +121,7 @@ func TestValidateAllTerraformModulesOnTerratest(t *testing.T) {
 
 	projectRootDir := filepath.Join(cwd, "../..")
 
-	opts, optsErr := NewValidationOptions(projectRootDir, []string{}, []string{})
+	opts, optsErr := NewValidationOptions(projectRootDir, []string{}, []string{"test/fixtures/terraform-with-plan-error", "examples/terraform-backend-example"})
 	require.NoError(t, optsErr)
 
 	ValidateAllTerraformModules(t, opts)
