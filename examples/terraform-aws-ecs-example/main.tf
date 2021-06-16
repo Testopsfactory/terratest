@@ -3,7 +3,7 @@
 # The examples have been upgraded to 0.12 syntax
 # ---------------------------------------------------------------------------------------------------------------------
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
 terraform {

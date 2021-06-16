@@ -36,13 +36,7 @@ func TestTerraformAwsS3Example(t *testing.T) {
 			"tag_bucket_name":        expectedName,
 			"tag_bucket_environment": expectedEnvironment,
 			"with_policy":            "true",
-			// Passing region to Terraform here is required for the terraform validate command to pass
-			"region": awsRegion,
-		},
-
-		// Environment variables to set when running Terraform
-		EnvVars: map[string]string{
-			"AWS_DEFAULT_REGION": awsRegion,
+			"region":                 awsRegion,
 		},
 	})
 

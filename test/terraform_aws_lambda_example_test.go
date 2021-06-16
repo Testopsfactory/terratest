@@ -36,13 +36,7 @@ func TestTerraformAwsLambdaExample(t *testing.T) {
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
 			"function_name": functionName,
-			// Passing region to Terraform is required for the terraform validate command to pass
-			"region": awsRegion,
-		},
-
-		// Environment variables to set when running Terraform
-		EnvVars: map[string]string{
-			"AWS_DEFAULT_REGION": awsRegion,
+			"region":        awsRegion,
 		},
 	})
 
