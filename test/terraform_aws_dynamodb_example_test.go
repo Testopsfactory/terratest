@@ -39,6 +39,8 @@ func TestTerraformAwsDynamoDBExample(t *testing.T) {
 		// Variables to pass to our Terraform code using -var options
 		Vars: map[string]interface{}{
 			"table_name": expectedTableName,
+			// Passing the AWS region to Terraform is required to get the terraform validate command to pass
+			"region": awsRegion,
 		},
 
 		// Environment variables to set when running Terraform
