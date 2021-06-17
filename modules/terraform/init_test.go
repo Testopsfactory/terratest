@@ -87,21 +87,17 @@ func TestInitReconfigureBackend(t *testing.T) {
 	t.Parallel()
 
 	stateDirectory, err := ioutil.TempDir("", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	defer os.RemoveAll(stateDirectory)
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-backend", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	defer os.RemoveAll(testFolder)
 
 	options := &Options{
 		TerraformDir: testFolder,
 		BackendConfig: map[string]interface{}{
-			"path": filepath.Join(stateDirectory, "backend.tfstate"),
+			"path":          filepath.Join(stateDirectory, "backend.tfstate"),
 			"workspace_dir": "current",
 		},
 	}
@@ -121,21 +117,17 @@ func TestInitBackendMigration(t *testing.T) {
 	t.Parallel()
 
 	stateDirectory, err := ioutil.TempDir("", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	defer os.RemoveAll(stateDirectory)
 
 	testFolder, err := files.CopyTerraformFolderToTemp("../../test/fixtures/terraform-backend", t.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 	defer os.RemoveAll(testFolder)
 
 	options := &Options{
 		TerraformDir: testFolder,
 		BackendConfig: map[string]interface{}{
-			"path": filepath.Join(stateDirectory, "backend.tfstate"),
+			"path":          filepath.Join(stateDirectory, "backend.tfstate"),
 			"workspace_dir": "current",
 		},
 	}
