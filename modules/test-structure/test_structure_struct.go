@@ -1,4 +1,4 @@
-package terraform
+package test_structure
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	go_commons_collections "github.com/gruntwork-io/go-commons/collections"
 	"github.com/gruntwork-io/terratest/modules/collections"
+	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/mattn/go-zglob"
 )
 
@@ -96,7 +97,10 @@ func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) 
 		// The glob match returns all full paths to every .tf file, whereas we're only interested in their root
 		// directories for the purposes of running Terraform validate
 		rootDir := path.Dir(match)
-		terraformDirSet[rootDir] = "exists"
+		// Don't include hidden .terraform directories when finding paths to validate
+		if !files.PathContainsHiddenFileOrFolder(rootDir) {
+			terraformDirSet[rootDir] = "exists"
+		}
 	}
 
 	// Retrieve just the unique paths to each Terraform module directory from the map we're using as a set
