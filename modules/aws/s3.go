@@ -37,6 +37,13 @@ func FindS3BucketWithTagE(t testing.TestingT, awsRegion string, key string, valu
 		tagResponse, err := s3Client.GetBucketTagging(&s3.GetBucketTaggingInput{Bucket: bucket.Name})
 
 		if err != nil {
+			if strings.Contains(err.Error(), "NoSuchBucket") {
+				// Occasionally, the ListBuckets call will return a bucket that has been deleted by S3
+				// but hasn't yet been actually removed from the backend. Listing tags on that bucket
+				// will return this error. If the bucket has been deleted, it can't be the one to find,
+				// so just ignore this error, and keep checking the other buckets.
+				continue
+			}
 			if !strings.Contains(err.Error(), "AuthorizationHeaderMalformed") &&
 				!strings.Contains(err.Error(), "BucketRegionError") &&
 				!strings.Contains(err.Error(), "NoSuchTagSet") {
