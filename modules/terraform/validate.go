@@ -3,8 +3,10 @@ package terraform
 import (
 	// We alias Golang's native testing package to go_test to avoid naming conflicts with terratest's own testing module
 
+	"path/filepath"
 	go_test "testing"
 
+	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/testing"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +26,12 @@ func ValidateAllTerraformModules(t *go_test.T, opts *ValidationOptions) {
 		dir := dir
 		t.Run(dir, func(t *go_test.T) {
 			t.Parallel()
-			tfOpts := &Options{TerraformDir: dir}
+
+			//Copy the module to a tmp directory to avoid conflicts with tests that don't copy to /tmp
+			testFolder, err := files.CopyTerraformFolderToTemp(opts.RootDir, filepath.Base(dir))
+			require.NoError(t, err)
+
+			tfOpts := &Options{TerraformDir: testFolder}
 			InitAndValidate(t, tfOpts)
 		})
 	}
