@@ -116,8 +116,6 @@ func ValidateAllTerraformModules(t *go_test.T, opts *ValidationOptions) {
 	for _, dir := range dirsToValidate {
 		dir := dir
 		t.Run(strings.TrimLeft(dir, "/"), func(t *go_test.T) {
-			t.Parallel()
-
 			// Determine the absolute path to the git repository root
 			cwd, cwdErr := os.Getwd()
 			require.NoError(t, cwdErr)
