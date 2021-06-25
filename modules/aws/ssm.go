@@ -26,7 +26,12 @@ func GetParameterE(t testing.TestingT, awsRegion string, keyName string) (string
 		return "", err
 	}
 
-	resp, err := ssmClient.GetParameter(&ssm.GetParameterInput{Name: aws.String(keyName), WithDecryption: aws.Bool(true)})
+	return GetParameterWithClientE(t, ssmClient, keyName)
+}
+
+// GetParameterE retrieves the latest version of SSM Parameter at keyName with decryption with the ability to provide the SSM client.
+func GetParameterWithClientE(t testing.TestingT, client *ssm.SSM, keyName string) (string, error) {
+	resp, err := client.GetParameter(&ssm.GetParameterInput{Name: aws.String(keyName), WithDecryption: aws.Bool(true)})
 	if err != nil {
 		return "", err
 	}
@@ -48,8 +53,12 @@ func PutParameterE(t testing.TestingT, awsRegion string, keyName string, keyDesc
 	if err != nil {
 		return 0, err
 	}
+	return PutParameterWithClientE(t, ssmClient, keyName, keyDescription, keyValue)
+}
 
-	resp, err := ssmClient.PutParameter(&ssm.PutParameterInput{Name: aws.String(keyName), Description: aws.String(keyDescription), Value: aws.String(keyValue), Type: aws.String("SecureString")})
+// PutParameterE creates new version of SSM Parameter at keyName with keyValue as SecureString with the ability to provide the SSM client.
+func PutParameterWithClientE(t testing.TestingT, client *ssm.SSM, keyName string, keyDescription string, keyValue string) (int64, error) {
+	resp, err := client.PutParameter(&ssm.PutParameterInput{Name: aws.String(keyName), Description: aws.String(keyDescription), Value: aws.String(keyValue), Type: aws.String("SecureString")})
 	if err != nil {
 		return 0, err
 	}
@@ -69,8 +78,12 @@ func DeleteParameterE(t testing.TestingT, awsRegion string, keyName string) erro
 	if err != nil {
 		return err
 	}
+	return DeleteParameterWithClientE(t, ssmClient, keyName)
+}
 
-	_, err = ssmClient.DeleteParameter(&ssm.DeleteParameterInput{Name: aws.String(keyName)})
+// DeleteParameterE deletes all versions of SSM Parameter at keyName with the ability to provide the SSM client.
+func DeleteParameterWithClientE(t testing.TestingT, client *ssm.SSM, keyName string) error {
+	_, err := client.DeleteParameter(&ssm.DeleteParameterInput{Name: aws.String(keyName)})
 	if err != nil {
 		return err
 	}
@@ -97,6 +110,15 @@ func NewSsmClientE(t testing.TestingT, region string) (*ssm.SSM, error) {
 
 // WaitForSsmInstanceE waits until the instance get registered to the SSM inventory.
 func WaitForSsmInstanceE(t testing.TestingT, awsRegion, instanceID string, timeout time.Duration) error {
+	client, err := NewSsmClientE(t, awsRegion)
+	if err != nil {
+		return err
+	}
+	return WaitForSsmInstanceWithClientE(t, client, instanceID, timeout)
+}
+
+// WaitForSsmInstanceE waits until the instance get registered to the SSM inventory with the ability to provide the SSM client.
+func WaitForSsmInstanceWithClientE(t testing.TestingT, client *ssm.SSM, instanceID string, timeout time.Duration) error {
 	timeBetweenRetries := 2 * time.Second
 	maxRetries := int(timeout.Seconds() / timeBetweenRetries.Seconds())
 	description := fmt.Sprintf("Waiting for %s to appear in the SSM inventory", instanceID)
@@ -111,7 +133,6 @@ func WaitForSsmInstanceE(t testing.TestingT, awsRegion, instanceID string, timeo
 		},
 	}
 	_, err := retry.DoWithRetryE(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
-		client := NewSsmClient(t, awsRegion)
 		resp, err := client.GetInventory(input)
 
 		if err != nil {
@@ -152,14 +173,20 @@ type CommandOutput struct {
 func CheckSsmCommandE(t testing.TestingT, awsRegion, instanceID, command string, timeout time.Duration) (*CommandOutput, error) {
 	logger.Logf(t, "Running command '%s' on EC2 instance with ID '%s'", command, instanceID)
 
-	timeBetweenRetries := 2 * time.Second
-	maxRetries := int(timeout.Seconds() / timeBetweenRetries.Seconds())
-
 	// Now that we know the instance in the SSM inventory, we can send the command
 	client, err := NewSsmClientE(t, awsRegion)
 	if err != nil {
 		return nil, err
 	}
+	return CheckSSMCommandWithClientE(t, client, instanceID, command, timeout)
+}
+
+// CheckSsmCommandE checks that you can run the given command on the given instance through AWS SSM with the ability to provide the SSM client. Returns the result and an error if one occurs.
+func CheckSSMCommandWithClientE(t testing.TestingT, client *ssm.SSM, instanceID, command string, timeout time.Duration) (*CommandOutput, error) {
+
+	timeBetweenRetries := 2 * time.Second
+	maxRetries := int(timeout.Seconds() / timeBetweenRetries.Seconds())
+
 	resp, err := client.SendCommand(&ssm.SendCommandInput{
 		Comment:      aws.String("Terratest SSM"),
 		DocumentName: aws.String("AWS-RunShellScript"),
