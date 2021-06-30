@@ -109,6 +109,8 @@ func cleanName(originalName string) string {
 // Use the NewValidationOptions method to pass relative paths for either of these options to have the full paths built
 // Note that go_test is an alias to Golang's native testing package created to avoid naming conflicts with Terratest's
 // own testing package. We are using the native testing.T here because Terratest's testing.T struct does not implement Run
+// Note that we have opted to place the ValidateAllTerraformModules function here instead of in the terraform package
+// to avoid import cycling
 func ValidateAllTerraformModules(t *go_test.T, opts *ValidationOptions) {
 	dirsToValidate, readErr := FindTerraformModulePathsInRootE(opts)
 	require.NoError(t, readErr)
