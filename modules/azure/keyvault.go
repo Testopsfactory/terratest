@@ -3,12 +3,14 @@ package azure
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	kvauth "github.com/Azure/azure-sdk-for-go/services/keyvault/auth"
 	kvmng "github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2016-10-01/keyvault"
 	"github.com/Azure/azure-sdk-for-go/services/keyvault/v7.0/keyvault"
 	"github.com/Azure/go-autorest/autorest"
+	az "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/require"
 )
 
@@ -124,8 +126,22 @@ func GetKeyVaultClientE() (*keyvault.BaseClient, error) {
 
 // NewKeyVaultAuthorizerE will return dataplane Authorizer for KeyVault.
 func NewKeyVaultAuthorizerE() (*autorest.Authorizer, error) {
-	authorizer, err := kvauth.NewAuthorizerFromCLI()
-	return &authorizer, err
+	// Carry out env var lookups
+	_, clientIDExists := os.LookupEnv(AuthFromEnvClient)
+	_, tenantIDExists := os.LookupEnv(AuthFromEnvTenant)
+	_, fileAuthSet := os.LookupEnv(AuthFromFile)
+
+	// Execute logic to return an authorizer from the correct method
+	if clientIDExists && tenantIDExists {
+		authorizer, err := kvauth.NewAuthorizerFromEnvironment()
+		return &authorizer, err
+	} else if fileAuthSet {
+		authorizer, err := kvauth.NewAuthorizerFromFile(az.PublicCloud.ResourceManagerEndpoint)
+		return &authorizer, err
+	} else {
+		authorizer, err := kvauth.NewAuthorizerFromCLI()
+		return &authorizer, err
+	}
 }
 
 // GetKeyVault is a helper function that gets the keyvault management object.
