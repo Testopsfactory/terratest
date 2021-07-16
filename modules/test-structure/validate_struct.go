@@ -11,11 +11,24 @@ import (
 	"github.com/mattn/go-zglob"
 )
 
+// ValidateFileType is the underlying module type to search for when performing validation. Either Terraform or Terragrunt
+// files are targeted during a given validation sweep
+type ValidateFileType string
+
+const (
+	// TF represents repositories that contain Terraform code
+	TF = "*.tf"
+	// TG represents repositories that contain Terragrunt code
+	TG = "terragrunt.hcl"
+)
+
+// ValidationOptions represent the configuration for a given validation sweep of a target repo
 type ValidationOptions struct {
 	// The target directory to recursively search for all Terraform directories (those that contain .tf files)
 	// If you provide RootDir and do not pass entries in either IncludeDirs or ExcludeDirs, then all Terraform directories
 	// From the RootDir, recursively, will be validated
-	RootDir string
+	RootDir  string
+	FileType ValidateFileType
 	// If you only want to include certain sub directories of RootDir, add the absolute paths here. For example, if the
 	// RootDir is /home/project and you want to only include /home/project/examples, add /home/project/examples here
 	// Note that while the struct requires full paths, you can pass relative paths to the NewValidationOptions function
@@ -37,7 +50,7 @@ type ValidationOptions struct {
 // For example, if your RootDir is /home/project/ and you want to exclude "modules" and "test" you need
 // only pass the relative paths in your excludeDirs slice like so:
 // opts, err := NewValidationOptions("/home/project", []string{}, []string{"modules", "test"})
-func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
+func NewValidationOptions(rootDir string, fileType ValidateFileType, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
 	vo := &ValidationOptions{
 		RootDir:     "",
 		IncludeDirs: []string{},
@@ -46,6 +59,13 @@ func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*V
 
 	if rootDir == "" {
 		return nil, ValidationUndefinedRootDirErr{}
+	}
+
+	// TODO: if no fileType is provided, default to Terraform? Or throw an error?
+	if fileType == "" {
+		vo.FileType = TF
+	} else {
+		vo.FileType = fileType
 	}
 
 	if !filepath.IsAbs(rootDir) {
@@ -86,7 +106,7 @@ func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string
 // in the given RootDir, subject to the include / exclude filters.
 func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) {
 	// Find all Terraform files from the configured RootDir
-	pattern := fmt.Sprintf("%s/**/*.tf", opts.RootDir)
+	pattern := fmt.Sprintf("%s/**/%s", opts.RootDir, opts.FileType)
 	matches, err := zglob.Glob(pattern)
 	if err != nil {
 		return matches, err

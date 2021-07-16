@@ -12,9 +12,15 @@ func Validate(t testing.TestingT, options *Options) string {
 	return out
 }
 
-// ValidateE calls terraform validate and returns stdout/stderr.
+// ValidateE calls terraform validate and returns stdout/stderr. Terragrunt's binary expects the `validate-inputs` command, whereas Terraform's correlative command is `validate`
 func ValidateE(t testing.TestingT, options *Options) (string, error) {
-	return RunTerraformCommandE(t, options, FormatArgs(options, "validate")...)
+	var validateCommand string
+	if options.TerraformBinary == "terraform" {
+		validateCommand = "validate"
+	} else if options.TerraformBinary == "terragrunt" {
+		validateCommand = "validate-inputs"
+	}
+	return RunTerraformCommandE(t, options, FormatArgs(options, validateCommand)...)
 }
 
 // InitAndValidate runs terraform init and validate with the given options and returns stdout/stderr from the validate command.

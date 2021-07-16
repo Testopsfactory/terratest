@@ -130,10 +130,15 @@ func ValidateAllTerraformModules(t *go_test.T, opts *ValidationOptions) {
 			// Copy git root to tmp and supply the path to the current module to run init and validate on
 			testFolder := CopyTerraformFolderToTemp(t, gitRoot, relativePath)
 			require.NotNil(t, testFolder)
+
 			// Run Terraform init and terraform validate on the test folder that was copied to /tmp
 			// to avoid any potential conflicts with tests that may not use the same copy to /tmp behavior
 			tfOpts := &terraform.Options{TerraformDir: testFolder}
+			if opts.FileType == TG {
+				tfOpts.TerraformBinary = "terragrunt"
+			}
 			terraform.InitAndValidate(t, tfOpts)
+
 		})
 	}
 }
