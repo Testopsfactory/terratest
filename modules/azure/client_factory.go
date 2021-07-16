@@ -25,6 +25,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2019-08-01/web"
 	autorestAzure "github.com/Azure/go-autorest/autorest/azure"
 )
 
@@ -640,6 +641,27 @@ func CreateNewVirtualNetworkClientE(subscriptionID string) (*network.VirtualNetw
 	// create client
 	vnetClient := network.NewVirtualNetworksClientWithBaseURI(baseURI, subscriptionID)
 	return &vnetClient, nil
+}
+
+// CreateAppServiceClientE returns an App service client instance configured with the
+// correct BaseURI depending on the Azure environment that is currently setup (or "Public", if none is setup).
+func CreateAppServiceClientE(subscriptionID string) (*web.AppsClient, error) {
+
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getEnvironmentEndpointE(ResourceManagerEndpointName)
+	if err != nil {
+		return nil, err
+	}
+
+	// create client
+	appsClient := web.NewAppsClientWithBaseURI(baseURI, subscriptionID)
+	return &appsClient, nil
 }
 
 // GetKeyVaultURISuffixE returns the proper KeyVault URI suffix for the configured Azure environment.
