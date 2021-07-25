@@ -182,8 +182,8 @@ func TestPathContainsTerraformStateOrVars(t *testing.T) {
 		{"contains tfvars", "./folder/terraform.tfvars", true},
 		{"contains tfvars.json", "./folder/hello/terraform.tfvars.json", true},
 		{"contains state", "./folder/hello/helloagain/terraform.tfstate", true},
-		{"contains state backup", "./folder/pewpew/terraform.tfstate.backup", true},
-		{"does not contain any", "./folder/pewpew/terraform.json", false},
+		{"contains state backup", "./folder/hey/terraform.tfstate.backup", true},
+		{"does not contain any", "./folder/salut/terraform.json", false},
 	}
 
 	for _, tt := range data {

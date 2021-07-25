@@ -135,7 +135,7 @@ func GetAllVariablesFromVarFileE(t testing.TestingT, fileName string, out interf
 	return parseAndDecodeVarFile(string(fileContents), fileName, out)
 }
 
-// parseAndDecodeVarFile uses the HCL2 parser to parse the given varfile string into an HCL file body, and then decode it
+// parseAndDecodeVarFile uses the HCL2 parser to parse the given varfile string into an HCL or HCL JSON file body, and then decode it
 // into a map that maps var names to values.
 func parseAndDecodeVarFile(fileContents string, filename string, out interface{}) (err error) {
 	// The HCL2 parser and especially cty conversions will panic in many types of errors, so we have to recover from
