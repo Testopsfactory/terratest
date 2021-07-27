@@ -82,9 +82,6 @@ func buildAMI(t *testing.T, awsRegion string, workingDir string) {
 			"instance_type": instanceType,
 		},
 
-		// Use a temporary directory for Packer plugins
-		DisposablePluginPath: true,
-
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,
 		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,

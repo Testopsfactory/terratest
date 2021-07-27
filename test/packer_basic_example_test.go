@@ -182,9 +182,6 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 			RetryableErrors:    DefaultRetryablePackerErrors,
 			TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
 			MaxRetries:         DefaultMaxPackerRetries,
-
-			// Use a temporary directory for Packer plugins
-			DisposablePluginPath: true,
 		}
 
 		identifierToOptions[random.UniqueId()] = packerOptions
