@@ -1,3 +1,12 @@
+packer {
+  required_plugins {
+    docker = {
+      version = ">=v1.0.1"
+      source = "github.com/hashicorp/docker"
+    }
+  }
+}
+
 source "docker" "ubuntu-docker" {
   changes = ["ENTRYPOINT [\"\"]"]
   commit  = true
@@ -13,6 +22,6 @@ build {
 
   post-processor "docker-tag" {
     repository = "gruntwork/packer-hello-world-example"
-    tag        = "latest"
+    tag        = ["latest"]
   }
 }

@@ -1,3 +1,12 @@
+packer {
+  required_plugins {
+    googlecompute = {
+      version = ">=v1.0.0"
+      source = "github.com/hashicorp/googlecompute"
+    }
+  }
+}
+
 variable "gcp_project_id" {
   type    = string
   default = ""
