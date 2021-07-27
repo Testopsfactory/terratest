@@ -82,6 +82,9 @@ func buildAMI(t *testing.T, awsRegion string, workingDir string) {
 			"instance_type": instanceType,
 		},
 
+		// Use a temporary directory for Packer plugins
+		DisposablePluginPath: true,
+
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,
 		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
@@ -92,7 +95,7 @@ func buildAMI(t *testing.T, awsRegion string, workingDir string) {
 	test_structure.SavePackerOptions(t, workingDir, packerOptions)
 
 	// Build the AMI
-	amiID := packer.BuildAmi(t, packerOptions)
+	amiID := packer.BuildArtifact(t, packerOptions)
 
 	// Save the AMI ID so future test stages can use them
 	test_structure.SaveAmiId(t, workingDir, amiID)

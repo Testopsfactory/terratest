@@ -26,6 +26,9 @@ func TestPackerDockerExampleLocal(t *testing.T) {
 		// Only build the Docker image for local testing
 		Only: "ubuntu-docker",
 
+		// Use a temporary directory for Packer plugins
+		DisposablePluginPath: true,
+
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,
 		TimeBetweenRetries: DefaultTimeBetweenPackerRetries,

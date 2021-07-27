@@ -4,6 +4,9 @@ package packer
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"regexp"
 	"sync"
 	"time"
@@ -17,19 +20,23 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
+// PackerPluginPathEnvVar is the built-in env variable defining where plugins are downloaded
+const PackerPluginPathEnvVar = "PACKER_PLUGIN_PATH"
+
 // Options are the options for Packer.
 type Options struct {
-	Template           string            // The path to the Packer template
-	Vars               map[string]string // The custom vars to pass when running the build command
-	VarFiles           []string          // Var file paths to pass Packer using -var-file option
-	Only               string            // If specified, only run the build of this name
-	Except             string            // Runs the build excluding the specified builds and post-processors
-	Env                map[string]string // Custom environment variables to set when running Packer
-	RetryableErrors    map[string]string // If packer build fails with one of these (transient) errors, retry. The keys are a regexp to match against the error and the message is what to display to a user if that error is matched.
-	MaxRetries         int               // Maximum number of times to retry errors matching RetryableErrors
-	TimeBetweenRetries time.Duration     // The amount of time to wait between retries
-	WorkingDir         string            // The directory to run packer in
-	Logger             *logger.Logger    // If set, use a non-default logger
+	Template             string            // The path to the Packer template
+	Vars                 map[string]string // The custom vars to pass when running the build command
+	VarFiles             []string          // Var file paths to pass Packer using -var-file option
+	Only                 string            // If specified, only run the build of this name
+	Except               string            // Runs the build excluding the specified builds and post-processors
+	Env                  map[string]string // Custom environment variables to set when running Packer
+	RetryableErrors      map[string]string // If packer build fails with one of these (transient) errors, retry. The keys are a regexp to match against the error and the message is what to display to a user if that error is matched.
+	MaxRetries           int               // Maximum number of times to retry errors matching RetryableErrors
+	TimeBetweenRetries   time.Duration     // The amount of time to wait between retries
+	WorkingDir           string            // The directory to run packer in
+	Logger               *logger.Logger    // If set, use a non-default logger
+	DisposablePluginPath bool              // If set, download plugins to a temporary directory and remove them at the end of the test
 }
 
 // BuildArtifacts can take a map of identifierName <-> Options and then parallelize
@@ -92,6 +99,16 @@ func BuildArtifact(t testing.TestingT, options *Options) string {
 // BuildArtifactE builds the given Packer template and return the generated Artifact ID.
 func BuildArtifactE(t testing.TestingT, options *Options) (string, error) {
 	options.Logger.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
+
+	if options.DisposablePluginPath {
+		options.Logger.Logf(t, "Creating a temporary directory for Packer plugins")
+		pluginDir, err := ioutil.TempDir("", "terratest-packer-")
+		if err != nil {
+			log.Fatal(err)
+		}
+		options.Env[PackerPluginPathEnvVar] = pluginDir
+		defer os.RemoveAll(pluginDir)
+	}
 
 	err := packerInit(t, options)
 	if err != nil {
@@ -162,6 +179,7 @@ func packerInit(t testing.TestingT, options *Options) error {
 	cmd := shell.Command{
 		Command:    "packer",
 		Args:       []string{"-version"},
+		Env:        options.Env,
 		WorkingDir: options.WorkingDir,
 	}
 	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
@@ -185,6 +203,7 @@ func packerInit(t testing.TestingT, options *Options) error {
 	cmd = shell.Command{
 		Command:    "packer",
 		Args:       []string{"init", options.Template},
+		Env:        options.Env,
 		WorkingDir: options.WorkingDir,
 	}
 

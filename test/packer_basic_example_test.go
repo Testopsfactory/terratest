@@ -115,6 +115,11 @@ func TestPackerBasicExampleWithVarFile(t *testing.T) {
 			varFile.Name(),
 		},
 
+		// Environment settings to avoid plugin conflicts
+		Env: map[string]string{
+			"PACKER_PLUGIN_PATH": "../examples/packer-basic-example/.packer.d/plugins",
+		},
+
 		// Only build the AWS AMI
 		Only: "amazon-ebs.ubuntu-example",
 
@@ -177,6 +182,9 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 			RetryableErrors:    DefaultRetryablePackerErrors,
 			TimeBetweenRetries: DefaultTimeBetweenPackerRetries,
 			MaxRetries:         DefaultMaxPackerRetries,
+
+			// Use a temporary directory for Packer plugins
+			DisposablePluginPath: true,
 		}
 
 		identifierToOptions[random.UniqueId()] = packerOptions
