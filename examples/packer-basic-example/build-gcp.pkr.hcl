@@ -17,7 +17,7 @@ variable "gcp_zone" {
   default = "us-central1-a"
 }
 
-source "googlecompute" "gcp" {
+source "googlecompute" "ubuntu-bionic" {
   image_family        = "terratest"
   image_name          = "terratest-packer-example-${formatdate("YYYYMMDD-hhmm", timestamp())}"
   project_id          = var.gcp_project_id
@@ -29,7 +29,7 @@ source "googlecompute" "gcp" {
 
 build {
   sources = [
-    "source.googlecompute.gcp"
+    "source.googlecompute.ubuntu-bionic"
   ]
 
   provisioner "shell" {

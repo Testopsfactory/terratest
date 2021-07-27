@@ -21,16 +21,6 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
-variable "gcp_project_id" {
-  type    = string
-  default = ""
-}
-
-variable "gcp_zone" {
-  type    = string
-  default = "us-central1-a"
-}
-
 variable "instance_type" {
   type    = string
   default = "t2.micro"
@@ -74,7 +64,7 @@ data "amazon-ami" "ubuntu-xenial" {
   region      = var.aws_region
 }
 
-source "amazon-ebs" "aws" {
+source "amazon-ebs" "example" {
   ami_description = "An example of how to create a custom AMI on top of Ubuntu"
   ami_name        = "${var.ami_base_name}-terratest-packer-example"
   encrypt_boot    = false
@@ -97,7 +87,7 @@ source "oracle-oci" "oracle" {
 
 build {
   sources = [
-    "source.amazon-ebs.aws",
+    "source.amazon-ebs.example",
     "source.oracle-oci.oracle"
   ]
 
@@ -105,5 +95,4 @@ build {
     inline       = ["sudo DEBIAN_FRONTEND=noninteractive apt-get update", "sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y"]
     pause_before = "30s"
   }
-
 }
