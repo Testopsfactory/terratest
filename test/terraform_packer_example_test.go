@@ -71,7 +71,7 @@ func buildAMI(t *testing.T, awsRegion string, workingDir string) {
 
 	packerOptions := &packer.Options{
 		// The path to where the Packer template is located
-		Template: "../examples/packer-docker-example/build.json",
+		Template: "../examples/packer-docker-example/build.pkr.hcl",
 
 		// Only build the AMI
 		Only: "ubuntu-ami",
