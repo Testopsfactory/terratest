@@ -2,8 +2,7 @@
 
 This folder contains a very simple Packer template to demonstrate how you can use Terratest to write automated tests
 for your Packer templates. The template just creates an up-to-date Ubuntu AMI by running `apt-get update` and
-`apt-get upgrade`. It also uses the [packer-provisioner-comment plugin](https://github.com/sylviamoss/packer-plugin-comment) to
-demonstrate how plugins work (this is primarily for testing purposes).
+`apt-get upgrade`.
 
 Check out [test/packer_basic_example_test.go](/test/packer_basic_example_test.go) to see how you can write
 automated tests for this simple template.
@@ -23,8 +22,8 @@ Terratest. For slightly more complicated, real-world examples of Packer template
 1. Install [Packer](https://www.packer.io/) and make sure it's on your `PATH`.
 
 ## Building the Packer template manually (Packer >= 1.7.0)
-1. Run `packer init build.pkr.hcl`.
-1. Run `packer build build.pkr.hcl`.
+1. Run `packer init build.pkr.hcl`.  # Use build-gcp.pkr.hcl if using GCP
+1. Run `packer build build.pkr.hcl`. # Use build-gcp.pkr.hcl if using GCP
 
 ## Building the Packer template manually (Packer < 1.7.0)
 1. Run `packer build build.json`.

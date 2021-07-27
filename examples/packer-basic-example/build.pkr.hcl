@@ -1,10 +1,8 @@
 packer {
-  required_version = ">= 1.7.0"
   required_plugins {
-    # This plugin is primarily used for testing the new required_plugins feature introduced in Packer 1.7.0.
-    comment = {
-        version = ">=v0.2.23"
-        source = "github.com/sylviamoss/comment"
+    amazon = {
+      version = ">= 0.0.1"
+      source = "github.com/hashicorp/amazon"
     }
   }
 }
@@ -84,7 +82,7 @@ source "amazon-ebs" "aws" {
 
 source "googlecompute" "gcp" {
   image_family        = "terratest"
-  image_name            = "terratest-packer-example-${formatdate("YYYYMMDD-hhmm", timestamp())}"
+  image_name          = "terratest-packer-example-${formatdate("YYYYMMDD-hhmm", timestamp())}"
   project_id          = var.gcp_project_id
   source_image_family = "ubuntu-1804-lts"
   ssh_username        = "ubuntu"
@@ -108,11 +106,6 @@ build {
     "source.googlecompute.gcp",
     "source.oracle-oci.oracle"
   ]
-
-  provisioner "comment" {
-    comment     = "Basic comment example"
-    ui          = false
-  }
 
   provisioner "shell" {
     inline       = ["sudo DEBIAN_FRONTEND=noninteractive apt-get update", "sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y"]
