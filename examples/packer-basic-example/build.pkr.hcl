@@ -1,8 +1,12 @@
 packer {
   required_plugins {
     amazon = {
-      version = ">= v1.0.0"
-      source  = "github.com/hashicorp/amazon"
+      version = ">=v1.0.0"
+      source  = "hashicorp/amazon"
+    }
+    oracle = {
+      version = ">=v1.0.0"
+      source  = "hashicorp/oracle"
     }
   }
 }
@@ -80,15 +84,6 @@ source "amazon-ebs" "aws" {
   ssh_username    = "ubuntu"
 }
 
-source "googlecompute" "gcp" {
-  image_family        = "terratest"
-  image_name          = "terratest-packer-example-${formatdate("YYYYMMDD-hhmm", timestamp())}"
-  project_id          = var.gcp_project_id
-  source_image_family = "ubuntu-1804-lts"
-  ssh_username        = "ubuntu"
-  zone                = var.gcp_zone
-}
-
 source "oracle-oci" "oracle" {
   availability_domain = var.oci_availability_domain
   base_image_ocid     = var.oci_base_image_ocid
@@ -103,7 +98,6 @@ source "oracle-oci" "oracle" {
 build {
   sources = [
     "source.amazon-ebs.aws",
-    "source.googlecompute.gcp",
     "source.oracle-oci.oracle"
   ]
 
