@@ -50,7 +50,7 @@ func TestPackerBasicExample(t *testing.T) {
 		},
 
 		// Only build the AWS AMI
-		Only: "amazon-ebs.aws",
+		Only: "amazon-ebs.ubuntu-example",
 
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,
@@ -116,7 +116,7 @@ func TestPackerBasicExampleWithVarFile(t *testing.T) {
 		},
 
 		// Only build the AWS AMI
-		Only: "amazon-ebs.aws",
+		Only: "amazon-ebs.ubuntu-example",
 
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,
@@ -171,7 +171,7 @@ func TestPackerMultipleConcurrentAmis(t *testing.T) {
 			},
 
 			// Only build the AWS AMI
-			Only: "amazon-ebs.aws",
+			Only: "amazon-ebs.ubuntu-example",
 
 			// Configure retries for intermittent errors
 			RetryableErrors:    DefaultRetryablePackerErrors,

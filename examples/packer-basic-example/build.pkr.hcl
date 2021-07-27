@@ -64,7 +64,7 @@ data "amazon-ami" "ubuntu-xenial" {
   region      = var.aws_region
 }
 
-source "amazon-ebs" "example" {
+source "amazon-ebs" "ubuntu-example" {
   ami_description = "An example of how to create a custom AMI on top of Ubuntu"
   ami_name        = "${var.ami_base_name}-terratest-packer-example"
   encrypt_boot    = false
@@ -74,7 +74,7 @@ source "amazon-ebs" "example" {
   ssh_username    = "ubuntu"
 }
 
-source "oracle-oci" "oracle" {
+source "oracle-oci" "oracle-example" {
   availability_domain = var.oci_availability_domain
   base_image_ocid     = var.oci_base_image_ocid
   compartment_ocid    = var.oci_compartment_ocid
@@ -87,8 +87,8 @@ source "oracle-oci" "oracle" {
 
 build {
   sources = [
-    "source.amazon-ebs.example",
-    "source.oracle-oci.oracle"
+    "source.amazon-ebs.ubuntu-example",
+    "source.oracle-oci.oracle-example"
   ]
 
   provisioner "shell" {

@@ -45,7 +45,7 @@ func TestPackerGCPBasicExample(t *testing.T) {
 		},
 
 		// Only build the Google Compute Image
-		Only: "googlecompute.gcp",
+		Only: "googlecompute.ubuntu-bionic",
 
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,
