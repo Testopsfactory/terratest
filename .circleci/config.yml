@@ -13,7 +13,6 @@ env: &env
     HELM_VERSION: v3.1.1
     KUBECONFIG: /home/circleci/.kube/config
     BIN_BUILD_PARALLELISM: 3
-    PACKER_PLUGIN_PATH: /home/circleci/.packer.d/plugins
 
 defaults: &defaults
   machine:
