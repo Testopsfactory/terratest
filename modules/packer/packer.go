@@ -14,6 +14,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
 	"github.com/gruntwork-io/terratest/modules/testing"
+	"github.com/hashicorp/go-version"
 )
 
 // Options are the options for Packer.
@@ -92,6 +93,11 @@ func BuildArtifact(t testing.TestingT, options *Options) string {
 func BuildArtifactE(t testing.TestingT, options *Options) (string, error) {
 	options.Logger.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
 
+	err := packerInit(t, options)
+	if err != nil {
+		return "", err
+	}
+
 	cmd := shell.Command{
 		Command:    "packer",
 		Args:       formatPackerArgs(options),
@@ -143,6 +149,55 @@ func extractArtifactID(packerLogOutput string) (string, error) {
 		return matches[1], nil
 	}
 	return "", errors.New("Could not find Artifact ID pattern in Packer output")
+}
+
+// packerInit checks if init is supported in the current version of Packer, then runs packer init to download any required plugins.
+func packerInit(t testing.TestingT, options *Options) error {
+	// The init command was introduced in Packer 1.7.0
+	const packerInitVersion = "1.7.0"
+	minInitVersion, err := version.NewVersion(packerInitVersion)
+	if err != nil {
+		return err
+	}
+	cmd := shell.Command{
+		Command:    "packer",
+		Args:       []string{"-version"},
+		WorkingDir: options.WorkingDir,
+	}
+	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
+	installedVersion, err := retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+		return shell.RunCommandAndGetOutputE(t, cmd)
+	})
+	if err != nil {
+		return err
+	}
+	thisVersion, err := version.NewVersion(installedVersion)
+	if err != nil {
+		return err
+	}
+	if thisVersion.LessThan(minInitVersion) {
+		options.Logger.Logf(t, "Skipping 'packer init' because it is not present in this version (%s)", thisVersion)
+		return nil
+	}
+
+	options.Logger.Logf(t, "Running Packer init")
+
+	cmd = shell.Command{
+		Command:    "packer",
+		Args:       []string{"init", options.Template},
+		WorkingDir: options.WorkingDir,
+	}
+
+	description = fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
+	_, err = retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+		return shell.RunCommandAndGetOutputE(t, cmd)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Convert the inputs to a format palatable to packer. The build command should have the format:
