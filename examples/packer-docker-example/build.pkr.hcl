@@ -56,7 +56,7 @@ build {
 
   provisioner "shell" {
     inline = ["echo 'Sleeping for a few seconds to give Ubuntu time to boot up'", "sleep 30"]
-    only   = ["ubuntu-ami"]
+    only   = ["amazon-ebs.ubuntu-ami"]
   }
 
   provisioner "file" {
@@ -69,7 +69,7 @@ build {
   }
 
   post-processor "docker-tag" {
-    only       = ["ubuntu-docker"]
+    only       = ["docker.ubuntu-docker"]
     repository = "gruntwork/packer-docker-example"
     tag        = "latest"
   }
