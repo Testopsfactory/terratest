@@ -71,6 +71,6 @@ build {
   post-processor "docker-tag" {
     only       = ["docker.ubuntu-docker"]
     repository = "gruntwork/packer-docker-example"
-    tag        = "latest"
+    tag        = ["latest"]
   }
 }
