@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"regexp"
 	"sync"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/hashicorp/go-multierror"
+	"github.com/stretchr/testify/require"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/shell"
@@ -106,9 +106,7 @@ func BuildArtifactE(t testing.TestingT, options *Options) (string, error) {
 		const packerPluginPathEnvVar = "PACKER_PLUGIN_PATH"
 		options.Logger.Logf(t, "Creating a temporary directory for Packer plugins")
 		pluginDir, err := ioutil.TempDir("", "terratest-packer-")
-		if err != nil {
-			log.Fatal(err)
-		}
+		require.NoError(t, err)
 		if len(options.Env) == 0 {
 			options.Env = make(map[string]string)
 		}
@@ -189,14 +187,10 @@ func hasPackerInit(t testing.TestingT, options *Options) (bool, error) {
 		Env:        options.Env,
 		WorkingDir: options.WorkingDir,
 	}
-	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
-	localVersion, err := retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
-		return shell.RunCommandAndGetOutputE(t, cmd)
-	})
+	localVersion, err := shell.RunCommandAndGetOutputE(t, cmd)
 	if err != nil {
 		return false, err
 	}
-
 	thisVersion, err := version.NewVersion(localVersion)
 	if err != nil {
 		return false, err
@@ -220,8 +214,6 @@ func packerInit(t testing.TestingT, options *Options) error {
 		return nil
 	}
 
-	options.Logger.Logf(t, "Running Packer init")
-
 	cmd := shell.Command{
 		Command:    "packer",
 		Args:       []string{"init", options.Template},
@@ -229,7 +221,7 @@ func packerInit(t testing.TestingT, options *Options) error {
 		WorkingDir: options.WorkingDir,
 	}
 
-	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
+	description := "Running Packer init"
 	_, err = retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		return shell.RunCommandAndGetOutputE(t, cmd)
 	})
