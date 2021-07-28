@@ -24,7 +24,7 @@ func TestPackerDockerExampleLocal(t *testing.T) {
 		Template: "../examples/packer-docker-example/build.pkr.hcl",
 
 		// Only build the Docker image for local testing
-		Only: "ubuntu-docker",
+		Only: "docker.ubuntu-docker",
 
 		// Configure retries for intermittent errors
 		RetryableErrors:    DefaultRetryablePackerErrors,

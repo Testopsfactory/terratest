@@ -74,7 +74,7 @@ func buildAMI(t *testing.T, awsRegion string, workingDir string) {
 		Template: "../examples/packer-docker-example/build.pkr.hcl",
 
 		// Only build the AMI
-		Only: "ubuntu-ami",
+		Only: "amazon-ebs.ubuntu-ami",
 
 		// Variables to pass to our Packer build using -var options
 		Vars: map[string]string{

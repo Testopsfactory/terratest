@@ -20,9 +20,6 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-// PackerPluginPathEnvVar is the built-in env variable defining where plugins are downloaded
-const PackerPluginPathEnvVar = "PACKER_PLUGIN_PATH"
-
 // Options are the options for Packer.
 type Options struct {
 	Template                   string            // The path to the Packer template
@@ -100,7 +97,13 @@ func BuildArtifact(t testing.TestingT, options *Options) string {
 func BuildArtifactE(t testing.TestingT, options *Options) (string, error) {
 	options.Logger.Logf(t, "Running Packer to generate a custom artifact for template %s", options.Template)
 
+	// By default, we download packer plugins to a temporary directory rather than use the global plugin path.
+	// This prevents race conditions when multiple tests are running in parallel and each of them attempt
+	// to download the same plugin at the same time to the global path.
+	// Set DisableTemporaryPluginPath to disable this behavior.
 	if !options.DisableTemporaryPluginPath {
+		// The built-in env variable defining where plugins are downloaded
+		const packerPluginPathEnvVar = "PACKER_PLUGIN_PATH"
 		options.Logger.Logf(t, "Creating a temporary directory for Packer plugins")
 		pluginDir, err := ioutil.TempDir("", "terratest-packer-")
 		if err != nil {
@@ -109,7 +112,7 @@ func BuildArtifactE(t testing.TestingT, options *Options) (string, error) {
 		if len(options.Env) == 0 {
 			options.Env = make(map[string]string)
 		}
-		options.Env[PackerPluginPathEnvVar] = pluginDir
+		options.Env[packerPluginPathEnvVar] = pluginDir
 		defer os.RemoveAll(pluginDir)
 	}
 
@@ -171,14 +174,15 @@ func extractArtifactID(packerLogOutput string) (string, error) {
 	return "", errors.New("Could not find Artifact ID pattern in Packer output")
 }
 
-// packerInit checks if init is supported in the current version of Packer, then runs packer init to download any required plugins.
-func packerInit(t testing.TestingT, options *Options) error {
+// Check if the local version of Packer has init
+func hasPackerInit(t testing.TestingT, options *Options) (bool, error) {
 	// The init command was introduced in Packer 1.7.0
 	const packerInitVersion = "1.7.0"
 	minInitVersion, err := version.NewVersion(packerInitVersion)
 	if err != nil {
-		return err
+		return false, err
 	}
+
 	cmd := shell.Command{
 		Command:    "packer",
 		Args:       []string{"-version"},
@@ -186,31 +190,46 @@ func packerInit(t testing.TestingT, options *Options) error {
 		WorkingDir: options.WorkingDir,
 	}
 	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
-	installedVersion, err := retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
+	localVersion, err := retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		return shell.RunCommandAndGetOutputE(t, cmd)
 	})
 	if err != nil {
-		return err
+		return false, err
 	}
-	thisVersion, err := version.NewVersion(installedVersion)
+
+	thisVersion, err := version.NewVersion(localVersion)
+	if err != nil {
+		return false, err
+	}
+
+	if thisVersion.LessThan(minInitVersion) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// packerInit runs 'packer init' if it is supported by the local packer
+func packerInit(t testing.TestingT, options *Options) error {
+	hasInit, err := hasPackerInit(t, options)
 	if err != nil {
 		return err
 	}
-	if thisVersion.LessThan(minInitVersion) {
-		options.Logger.Logf(t, "Skipping 'packer init' because it is not present in this version (%s)", thisVersion)
+	if !hasInit {
+		options.Logger.Logf(t, "Skipping 'packer init' because it is not present in this version")
 		return nil
 	}
 
 	options.Logger.Logf(t, "Running Packer init")
 
-	cmd = shell.Command{
+	cmd := shell.Command{
 		Command:    "packer",
 		Args:       []string{"init", options.Template},
 		Env:        options.Env,
 		WorkingDir: options.WorkingDir,
 	}
 
-	description = fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
+	description := fmt.Sprintf("%s %v", cmd.Command, cmd.Args)
 	_, err = retry.DoWithRetryableErrorsE(t, description, options.RetryableErrors, options.MaxRetries, options.TimeBetweenRetries, func() (string, error) {
 		return shell.RunCommandAndGetOutputE(t, cmd)
 	})
