@@ -147,7 +147,7 @@ func TestAssertS3BucketPolicyExists(t *testing.T) {
 }
 
 func testEmptyBucket(t *testing.T, s3Client *s3.S3, region string, s3BucketName string) {
-	expectedFileCount := rand.Intn(10000)
+	expectedFileCount := rand.Intn(1000)
 	logger.Logf(t, "Uploading %s files to bucket %s", strconv.Itoa(expectedFileCount), s3BucketName)
 
 	deleted := 0
