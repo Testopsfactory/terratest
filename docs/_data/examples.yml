@@ -15,7 +15,7 @@
   name: Packer Hello, World Example
   image: /assets/img/logos/packer-logo.png
   files:
-    - url: /examples/packer-hello-world-example/build.json
+    - url: /examples/packer-hello-world-example/build.pkr.hcl
       id: packer_code
     - url: /test/packer_hello_world_example_test.go
       id: test_code
