@@ -117,20 +117,20 @@ func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string
 	return fullPaths
 }
 
-// FindTerraformModulePathsInRootE returns a slice strings representing the filepaths for all valid Terraform modules
-// in the given RootDir, subject to the include / exclude filters.
+// FindTerraformModulePathsInRootE returns a slice strings representing the filepaths for all valid Terraform / Terragrunt
+// modules in the given RootDir, subject to the include / exclude filters.
 func FindTerraformModulePathsInRootE(opts *ValidationOptions) ([]string, error) {
-	// Find all Terraform files from the configured RootDir
+	// Find all Terraform / Terragrunt files (as specified by opts.FileType) from the configured RootDir
 	pattern := fmt.Sprintf("%s/**/%s", opts.RootDir, opts.FileType)
 	matches, err := zglob.Glob(pattern)
 	if err != nil {
 		return matches, err
 	}
-	// Keep a unique set of the base dirs that contain Terraform files
+	// Keep a unique set of the base dirs that contain Terraform / Terragrunt files
 	terraformDirSet := make(map[string]string)
 	for _, match := range matches {
-		// The glob match returns all full paths to every .tf file, whereas we're only interested in their root
-		// directories for the purposes of running Terraform validate
+		// The glob match returns all full paths to every target file, whereas we're only interested in their root
+		// directories for the purposes of running Terraform validate / terragrunt validate-inputs
 		rootDir := path.Dir(match)
 		// Don't include hidden .terraform directories when finding paths to validate
 		if !files.PathContainsHiddenFileOrFolder(rootDir) {
