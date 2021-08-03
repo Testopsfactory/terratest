@@ -19,7 +19,7 @@ const (
 	// TF represents repositories that contain Terraform code
 	TF = "*.tf"
 	// TG represents repositories that contain Terragrunt code
-	TG = "terragrunt.hcl"
+	TG = "*.hcl"
 )
 
 // ValidationOptions represent the configuration for a given validation sweep of a target repo
@@ -42,15 +42,15 @@ type ValidationOptions struct {
 	ExcludeDirs []string
 }
 
-// NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults. Note that the
-// ValidationOptions's fields IncludeDirs and ExcludeDirs must be absolute paths, but this method will accept relative paths
+// configureBaseValidationOptions returns a pointer to a ValidationOptions struct configured with sane, override-able defaults
+// Note that the ValidationOptions's fields IncludeDirs and ExcludeDirs must be absolute paths, but this method will accept relative paths
 // and build the absolute paths when instantiating the ValidationOptions struct,  making it the preferred means of configuring
 // ValidationOptions.
 //
 // For example, if your RootDir is /home/project/ and you want to exclude "modules" and "test" you need
 // only pass the relative paths in your excludeDirs slice like so:
 // opts, err := NewValidationOptions("/home/project", []string{}, []string{"modules", "test"})
-func NewValidationOptions(rootDir string, fileType ValidateFileType, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
+func configureBaseValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
 	vo := &ValidationOptions{
 		RootDir:     "",
 		IncludeDirs: []string{},
@@ -59,13 +59,6 @@ func NewValidationOptions(rootDir string, fileType ValidateFileType, includeDirs
 
 	if rootDir == "" {
 		return nil, ValidationUndefinedRootDirErr{}
-	}
-
-	// TODO: if no fileType is provided, default to Terraform? Or throw an error?
-	if fileType == "" {
-		vo.FileType = TF
-	} else {
-		vo.FileType = fileType
 	}
 
 	if !filepath.IsAbs(rootDir) {
@@ -87,6 +80,28 @@ func NewValidationOptions(rootDir string, fileType ValidateFileType, includeDirs
 	}
 
 	return vo, nil
+}
+
+// NewValidationOptions returns a ValidationOptions struct, with override-able sane defaults, configured to find
+// and process all directories containing .tf files
+func NewValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
+	opts, err := configureBaseValidationOptions(rootDir, includeDirs, excludeDirs)
+	if err != nil {
+		return opts, err
+	}
+	opts.FileType = TF
+	return opts, nil
+}
+
+// NewTerragruntValidationOptions returns a ValidationOptions struct, with override-able sane defaults, configured to find
+// and process all directories containing .hcl files.
+func NewTerragruntValidationOptions(rootDir string, includeDirs, excludeDirs []string) (*ValidationOptions, error) {
+	opts, err := configureBaseValidationOptions(rootDir, includeDirs, excludeDirs)
+	if err != nil {
+		return opts, err
+	}
+	opts.FileType = TG
+	return opts, nil
 }
 
 func buildFullPathsFromRelative(rootDir string, relativePaths []string) []string {

@@ -112,3 +112,16 @@ func TestFindTerraformModulePathsInRootEWithResultsExclusion(t *testing.T) {
 		assert.True(t, collections.ListContains(subDirsWithoutExclusions, filepath.Join(projectRootDir, exclusion)))
 	}
 }
+
+func TestValidateAllTerragruntModulesOnTerratest(t *testing.T) {
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	projectRootDir := filepath.Join(cwd, "../..")
+
+	opts, optsErr := NewTerragruntValidationOptions(projectRootDir, []string{"examples/terragrunt-example"}, []string{})
+	require.NoError(t, optsErr)
+
+	ValidateAllTerraformModules(t, opts)
+}
