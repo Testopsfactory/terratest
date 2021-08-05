@@ -136,8 +136,10 @@ func ValidateAllTerraformModules(t *go_test.T, opts *ValidationOptions) {
 			tfOpts := &terraform.Options{TerraformDir: testFolder}
 			if opts.FileType == TG {
 				tfOpts.TerraformBinary = "terragrunt"
+				terraform.InitAndValidateInputs(t, tfOpts)
+			} else if opts.FileType == TF {
+				terraform.InitAndValidate(t, tfOpts)
 			}
-			terraform.InitAndValidate(t, tfOpts)
 
 		})
 	}

@@ -12,21 +12,30 @@ func Validate(t testing.TestingT, options *Options) string {
 	return out
 }
 
-// ValidateE calls terraform validate and returns stdout/stderr. Terragrunt's binary expects the `validate-inputs` command, whereas Terraform's correlative command is `validate`
+// ValidateE calls terraform validate and returns stdout/stderr.
 func ValidateE(t testing.TestingT, options *Options) (string, error) {
-	var validateCommand string
-	if options.TerraformBinary == "terraform" {
-		validateCommand = "validate"
-	} else if options.TerraformBinary == "terragrunt" {
-		validateCommand = "validate-inputs"
+	return RunTerraformCommandE(t, options, FormatArgs(options, "validate")...)
+}
+
+// ValidateInputsE calls terragrunt validate-inputs and returns stdout/stderr
+func ValidateInputsE(t testing.TestingT, options *Options) (string, error) {
+	if options.TerraformBinary != "terragrunt" {
+		return "", TgInvalidBinary(options.TerraformBinary)
 	}
-	return RunTerraformCommandE(t, options, FormatArgs(options, validateCommand)...)
+	return RunTerraformCommandE(t, options, FormatArgs(options, "validate-inputs")...)
 }
 
 // InitAndValidate runs terraform init and validate with the given options and returns stdout/stderr from the validate command.
 // This will fail the test if there is an error in the command.
 func InitAndValidate(t testing.TestingT, options *Options) string {
 	out, err := InitAndValidateE(t, options)
+	require.NoError(t, err)
+	return out
+}
+
+// InitAndValidateInputs runs terragrunt init and validate-inputs with the given options and returns stdout/stderr from the validate command.
+func InitAndValidateInputs(t testing.TestingT, options *Options) string {
+	out, err := InitAndValidateInputsE(t, options)
 	require.NoError(t, err)
 	return out
 }
@@ -38,4 +47,13 @@ func InitAndValidateE(t testing.TestingT, options *Options) (string, error) {
 	}
 
 	return ValidateE(t, options)
+}
+
+// InitAndValidateInputsE runs terragrunt init and validate with the given options and rerutns stdout/stderr
+func InitAndValidateInputsE(t testing.TestingT, options *Options) (string, error) {
+	if _, err := InitE(t, options); err != nil {
+		return "", err
+	}
+
+	return ValidateInputsE(t, options)
 }

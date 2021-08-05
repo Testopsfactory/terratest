@@ -19,7 +19,7 @@ const (
 	// TF represents repositories that contain Terraform code
 	TF = "*.tf"
 	// TG represents repositories that contain Terragrunt code
-	TG = "*.hcl"
+	TG = "terragrunt.hcl"
 )
 
 // ValidationOptions represent the configuration for a given validation sweep of a target repo
