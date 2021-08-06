@@ -135,7 +135,10 @@ func ValidateAllTerraformModules(t *go_test.T, opts *ValidationOptions) {
 			tfOpts := &terraform.Options{TerraformDir: testFolder}
 			if opts.FileType == TG {
 				tfOpts.TerraformBinary = "terragrunt"
+				// First call init and terraform validate
 				terraform.InitAndValidate(t, tfOpts)
+				// Next, call terragrunt validate-inputs which will catch mis-aligned inputs provided via Terragrunt
+				terraform.ValidateInputs(t, tfOpts)
 			} else if opts.FileType == TF {
 				terraform.InitAndValidate(t, tfOpts)
 			}

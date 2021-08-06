@@ -12,6 +12,13 @@ func Validate(t testing.TestingT, options *Options) string {
 	return out
 }
 
+// ValidateInputs calls terragrunt validate and returns stdout/stderr.
+func ValidateInputs(t testing.TestingT, options *Options) string {
+	out, err := ValidateInputsE(t, options)
+	require.NoError(t, err)
+	return out
+}
+
 // ValidateE calls terraform validate and returns stdout/stderr.
 func ValidateE(t testing.TestingT, options *Options) (string, error) {
 	return RunTerraformCommandE(t, options, FormatArgs(options, "validate")...)
@@ -54,6 +61,5 @@ func InitAndValidateInputsE(t testing.TestingT, options *Options) (string, error
 	if _, err := InitE(t, options); err != nil {
 		return "", err
 	}
-	// JUST FOR TESTING / BENCHMARKING
-	return ValidateE(t, options)
+	return ValidateInputsE(t, options)
 }
