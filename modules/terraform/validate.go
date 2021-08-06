@@ -54,6 +54,6 @@ func InitAndValidateInputsE(t testing.TestingT, options *Options) (string, error
 	if _, err := InitE(t, options); err != nil {
 		return "", err
 	}
-
-	return ValidateInputsE(t, options)
+	// JUST FOR TESTING / BENCHMARKING
+	return ValidateE(t, options)
 }
