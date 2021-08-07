@@ -17,6 +17,13 @@ env: &env
 defaults: &defaults
   machine:
     enabled: true
+    image: "ubuntu-2004:202107-02"
+  <<: *env
+
+# minikube setup requires ubuntu16.04
+minikube_defaults: &minikube_defaults
+  machine:
+    enabled: true
     image: "ubuntu-1604:201903-01"
   <<: *env
 
@@ -52,6 +59,17 @@ install_gruntwork_utils: &install_gruntwork_utils
     sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
     sudo ln -s /usr/local/go/bin/go /usr/bin/go
     echo "The installed version of Go is now $(go version)"
+
+install_docker_buildx: &install_docker_buildx
+  name: install docker buildx
+  command: |
+    curl -sLO https://github.com/docker/buildx/releases/download/v0.6.1/buildx-v0.6.1.linux-amd64
+    mkdir -p ~/.docker/cli-plugins
+    mv buildx-v0.6.1.linux-amd64 ~/.docker/cli-plugins/docker-buildx
+    chmod a+x ~/.docker/cli-plugins/docker-buildx
+
+    # Verify buildx is available
+    docker buildx create --use
 
 configure_environment_for_gcp: &configure_environment_for_gcp
   name: configure environment for gcp
@@ -143,6 +161,8 @@ jobs:
 
       - run:
           <<: *install_gruntwork_utils
+      - run:
+          <<: *install_docker_buildx
 
       # The weird way you have to set PATH in Circle 2.0
       - run: echo 'export PATH=$HOME/.local/bin:$HOME/terraform:$HOME/packer:$PATH' >> $BASH_ENV
@@ -209,7 +229,7 @@ jobs:
           path: /tmp/logs
 
   kubernetes_test:
-    <<: *defaults
+    <<: *minikube_defaults
     steps:
       - attach_workspace:
           at: /home/circleci
@@ -245,7 +265,7 @@ jobs:
 
 
   helm_test:
-    <<: *defaults
+    <<: *minikube_defaults
     steps:
       - attach_workspace:
           at: /home/circleci
