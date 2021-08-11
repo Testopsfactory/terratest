@@ -46,3 +46,34 @@ func TestGetContainerRegistryClientE(t *testing.T) {
 	_, err := GetContainerRegistryClientE(subscriptionID)
 	require.NoError(t, err)
 }
+
+func TestContainerInstanceExistsE(t *testing.T) {
+	t.Parallel()
+
+	resGroupName := ""
+	instanceName := ""
+	subscriptionID := ""
+
+	_, err := ContainerInstanceExistsE(instanceName, resGroupName, subscriptionID)
+	require.Error(t, err)
+}
+
+func TestGetContainerInstanceE(t *testing.T) {
+	t.Parallel()
+
+	resGroupName := ""
+	instanceName := ""
+	subscriptionID := ""
+
+	_, err := GetContainerInstanceE(instanceName, resGroupName, subscriptionID)
+	require.Error(t, err)
+}
+
+func TestGetContainerInstanceClientE(t *testing.T) {
+	t.Parallel()
+
+	subscriptionID := ""
+
+	_, err := GetContainerInstanceClientE(subscriptionID)
+	require.NoError(t, err)
+}
