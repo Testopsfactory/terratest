@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sync"
 	"time"
@@ -211,6 +212,12 @@ func packerInit(t testing.TestingT, options *Options) error {
 	}
 	if !hasInit {
 		options.Logger.Logf(t, "Skipping 'packer init' because it is not present in this version")
+		return nil
+	}
+
+	extension := filepath.Ext(options.Template)
+	if extension != ".hcl" {
+		options.Logger.Logf(t, "Skipping 'packer init' because it is only supported for HCL2 templates")
 		return nil
 	}
 
