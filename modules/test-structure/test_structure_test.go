@@ -40,6 +40,9 @@ func TestValidateAllTerraformModulesSucceedsOnValidTerraform(t *testing.T) {
 func TestNewValidationOptionsRejectsEmptyRootDir(t *testing.T) {
 	_, err := NewValidationOptions("", []string{}, []string{})
 	require.Error(t, err)
+
+	_, terragruntErr := NewTerragruntValidationOptions("", nil, nil)
+	require.Error(t, terragruntErr)
 }
 
 func TestFindTerraformModulePathsInRootEExamples(t *testing.T) {
@@ -111,4 +114,33 @@ func TestFindTerraformModulePathsInRootEWithResultsExclusion(t *testing.T) {
 	for _, exclusion := range exclusions {
 		assert.True(t, collections.ListContains(subDirsWithoutExclusions, filepath.Join(projectRootDir, exclusion)))
 	}
+}
+
+func TestValidateAllTerragruntModulesWithUnusedInputsInRelaxedMode(t *testing.T) {
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	projectRootDir := filepath.Join(cwd, "../..")
+
+	opts, optsErr := NewTerragruntValidationOptions(projectRootDir, []string{"examples/terragrunt-example", "examples/terragrunt-second-example"}, []string{})
+	require.NoError(t, optsErr)
+
+	ValidateAllTerraformModules(t, opts)
+}
+
+// This test calls ValidateAllTerraformModules on the Terratest root directory, looking for
+// Terragrunt directories to validate
+func TestValidateTerragruntModulesOnTerratestByInclusion(t *testing.T) {
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+
+	projectRootDir := filepath.Join(cwd, "../../")
+
+	exclusions := []string{}
+
+	opts, optsErr := NewTerragruntValidationOptions(projectRootDir, []string{"test/fixtures/terragrunt/terragrunt-output"}, exclusions)
+	require.NoError(t, optsErr)
+
+	ValidateAllTerraformModules(t, opts)
 }
