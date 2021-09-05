@@ -176,7 +176,7 @@ func readData(t testing.TestingT, log *logger.Logger, reader *bufio.Reader, writ
 			break
 		}
 
-		log.Logf(t, line)
+		log.Logf(t, "%s", line)
 		if _, err := writer.WriteString(line); err != nil {
 			return err
 		}
