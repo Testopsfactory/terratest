@@ -76,6 +76,29 @@ func TestIsPublicSubnet(t *testing.T) {
 	assert.True(t, IsPublicSubnet(t, *subnet.SubnetId, region))
 }
 
+func TestGetTagsForVpc(t *testing.T) {
+	t.Parallel()
+
+	region := GetRandomStableRegion(t, nil, nil)
+	vpc := createVpc(t, region)
+	defer deleteVpc(t, *vpc.VpcId, region)
+
+	noTags := GetTagsForVpc(t, *vpc.VpcId, region)
+	assert.True(t, len(vpc.Tags) == 0)
+	assert.True(t, len(noTags) == 0)
+
+	testTags := make(map[string]string)
+	testTags["TagKey1"] = "TagValue1"
+	testTags["TagKey2"] = "TagValue2"
+
+	AddTagsToResource(t, region, *vpc.VpcId, testTags)
+	vpcWithTags := GetVpcById(t, *vpc.VpcId, region)
+	tags := GetTagsForVpc(t, *vpc.VpcId, region)
+
+	assert.True(t, len(vpcWithTags.Tags) == len(testTags))
+	assert.True(t, len(tags) == len(testTags))
+}
+
 func createPublicRoute(t *testing.T, vpcId string, routeTableId string, region string) {
 	ec2Client := NewEc2Client(t, region)
 

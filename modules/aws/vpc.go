@@ -14,9 +14,10 @@ import (
 
 // Vpc is an Amazon Virtual Private Cloud.
 type Vpc struct {
-	Id      string   // The ID of the VPC
-	Name    string   // The name of the VPC
-	Subnets []Subnet // A list of subnets in the VPC
+	Id      string            // The ID of the VPC
+	Name    string            // The name of the VPC
+	Subnets []Subnet          // A list of subnets in the VPC
+	Tags    map[string]string // The tags associated with the VPC
 }
 
 // Subnet is a subnet in an availability zone.
@@ -26,6 +27,9 @@ type Subnet struct {
 }
 
 var vpcIDFilterName = "vpc-id"
+var vpcResourceIdFilterName = "resource-id"
+var vpcResourceTypeFilterName = "resource-type"
+var vpcResourceTypeFilterValue = "vpc"
 var isDefaultFilterName = "isDefault"
 var isDefaultFilterValue = "true"
 
@@ -89,7 +93,13 @@ func GetVpcsE(t testing.TestingT, filters []*ec2.Filter, region string) ([]*Vpc,
 		if err != nil {
 			return nil, err
 		}
-		retVal[i] = &Vpc{Id: aws.StringValue(vpc.VpcId), Name: FindVpcName(vpc), Subnets: subnets}
+
+		tags, err := GetTagsForVpcE(t, aws.StringValue(vpc.VpcId), region)
+		if err != nil {
+			return nil, err
+		}
+
+		retVal[i] = &Vpc{Id: aws.StringValue(vpc.VpcId), Name: FindVpcName(vpc), Subnets: subnets, Tags: tags}
 	}
 
 	return retVal, nil
@@ -141,6 +151,32 @@ func GetSubnetsForVpcE(t testing.TestingT, vpcID string, region string) ([]Subne
 	}
 
 	return subnets, nil
+}
+
+// GetTagsForVpc gets the tags for the specified VPC.
+func GetTagsForVpc(t testing.TestingT, vpcID string, region string) map[string]string {
+	tags, err := GetTagsForVpcE(t, vpcID, region)
+	require.NoError(t, err)
+
+	return tags
+}
+
+// GetTagsForVpcE gets the tags for the specified VPC.
+func GetTagsForVpcE(t testing.TestingT, vpcID string, region string) (map[string]string, error) {
+	client, err := NewEc2ClientE(t, region)
+	require.NoError(t, err)
+
+	vpcResourceTypeFilter := ec2.Filter{Name: &vpcResourceTypeFilterName, Values: []*string{&vpcResourceTypeFilterValue}}
+	vpcResourceIdFilter := ec2.Filter{Name: &vpcResourceIdFilterName, Values: []*string{&vpcID}}
+	tagsOutput, err := client.DescribeTags(&ec2.DescribeTagsInput{Filters: []*ec2.Filter{&vpcResourceTypeFilter, &vpcResourceIdFilter}})
+	require.NoError(t, err)
+
+	tags := map[string]string{}
+	for _, tag := range tagsOutput.Tags {
+		tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+	}
+
+	return tags, nil
 }
 
 // IsPublicSubnet returns True if the subnet identified by the given id in the provided region is public.
