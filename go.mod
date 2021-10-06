@@ -6,8 +6,8 @@ require (
 	cloud.google.com/go v0.51.0
 	cloud.google.com/go/storage v1.0.0
 	github.com/Azure/azure-sdk-for-go v46.0.0+incompatible
-	github.com/Azure/go-autorest/autorest v0.11.5
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
+	github.com/Azure/go-autorest/autorest v0.11.20
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
 	github.com/Azure/go-autorest/autorest/validation v0.3.0 // indirect
 	github.com/aws/aws-lambda-go v1.13.3
 	github.com/aws/aws-sdk-go v1.38.28
@@ -38,8 +38,8 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/urfave/cli v1.22.2
 	github.com/zclconf/go-cty v1.2.1
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20201110201400-7099162a900a // indirect
 	google.golang.org/api v0.15.0
