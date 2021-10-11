@@ -44,6 +44,6 @@ func TestOPAEvalTerraformModuleFailsCheck(t *testing.T) {
 		RulePath: policyPath,
 	}
 
-	// website::tag::6:: Here we expect the checks to fail, so we use `OPAEvalE` to check the error.
+	// website::tag::6:: Here we expect the checks to fail, so we use `OPAEvalE` to check the error. Note that on the files that failed, this function will rerun `opa eval` with the query set to `data`, so you can see the values of all the variables in the policy. This is useful for debugging failures.
 	require.Error(t, terraform.OPAEvalE(t, tfOpts, opaOpts, "data.enforce_source.allow"))
 }
