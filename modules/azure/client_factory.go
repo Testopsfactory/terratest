@@ -217,6 +217,29 @@ func CreateStorageBlobContainerClientE(subscriptionID string) (*storage.BlobCont
 	return &blobContainerClient, nil
 }
 
+// CreateStorageFileSharesClientE creates a storage file share client.
+func CreateStorageFileSharesClientE(subscriptionID string) (*storage.FileSharesClient, error) {
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	fileShareClient := storage.NewFileSharesClientWithBaseURI(baseURI, subscriptionID)
+	authorizer, err := NewAuthorizer()
+
+	if err != nil {
+		return nil, err
+	}
+	fileShareClient.Authorizer = *authorizer
+	return &fileShareClient, nil
+}
+
 // CreateAvailabilitySetClientE creates a new Availability Set client in the specified Azure Subscription
 func CreateAvailabilitySetClientE(subscriptionID string) (*compute.AvailabilitySetsClient, error) {
 	// Validate Azure subscription ID
