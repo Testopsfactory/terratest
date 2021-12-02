@@ -300,7 +300,12 @@ func newRequest(method string, url string, body io.Reader, headers map[string]st
 		return nil
 	}
 	for k, v := range headers {
-		req.Header.Add(k, v)
+		switch k {
+		case "Host":
+			req.Host = v
+		default:
+			req.Header.Add(k, v)
+		}
 	}
 	return req
 }
