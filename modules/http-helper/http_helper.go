@@ -78,7 +78,14 @@ func HttpGetWithOptionsE(t testing.TestingT, options HttpGetOptions) (int, strin
 // HttpGetWithValidation performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, fail the test.
 func HttpGetWithValidation(t testing.TestingT, url string, tlsConfig *tls.Config, expectedStatusCode int, expectedBody string) {
-	err := HttpGetWithValidationE(t, url, tlsConfig, expectedStatusCode, expectedBody)
+	options := HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10}
+	HttpGetWithValidationWithOptions(t, options, expectedStatusCode, expectedBody)
+}
+
+// HttpGetWithValidationWithOptions performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// doesn't match, fail the test.
+func HttpGetWithValidationWithOptions(t testing.TestingT, options HttpGetOptions, expectedStatusCode int, expectedBody string) {
+	err := HttpGetWithValidationWithOptionsE(t, options, expectedStatusCode, expectedBody)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +94,14 @@ func HttpGetWithValidation(t testing.TestingT, url string, tlsConfig *tls.Config
 // HttpGetWithValidationE performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
 // doesn't match, return an error.
 func HttpGetWithValidationE(t testing.TestingT, url string, tlsConfig *tls.Config, expectedStatusCode int, expectedBody string) error {
-	return HttpGetWithCustomValidationE(t, url, tlsConfig, func(statusCode int, body string) bool {
+	options := HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10}
+	return HttpGetWithValidationWithOptionsE(t, options, expectedStatusCode, expectedBody)
+}
+
+// HttpGetWithValidationWithOptionsE performs an HTTP GET on the given URL and verify that you get back the expected status code and body. If either
+// doesn't match, return an error.
+func HttpGetWithValidationWithOptionsE(t testing.TestingT, options HttpGetOptions, expectedStatusCode int, expectedBody string) error {
+	return HttpGetWithCustomValidationWithOptionsE(t, options, func(statusCode int, body string) bool {
 		return statusCode == expectedStatusCode && body == expectedBody
 	})
 }
