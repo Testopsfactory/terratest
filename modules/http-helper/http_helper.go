@@ -142,7 +142,14 @@ func HttpGetWithCustomValidationWithOptionsE(t testing.TestingT, options HttpGet
 // HttpGetWithRetry repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetry(t testing.TestingT, url string, tlsConfig *tls.Config, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
-	err := HttpGetWithRetryE(t, url, tlsConfig, expectedStatus, expectedBody, retries, sleepBetweenRetries)
+	options := HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10}
+	HttpGetWithRetryWithOptions(t, options, expectedStatus, expectedBody, retries, sleepBetweenRetries)
+}
+
+// HttpGetWithRetryWithOptions repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
+// retries has been exceeded.
+func HttpGetWithRetryWithOptions(t testing.TestingT, options HttpGetOptions, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) {
+	err := HttpGetWithRetryWithOptionsE(t, options, expectedStatus, expectedBody, retries, sleepBetweenRetries)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,8 +158,15 @@ func HttpGetWithRetry(t testing.TestingT, url string, tlsConfig *tls.Config, exp
 // HttpGetWithRetryE repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
 // retries has been exceeded.
 func HttpGetWithRetryE(t testing.TestingT, url string, tlsConfig *tls.Config, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
-	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", url), retries, sleepBetweenRetries, func() (string, error) {
-		return "", HttpGetWithValidationE(t, url, tlsConfig, expectedStatus, expectedBody)
+	options := HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10}
+	return HttpGetWithRetryWithOptionsE(t, options, expectedStatus, expectedBody, retries, sleepBetweenRetries)
+}
+
+// HttpGetWithRetryWithOptionsE repeatedly performs an HTTP GET on the given URL until the given status code and body are returned or until max
+// retries has been exceeded.
+func HttpGetWithRetryWithOptionsE(t testing.TestingT, options HttpGetOptions, expectedStatus int, expectedBody string, retries int, sleepBetweenRetries time.Duration) error {
+	_, err := retry.DoWithRetryE(t, fmt.Sprintf("HTTP GET to URL %s", options.Url), retries, sleepBetweenRetries, func() (string, error) {
+		return "", HttpGetWithValidationWithOptionsE(t, options, expectedStatus, expectedBody)
 	})
 
 	return err
