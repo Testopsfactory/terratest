@@ -16,6 +16,12 @@ import (
 	"github.com/gruntwork-io/terratest/modules/testing"
 )
 
+type HttpGetOptions struct {
+	Url       string
+	TlsConfig *tls.Config
+	Timeout   int
+}
+
 // HttpGet performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
 // return the HTTP status code and body. If there's any error, fail the test.
 func HttpGet(t testing.TestingT, url string, tlsConfig *tls.Config) (int, string) {
