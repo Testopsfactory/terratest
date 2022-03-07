@@ -94,7 +94,12 @@ func HttpGetWithValidationE(t testing.TestingT, url string, tlsConfig *tls.Confi
 
 // HttpGetWithCustomValidation performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
 func HttpGetWithCustomValidation(t testing.TestingT, url string, tlsConfig *tls.Config, validateResponse func(int, string) bool) {
-	err := HttpGetWithCustomValidationE(t, url, tlsConfig, validateResponse)
+	HttpGetWithCustomValidationWithOptions(t, HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10}, validateResponse)
+}
+
+// HttpGetWithCustomValidationWithOptions performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
+func HttpGetWithCustomValidationWithOptions(t testing.TestingT, options HttpGetOptions, validateResponse func(int, string) bool) {
+	err := HttpGetWithCustomValidationWithOptionsE(t, options, validateResponse)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,14 +107,19 @@ func HttpGetWithCustomValidation(t testing.TestingT, url string, tlsConfig *tls.
 
 // HttpGetWithCustomValidationE performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
 func HttpGetWithCustomValidationE(t testing.TestingT, url string, tlsConfig *tls.Config, validateResponse func(int, string) bool) error {
-	statusCode, body, err := HttpGetE(t, url, tlsConfig)
+	return HttpGetWithCustomValidationWithOptionsE(t, HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10}, validateResponse)
+}
+
+// HttpGetWithCustomValidationWithOptionsE performs an HTTP GET on the given URL and validate the returned status code and body using the given function.
+func HttpGetWithCustomValidationWithOptionsE(t testing.TestingT, options HttpGetOptions, validateResponse func(int, string) bool) error {
+	statusCode, body, err := HttpGetWithOptionsE(t, options)
 
 	if err != nil {
 		return err
 	}
 
 	if !validateResponse(statusCode, body) {
-		return ValidationFunctionFailed{Url: url, Status: statusCode, Body: body}
+		return ValidationFunctionFailed{Url: options.Url, Status: statusCode, Body: body}
 	}
 
 	return nil
