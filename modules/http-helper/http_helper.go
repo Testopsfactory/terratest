@@ -25,7 +25,13 @@ type HttpGetOptions struct {
 // HttpGet performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
 // return the HTTP status code and body. If there's any error, fail the test.
 func HttpGet(t testing.TestingT, url string, tlsConfig *tls.Config) (int, string) {
-	statusCode, body, err := HttpGetE(t, url, tlsConfig)
+	return HttpGetWithOptions(t, HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10})
+}
+
+// HttpGetWithOptions performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
+// return the HTTP status code and body. If there's any error, fail the test.
+func HttpGetWithOptions(t testing.TestingT, options HttpGetOptions) (int, string) {
+	statusCode, body, err := HttpGetWithOptionsE(t, options)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,20 +41,26 @@ func HttpGet(t testing.TestingT, url string, tlsConfig *tls.Config) (int, string
 // HttpGetE performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
 // return the HTTP status code, body, and any error.
 func HttpGetE(t testing.TestingT, url string, tlsConfig *tls.Config) (int, string, error) {
-	logger.Logf(t, "Making an HTTP GET call to URL %s", url)
+	return HttpGetWithOptionsE(t, HttpGetOptions{Url: url, TlsConfig: tlsConfig, Timeout: 10})
+}
+
+// HttpGetWithOptionsE performs an HTTP GET, with an optional pointer to a custom TLS configuration, on the given URL and
+// return the HTTP status code, body, and any error.
+func HttpGetWithOptionsE(t testing.TestingT, options HttpGetOptions) (int, string, error) {
+	logger.Logf(t, "Making an HTTP GET call to URL %s", options.Url)
 
 	// Set HTTP client transport config
 	tr := http.DefaultTransport.(*http.Transport).Clone()
-	tr.TLSClientConfig = tlsConfig
+	tr.TLSClientConfig = options.TlsConfig
 
 	client := http.Client{
 		// By default, Go does not impose a timeout, so an HTTP connection attempt can hang for a LONG time.
-		Timeout: 10 * time.Second,
+		Timeout: time.Duration(options.Timeout) * time.Second,
 		// Include the previously created transport config
 		Transport: tr,
 	}
 
-	resp, err := client.Get(url)
+	resp, err := client.Get(options.Url)
 	if err != nil {
 		return -1, "", err
 	}
