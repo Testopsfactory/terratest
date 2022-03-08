@@ -25,7 +25,7 @@ type HttpGetOptions struct {
 type HttpDoOptions struct {
 	Method    string
 	Url       string
-	Body      []byte
+	Body      io.Reader
 	Headers   map[string]string
 	TlsConfig *tls.Config
 	Timeout   int
@@ -220,7 +220,22 @@ func HTTPDo(
 	t testing.TestingT, method string, url string, body io.Reader,
 	headers map[string]string, tlsConfig *tls.Config,
 ) (int, string) {
-	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers, tlsConfig)
+	options := HttpDoOptions{
+		Method:    method,
+		Url:       url,
+		Body:      body,
+		Headers:   headers,
+		TlsConfig: tlsConfig,
+		Timeout:   10}
+	return HTTPDoWithOptions(t, options)
+}
+
+// HTTPDoWithOptions performs the given HTTP method on the given URL and return the HTTP status code and body.
+// If there's any error, fail the test.
+func HTTPDoWithOptions(
+	t testing.TestingT, options HttpDoOptions,
+) (int, string) {
+	statusCode, respBody, err := HTTPDoWithOptionsE(t, options)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -232,19 +247,33 @@ func HTTPDoE(
 	t testing.TestingT, method string, url string, body io.Reader,
 	headers map[string]string, tlsConfig *tls.Config,
 ) (int, string, error) {
-	logger.Logf(t, "Making an HTTP %s call to URL %s", method, url)
+	options := HttpDoOptions{
+		Method:    method,
+		Url:       url,
+		Body:      body,
+		Headers:   headers,
+		Timeout:   10,
+		TlsConfig: tlsConfig}
+	return HTTPDoWithOptionsE(t, options)
+}
+
+// HTTPDoWithOptionsE performs the given HTTP method on the given URL and return the HTTP status code, body, and any error.
+func HTTPDoWithOptionsE(
+	t testing.TestingT, options HttpDoOptions,
+) (int, string, error) {
+	logger.Logf(t, "Making an HTTP %s call to URL %s", options.Method, options.Url)
 
 	tr := &http.Transport{
-		TLSClientConfig: tlsConfig,
+		TLSClientConfig: options.TlsConfig,
 	}
 
 	client := http.Client{
 		// By default, Go does not impose a timeout, so an HTTP connection attempt can hang for a LONG time.
-		Timeout:   10 * time.Second,
+		Timeout:   time.Duration(options.Timeout) * time.Second,
 		Transport: tr,
 	}
 
-	req := newRequest(method, url, body, headers)
+	req := newRequest(options.Method, options.Url, options.Body, options.Headers)
 	resp, err := client.Do(req)
 	if err != nil {
 		return -1, "", err
