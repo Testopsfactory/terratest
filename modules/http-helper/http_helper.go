@@ -413,7 +413,21 @@ func HTTPDoWithValidationE(t testing.TestingT, method string, url string, body i
 // HTTPDoWithCustomValidation performs the given HTTP method on the given URL and validate the returned status code and
 // body using the given function.
 func HTTPDoWithCustomValidation(t testing.TestingT, method string, url string, body io.Reader, headers map[string]string, validateResponse func(int, string) bool, tlsConfig *tls.Config) {
-	err := HTTPDoWithCustomValidationE(t, method, url, body, headers, validateResponse, tlsConfig)
+	options := HttpDoOptions{
+		Method:    method,
+		Url:       url,
+		Body:      body,
+		Headers:   headers,
+		TlsConfig: tlsConfig,
+		Timeout:   10}
+
+	HTTPDoWithCustomValidationWithOptions(t, options, validateResponse)
+}
+
+// HTTPDoWithCustomValidationWithOptions performs the given HTTP method on the given URL and validate the returned status code and
+// body using the given function.
+func HTTPDoWithCustomValidationWithOptions(t testing.TestingT, options HttpDoOptions, validateResponse func(int, string) bool) {
+	err := HTTPDoWithCustomValidationWithOptionsE(t, options, validateResponse)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -422,14 +436,28 @@ func HTTPDoWithCustomValidation(t testing.TestingT, method string, url string, b
 // HTTPDoWithCustomValidationE performs the given HTTP method on the given URL and validate the returned status code and
 // body using the given function.
 func HTTPDoWithCustomValidationE(t testing.TestingT, method string, url string, body io.Reader, headers map[string]string, validateResponse func(int, string) bool, tlsConfig *tls.Config) error {
-	statusCode, respBody, err := HTTPDoE(t, method, url, body, headers, tlsConfig)
+	options := HttpDoOptions{
+		Method:    method,
+		Url:       url,
+		Body:      body,
+		Headers:   headers,
+		TlsConfig: tlsConfig,
+		Timeout:   10}
+
+	return HTTPDoWithCustomValidationWithOptionsE(t, options, validateResponse)
+}
+
+// HTTPDoWithCustomValidationWithOptionsE performs the given HTTP method on the given URL and validate the returned status code and
+// body using the given function.
+func HTTPDoWithCustomValidationWithOptionsE(t testing.TestingT, options HttpDoOptions, validateResponse func(int, string) bool) error {
+	statusCode, respBody, err := HTTPDoWithOptionsE(t, options)
 
 	if err != nil {
 		return err
 	}
 
 	if !validateResponse(statusCode, respBody) {
-		return ValidationFunctionFailed{Url: url, Status: statusCode, Body: respBody}
+		return ValidationFunctionFailed{Url: options.Url, Status: statusCode, Body: respBody}
 	}
 
 	return nil
