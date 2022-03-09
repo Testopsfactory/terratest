@@ -396,7 +396,21 @@ func HTTPDoWithValidationRetryE(
 // HTTPDoWithValidation performs the given HTTP method on the given URL and verify that you get back the expected status
 // code and body. If either doesn't match, fail the test.
 func HTTPDoWithValidation(t testing.TestingT, method string, url string, body io.Reader, headers map[string]string, expectedStatusCode int, expectedBody string, tlsConfig *tls.Config) {
-	err := HTTPDoWithValidationE(t, method, url, body, headers, expectedStatusCode, expectedBody, tlsConfig)
+	options := HttpDoOptions{
+		Method:    method,
+		Url:       url,
+		Body:      body,
+		Headers:   headers,
+		TlsConfig: tlsConfig,
+		Timeout:   10}
+
+	HTTPDoWithValidationWithOptions(t, options, expectedStatusCode, expectedBody)
+}
+
+// HTTPDoWithValidationWithOptions performs the given HTTP method on the given URL and verify that you get back the expected status
+// code and body. If either doesn't match, fail the test.
+func HTTPDoWithValidationWithOptions(t testing.TestingT, options HttpDoOptions, expectedStatusCode int, expectedBody string) {
+	err := HTTPDoWithValidationWithOptionsE(t, options, expectedStatusCode, expectedBody)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -405,9 +419,23 @@ func HTTPDoWithValidation(t testing.TestingT, method string, url string, body io
 // HTTPDoWithValidationE performs the given HTTP method on the given URL and verify that you get back the expected status
 // code and body. If either doesn't match, return an error.
 func HTTPDoWithValidationE(t testing.TestingT, method string, url string, body io.Reader, headers map[string]string, expectedStatusCode int, expectedBody string, tlsConfig *tls.Config) error {
-	return HTTPDoWithCustomValidationE(t, method, url, body, headers, func(statusCode int, body string) bool {
+	options := HttpDoOptions{
+		Method:    method,
+		Url:       url,
+		Body:      body,
+		Headers:   headers,
+		TlsConfig: tlsConfig,
+		Timeout:   10}
+
+	return HTTPDoWithValidationWithOptionsE(t, options, expectedStatusCode, expectedBody)
+}
+
+// HTTPDoWithValidationWithOptionsE performs the given HTTP method on the given URL and verify that you get back the expected status
+// code and body. If either doesn't match, return an error.
+func HTTPDoWithValidationWithOptionsE(t testing.TestingT, options HttpDoOptions, expectedStatusCode int, expectedBody string) error {
+	return HTTPDoWithCustomValidationWithOptionsE(t, options, func(statusCode int, body string) bool {
 		return statusCode == expectedStatusCode && body == expectedBody
-	}, tlsConfig)
+	})
 }
 
 // HTTPDoWithCustomValidation performs the given HTTP method on the given URL and validate the returned status code and
