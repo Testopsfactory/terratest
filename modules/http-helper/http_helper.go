@@ -347,9 +347,15 @@ func HTTPDoWithRetryWithOptionsE(
 	t testing.TestingT, options HttpDoOptions, expectedStatus int,
 	retries int, sleepBetweenRetries time.Duration,
 ) (string, error) {
+	// The request body is closed after a request is complete. options.
+	// Extract the underlying data and cache it so we can reuse for retried requests
+	data, err := io.ReadAll(options.Body)
+	options.Body = nil
+
 	out, err := retry.DoWithRetryE(
 		t, fmt.Sprintf("HTTP %s to URL %s", options.Method, options.Url), retries,
 		sleepBetweenRetries, func() (string, error) {
+			options.Body = bytes.NewReader(data)
 			statusCode, out, err := HTTPDoWithOptionsE(t, options)
 			if err != nil {
 				return "", err
