@@ -3,6 +3,7 @@ package helm
 import (
 	"encoding/json"
 	"path/filepath"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/gruntwork-io/go-commons/errors"
@@ -46,7 +47,7 @@ func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, rele
 	for _, templateFile := range templateFiles {
 		// validate this is a valid template file
 		absTemplateFile := filepath.Join(absChartDir, templateFile)
-		if !files.FileExists(absTemplateFile) {
+		if !strings.HasPrefix(templateFile, "charts") && !files.FileExists(absTemplateFile) {
 			return "", errors.WithStackTrace(TemplateFileNotFoundError{Path: templateFile, ChartDir: absChartDir})
 		}
 
