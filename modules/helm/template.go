@@ -34,6 +34,11 @@ func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, rele
 		return "", errors.WithStackTrace(ChartNotFoundError{chartDir})
 	}
 
+	// check chart dependencies
+	if _, err := RunHelmCommandAndGetOutputE(t, &Options{}, "dependency", "build", chartDir); err != nil {
+		return "", errors.WithStackTrace(err)
+	}
+
 	// Now construct the args
 	// We first construct the template args
 	args := []string{}
