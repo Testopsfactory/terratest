@@ -1,4 +1,4 @@
-# Helm Basic Example
+# Helm Dependency Example
 
 This folder contains a minimal helm chart to demonstrate how you can use Terratest to test your helm charts.
 
