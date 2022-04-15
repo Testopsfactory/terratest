@@ -52,8 +52,10 @@ func TestHelmDependencyExampleTemplateRenderedDeployment(t *testing.T) {
 	// - containerImageTag=1.15.8
 	options := &helm.Options{
 		SetValues: map[string]string{
-			"containerImageRepo": "nginx",
-			"containerImageTag":  "1.15.8",
+			"containerImageRepo":       "nginx",
+			"containerImageTag":        "1.15.8",
+			"basic.containerImageRepo": "nginx",
+			"basic.containerImageTag":  "1.15.8",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
 	}
@@ -102,11 +104,19 @@ func TestHelmDependencyExampleTemplateRequiredTemplateArgs(t *testing.T) {
 	}{
 		{
 			"MissingContainerImageRepo",
-			map[string]string{"containerImageTag": "1.15.8"},
+			map[string]string{
+				"containerImageTag":        "1.15.8",
+				"basic.containerImageRepo": "nginx",
+				"basic.containerImageTag":  "1.15.8",
+			},
 		},
 		{
 			"MissingContainerImageTag",
-			map[string]string{"containerImageRepo": "nginx"},
+			map[string]string{
+				"containerImageRepo":       "nginx",
+				"basic.containerImageRepo": "nginx",
+				"basic.containerImageTag":  "1.15.8",
+			},
 		},
 	}
 
