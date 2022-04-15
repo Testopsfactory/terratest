@@ -60,25 +60,46 @@ func TestHelmDependencyExampleTemplateRenderedDeployment(t *testing.T) {
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
 	}
 
-	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
-	// we want to assert that the template renders without any errors.
-	// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
-	// arg to demonstrate how to select individual templates to render.
-	output := helm.RenderTemplate(t, options, helmChartPath, releaseName, []string{"templates/deployment.yaml"})
+	testCases := []struct {
+		name         string
+		templateName string
+	}{
+		{
+			"dependent chart",
+			"templates/deployment.yaml",
+		},
+		{
+			"basic chart",
+			"charts/basic/templates/deployment.yaml",
+		},
+	}
 
-	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
-	// ensure the Deployment resource is rendered correctly.
-	var deployment appsv1.Deployment
-	helm.UnmarshalK8SYaml(t, output, &deployment)
+	for _, testCase := range testCases {
+		testCase := testCase
+		t.Run(testCase.name, func(subT *testing.T) {
+			subT.Parallel()
+			// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
+			// we want to assert that the template renders without any errors.
+			// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
+			// arg to demonstrate how to select individual templates to render.
+			output := helm.RenderTemplate(t, options, helmChartPath, releaseName, []string{testCase.templateName})
 
-	// Verify the namespace matches the expected supplied namespace.
-	require.Equal(t, namespaceName, deployment.Namespace)
+			// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
+			// ensure the Deployment resource is rendered correctly.
+			var deployment appsv1.Deployment
+			helm.UnmarshalK8SYaml(t, output, &deployment)
 
-	// Finally, we verify the deployment pod template spec is set to the expected container image value
-	expectedContainerImage := "nginx:1.15.8"
-	deploymentContainers := deployment.Spec.Template.Spec.Containers
-	require.Equal(t, len(deploymentContainers), 1)
-	require.Equal(t, deploymentContainers[0].Image, expectedContainerImage)
+			// Verify the namespace matches the expected supplied namespace.
+			require.Equal(t, namespaceName, deployment.Namespace)
+
+			// Finally, we verify the deployment pod template spec is set to the expected container image value
+			expectedContainerImage := "nginx:1.15.8"
+			deploymentContainers := deployment.Spec.Template.Spec.Containers
+			require.Equal(t, len(deploymentContainers), 1)
+			require.Equal(t, deploymentContainers[0].Image, expectedContainerImage)
+
+		})
+	}
 }
 
 // An example of how to verify required values for a helm chart.
@@ -103,7 +124,7 @@ func TestHelmDependencyExampleTemplateRequiredTemplateArgs(t *testing.T) {
 		values map[string]string
 	}{
 		{
-			"MissingContainerImageRepo",
+			"MissingContainerImageRepo in dependent chart",
 			map[string]string{
 				"containerImageTag":        "1.15.8",
 				"basic.containerImageRepo": "nginx",
@@ -111,7 +132,7 @@ func TestHelmDependencyExampleTemplateRequiredTemplateArgs(t *testing.T) {
 			},
 		},
 		{
-			"MissingContainerImageRepo",
+			"MissingContainerImageRepo in basic chart",
 			map[string]string{
 				"basic.containerImageTag": "1.15.8",
 				"containerImageRepo":      "nginx",
@@ -119,7 +140,7 @@ func TestHelmDependencyExampleTemplateRequiredTemplateArgs(t *testing.T) {
 			},
 		},
 		{
-			"MissingContainerImageTag",
+			"MissingContainerImageTag in dependent chart",
 			map[string]string{
 				"containerImageRepo":       "nginx",
 				"basic.containerImageRepo": "nginx",
@@ -127,7 +148,7 @@ func TestHelmDependencyExampleTemplateRequiredTemplateArgs(t *testing.T) {
 			},
 		},
 		{
-			"MissingContainerImageTag",
+			"MissingContainerImageTag in basic chart",
 			map[string]string{
 				"basic.containerImageRepo": "nginx",
 				"containerImageRepo":       "nginx",
