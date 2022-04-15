@@ -111,11 +111,27 @@ func TestHelmDependencyExampleTemplateRequiredTemplateArgs(t *testing.T) {
 			},
 		},
 		{
+			"MissingContainerImageRepo",
+			map[string]string{
+				"basic.containerImageTag": "1.15.8",
+				"containerImageRepo":      "nginx",
+				"containerImageTag":       "1.15.8",
+			},
+		},
+		{
 			"MissingContainerImageTag",
 			map[string]string{
 				"containerImageRepo":       "nginx",
 				"basic.containerImageRepo": "nginx",
 				"basic.containerImageTag":  "1.15.8",
+			},
+		},
+		{
+			"MissingContainerImageTag",
+			map[string]string{
+				"basic.containerImageRepo": "nginx",
+				"containerImageRepo":       "nginx",
+				"containerImageTag":        "1.15.8",
 			},
 		},
 	}
