@@ -29,7 +29,7 @@ func ShowE(t testing.TestingT, options *Options) (string, error) {
 	return RunTerraformCommandAndGetStdoutE(t, options, args...)
 }
 
-func ShowWithStruct(t testing.TestingT, options *Options) (*PlanStruct) {
+func ShowWithStruct(t testing.TestingT, options *Options) *PlanStruct {
 	out, err := ShowWithStructE(t, options)
 	require.NoError(t, err)
 	return out
