@@ -14,7 +14,6 @@ env: &env
     HELM_VERSION: v3.8.0
     KUBECONFIG: /home/circleci/.kube/config
     BIN_BUILD_PARALLELISM: 3
-    DOCKER_CONFIG: ~/.docker/
     DOCKER_COMPOSE_VERSION: v2.5.0
 
 defaults: &defaults
@@ -80,10 +79,10 @@ install_docker_buildx: &install_docker_buildx
 install_docker_compose: &install_docker_compose
   name: install docker compose
   command: |
-    mkdir -p ${DOCKER_CONFIG}/cli-plugins
-    curl -SL https://github.com/docker/compose/releases/download/"${DOCKER_COMPOSE_VERSION}"/docker-compose-linux-x86_64 -o ${DOCKER_CONFIG}/cli-plugins/docker-compose
-    chmod +x ${DOCKER_CONFIG}/cli-plugins/docker-compose
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    curl -sLO https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64
+    mkdir -p ~/.docker/cli-plugins
+    mv docker-compose-linux-x86_64 ~/.docker/cli-plugins/docker-compose
+    chmod a+x ~/.docker/cli-plugins/docker-compose
     docker compose version
 
 configure_environment_for_gcp: &configure_environment_for_gcp
