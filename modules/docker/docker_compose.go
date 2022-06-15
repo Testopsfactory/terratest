@@ -49,6 +49,26 @@ func runDockerComposeE(t testing.TestingT, stdout bool, options *Options, args .
 		Logger:     options.Logger,
 	}
 
+	checkDockerComposeVersionCmd := shell.Command{
+		Command:    "docker",
+		Args:       []string{"compose", "version"},
+		WorkingDir: options.WorkingDir,
+		Env:        options.EnvVars,
+		Logger:     options.Logger,
+	}
+
+	_, err := shell.RunCommandAndGetOutputE(t, checkDockerComposeVersionCmd)
+
+	if err != nil {
+		cmd = shell.Command{
+			Command:    "docker-compose",
+			Args:       append([]string{"--project-name", strings.ToLower(t.Name())}, args...),
+			WorkingDir: options.WorkingDir,
+			Env:        options.EnvVars,
+			Logger:     options.Logger,
+		}
+	}
+
 	if stdout {
 		return shell.RunCommandAndGetStdOut(t, cmd), nil
 	}
