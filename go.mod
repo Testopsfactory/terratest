@@ -48,7 +48,10 @@ require (
 	k8s.io/client-go v0.20.6
 )
 
-require github.com/slack-go/slack v0.10.3
+require (
+	github.com/slack-go/slack v0.10.3
+	gotest.tools/v3 v3.0.3
+)
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
