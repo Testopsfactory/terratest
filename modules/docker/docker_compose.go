@@ -40,15 +40,7 @@ func RunDockerComposeE(t testing.TestingT, options *Options, args ...string) (st
 }
 
 func runDockerComposeE(t testing.TestingT, stdout bool, options *Options, args ...string) (string, error) {
-	cmd := shell.Command{
-		Command: "docker-compose",
-		// We append --project-name to ensure containers from multiple different tests using Docker Compose don't end
-		// up in the same project and end up conflicting with each other.
-		Args:       append([]string{"--project-name", strings.ToLower(t.Name())}, args...),
-		WorkingDir: options.WorkingDir,
-		Env:        options.EnvVars,
-		Logger:     options.Logger,
-	}
+	var cmd shell.Command
 
 	dockerComposeVersionCmd := icmd.Command("docker", "compose", "version")
 
@@ -58,6 +50,16 @@ func runDockerComposeE(t testing.TestingT, stdout bool, options *Options, args .
 		cmd = shell.Command{
 			Command:    "docker",
 			Args:       append([]string{"compose", "--project-name", strings.ToLower(t.Name())}, args...),
+			WorkingDir: options.WorkingDir,
+			Env:        options.EnvVars,
+			Logger:     options.Logger,
+		}
+	} else {
+		cmd = shell.Command{
+			Command: "docker-compose",
+			// We append --project-name to ensure containers from multiple different tests using Docker Compose don't end
+			// up in the same project and end up conflicting with each other.
+			Args:       append([]string{"--project-name", strings.ToLower(t.Name())}, args...),
 			WorkingDir: options.WorkingDir,
 			Env:        options.EnvVars,
 			Logger:     options.Logger,
