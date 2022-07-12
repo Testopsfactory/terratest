@@ -18,14 +18,10 @@ Search our [Knowledge Base](https://github.com/gruntwork-io/knowledge-base/discu
 
 Read through [existing issues](https://github.com/gruntwork-io/terratest/issues) or post a new one. Github issues is a good place to:
 
-  - report a bug,
+- report a bug,
 
-  - ask for a help,
+- ask for a help,
 
-  - ask for improvements,
+- ask for improvements,
 
-  - to start contributing by solving simple issues.
-
-## Commercial support
-
-Does your company rely on Terratest in production? If so, you can get commercial support directly from Gruntwork, the creators of Terratest! Check out the [Commercial Support Page](/commercial-support/) for more details.
+- to start contributing by solving simple issues.
