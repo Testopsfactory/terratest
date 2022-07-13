@@ -28,6 +28,7 @@ Please see the following for more info:
 - [Getting started with Terratest](https://terratest.gruntwork.io/docs/getting-started/quick-start/)
 - [Terratest Documentation](https://terratest.gruntwork.io/docs/)
 - [Contributing to Terratest](https://terratest.gruntwork.io/docs/community/contributing/)
+- [Commercial Support](https://gruntwork.io/support/)
 
 ## License
 

@@ -25,3 +25,7 @@ Read through [existing issues](https://github.com/gruntwork-io/terratest/issues)
 - ask for improvements,
 
 - to start contributing by solving simple issues.
+
+## Commercial support
+
+Does your company rely on Terratest in production? If so, you can get commercial support directly from Gruntwork, the creators of Terratest! Check out the [Gruntwork Support Page](https://gruntwork.io/support) for more details.
