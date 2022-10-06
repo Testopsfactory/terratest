@@ -49,6 +49,29 @@ body.index-page {
     padding-top: 30px;
   }
 
+  .navbar-nav {
+    li {
+      &:first-child {
+        a {
+          display: flex;
+
+          span {
+            margin-right: 12px;
+            padding: 0;
+            background: linear-gradient(101.84deg, #FE3162 2.31%, #FF4F47 98.56%);
+            border-radius: 3.5px;
+            font-weight: 600;
+            min-width: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+
+      }
+    }
+  }
+
   .section-hero {
     margin-top: 0px;
     padding-top: 0px;
@@ -101,6 +124,7 @@ body.index-page {
   .link-to-test-with-terratest {
     text-decoration: underline;
     cursor: pointer;
+
     &:hover {
       opacity: 0.7;
     }
@@ -112,6 +136,7 @@ body.index-page {
       margin-left: auto;
       margin-right: auto;
     }
+
     .test-steps {
       display: flex;
       align-items: stretch;
@@ -122,6 +147,7 @@ body.index-page {
       margin-right: auto;
       margin-bottom: 120px;
       flex-wrap: wrap;
+
       .test-step {
         flex: 1;
         display: flex;
@@ -132,6 +158,7 @@ body.index-page {
         .icon-wrapper {
           display: flex;
           margin-bottom: 20px;
+
           .line {
             flex: 1;
             border-top: 1px dashed $gray-color-3;
@@ -141,6 +168,7 @@ body.index-page {
             margin-top: 15px;
             max-width: calc(50% - 36px);
           }
+
           img {
             margin-left: 5px;
             margin-right: 5px;
@@ -162,6 +190,7 @@ body.index-page {
           line-height: 1.2;
           min-height: 58px;
         }
+
         .desc {
           font-size: $font-size-sm;
           max-width: 280px;
@@ -194,16 +223,20 @@ body.index-page {
           .desc {
             max-width: 400px;
           }
+
           .text-wrapper {
             text-align: left;
+
             label {
               min-height: auto;
             }
           }
         }
+
         @media all and (max-width: 1100px) {
           flex-direction: row;
           margin-bottom: 40px;
+
           .text-wrapper {
             margin-left: 15px;
           }
@@ -212,9 +245,11 @@ body.index-page {
         @media all and (max-width: 450px) {
           flex-direction: column;
           min-width: auto;
+
           .text-wrapper {
             margin-left: 0px;
           }
+
           img {
             width: 46px;
           }
@@ -227,6 +262,7 @@ body.index-page {
         margin-right: auto;
         margin-bottom: 50px;
       }
+
       @media all and (max-width: 450px) {
         flex-direction: column;
         padding: 15px;
@@ -244,6 +280,7 @@ body.index-page {
       z-index: 1;
       position: relative;
     }
+
     .left-img {
       position: absolute;
       left: 0;
@@ -264,6 +301,7 @@ body.index-page {
         top: -180px;
         right: 5%;
       }
+
       .left-img {
         width: 300px;
         top: -100px;
@@ -274,6 +312,7 @@ body.index-page {
       .right-img {
         display: none;
       }
+
       .left-img {
         width: 80%;
         top: -100px;
@@ -281,7 +320,9 @@ body.index-page {
     }
 
     @media all and (max-width: 450px) {
-      .hide-on-cxs { display: none; }
+      .hide-on-cxs {
+        display: none;
+      }
     }
 
   }
@@ -311,6 +352,7 @@ body.index-page {
     h2 {
       font-size: 34px;
     }
+
     .btn-sm {
       margin-right: 10px;
     }
@@ -318,12 +360,14 @@ body.index-page {
     @media all and (max-width: 991px) {
       .row.flex {
         flex-direction: column;
-        & > .col-xs-12:first-child {
+
+        &>.col-xs-12:first-child {
           margin-bottom: 50px;
           max-width: 800px;
           margin-left: auto;
           margin-right: auto;
         }
+
         .col-xs-12 {
           align-items: center;
           justify-content: center;
@@ -424,7 +468,9 @@ body.index-page {
       }
 
       img {
-        &.custom-width, &.custom-width-2 {
+
+        &.custom-width,
+        &.custom-width-2 {
           display: none;
         }
       }
