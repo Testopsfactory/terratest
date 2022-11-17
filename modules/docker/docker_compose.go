@@ -14,6 +14,10 @@ import (
 type Options struct {
 	WorkingDir string
 	EnvVars    map[string]string
+
+	// Whether ot not to enable buildkit. You can find more information about buildkit here https://docs.docker.com/build/buildkit/#getting-started.
+	EnableBuildKit bool
+
 	// Set a logger that should be used. See the logger package for more info.
 	Logger *logger.Logger
 }
@@ -45,6 +49,15 @@ func runDockerComposeE(t testing.TestingT, stdout bool, options *Options, args .
 	dockerComposeVersionCmd := icmd.Command("docker", "compose", "version")
 
 	result := icmd.RunCmd(dockerComposeVersionCmd)
+
+	if options.EnableBuildKit {
+		if options.EnvVars == nil {
+			options.EnvVars = make(map[string]string)
+		}
+
+		options.EnvVars["DOCKER_BUILDKIT"] = "1"
+		options.EnvVars["COMPOSE_DOCKER_CLI_BUILD"] = "1"
+	}
 
 	if result.ExitCode == 0 {
 		cmd = shell.Command{
