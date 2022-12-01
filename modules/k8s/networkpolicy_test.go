@@ -58,15 +58,15 @@ const EXAMPLE_NETWORK_POLICY_YAML_TEMPLATE = `---
 apiVersion: v1
 kind: Namespace
 metadata:
-	name: %s
+  name: %s
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-	name: test-network-policy
-	namespace: %s
+  name: test-network-policy
+  namespace: %s
 spec:
-	podSelector: {}
-	policyTypes:
-		- Ingress
+  podSelector: {}
+  policyTypes:
+    - Ingress
 `
