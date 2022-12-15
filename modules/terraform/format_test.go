@@ -279,15 +279,15 @@ func TestFormatArgsAppliesLockCorrectly(t *testing.T) {
 	}
 }
 
-func TestFormatSetVarArgsLastFormatsCorrectly(t *testing.T) {
+func TestFormatSetVarsAfterVarFilesFormatsCorrectly(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		command        []string
-		vars           map[string]interface{}
-		varFiles       []string
-		setVarArgsLast bool
-		expected       []string
+		command              []string
+		vars                 map[string]interface{}
+		varFiles             []string
+		setVarsAfterVarFiles bool
+		expected             []string
 	}{
 		{[]string{"plan"}, map[string]interface{}{"foo": "bar"}, []string{"test.tfvars"}, true, []string{"plan", "-var-file", "test.tfvars", "-var", "foo=bar", "-lock=false"}},
 		{[]string{"plan"}, map[string]interface{}{"foo": "bar", "hello": "world"}, []string{"test.tfvars"}, true, []string{"plan", "-var-file", "test.tfvars", "-var", "foo=bar", "-var", "hello=world", "-lock=false"}},
@@ -295,6 +295,6 @@ func TestFormatSetVarArgsLastFormatsCorrectly(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		assert.Equal(t, testCase.expected, FormatArgs(&Options{SetVarArgsLast: testCase.setVarArgsLast, Vars: testCase.vars, VarFiles: testCase.varFiles}, testCase.command...))
+		assert.Equal(t, testCase.expected, FormatArgs(&Options{SetVarsAfterVarFiles: testCase.setVarsAfterVarFiles, Vars: testCase.vars, VarFiles: testCase.varFiles}, testCase.command...))
 	}
 }
