@@ -295,7 +295,9 @@ func TestFormatSetVarsAfterVarFilesFormatsCorrectly(t *testing.T) {
 		{[]string{"plan"}, map[string]interface{}{"foo": "bar"}, []string{"test.tfvars"}, false, []string{"plan", "-var", "foo=bar", "-var-file", "test.tfvars", "-lock=false"}},
 	}
 
-	for _, testCase := range testCases {
-		assert.Equal(t, testCase.expected, FormatArgs(&Options{SetVarsAfterVarFiles: testCase.setVarsAfterVarFiles, Vars: testCase.vars, VarFiles: testCase.varFiles}, testCase.command...))
+	for idx, testCase := range testCases {
+		checkResultWithRetry(t, 100, testCase.expected, fmt.Sprintf("FormatArgs(%d)", idx), func() interface{} {
+			return FormatArgs(&Options{SetVarsAfterVarFiles: testCase.setVarsAfterVarFiles, Vars: testCase.vars, VarFiles: testCase.varFiles}, testCase.command...)
+		})
 	}
 }
