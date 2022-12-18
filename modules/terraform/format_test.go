@@ -295,9 +295,20 @@ func TestFormatSetVarsAfterVarFilesFormatsCorrectly(t *testing.T) {
 		{[]string{"plan"}, map[string]interface{}{"foo": "bar"}, []string{"test.tfvars"}, false, []string{"plan", "-var", "foo=bar", "-var-file", "test.tfvars", "-lock=false"}},
 	}
 
-	for idx, testCase := range testCases {
-		checkResultWithRetry(t, 100, testCase.expected, fmt.Sprintf("FormatArgs(%d)", idx), func() interface{} {
-			return FormatArgs(&Options{SetVarsAfterVarFiles: testCase.setVarsAfterVarFiles, Vars: testCase.vars, VarFiles: testCase.varFiles}, testCase.command...)
-		})
+	for _, testCase := range testCases {
+		result := FormatArgs(&Options{SetVarsAfterVarFiles: testCase.setVarsAfterVarFiles, Vars: testCase.vars, VarFiles: testCase.varFiles}, testCase.command...)
+
+		// Make sure that -var and -var-file options are in the expected order relative to each other
+		// Note that the order of the different -var and -var-file options may change
+		// See this comment for more info: https://github.com/gruntwork-io/terratest/blob/6fb86056797e3e62ebdd9011ba26605e0976a6f8/modules/terraform/format_test.go#L123-L142
+		for idx, arg := range result {
+			if arg == "-var-file" || arg == "-var" {
+				assert.Equal(t, testCase.expected[idx], arg)
+			}
+		}
+
+		// Make sure that the order of other arguments hasn't been incorrectly modified
+		assert.Equal(t, testCase.expected[0], result[0])
+		assert.Equal(t, testCase.expected[len(testCase.expected)-1], result[len(result)-1])
 	}
 }
