@@ -149,7 +149,18 @@ func IsPodAvailable(pod *corev1.Pod) bool {
 	return pod.Status.Phase == corev1.PodRunning
 }
 
+// GetPodLogsE returns the logs of a Pod at the time when the function was called. If the Pod is not running an Error is returned.
+func GetPodLogsE(t testing.TestingT, options *KubectlOptions, pod *corev1.Pod) (string, error) {
+	output, err := RunKubectlAndGetOutputE(t, options, "logs", pod.Name)
+	if err != nil {
+		return "", err
+	}
+	return output, nil
+}
+
 // GetPodLogsE returns the logs of a Pod at the time when the function was called.
 func GetPodLogs(t testing.TestingT, options *KubectlOptions, pod *corev1.Pod) string {
-	return ""
+	logs, err := GetPodLogsE(t, options, pod)
+	require.NoError(t, err)
+	return logs
 }
