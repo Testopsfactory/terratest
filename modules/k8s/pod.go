@@ -148,3 +148,8 @@ func IsPodAvailable(pod *corev1.Pod) bool {
 	}
 	return pod.Status.Phase == corev1.PodRunning
 }
+
+// GetPodLogsE returns the logs of a Pod at the time when the function was called.
+func GetPodLogs(t testing.TestingT, options *KubectlOptions, pod *corev1.Pod) string {
+	return ""
+}
