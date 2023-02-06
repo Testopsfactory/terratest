@@ -22,6 +22,9 @@ var DefaultRetryablePackerErrors = map[string]string{
 }
 var DefaultTimeBetweenPackerRetries = 15 * time.Second
 
+// Regions that support running f1-micro instances
+var RegionsThatSupportF1Micro = []string{"us-central1", "us-east1", "us-west1", "europe-west1"}
+
 // Zones that support running f1-micro instances
 var ZonesThatSupportF1Micro = []string{"us-central1-a", "us-east1-b", "us-west1-a", "europe-north1-a", "europe-west1-b", "europe-central2-a"}
 
