@@ -38,7 +38,7 @@ require (
 	github.com/tmccombs/hcl2json v0.3.3
 	github.com/urfave/cli v1.22.2
 	github.com/zclconf/go-cty v1.9.1
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/crypto v0.1.0
 	golang.org/x/net v0.7.0
 	golang.org/x/oauth2 v0.1.0
 	google.golang.org/api v0.103.0
