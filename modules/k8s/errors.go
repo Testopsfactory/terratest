@@ -3,6 +3,7 @@ package k8s
 import (
 	"fmt"
 
+	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -59,6 +60,26 @@ type ServiceAccountTokenNotAvailable struct {
 // Error is a simple function to return a formatted error message as a string
 func (err ServiceAccountTokenNotAvailable) Error() string {
 	return fmt.Sprintf("ServiceAccount %s does not have a token yet.", err.Name)
+}
+
+// DeploymentNotAvailable is returned when a Kubernetes deployment is not yet available to accept traffic.
+type DeploymentNotAvailable struct {
+	deploy *appsv1.Deployment
+}
+
+// Error is a simple function to return a formatted error message as a string
+func (err DeploymentNotAvailable) Error() string {
+	return fmt.Sprintf(
+		"Deployment %s is not available, reason: %s, message: %s",
+		err.deploy.Name,
+		err.deploy.Status.Conditions[0].Reason,
+		err.deploy.Status.Conditions[0].Message,
+	)
+}
+
+// NewDeploymentNotAvailableError returnes a DeploymentNotAvailable struct when Kubernetes deems a deployment is not available
+func NewDeploymentNotAvailableError(deploy *appsv1.Deployment) DeploymentNotAvailable {
+	return DeploymentNotAvailable{deploy}
 }
 
 // PodNotAvailable is returned when a Kubernetes service is not yet available to accept traffic.
