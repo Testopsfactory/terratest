@@ -18,7 +18,8 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -76,36 +77,38 @@ func TestWaitUntilDeploymentAvailable(t *testing.T) {
 func TestTestIsDeploymentAvailable(t *testing.T) {
 	testCases := []struct {
 		title          string
-		deploy         *v1.Deployment
+		deploy         *appsv1.Deployment
 		expectedResult bool
 	}{
 		{
-			title: "TestIsDeploymentAvailableReadyButWithUnavailableReplicas",
-			deploy: &v1.Deployment{
-				Status: v1.DeploymentStatus{
-					UnavailableReplicas: 1,
-					Conditions: []v1.DeploymentCondition{
+			title: "TestIsDeploymentAvailableWithProgressingNewReplicaSetAvailable",
+			deploy: &appsv1.Deployment{
+				Status: appsv1.DeploymentStatus{
+					Conditions: []appsv1.DeploymentCondition{
 						{
-							Status: "True",
-						},
-					},
-				},
-			},
-			expectedResult: false,
-		},
-		{
-			title: "TestIsDeploymentAvailableReadyButWithoutUnavailableReplicas",
-			deploy: &v1.Deployment{
-				Status: v1.DeploymentStatus{
-					UnavailableReplicas: 0,
-					Conditions: []v1.DeploymentCondition{
-						{
-							Status: "True",
+							Type:   appsv1.DeploymentProgressing,
+							Status: v1.ConditionTrue,
+							Reason: "NewReplicaSetAvailable",
 						},
 					},
 				},
 			},
 			expectedResult: true,
+		},
+		{
+			title: "TestIsDeploymentAvailableWithoutProgressingNewReplicaSetAvailable",
+			deploy: &appsv1.Deployment{
+				Status: appsv1.DeploymentStatus{
+					Conditions: []appsv1.DeploymentCondition{
+						{
+							Type:   appsv1.DeploymentProgressing,
+							Status: v1.ConditionTrue,
+							Reason: "ReplicaSetUpdated",
+						},
+					},
+				},
+			},
+			expectedResult: false,
 		},
 	}
 
