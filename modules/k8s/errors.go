@@ -132,6 +132,21 @@ type UnknownServiceType struct {
 	service *corev1.Service
 }
 
+// PersistentVolumeNotAvailable is returned when a Kubernetes PersistentVolume is not available
+type PersistentVolumeNotAvailable struct {
+	pv *corev1.PersistentVolume
+}
+
+// Error is a simple function to return a formatted error message as a string
+func (err PersistentVolumeNotAvailable) Error() string {
+	return fmt.Sprintf("Pv %s is not available", err.pv.Name)
+}
+
+// NewPersistentVolumeNotAvailableError returns a PersistentVolumeNotAvailable struct when the given Persistent Volume is not available
+func NewPersistentVolumeNotAvailableError(pv *corev1.PersistentVolume) PersistentVolumeNotAvailable {
+	return PersistentVolumeNotAvailable{pv}
+}
+
 // Error is a simple function to return a formatted error message as a string
 func (err UnknownServiceType) Error() string {
 	return fmt.Sprintf("Service %s has an unknown service type", err.service.Name)
