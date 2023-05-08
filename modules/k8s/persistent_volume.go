@@ -53,7 +53,7 @@ func GetPersistentVolumeE(t testing.TestingT, options *KubectlOptions, name stri
 	return clientset.CoreV1().PersistentVolumes().Get(context.Background(), name, metav1.GetOptions{})
 }
 
-// WaitUntilPersistentVolumeAvailableE waits until the given Persistent Volume is the 'Available' status,
+// WaitUntilPersistentVolumeAvailable waits until the given Persistent Volume is the 'Available' status,
 // retrying the check for the specified amount of times, sleeping
 // for the provided duration between each try.
 // This will fail the test if there is an error.
@@ -89,14 +89,14 @@ func WaitUntilPersistentVolumeAvailableE(
 		},
 	)
 	if err != nil {
-		logger.Logf(t, "Timedout waiting for PersistentVolume to be available: %s", err)
+		logger.Logf(t, "Timeout waiting for PersistentVolume to be available: %s", err)
 		return err
 	}
 	logger.Logf(t, message)
 	return nil
 }
 
-// IsPersistentVolume returns true if the given PersistentVolume is available
+// IsPersistentVolumeAvailable returns true if the given PersistentVolume is available
 func IsPersistentVolumeAvailable(pv *corev1.PersistentVolume) bool {
 	return pv != nil && pv.Status.Phase == corev1.VolumeAvailable
 }
