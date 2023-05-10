@@ -132,6 +132,22 @@ type UnknownServiceType struct {
 	service *corev1.Service
 }
 
+// PersistentVolumeNotInStatus is returned when a Kubernetes PersistentVolume is not in the expected status phase
+type PersistentVolumeNotInStatus struct {
+	pv            *corev1.PersistentVolume
+	pvStatusPhase *corev1.PersistentVolumePhase
+}
+
+// Error is a simple function to return a formatted error message as a string
+func (err PersistentVolumeNotInStatus) Error() string {
+	return fmt.Sprintf("Pv %s is not '%s'", err.pv.Name, *err.pvStatusPhase)
+}
+
+// NewPersistentVolumeNotInStatusError returns a PersistentVolumeNotInStatus struct when the given Persistent Volume is not in the expected status phase
+func NewPersistentVolumeNotInStatusError(pv *corev1.PersistentVolume, pvStatusPhase *corev1.PersistentVolumePhase) PersistentVolumeNotInStatus {
+	return PersistentVolumeNotInStatus{pv, pvStatusPhase}
+}
+
 // Error is a simple function to return a formatted error message as a string
 func (err UnknownServiceType) Error() string {
 	return fmt.Sprintf("Service %s has an unknown service type", err.service.Name)
