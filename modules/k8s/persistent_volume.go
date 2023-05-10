@@ -53,25 +53,26 @@ func GetPersistentVolumeE(t testing.TestingT, options *KubectlOptions, name stri
 	return clientset.CoreV1().PersistentVolumes().Get(context.Background(), name, metav1.GetOptions{})
 }
 
-// WaitUntilPersistentVolumeAvailable waits until the given Persistent Volume is the 'Available' status,
+// WaitUntilPersistentVolumeInStatus waits until the given Persistent Volume is the given status phase,
 // retrying the check for the specified amount of times, sleeping
 // for the provided duration between each try.
 // This will fail the test if there is an error.
-func WaitUntilPersistentVolumeAvailable(t testing.TestingT, options *KubectlOptions, pvName string, retries int, sleepBetweenRetries time.Duration) {
-	require.NoError(t, WaitUntilPersistentVolumeAvailableE(t, options, pvName, retries, sleepBetweenRetries))
+func WaitUntilPersistentVolumeInStatus(t testing.TestingT, options *KubectlOptions, pvName string, pvStatusPhase *corev1.PersistentVolumePhase, retries int, sleepBetweenRetries time.Duration) {
+	require.NoError(t, WaitUntilPersistentVolumeInStatusE(t, options, pvName, pvStatusPhase, retries, sleepBetweenRetries))
 }
 
-// WaitUntilPersistentVolumeAvailableE waits until the given PersistentVolume is in the 'Available' status,
+// WaitUntilPersistentVolumeInStatusE waits until the given PersistentVolume is in the given status phase,
 // retrying the check for the specified amount of times, sleeping
 // for the provided duration between each try.
-func WaitUntilPersistentVolumeAvailableE(
+func WaitUntilPersistentVolumeInStatusE(
 	t testing.TestingT,
 	options *KubectlOptions,
 	pvName string,
+	pvStatusPhase *corev1.PersistentVolumePhase,
 	retries int,
 	sleepBetweenRetries time.Duration,
 ) error {
-	statusMsg := fmt.Sprintf("Wait for Persistent Volume %s to be available", pvName)
+	statusMsg := fmt.Sprintf("Wait for Persistent Volume %s to be '%s'", pvName, *pvStatusPhase)
 	message, err := retry.DoWithRetryE(
 		t,
 		statusMsg,
@@ -82,21 +83,21 @@ func WaitUntilPersistentVolumeAvailableE(
 			if err != nil {
 				return "", err
 			}
-			if !IsPersistentVolumeAvailable(pv) {
-				return "", NewPersistentVolumeNotAvailableError(pv)
+			if !IsPersistentVolumeInStatus(pv, pvStatusPhase) {
+				return "", NewPersistentVolumeNotInStatusError(pv, pvStatusPhase)
 			}
-			return "Persistent Volume is now available", nil
+			return fmt.Sprintf("Persistent Volume is now '%s'", *pvStatusPhase), nil
 		},
 	)
 	if err != nil {
-		logger.Logf(t, "Timeout waiting for PersistentVolume to be available: %s", err)
+		logger.Logf(t, "Timeout waiting for PersistentVolume to be '%s': %s", *pvStatusPhase, err)
 		return err
 	}
 	logger.Logf(t, message)
 	return nil
 }
 
-// IsPersistentVolumeAvailable returns true if the given PersistentVolume is available
-func IsPersistentVolumeAvailable(pv *corev1.PersistentVolume) bool {
-	return pv != nil && pv.Status.Phase == corev1.VolumeAvailable
+// IsPersistentVolumeInStatus returns true if the given PersistentVolume is in the given status phase
+func IsPersistentVolumeInStatus(pv *corev1.PersistentVolume, pvStatusPhase *corev1.PersistentVolumePhase) bool {
+	return pv != nil && pv.Status.Phase == *pvStatusPhase
 }

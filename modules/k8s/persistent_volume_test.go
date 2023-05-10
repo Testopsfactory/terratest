@@ -17,6 +17,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
@@ -79,16 +80,18 @@ func TestGetPersistentVolumeReturnsCorrectPersistentVolume(t *testing.T) {
 	require.Equal(t, pv.Name, pvName)
 }
 
-func TestWaitUntilPersistentVolumeAvailable(t *testing.T) {
+func TestWaitUntilPersistentVolumeInTheGivenStatusPhase(t *testing.T) {
 	t.Parallel()
 
 	pvName := strings.ToLower(random.UniqueId())
+	pvAvailableStatusPhase := corev1.VolumeAvailable
+
 	options := NewKubectlOptions("", "", pvName)
 	configData := fmt.Sprintf(PvFixtureYamlTemplate, pvName, pvName)
 	KubectlApplyFromString(t, options, configData)
 	defer KubectlDeleteFromString(t, options, configData)
 
-	WaitUntilPersistentVolumeAvailable(t, options, pvName, 60, 1*time.Second)
+	WaitUntilPersistentVolumeInStatus(t, options, pvName, &pvAvailableStatusPhase, 60, 1*time.Second)
 }
 
 const PvFixtureYamlTemplate = `---

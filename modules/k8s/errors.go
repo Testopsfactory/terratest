@@ -132,19 +132,20 @@ type UnknownServiceType struct {
 	service *corev1.Service
 }
 
-// PersistentVolumeNotAvailable is returned when a Kubernetes PersistentVolume is not available
-type PersistentVolumeNotAvailable struct {
-	pv *corev1.PersistentVolume
+// PersistentVolumeNotInStatus is returned when a Kubernetes PersistentVolume is not in the expected status phase
+type PersistentVolumeNotInStatus struct {
+	pv            *corev1.PersistentVolume
+	pvStatusPhase *corev1.PersistentVolumePhase
 }
 
 // Error is a simple function to return a formatted error message as a string
-func (err PersistentVolumeNotAvailable) Error() string {
-	return fmt.Sprintf("Pv %s is not available", err.pv.Name)
+func (err PersistentVolumeNotInStatus) Error() string {
+	return fmt.Sprintf("Pv %s is not '%s'", err.pv.Name, *err.pvStatusPhase)
 }
 
-// NewPersistentVolumeNotAvailableError returns a PersistentVolumeNotAvailable struct when the given Persistent Volume is not available
-func NewPersistentVolumeNotAvailableError(pv *corev1.PersistentVolume) PersistentVolumeNotAvailable {
-	return PersistentVolumeNotAvailable{pv}
+// NewPersistentVolumeNotInStatusError returns a PersistentVolumeNotInStatus struct when the given Persistent Volume is not in the expected status phase
+func NewPersistentVolumeNotInStatusError(pv *corev1.PersistentVolume, pvStatusPhase *corev1.PersistentVolumePhase) PersistentVolumeNotInStatus {
+	return PersistentVolumeNotInStatus{pv, pvStatusPhase}
 }
 
 // Error is a simple function to return a formatted error message as a string
