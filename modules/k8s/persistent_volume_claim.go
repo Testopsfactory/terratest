@@ -62,7 +62,7 @@ func WaitUntilPersistentVolumeClaimInStatus(t testing.TestingT, options *Kubectl
 	require.NoError(t, WaitUntilPersistentVolumeClaimInStatusE(t, options, pvcName, pvcStatusPhase, retries, sleepBetweenRetries))
 }
 
-// WaitUntilPersistentVolumeClaimInStatus waits until the given PersistentVolumeClaim is the given status phase,
+// WaitUntilPersistentVolumeClaimInStatusE waits until the given PersistentVolumeClaim is the given status phase,
 // retrying the check for the specified amount of times, sleeping
 // for the provided duration between each try.
 // This will fail the test if there is an error.
