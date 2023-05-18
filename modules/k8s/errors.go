@@ -132,22 +132,6 @@ type UnknownServiceType struct {
 	service *corev1.Service
 }
 
-// PersistentVolumeNotInStatus is returned when a Kubernetes PersistentVolume is not in the expected status phase
-type PersistentVolumeNotInStatus struct {
-	pv            *corev1.PersistentVolume
-	pvStatusPhase *corev1.PersistentVolumePhase
-}
-
-// Error is a simple function to return a formatted error message as a string
-func (err PersistentVolumeNotInStatus) Error() string {
-	return fmt.Sprintf("Pv %s is not '%s'", err.pv.Name, *err.pvStatusPhase)
-}
-
-// NewPersistentVolumeNotInStatusError returns a PersistentVolumeNotInStatus struct when the given Persistent Volume is not in the expected status phase
-func NewPersistentVolumeNotInStatusError(pv *corev1.PersistentVolume, pvStatusPhase *corev1.PersistentVolumePhase) PersistentVolumeNotInStatus {
-	return PersistentVolumeNotInStatus{pv, pvStatusPhase}
-}
-
 // Error is a simple function to return a formatted error message as a string
 func (err UnknownServiceType) Error() string {
 	return fmt.Sprintf("Service %s has an unknown service type", err.service.Name)
@@ -172,6 +156,38 @@ func (err UnknownServicePort) Error() string {
 // NewUnknownServicePortError returns an UnknownServicePort struct when it is deemed that Kuberenetes does not know of the provided Service Port
 func NewUnknownServicePortError(service *corev1.Service, port int32) UnknownServicePort {
 	return UnknownServicePort{service, port}
+}
+
+// PersistentVolumeNotInStatus is returned when a Kubernetes PersistentVolume is not in the expected status phase
+type PersistentVolumeNotInStatus struct {
+	pv            *corev1.PersistentVolume
+	pvStatusPhase *corev1.PersistentVolumePhase
+}
+
+// Error is a simple function to return a formatted error message as a string
+func (err PersistentVolumeNotInStatus) Error() string {
+	return fmt.Sprintf("Pv %s is not '%s'", err.pv.Name, *err.pvStatusPhase)
+}
+
+// NewPersistentVolumeNotInStatusError returns a PersistentVolumeNotInStatus struct when the given Persistent Volume is not in the expected status phase
+func NewPersistentVolumeNotInStatusError(pv *corev1.PersistentVolume, pvStatusPhase *corev1.PersistentVolumePhase) PersistentVolumeNotInStatus {
+	return PersistentVolumeNotInStatus{pv, pvStatusPhase}
+}
+
+// PersistentVolumeClaimNotInStatus is returned when a Kubernetes PersistentVolumeClaim is not in the expected status phase
+type PersistentVolumeClaimNotInStatus struct {
+	pvc            *corev1.PersistentVolumeClaim
+	pvcStatusPhase *corev1.PersistentVolumeClaimPhase
+}
+
+// Error is a simple function to return a formatted error message as a string
+func (err PersistentVolumeClaimNotInStatus) Error() string {
+	return fmt.Sprintf("PVC %s is not '%s'", err.pvc.Name, *err.pvcStatusPhase)
+}
+
+// NewPersistentVolumeClaimNotInStatusError returns a PersistentVolumeClaimNotInStatus struct when the given PersistentVolumeClaim is not in the expected status phase
+func NewPersistentVolumeClaimNotInStatusError(pvc *corev1.PersistentVolumeClaim, pvcStatusPhase *corev1.PersistentVolumeClaimPhase) PersistentVolumeClaimNotInStatus {
+	return PersistentVolumeClaimNotInStatus{pvc, pvcStatusPhase}
 }
 
 // NoNodesInKubernetes is returned when the Kubernetes cluster has no nodes registered.
