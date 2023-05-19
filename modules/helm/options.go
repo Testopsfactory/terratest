@@ -16,5 +16,5 @@ type Options struct {
 	Version               string              // Version of chart
 	Logger                *logger.Logger      // Set a non-default logger that should be used. See the logger package for more info. Use logger.Discard to not print the output while executing the command.
 	ExtraArgs             map[string][]string // Extra arguments to pass to the helm install/upgrade/rollback/delete and helm repo add commands. The key signals the command (e.g., install) while the values are the extra arguments to pass through.
-	SkipBuildDependencies bool                // If true, helm chart dependencies will not be built.
+	SkipBuildDependencies bool                // If true, helm chart dependencies will not be built during template rendering, installation and upgrade of helm chart.
 }
