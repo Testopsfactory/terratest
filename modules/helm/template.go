@@ -35,7 +35,7 @@ func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, rele
 	}
 
 	// check chart dependencies
-	if options.BuildDependencies {
+	if !options.SkipBuildDependencies {
 		if _, err := RunHelmCommandAndGetOutputE(t, options, "dependency", "build", chartDir); err != nil {
 			return "", errors.WithStackTrace(err)
 		}

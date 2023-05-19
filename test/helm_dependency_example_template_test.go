@@ -57,8 +57,7 @@ func TestHelmDependencyExampleTemplateRenderedDeployment(t *testing.T) {
 			"basic.containerImageRepo": "nginx",
 			"basic.containerImageTag":  "1.15.8",
 		},
-		KubectlOptions:    k8s.NewKubectlOptions("", "", namespaceName),
-		BuildDependencies: true,
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
 	}
 
 	testCases := []struct {
