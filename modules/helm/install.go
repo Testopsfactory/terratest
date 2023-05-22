@@ -29,7 +29,7 @@ func InstallE(t testing.TestingT, options *Options, chart string, releaseName st
 	}
 
 	// build chart dependencies
-	if !options.SkipBuildDependencies {
+	if options.BuildDependencies {
 		if _, err := RunHelmCommandAndGetOutputE(t, options, "dependency", "build", chart); err != nil {
 			return errors.WithStackTrace(err)
 		}
