@@ -16,8 +16,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gruntwork-io/terratest/modules/files"
-
 	"github.com/stretchr/testify/assert"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -110,9 +108,6 @@ func TestHelmDependencyInstall(t *testing.T) {
 
 	// Path to the helm chart with dependencies which we will test
 	helmChartPath, err := filepath.Abs("../../examples/helm-dependency-example")
-	require.NoError(t, err)
-
-	helmChartPath, err = files.CopyTerraformFolderToTemp(helmChartPath, t.Name())
 	require.NoError(t, err)
 
 	// Custom namespace name.
