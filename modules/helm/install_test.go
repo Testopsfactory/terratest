@@ -135,6 +135,7 @@ func TestHelmDependencyInstall(t *testing.T) {
 			"basic.containerImageRepo": "nginx",
 			"basic.containerImageTag":  "1.15.8",
 		},
+		BuildDependencies: true,
 	}
 	// We generate a unique release name so that we can refer to after deployment.
 	// By doing so, we can schedule the delete call here so that at the end of the test, we run
