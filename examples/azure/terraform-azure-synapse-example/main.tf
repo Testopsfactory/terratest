@@ -48,7 +48,7 @@ resource "azurerm_storage_account" "storage_account" {
   location                 = azurerm_resource_group.synapse_rg.location
   account_kind             = var.storage_account_kind
   account_tier             = var.storage_account_tier
-  account_replication_type = var.storage_replication_type
+  account_replication_type = var.storage_account_replication_type
 }
 
 
@@ -65,7 +65,7 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "dl_gen2" {
 # DEPLOY A SYNAPSE WORKSPACE
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_synapse_workspace" "sy_workspace" {
+resource "azurerm_synapse_workspace" "synapse_workspace" {
   name                                 = "mysynapse${var.postfix}"
   resource_group_name                  = azurerm_resource_group.synapse_rg.name
   location                             = azurerm_resource_group.synapse_rg.location
@@ -79,9 +79,9 @@ resource "azurerm_synapse_workspace" "sy_workspace" {
 # DEPLOY A SYNAPSE SQL POOL
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_synapse_sql_pool" "sy_pool" {
+resource "azurerm_synapse_sql_pool" "synapse_pool" {
   name                 = "sqlpool${var.postfix}"
   synapse_workspace_id = azurerm_synapse_workspace.sy_workspace.id
-  sku_name             = var.sy_sqlpool_sku_name
-  create_mode          = var.sy_sqlpool_create_mode
+  sku_name             = var.synapse_sqlpool_sku_name
+  create_mode          = var.synapse_sqlpool_create_mode
 }

@@ -8,29 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// GetSynapseWorkspaceClientE is a helper function that will setup a mysql server client.
-func GetSynapseWorkspaceClientE(subscriptionID string) (*synapse.WorkspacesClient, error) {
-	// Validate Azure subscription ID
-	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create a synapse client
-	synapseClient := synapse.NewWorkspacesClient(subscriptionID)
-
-	// Create an authorizer
-	authorizer, err := NewAuthorizer()
-	if err != nil {
-		return nil, err
-	}
-
-	// Attach authorizer to the client
-	synapseClient.Authorizer = *authorizer
-
-	return &synapseClient, nil
-}
-
 // GetSynapseWorkspace is a helper function that gets the synapse workspace.
 // This function would fail the test if there is an error.
 func GetSynapseWorkspace(t testing.TestingT, resGroupName string, workspaceName string, subscriptionID string) *synapse.Workspace {

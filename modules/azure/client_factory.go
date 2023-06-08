@@ -789,7 +789,6 @@ func CreateSynapseWorkspaceClientE(subscriptionID string) (*synapse.WorkspacesCl
 	// Create a synapse client
 	synapseWorkspaceClient := synapse.NewWorkspacesClientWithBaseURI(baseURI, subscriptionID)
 
-	// synapse.SQLPoolsClient
 	// Create an authorizer
 	authorizer, err := NewAuthorizer()
 	if err != nil {

@@ -24,10 +24,10 @@ func TestTerraformAzureSynapseExample(t *testing.T) {
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-synapse-example",
 		Vars: map[string]interface{}{
-			"postfix":             uniquePostfix,
-			"synapse_sql_user":    expectedSynapseSqlUser,
-			"location":            expectedLocation,
-			"sy_sqlpool_sku_name": expectedSyPoolSkuName,
+			"postfix":                  uniquePostfix,
+			"synapse_sql_user":         expectedSynapseSqlUser,
+			"location":                 expectedLocation,
+			"synapse_sqlpool_sku_name": expectedSyPoolSkuName,
 		},
 	}
 

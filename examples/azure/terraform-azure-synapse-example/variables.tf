@@ -36,7 +36,7 @@ variable "storage_account_tier" {
   default     = "Standard"
 }
 
-variable "storage_replication_type" {
+variable "storage_account_replication_type" {
   description = "The replication type of storage account to set"
   type        = string
   default     = "GRS"
@@ -48,13 +48,13 @@ variable "synapse_sql_user" {
   default     = "sqladminuser"
 }
 
-variable "sy_sqlpool_sku_name" {
+variable "synapse_sqlpool_sku_name" {
   description = "The sku name for the synapse sql pool"
   type        = string
   default     = "DW100c"
 }
 
-variable "sy_sqlpool_create_mode" {
+variable "synapse_sqlpool_create_mode" {
   description = "The create mode for the synapse sql pool"
   type        = string
   default     = "Default"

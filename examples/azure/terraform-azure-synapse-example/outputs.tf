@@ -11,9 +11,9 @@ output "synapse_dlgen2_name" {
 }
 
 output "synapse_workspace_name" {
-  value = azurerm_synapse_workspace.sy_workspace.name
+  value = azurerm_synapse_workspace.synapse_workspace.name
 }
 
 output "synapse_sqlpool_name" {
-  value     = azurerm_synapse_sql_pool.sy_pool.name
+  value     = azurerm_synapse_sql_pool.synapse_pool.name
 }
