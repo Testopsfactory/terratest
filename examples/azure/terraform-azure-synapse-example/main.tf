@@ -81,7 +81,7 @@ resource "azurerm_synapse_workspace" "synapse_workspace" {
 
 resource "azurerm_synapse_sql_pool" "synapse_pool" {
   name                 = "sqlpool${var.postfix}"
-  synapse_workspace_id = azurerm_synapse_workspace.sy_workspace.id
+  synapse_workspace_id = azurerm_synapse_workspace.synapse_workspace.id
   sku_name             = var.synapse_sqlpool_sku_name
   create_mode          = var.synapse_sqlpool_create_mode
 }
