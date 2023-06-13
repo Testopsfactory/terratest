@@ -26,6 +26,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2019-11-01/containerservice"
 	kvmng "github.com/Azure/azure-sdk-for-go/services/keyvault/mgmt/2016-10-01/keyvault"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
+	sqlmi "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2019-08-01/web"
@@ -317,6 +318,35 @@ func CreateSQLServerClient(subscriptionID string) (*sql.ServersClient, error) {
 	sqlClient.Authorizer = *authorizer
 
 	return &sqlClient, nil
+}
+
+// // CreateSQLServerClient is a helper function that will create and setup a sql server client
+func CreateSQLMangedInstanceClient(subscriptionID string) (*sqlmi.ManagedInstancesClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a sql server client
+	sqlmiClient := sqlmi.NewManagedInstancesClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	sqlmiClient.Authorizer = *authorizer
+
+	return &sqlmiClient, nil
 }
 
 // CreateDatabaseClient is a helper function that will create and setup a SQL DB client
