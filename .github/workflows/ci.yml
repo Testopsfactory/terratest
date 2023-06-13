@@ -57,7 +57,7 @@ jobs:
           ref: ${{ github.event.inputs.branch }}
       - name: install golangci-lint binary
         run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin v1.53.2
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin v1.31.0
       - name: lint modules/azure folder
         id: azure_module_lint
         run: |
