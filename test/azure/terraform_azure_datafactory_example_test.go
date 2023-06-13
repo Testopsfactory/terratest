@@ -15,7 +15,7 @@ func TestTerraformAzureDataFactoryExample(t *testing.T) {
 
 	uniquePostfix := strings.ToLower(random.UniqueId())
 	expectedDataFactoryProvisioningState := "Succeeded"
-	expectedLocation := "usgovvirginia"
+	expectedLocation := "West US2"
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
