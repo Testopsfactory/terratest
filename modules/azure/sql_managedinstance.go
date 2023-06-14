@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// GetSQLServer is a helper function that gets the sql server object.
+// GetManagedInstance is a helper function that gets the sql server object.
 // This function would fail the test if there is an error.
 func GetManagedInstance(t testing.TestingT, resGroupName string, managedInstanceName string, subscriptionID string) *sql.ManagedInstance {
 	managedInstance, err := GetManagedInstanceE(t, subscriptionID, resGroupName, managedInstanceName)
@@ -17,7 +17,16 @@ func GetManagedInstance(t testing.TestingT, resGroupName string, managedInstance
 	return managedInstance
 }
 
-// GetSQLServerE is a helper function that gets the sql server object.
+// GetSQLServer is a helper function that gets the sql server object.
+// This function would fail the test if there is an error.
+func GetManagedInstanceDatabase(t testing.TestingT, resGroupName string, managedInstanceName string, databaseName string, subscriptionID string) *sql.ManagedDatabase {
+	managedDatabase, err := GetManagedInstanceDatabaseE(t, subscriptionID, resGroupName, managedInstanceName, databaseName)
+	require.NoError(t, err)
+
+	return managedDatabase
+}
+
+// GetManagedInstanceE is a helper function that gets the sql server object.
 func GetManagedInstanceE(t testing.TestingT, subscriptionID string, resGroupName string, managedInstanceName string) (*sql.ManagedInstance, error) {
 	// Create a SQl Server client
 	sqlmiClient, err := CreateSQLMangedInstanceClient(subscriptionID)
@@ -26,11 +35,29 @@ func GetManagedInstanceE(t testing.TestingT, subscriptionID string, resGroupName
 	}
 
 	//Get the corresponding server client
-	sqlmiClient, err := sqlmiClient.Get(context.Background(), resGroupName, managedInstanceName)
+	sqlmi, err := sqlmiClient.Get(context.Background(), resGroupName, managedInstanceName)
 	if err != nil {
 		return nil, err
 	}
 
 	//Return sql mi
-	return &sqlmiClient, nil
+	return &sqlmi, nil
+}
+
+// GetManagedInstanceDatabaseE is a helper function that gets the sql server object.
+func GetManagedInstanceDatabaseE(t testing.TestingT, subscriptionID string, resGroupName string, managedInstanceName string, databaseName string) (*sql.ManagedDatabase, error) {
+	// Create a SQlMI db client
+	sqlmiDbClient, err := CreateSQLMangedDatabasesClient(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	//Get the corresponding  client
+	sqlmidb, err := sqlmiDbClient.Get(context.Background(), resGroupName, managedInstanceName, databaseName)
+	if err != nil {
+		return nil, err
+	}
+
+	//Return sql mi db
+	return &sqlmidb, nil
 }

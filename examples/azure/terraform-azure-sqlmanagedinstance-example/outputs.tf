@@ -14,6 +14,10 @@ output "subnet_name" {
   value = azurerm_subnet.sqlmi_sub.name
 }
 
-#output "managed_instance_name" {
-#  value = azurerm_mssql_managed_instance.sqlmi_mi.name
-#}
+output "managed_instance_name" {
+  value = azurerm_mssql_managed_instance.sqlmi_mi.name
+}
+
+output "managed_instance_db_name" {
+  value = azurerm_mssql_managed_database.sqlmi_db.name
+}

@@ -1,61 +1,61 @@
+// Build tags are not added as SQL Managed Instance takes 6-8 hours for deploytment
+
 package test
 
 import (
 	"strings"
 	"testing"
 
+	"github.com/gruntwork-io/terratest/modules/azure"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
-	// "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
-	// "github.com/gruntwork-io/terratest/modules/azure"
-	// "github.com/gruntwork-io/terratest/modules/random"
-	// "github.com/gruntwork-io/terratest/modules/terraform"
-	// "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTerraformAzureSQLManagedInstanceExample(t *testing.T) {
 	t.Parallel()
 
 	uniquePostfix := strings.ToLower(random.UniqueId())
-	expectedLocation := "usgovvirginia"
+	expectedLocation := "West US2"
+	expectedAdminLogin := "sqlmiadmin"
+	expectedSQLMIState := "Ready"
+	expectedSKUName := "GP_Gen5"
+	expectedDatabaseName := "testdb"
 
-	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
+	// Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-sqlmanagedinstance-example",
 		Vars: map[string]interface{}{
-			"postfix":  uniquePostfix,
-			"location": expectedLocation,
+			"postfix":       uniquePostfix,
+			"location":      expectedLocation,
+			"admin_login":   expectedAdminLogin,
+			"sku_name":      expectedSKUName,
+			"sqlmi_db_name": expectedDatabaseName,
 		},
 	}
 
-	// website::tag::4:: At the end of the test, run `terraform destroy` to clean up any resources that were created
-	// defer terraform.Destroy(t, terraformOptions)
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
 
-	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
+	// Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
-	// website::tag::3:: Run `terraform output` to get the values of output variables
-	// expectedSQLServerID := terraform.Output(t, terraformOptions, "sql_server_id")
-	// expectedSQLServerName := terraform.Output(t, terraformOptions, "sql_server_name")
+	// Run `terraform output` to get the values of output variables
+	expectedResourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
+	expectedManagedInstanceName := terraform.Output(t, terraformOptions, "managed_instance_name")
 
-	// expectedSQLServerFullDomainName := terraform.Output(t, terraformOptions, "sql_server_full_domain_name")
-	// expectedSQLDBName := terraform.Output(t, terraformOptions, "sql_database_name")
+	// Get the SQL Managed Instance details and assert them against the terraform output
+	actualSQLManagedInstance := azure.GetManagedInstance(t, expectedResourceGroupName, expectedManagedInstanceName, "")
+	actualSQLManagedInstanceDatabase := azure.GetManagedInstanceDatabase(t, expectedResourceGroupName, expectedManagedInstanceName, expectedDatabaseName, "")
+	expectedDatabaseStatus := "Online"
 
-	// expectedSQLDBID := terraform.Output(t, terraformOptions, "sql_database_id")
-	// expectedResourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-	// expectedSQLDBStatus := "Online"
+	assert.Equal(t, expectedManagedInstanceName, *actualSQLManagedInstance.Name)
+	assert.Equal(t, expectedLocation, *actualSQLManagedInstance.Location)
+	assert.Equal(t, expectedSKUName, *actualSQLManagedInstance.Sku.Name)
+	assert.Equal(t, expectedSQLMIState, *actualSQLManagedInstance.ManagedInstanceProperties.State)
 
-	// // website::tag::4:: Get the SQL server details and assert them against the terraform output
-	// actualSQLServer := azure.GetSQLServer(t, expectedResourceGroupName, expectedSQLServerName, "")
+	assert.Equal(t, expectedDatabaseName, *actualSQLManagedInstanceDatabase.Name)
+	assert.Equal(t, expectedDatabaseStatus, actualSQLManagedInstanceDatabase.ManagedDatabaseProperties.Status)
 
-	// assert.Equal(t, expectedSQLServerID, *actualSQLServer.ID)
-	// assert.Equal(t, expectedSQLServerFullDomainName, *actualSQLServer.FullyQualifiedDomainName)
-	// assert.Equal(t, sql.ServerStateReady, actualSQLServer.State)
-
-	// // website::tag::5:: Get the SQL server DB details and assert them against the terraform output
-	// actualSQLDatabase := azure.GetSQLDatabase(t, expectedResourceGroupName, expectedSQLServerName, expectedSQLDBName, "")
-
-	// assert.Equal(t, expectedSQLDBID, *actualSQLDatabase.ID)
-	// assert.Equal(t, expectedSQLDBStatus, *actualSQLDatabase.Status)
 }

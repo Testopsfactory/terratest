@@ -320,7 +320,7 @@ func CreateSQLServerClient(subscriptionID string) (*sql.ServersClient, error) {
 	return &sqlClient, nil
 }
 
-// // CreateSQLServerClient is a helper function that will create and setup a sql server client
+// CreateSQLMangedInstanceClient is a helper function that will create and setup a sql server client
 func CreateSQLMangedInstanceClient(subscriptionID string) (*sqlmi.ManagedInstancesClient, error) {
 	// Validate Azure subscription ID
 	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
@@ -347,6 +347,35 @@ func CreateSQLMangedInstanceClient(subscriptionID string) (*sqlmi.ManagedInstanc
 	sqlmiClient.Authorizer = *authorizer
 
 	return &sqlmiClient, nil
+}
+
+// CreateSQLMangedDatabasesClient is a helper function that will create and setup a sql server client
+func CreateSQLMangedDatabasesClient(subscriptionID string) (*sqlmi.ManagedDatabasesClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a sql server client
+	sqlmidbClient := sqlmi.NewManagedDatabasesClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	sqlmidbClient.Authorizer = *authorizer
+
+	return &sqlmidbClient, nil
 }
 
 // CreateDatabaseClient is a helper function that will create and setup a SQL DB client

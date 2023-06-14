@@ -21,38 +21,45 @@
 variable "location" {
   description = "The supported azure location where the resource exists"
   type        = string
-  default     = "usgovvirginia"
+  default     = "West US2"
 }
 
-#variable "sqlmi_license_type" {
- # description = "The license type for the sql managed instance"
-#  type        = string
- # default     = "BasePrice"
-#}
+variable "sqlmi_license_type" {
+  description = "The license type for the sql managed instance"
+  type        = string
+  default     = "BasePrice"
+}
 
-#variable "sku_name" {
- # description = "The sku name for the sql managed instance"
- # type        = string
- # default     = "GP_Gen5"
-#}
+variable "sku_name" {
+  description = "The sku name for the sql managed instance"
+  type        = string
+  default     = "GP_Gen5"
+}
 
-#variable "storage_size" {
- # description = "The storage for the sql managed instance"
- # type        = string
- # default     = 32
-#}
+variable "storage_size" {
+  description = "The storage for the sql managed instance"
+  type        = string
+  default     = 32
+}
 
-#variable "cores" {
-#  description = "The vcores for the sql managed instance"
- # type        = string
-#  default     = 4
-#}
+variable "cores" {
+  description = "The vcores for the sql managed instance"
+  type        = string
+  default     = 4
+}
 
-#variable "admin_login" {
-#  description = "The login for the sql managed instance"
-#  type        = string
-#  default     = "sqlmiadmin"
-#}
+variable "admin_login" {
+  description = "The login for the sql managed instance"
+  type        = string
+  default     = "sqlmiadmin"
+}
+
+
+variable "sqlmi_db_name" {
+  description = "The Database for the sql managed instance"
+  type        = string
+  default     = "testdb"
+}
 
 variable "postfix" {
   description = "A postfix string to centrally mitigate resource name collisions."

@@ -23,6 +23,18 @@ func TestGetManagedInstanceE(t *testing.T) {
 	managedInstanceName := ""
 	subscriptionID := ""
 
-	_, err := GetManagedInstanceE(t, resGroupName, managedInstanceName, subscriptionID)
+	_, err := GetManagedInstanceE(t, subscriptionID, resGroupName, managedInstanceName)
+	require.Error(t, err)
+}
+
+func TestGetManagedInstanceDatabasesE(t *testing.T) {
+	t.Parallel()
+
+	resGroupName := ""
+	managedInstanceName := ""
+	databaseName := ""
+	subscriptionID := ""
+
+	_, err := GetManagedInstanceDatabaseE(t, subscriptionID, resGroupName, managedInstanceName, databaseName)
 	require.Error(t, err)
 }
