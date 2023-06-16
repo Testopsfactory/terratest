@@ -43,4 +43,6 @@ func TestTerraformAzureDataFactoryExample(t *testing.T) {
 	assert.Equal(t, expectedDataFactoryName, *actualDataFactory.Name)
 	assert.Equal(t, expectedDataFactoryProvisioningState, *actualDataFactory.FactoryProperties.ProvisioningState)
 
+	actualDataFactoryExits := azure.DataFactoryExists(t, expectedDataFactoryName, expectedResourceGroupName, "")
+	assert.True(t, actualDataFactoryExits)
 }

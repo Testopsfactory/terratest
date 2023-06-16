@@ -8,17 +8,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// GetSynapseWorkspace is a helper function that gets the synapse workspace.
+// DataFactoryExists indicates whether the Data Factory exists for the subscription.
+// This function would fail the test if there is an error.
+func DataFactoryExists(t testing.TestingT, dataFactoryName string, resourceGroupName string, subscriptionID string) bool {
+	exists, err := DataFactoryExistsE(dataFactoryName, resourceGroupName, subscriptionID)
+	require.NoError(t, err)
+	return exists
+}
+
+// DataFactoryExistsE indicates whether the specified Data Factory exists and may return an error.
+func DataFactoryExistsE(dataFactoryName string, resourceGroupName string, subscriptionID string) (bool, error) {
+	_, err := GetDataFactoryE(subscriptionID, resourceGroupName, dataFactoryName)
+	if err != nil {
+		if ResourceNotFoundErrorExists(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// GetDataFactory is a helper function that gets the synapse workspace.
 // This function would fail the test if there is an error.
 func GetDataFactory(t testing.TestingT, resGroupName string, factoryName string, subscriptionID string) *datafactory.Factory {
-	Workspace, err := GetDataFactoryE(t, subscriptionID, resGroupName, factoryName)
+	Workspace, err := GetDataFactoryE(subscriptionID, resGroupName, factoryName)
 	require.NoError(t, err)
 
 	return Workspace
 }
 
 // GetDataFactoryE is a helper function that gets the workspace.
-func GetDataFactoryE(t testing.TestingT, subscriptionID string, resGroupName string, factoryName string) (*datafactory.Factory, error) {
+func GetDataFactoryE(subscriptionID string, resGroupName string, factoryName string) (*datafactory.Factory, error) {
 	// Create a datafactory client
 	datafactoryClient, err := CreateDataFactoriesClientE(subscriptionID)
 	if err != nil {
