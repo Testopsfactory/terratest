@@ -1,4 +1,5 @@
-// SQL Managed Instance takes 6-8 hours for deployment, Exclude this from the worflow by naming it as _testlong.go
+// SQL Managed Instance takes 6-8 hours for deployment, Exclude this from the worflow by naming it as *_testlong.go
+// To include this as part of testing, rename the file to *_test.go
 // Please refer to examples/azure/terraform-azure-sqlmanagedinstance-example/README.md for more details
 
 package test
