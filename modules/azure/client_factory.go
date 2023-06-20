@@ -28,6 +28,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-09-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-06-01/subscriptions"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/synapse/mgmt/2020-12-01/synapse"
 	"github.com/Azure/azure-sdk-for-go/services/web/mgmt/2019-08-01/web"
 	autorestAzure "github.com/Azure/go-autorest/autorest/azure"
 )
@@ -769,6 +770,64 @@ func CreateFrontDoorFrontendEndpointClientE(subscriptionID string) (*frontdoor.F
 	// create client
 	client := frontdoor.NewFrontendEndpointsClientWithBaseURI(baseURI, subscriptionID)
 	return &client, nil
+}
+
+// CreateSynapseWorkspaceClientE is a helper function that will setup a synapse client.
+func CreateSynapseWorkspaceClientE(subscriptionID string) (*synapse.WorkspacesClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a synapse client
+	synapseWorkspaceClient := synapse.NewWorkspacesClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	synapseWorkspaceClient.Authorizer = *authorizer
+
+	return &synapseWorkspaceClient, nil
+}
+
+// CreateSynapseSqlPoolClientE is a helper function that will setup a synapse client.
+func CreateSynapseSqlPoolClientE(subscriptionID string) (*synapse.SQLPoolsClient, error) {
+	// Validate Azure subscription ID
+	subscriptionID, err := getTargetAzureSubscription(subscriptionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Lookup environment URI
+	baseURI, err := getBaseURI()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a synapse client
+	synapseSqlPoolClient := synapse.NewSQLPoolsClientWithBaseURI(baseURI, subscriptionID)
+
+	// Create an authorizer
+	authorizer, err := NewAuthorizer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Attach authorizer to the client
+	synapseSqlPoolClient.Authorizer = *authorizer
+
+	return &synapseSqlPoolClient, nil
 }
 
 // GetKeyVaultURISuffixE returns the proper KeyVault URI suffix for the configured Azure environment.
