@@ -15,9 +15,9 @@ func TestTerraformAzureDataFactoryExample(t *testing.T) {
 
 	uniquePostfix := strings.ToLower(random.UniqueId())
 	expectedDataFactoryProvisioningState := "Succeeded"
-	expectedLocation := "West US2"
+	expectedLocation := "eastus"
 
-	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
+	//Configure Terraform setting up a path to Terraform code.
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/azure/terraform-azure-datafactory-example",
@@ -27,22 +27,23 @@ func TestTerraformAzureDataFactoryExample(t *testing.T) {
 		},
 	}
 
-	// website::tag::4:: At the end of the test, run `terraform destroy` to clean up any resources that were created
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
 	defer terraform.Destroy(t, terraformOptions)
 
-	// website::tag::2:: Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
+	//Run `terraform init` and `terraform apply`. Fail the test if there are any errors.
 	terraform.InitAndApply(t, terraformOptions)
 
-	// website::tag::3:: Run `terraform output` to get the values of output variables
+	// Run `terraform output` to get the values of output variables
 	expectedResourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	expectedDataFactoryName := terraform.Output(t, terraformOptions, "datafactory_name")
 
-	// // website::tag::4:: Get synapse details and assert them against the terraform output
-	actualDataFactory := azure.GetDataFactory(t, expectedResourceGroupName, expectedDataFactoryName, "")
+	// check for if data factory exists
+	actualDataFactoryExits := azure.DataFactoryExists(t, expectedDataFactoryName, expectedResourceGroupName, "")
+	assert.True(t, actualDataFactoryExits)
 
+	//Get data factory details and assert them against the terraform output
+	actualDataFactory := azure.GetDataFactory(t, expectedResourceGroupName, expectedDataFactoryName, "")
 	assert.Equal(t, expectedDataFactoryName, *actualDataFactory.Name)
 	assert.Equal(t, expectedDataFactoryProvisioningState, *actualDataFactory.FactoryProperties.ProvisioningState)
 
-	actualDataFactoryExits := azure.DataFactoryExists(t, expectedDataFactoryName, expectedResourceGroupName, "")
-	assert.True(t, actualDataFactoryExits)
 }
