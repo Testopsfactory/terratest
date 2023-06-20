@@ -25,6 +25,8 @@ it should be free, but you are completely responsible for all Azure charges.
 
 **WARNING**: The deploymnet for this module usually takes more than 4-6 hours as stated in the [microsoft docs](https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/management-operations-overview?view=azuresql#duration), so please make sure to set the timeout accordingly in the below go test command.
 
+**WARNING**: To exclude this long running test from the ci workflow, the test file is created as `terraform_azure_sqlmanagedinstance_example_testlong.go`. Rename it to `terraform_azure_sqlmanagedinstance_example_test.go` in order to run the test manually.
+
 1. Sign up for [Azure](https://azure.microsoft.com/)
 1. Configure your Azure credentials using one of the [supported methods for Azure CLI
    tools](https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest)
