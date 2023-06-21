@@ -22,7 +22,7 @@ func TestTerraformAzureSynapseExample(t *testing.T) {
 	uniquePostfix := strings.ToLower(random.UniqueId())
 	expectedSynapseSqlUser := "sqladminuser"
 	expectedSynapseProvisioningState := "Succeeded"
-	expectedLocation := "West US2"
+	expectedLocation := "westus2"
 	expectedSyPoolSkuName := "DW100c"
 
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
