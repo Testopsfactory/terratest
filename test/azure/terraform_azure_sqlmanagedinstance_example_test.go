@@ -1,4 +1,7 @@
-// SQL Managed Instance takes 6-8 hours for deployment, Build tags are not added to exclude this file from CI workflow
+//go:build !azure
+// +build !azure
+
+// This test is tagged as !azure to prevent it from being executed from CI workflow, as SQL Managed Instance takes 6-8 hours for deployment
 // Please refer to examples/azure/terraform-azure-sqlmanagedinstance-example/README.md for more details
 
 package test
