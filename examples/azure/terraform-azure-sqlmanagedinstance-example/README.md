@@ -25,13 +25,11 @@ it should be free, but you are completely responsible for all Azure charges.
 
 **WARNING**: The deploymnet for this module usually takes more than 4-6 hours as stated in the [microsoft docs](https://learn.microsoft.com/en-us/azure/azure-sql/managed-instance/management-operations-overview?view=azuresql#duration), so please make sure to set the timeout accordingly in the below go test command.
 
-**WARNING**: To exclude this long running test from the ci workflow, the test file is created as `terraform_azure_sqlmanagedinstance_example_testlong.go`. Rename it to `terraform_azure_sqlmanagedinstance_example_test.go` in order to run the test manually.
-
 1. Sign up for [Azure](https://azure.microsoft.com/)
-1. Configure your Azure credentials using one of the [supported methods for Azure CLI
+2. Configure your Azure credentials using one of the [supported methods for Azure CLI
    tools](https://docs.microsoft.com/en-us/cli/azure/azure-cli-configuration?view=azure-cli-latest)
-1. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
-1. Configure your Terratest [Go test environment](../README.md) 
-1. `cd test/azure`
-1. `go build terraform_azure_sqlmanagedinstance_example_test.go`
-1. `go test -v -run TestTerraformAzureSQLManagedInstanceExample -timeout <in hours>`
+3. Install [Terraform](https://www.terraform.io/) and make sure it's on your `PATH`
+4. Configure your Terratest [Go test environment](../README.md) 
+5. `cd test/azure`
+6. `go build terraform_azure_sqlmanagedinstance_example_test.go`
+7. `go test -v -run TestTerraformAzureSQLManagedInstanceExample -timeout <in hours>`

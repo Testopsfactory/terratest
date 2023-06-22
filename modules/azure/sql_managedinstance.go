@@ -17,7 +17,7 @@ func GetManagedInstance(t testing.TestingT, resGroupName string, managedInstance
 	return managedInstance
 }
 
-// GetSQLServer is a helper function that gets the sql server object.
+// GetManagedInstanceDatabase is a helper function that gets the sql server object.
 // This function would fail the test if there is an error.
 func GetManagedInstanceDatabase(t testing.TestingT, resGroupName string, managedInstanceName string, databaseName string, subscriptionID string) *sql.ManagedDatabase {
 	managedDatabase, err := GetManagedInstanceDatabaseE(t, subscriptionID, resGroupName, managedInstanceName, databaseName)
