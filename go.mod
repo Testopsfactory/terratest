@@ -5,7 +5,7 @@ go 1.19
 require (
 	cloud.google.com/go v0.105.0 // indirect
 	cloud.google.com/go/storage v1.27.0
-	github.com/Azure/azure-sdk-for-go v50.2.0+incompatible
+	github.com/Azure/azure-sdk-for-go v51.0.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.11.20
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
 	github.com/Azure/go-autorest/autorest/to v0.4.0 // indirect
@@ -53,6 +53,7 @@ require (
 )
 
 require (
+	cloud.google.com/go v0.105.0 // indirect
 	cloud.google.com/go/compute v1.12.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
 	cloud.google.com/go/iam v0.7.0 // indirect
