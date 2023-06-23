@@ -36,7 +36,7 @@ func TestGetManagedInstanceE(t *testing.T) {
 	managedInstanceName := ""
 	subscriptionID := ""
 
-	_, err := GetManagedInstanceE(t, subscriptionID, resGroupName, managedInstanceName)
+	_, err := GetManagedInstanceE(subscriptionID, resGroupName, managedInstanceName)
 	require.Error(t, err)
 }
 
