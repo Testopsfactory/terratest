@@ -8,10 +8,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// SQLManagedInstanceExists indicates whether the SQL Managed Instance exists for the subscription.
+// This function would fail the test if there is an error.
+func SQLManagedInstanceExists(t testing.TestingT, managedInstanceName string, resourceGroupName string, subscriptionID string) bool {
+	exists, err := SQLManagedInstanceExistsE(managedInstanceName, resourceGroupName, subscriptionID)
+	require.NoError(t, err)
+	return exists
+}
+
+// SQLManagedInstanceExistsE indicates whether the specified SQL Managed Instance exists and may return an error.
+func SQLManagedInstanceExistsE(managedInstanceName string, resourceGroupName string, subscriptionID string) (bool, error) {
+	_, err := GetManagedInstanceE(subscriptionID, resourceGroupName, managedInstanceName)
+	if err != nil {
+		if ResourceNotFoundErrorExists(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // GetManagedInstance is a helper function that gets the sql server object.
 // This function would fail the test if there is an error.
 func GetManagedInstance(t testing.TestingT, resGroupName string, managedInstanceName string, subscriptionID string) *sql.ManagedInstance {
-	managedInstance, err := GetManagedInstanceE(t, subscriptionID, resGroupName, managedInstanceName)
+	managedInstance, err := GetManagedInstanceE(subscriptionID, resGroupName, managedInstanceName)
 	require.NoError(t, err)
 
 	return managedInstance
@@ -27,7 +47,7 @@ func GetManagedInstanceDatabase(t testing.TestingT, resGroupName string, managed
 }
 
 // GetManagedInstanceE is a helper function that gets the sql server object.
-func GetManagedInstanceE(t testing.TestingT, subscriptionID string, resGroupName string, managedInstanceName string) (*sql.ManagedInstance, error) {
+func GetManagedInstanceE(subscriptionID string, resGroupName string, managedInstanceName string) (*sql.ManagedInstance, error) {
 	// Create a SQl Server client
 	sqlmiClient, err := CreateSQLMangedInstanceClient(subscriptionID)
 	if err != nil {

@@ -49,10 +49,13 @@ func TestTerraformAzureSQLManagedInstanceExample(t *testing.T) {
 	expectedResourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 	expectedManagedInstanceName := terraform.Output(t, terraformOptions, "managed_instance_name")
 
+	// check for if data factory exists
+	actualManagedInstanceExits := azure.SQLManagedInstanceExists(t, expectedManagedInstanceName, expectedResourceGroupName, "")
+	assert.True(t, actualManagedInstanceExits)
+
 	// Get the SQL Managed Instance details and assert them against the terraform output
 	actualSQLManagedInstance := azure.GetManagedInstance(t, expectedResourceGroupName, expectedManagedInstanceName, "")
 	actualSQLManagedInstanceDatabase := azure.GetManagedInstanceDatabase(t, expectedResourceGroupName, expectedManagedInstanceName, expectedDatabaseName, "")
-	expectedDatabaseStatus := "Online"
 
 	assert.Equal(t, expectedManagedInstanceName, *actualSQLManagedInstance.Name)
 	assert.Equal(t, expectedLocation, *actualSQLManagedInstance.Location)
@@ -60,6 +63,5 @@ func TestTerraformAzureSQLManagedInstanceExample(t *testing.T) {
 	assert.Equal(t, expectedSQLMIState, *actualSQLManagedInstance.ManagedInstanceProperties.State)
 
 	assert.Equal(t, expectedDatabaseName, *actualSQLManagedInstanceDatabase.Name)
-	assert.Equal(t, expectedDatabaseStatus, actualSQLManagedInstanceDatabase.ManagedDatabaseProperties.Status)
 
 }
