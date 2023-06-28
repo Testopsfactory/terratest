@@ -12,6 +12,13 @@ terraform {
   # 0.12.26 as the minimum version, as that version added support for required_providers with source URLs, making it
   # forwards compatible with 0.13.x code.
   required_version = ">= 0.12.26"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.61.0, < 5.0.0"
+    }
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
