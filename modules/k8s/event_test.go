@@ -18,12 +18,20 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
-func TestListEventsInNamespace(t *testing.T) {
+func TestListEventsEReturnsNilErrorWhenListingEvents(t *testing.T) {
 	t.Parallel()
 
 	options := NewKubectlOptions("", "", "kube-system")
 	events, err := ListEventsE(t, options, v1.ListOptions{})
 	require.Nil(t, err)
+	require.Greater(t, len(events), 0)
+}
+
+func TestListEventsInNamespace(t *testing.T) {
+	t.Parallel()
+
+	options := NewKubectlOptions("", "", "kube-system")
+	events := ListEvents(t, options, v1.ListOptions{})
 	require.Greater(t, len(events), 0)
 }
 
@@ -37,7 +45,6 @@ func TestListEventsReturnsZeroEventsIfNoneCreated(t *testing.T) {
 	CreateNamespace(t, options, ns)
 
 	options.Namespace = ns
-	events, err := ListEventsE(t, options, v1.ListOptions{})
-	require.Nil(t, err)
+	events := ListEvents(t, options, v1.ListOptions{})
 	require.Equal(t, 0, len(events))
 }
