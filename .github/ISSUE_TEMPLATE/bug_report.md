@@ -13,7 +13,7 @@ A clear and concise description of what the bug is.
 **To Reproduce**
 Steps to reproduce the behavior, code snippets and examples which can be used to reproduce the issue.
 
-```hcl
+```go
 // paste code snippets here
 ```
 
