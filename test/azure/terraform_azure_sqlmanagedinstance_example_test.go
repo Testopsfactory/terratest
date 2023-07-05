@@ -1,5 +1,5 @@
-//go:build !azure
-// +build !azure
+//go:build azure_ci_excluded
+// +build azure_ci_excluded
 
 // This test is tagged as !azure to prevent it from being executed from CI workflow, as SQL Managed Instance takes 6-8 hours for deployment
 // Please refer to examples/azure/terraform-azure-sqlmanagedinstance-example/README.md for more details
