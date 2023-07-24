@@ -40,6 +40,7 @@ func RunKubectlAndGetOutputE(t testing.TestingT, options *KubectlOptions, args .
 		Command: "kubectl",
 		Args:    cmdArgs,
 		Env:     options.Env,
+		Logger:  options.Logger,
 	}
 	return shell.RunCommandAndGetOutputE(t, command)
 }
