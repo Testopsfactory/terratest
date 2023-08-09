@@ -110,6 +110,15 @@ func TestTestIsDeploymentAvailable(t *testing.T) {
 			},
 			expectedResult: false,
 		},
+		{
+			title: "TestIsDeploymentAvailableWithoutProgressingCondition",
+			deploy: &appsv1.Deployment{
+				Status: appsv1.DeploymentStatus{
+					Conditions: []appsv1.DeploymentCondition{},
+				},
+			},
+			expectedResult: false,
+		},
 	}
 
 	for _, tc := range testCases {
