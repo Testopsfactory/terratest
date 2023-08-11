@@ -98,13 +98,16 @@ func WaitUntilDeploymentAvailableE(
 
 // IsDeploymentAvailable returns true if all pods within the deployment are ready and started
 func IsDeploymentAvailable(deploy *appsv1.Deployment) bool {
-	for _, dc := range deploy.Status.Conditions {
-		if dc.Type == appsv1.DeploymentProgressing &&
-			dc.Status == v1.ConditionTrue &&
-			dc.Reason == "NewReplicaSetAvailable" {
-			return true
+	dc := getDeploymentCondition(deploy, appsv1.DeploymentProgressing)
+	return dc != nil && dc.Status == v1.ConditionTrue && dc.Reason == "NewReplicaSetAvailable"
+}
+
+func getDeploymentCondition(deploy *appsv1.Deployment, cType appsv1.DeploymentConditionType) *appsv1.DeploymentCondition {
+	for idx := range deploy.Status.Conditions {
+		dc := &deploy.Status.Conditions[idx]
+		if dc.Type == cType {
+			return dc
 		}
 	}
-
-	return false
+	return nil
 }
