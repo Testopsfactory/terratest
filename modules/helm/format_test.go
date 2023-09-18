@@ -2,7 +2,6 @@ package helm
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -189,7 +188,7 @@ func TestFormatValuesFilesAsArgs(t *testing.T) {
 func createTempFiles(numFiles int) ([]string, error) {
 	paths := []string{}
 	for i := 0; i < numFiles; i++ {
-		tmpFile, err := ioutil.TempFile("", "")
+		tmpFile, err := os.CreateTemp("", "")
 		defer tmpFile.Close()
 		// We don't use require or t.Fatal here so that we give a chance to delete any temp files that were created
 		// before this error

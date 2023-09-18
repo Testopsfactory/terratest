@@ -2,7 +2,6 @@ package terraform
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/gruntwork-io/terratest/modules/logger"
@@ -70,7 +69,7 @@ func InitAndPlanAndShowWithStructNoLogTempPlanFile(t testing.TestingT, options *
 	options.Logger = logger.Discard
 	defer func() { options.Logger = oldLogger }()
 
-	tmpFile, err := ioutil.TempFile("", "terratest-plan-file-")
+	tmpFile, err := os.CreateTemp("", "terratest-plan-file-")
 	require.NoError(t, err)
 	require.NoError(t, tmpFile.Close())
 	defer require.NoError(t, os.Remove(tmpFile.Name()))

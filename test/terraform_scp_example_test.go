@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -165,7 +164,7 @@ func testScpDirFromHost(t *testing.T, terraformOptions *terraform.Options, keyPa
 
 			expectedNumFiles := testCase.expectedFiles
 
-			fileInfos, err := ioutil.ReadDir(testCase.options.LocalDir)
+			fileInfos, err := os.ReadDir(testCase.options.LocalDir)
 
 			if err != nil {
 				t.Fatalf("Error reading from local dir: %s, due to: %s", testCase.options.LocalDir, err.Error())
@@ -215,7 +214,7 @@ func testScpFromHost(t *testing.T, terraformOptions *terraform.Options, keyPair 
 
 	ssh.ScpFileFromE(t, publicHost, remoteTempFilePath, localFile, false)
 
-	buf, err := ioutil.ReadFile(localTempFileName)
+	buf, err := os.ReadFile(localTempFileName)
 
 	if err != nil {
 		t.Fatalf("Error: Unable to read local file from disk: %s", err.Error())
@@ -267,7 +266,7 @@ func testScpFromAsg(t *testing.T, terraformOptions *terraform.Options, keyPair *
 	defer os.RemoveAll(localDestinationDirectory)
 
 	//Read the locally copied syslog
-	buf, err := ioutil.ReadFile(localSyslogLocation)
+	buf, err := os.ReadFile(localSyslogLocation)
 
 	if err != nil {
 		t.Fatalf("Error: Unable to read local file from disk: %s", err.Error())
