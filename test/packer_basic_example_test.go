@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -95,7 +94,7 @@ func TestPackerBasicExampleWithVarFile(t *testing.T) {
 	instanceType := terratest_aws.GetRecommendedInstanceType(t, awsRegion, []string{"t2.micro, t3.micro", "t2.small", "t3.small"})
 
 	// Create temporary packer variable file to store aws region
-	varFile, err := ioutil.TempFile("", "*.json")
+	varFile, err := os.CreateTemp("", "*.json")
 	require.NoError(t, err, "Did not expect temp file creation to cause error")
 
 	// Be sure to clean up temp file

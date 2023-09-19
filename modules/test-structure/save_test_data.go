@@ -3,7 +3,6 @@ package test_structure
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -217,7 +216,7 @@ func SaveTestData(t testing.TestingT, path string, overwrite bool, value interfa
 		t.Fatalf("Failed to create folder %s: %v", parentDir, err)
 	}
 
-	if err := ioutil.WriteFile(path, bytes, 0644); err != nil {
+	if err := os.WriteFile(path, bytes, 0644); err != nil {
 		t.Fatalf("Failed to save value %s: %v", path, err)
 	}
 }
@@ -228,7 +227,7 @@ func SaveTestData(t testing.TestingT, path string, overwrite bool, value interfa
 func LoadTestData(t testing.TestingT, path string, value interface{}) {
 	logger.Logf(t, "Loading test data from %s", path)
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Failed to load value from %s: %v", path, err)
 	}
@@ -248,7 +247,7 @@ func IsTestDataPresent(t testing.TestingT, path string) bool {
 		return false
 	}
 
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 
 	if err != nil {
 		t.Fatalf("Failed to load test data from %s due to unexpected error: %v", path, err)

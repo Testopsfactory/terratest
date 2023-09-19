@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"io/ioutil"
 	"net/url"
 	"os"
 
@@ -135,7 +134,7 @@ func StoreConfigToTempFile(t testing.TestingT, configData string) string {
 // filename, or error.
 func StoreConfigToTempFileE(t testing.TestingT, configData string) (string, error) {
 	escapedTestName := url.PathEscape(t.Name())
-	tmpfile, err := ioutil.TempFile("", escapedTestName)
+	tmpfile, err := os.CreateTemp("", escapedTestName)
 	if err != nil {
 		return "", err
 	}

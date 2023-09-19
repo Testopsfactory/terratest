@@ -1,7 +1,7 @@
 package test_structure
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -22,7 +22,7 @@ func TestSaveAndLoadTestData(t *testing.T) {
 	isTestDataPresent := IsTestDataPresent(t, "/file/that/does/not/exist")
 	assert.False(t, isTestDataPresent, "Expected no test data would be present because no test data file exists.")
 
-	tmpFile, err := ioutil.TempFile("", "save-and-load-test-data")
+	tmpFile, err := os.CreateTemp("", "save-and-load-test-data")
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
