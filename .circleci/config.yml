@@ -62,6 +62,14 @@ install_gruntwork_utils: &install_gruntwork_utils
     sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
     sudo ln -s /usr/local/go/bin/go /usr/bin/go
     echo "The installed version of Go is now $(go version)"
+    
+    # Install OpenTofu
+    curl -L "https://github.com/opentofu/opentofu/releases/download/v1.6.0-alpha1/tofu_1.6.0-alpha1_linux_amd64.zip" -o tofu.zip
+    unzip -o tofu.zip
+    sudo install -m 0755 tofu /usr/local/bin/tofu
+    rm -rf tofu
+    rm -rf tofu.zip
+    tofu --version
 
 install_docker_buildx: &install_docker_buildx
   name: install docker buildx

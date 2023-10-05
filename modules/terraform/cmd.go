@@ -33,7 +33,7 @@ var commandsWithParallelism = []string{
 // GetCommonOptions extracts commons terraform options
 func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	if options.TerraformBinary == "" {
-		options.TerraformBinary = "terraform"
+		options.TerraformBinary = "tofu"
 	}
 
 	if options.TerraformBinary == "terragrunt" {
