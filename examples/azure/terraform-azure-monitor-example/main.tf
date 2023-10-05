@@ -21,11 +21,11 @@ terraform {
   required_version = ">= 0.12.26"
   required_providers {
     azurerm = {
-      version = "~>3.75.0"
+      version = "~> 2.29"
       source  = "hashicorp/azurerm"
     }
     azuread = {
-      version = "=2.43.0"
+      version = "=0.7.0"
       source  = "hashicorp/azuread"
     }
   }
@@ -84,7 +84,7 @@ resource "azurerm_key_vault" "monitor" {
   resource_group_name         = azurerm_resource_group.monitor.name
   enabled_for_disk_encryption = true
   tenant_id                   = data.azurerm_client_config.current.tenant_id
-  soft_delete_retention_days  = 7
+  soft_delete_enabled         = true
   purge_protection_enabled    = false
 
   sku_name = "standard"
