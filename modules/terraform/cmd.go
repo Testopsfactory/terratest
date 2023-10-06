@@ -39,12 +39,12 @@ const (
 	TerraformDefaultPath = "terraform"
 )
 
-var defaultExecutable = defaultTerraformExecutable()
+var DefaultExecutable = defaultTerraformExecutable()
 
 // GetCommonOptions extracts commons terraform options
 func GetCommonOptions(options *Options, args ...string) (*Options, []string) {
 	if options.TerraformBinary == "" {
-		options.TerraformBinary = defaultExecutable
+		options.TerraformBinary = DefaultExecutable
 	}
 
 	if options.TerraformBinary == "terragrunt" {
