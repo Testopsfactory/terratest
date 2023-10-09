@@ -3,6 +3,7 @@ package terraform
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -79,8 +80,10 @@ func TestInitAndPlanWithPlanFile(t *testing.T) {
 
 	out, err := InitAndPlanE(t, options)
 	require.NoError(t, err)
+	// clean output to be consistent in checks
+	out = strings.ReplaceAll(out, "\n", "")
 	assert.Contains(t, out, "1 to add, 0 to change, 0 to destroy.")
-	assert.Contains(t, out, fmt.Sprintf("Saved the plan to: %s", planFilePath))
+	assert.Contains(t, out, fmt.Sprintf("Saved the plan to:%s", planFilePath))
 	assert.FileExists(t, planFilePath, "Plan file was not saved to expected location:", planFilePath)
 }
 
