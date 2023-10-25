@@ -92,17 +92,17 @@ func RenderRemoteTemplateE(t testing.TestingT, options *Options, chartURL string
 	if err != nil {
 		return "", err
 	}
-	// for _, templateFile := range templateFiles {
-	// 	// validate this is a valid template file
-	// 	absTemplateFile := filepath.Join(absChartDir, templateFile)
-	// 	if !strings.HasPrefix(templateFile, "charts") && !files.FileExists(absTemplateFile) {
-	// 		return "", errors.WithStackTrace(TemplateFileNotFoundError{Path: templateFile, ChartDir: absChartDir})
-	// 	}
+	for _, templateFile := range templateFiles {
+		// validate this is a valid template file
+		// absTemplateFile := filepath.Join(absChartDir, templateFile)
+		// if !strings.HasPrefix(templateFile, "charts") && !files.FileExists(absTemplateFile) {
+		// 	return "", errors.WithStackTrace(TemplateFileNotFoundError{Path: templateFile, ChartDir: absChartDir})
+		// }
 
-	// 	// Note: we only get the abs template file path to check it actually exists, but the `helm template` command
-	// 	// expects the relative path from the chart.
-	// 	args = append(args, "--show-only", templateFile)
-	// }
+		// Note: we only get the abs template file path to check it actually exists, but the `helm template` command
+		// expects the relative path from the chart.
+		args = append(args, "--show-only", templateFile)
+	}
 	// deal extraHelmArgs
 	args = append(args, extraHelmArgs...)
 

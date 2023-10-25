@@ -61,7 +61,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 	// we want to assert that the template renders without any errors.
 	// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
 	// arg to demonstrate how to select individual templates to render.
-	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{"templates/metrics-server/deployment.yamll"})
+	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{"templates/metrics-server/deployment.yaml"})
 
 	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
 	// ensure the Deployment resource is rendered correctly.
