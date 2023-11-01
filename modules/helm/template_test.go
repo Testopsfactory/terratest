@@ -20,14 +20,14 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
-const (
-	remote2ChartSource  = "https://charts.bitnami.com/bitnami"
-	remote2ChartName    = "nginx"
-	remote2ChartVersion = "13.2.23"
-)
-
 // Test that we can render locally a remote chart (e.g bitnami/nginx)
 func TestRemoteChartRender(t *testing.T) {
+	const (
+		remoteChartSource  = "https://charts.bitnami.com/bitnami"
+		remoteChartName    = "nginx"
+		remoteChartVersion = "13.2.23"
+	)
+
 	t.Parallel()
 
 	namespaceName := fmt.Sprintf(
@@ -36,21 +36,20 @@ func TestRemoteChartRender(t *testing.T) {
 		strings.ToLower(random.UniqueId()),
 	)
 
-	releaseName := "keda"
+	releaseName := remoteChartName
 
 	options := &Options{
 		SetValues: map[string]string{
-			"metricsServer.replicaCount":           "999",
-			"resources.metricServer.limits.memory": "1234Mi",
+			"image.repository": remoteChartName,
+			"image.registry":   "",
+			"image.tag":        remoteChartVersion,
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
 	}
 
 	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
 	// we want to assert that the template renders without any errors.
-	// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
-	// arg to demonstrate how to select individual templates to render.
-	output := RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{"templates/metrics-server/deployment.yaml"})
+	output := RenderRemoteTemplate(t, options, remoteChartSource, releaseName, []string{"templates/deployment.yaml"})
 
 	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
 	// ensure the Deployment resource is rendered correctly.
@@ -61,8 +60,8 @@ func TestRemoteChartRender(t *testing.T) {
 	require.Equal(t, namespaceName, deployment.Namespace)
 
 	// Finally, we verify the deployment pod template spec is set to the expected container image value
-	var expectedMetricsServerReplica int32
-	expectedMetricsServerReplica = 999
-	deploymentMetricsServerReplica := *deployment.Spec.Replicas
-	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
+	expectedContainerImage := remoteChartName + ":" + remoteChartVersion
+	deploymentContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(deploymentContainers), 1)
+	require.Equal(t, deploymentContainers[0].Image, expectedContainerImage)
 }

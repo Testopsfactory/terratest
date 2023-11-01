@@ -72,16 +72,18 @@ func RenderTemplateE(t testing.TestingT, options *Options, chartDir string, rele
 	return RunHelmCommandAndGetStdOutE(t, options, "template", args...)
 }
 
+// RenderTemplate runs `helm template` to render a *remote* chart  given the provided options and returns stdout/stderr from
+// the template command. If you pass in templateFiles, this will only render those templates. This function will fail
+// the test if there is an error rendering the template.
 func RenderRemoteTemplate(t testing.TestingT, options *Options, chartURL string, releaseName string, templateFiles []string, extraHelmArgs ...string) string {
 	out, err := RenderRemoteTemplateE(t, options, chartURL, releaseName, templateFiles, extraHelmArgs...)
 	require.NoError(t, err)
 	return out
 }
 
-// RenderTemplateE runs `helm template` to render the template given the provided options and returns stdout/stderr from
+// RenderTemplate runs `helm template` to render a *remote* helm chart  given the provided options and returns stdout/stderr from
 // the template command. If you pass in templateFiles, this will only render those templates.
 func RenderRemoteTemplateE(t testing.TestingT, options *Options, chartURL string, releaseName string, templateFiles []string, extraHelmArgs ...string) (string, error) {
-	// TODO: verify the charts exists and verify dependencies
 	// Now construct the args
 	// We first construct the template args
 	args := []string{}
@@ -93,20 +95,15 @@ func RenderRemoteTemplateE(t testing.TestingT, options *Options, chartURL string
 		return "", err
 	}
 	for _, templateFile := range templateFiles {
-		// validate this is a valid template file
-		// absTemplateFile := filepath.Join(absChartDir, templateFile)
-		// if !strings.HasPrefix(templateFile, "charts") && !files.FileExists(absTemplateFile) {
-		// 	return "", errors.WithStackTrace(TemplateFileNotFoundError{Path: templateFile, ChartDir: absChartDir})
-		// }
-
-		// Note: we only get the abs template file path to check it actually exists, but the `helm template` command
-		// expects the relative path from the chart.
+		// As the helm command fails if a non valid template is given as input
+		// we do not check if the template file exists or not as we do for local charts
+		// as it would add unecessary networking calls
 		args = append(args, "--show-only", templateFile)
 	}
 	// deal extraHelmArgs
 	args = append(args, extraHelmArgs...)
 
-	// ... and add the name and chart at the end as the command expects
+	// ... and add the helm chart name, the remote repo and chart URL at the end
 	args = append(args, releaseName, "--repo", chartURL)
 
 	// Finally, call out to helm template command
