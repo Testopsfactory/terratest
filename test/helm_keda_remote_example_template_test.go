@@ -23,32 +23,23 @@ import (
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
-// This file contains examples of how to use terratest to test helm chart template logic by rendering the templates
+// This file contains an example of how to use terratest to test *remote* helm chart template logic by rendering the templates
 // using `helm template`, and then reading in the rendered templates.
-// There are two tests:
-// - TestHelmKedaExampleTemplateRenderedDeployment: An example of how to read in the rendered object and check the
+// - TestHelmKedaRemoteExampleTemplateRenderedDeployment: An example of how to read in the rendered object and check the
 //   computed values.
-// - TestHelmKedaExampleTemplateRequiredTemplateArgs: An example of how to check that the required args are indeed
-//   required for the template to render.
 
 // An example of how to verify the rendered template object of a Helm Chart given various inputs.
 func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 	t.Parallel()
 
-	// Path to the helm chart we will test
-	// helmChartPath, err := filepath.Abs("../examples/helm-basic-example")
+	// chart name
 	releaseName := "keda"
-	// require.NoError(t, err)
-
-	// Since we aren't deploying any resources, there is no need to setup kubectl authentication or helm home.
 
 	// Set up the namespace; confirm that the template renders the expected value for the namespace.
 	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
 	logger.Logf(t, "Namespace: %s\n", namespaceName)
 
 	// Setup the args. For this test, we will set the following input values:
-	// - containerImageRepo=nginx
-	// - containerImageTag=1.15.8
 	options := &helm.Options{
 		SetValues: map[string]string{
 			"metricsServer.replicaCount":           "999",
@@ -57,10 +48,10 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
 	}
 
-	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
+	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
 	// we want to assert that the template renders without any errors.
-	// Additionally, although we know there is only one yaml file in the template, we deliberately path a templateFiles
-	// arg to demonstrate how to select individual templates to render.
+	// Additionally, we path a the templateFile for which we are setting test values to
+	// demonstrate how to select individual templates to render.
 	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{"templates/metrics-server/deployment.yaml"})
 
 	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
@@ -76,79 +67,4 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 	expectedMetricsServerReplica = 999
 	deploymentMetricsServerReplica := *deployment.Spec.Replicas
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
-
-	// # Source: keda/templates/metrics-server/deployment.yaml
-	// apiVersion: apps/v1
-	// kind: Deployment
-	// metadata:
-	//   name: keda-operator-metrics-apiserver
-	//   namespace: medieval-38bl76
-	//   labels:
-	//     app: keda-operator-metrics-apiserver
-	//     app.kubernetes.io/name: keda-operator-metrics-apiserver
-	//     helm.sh/chart: keda-2.12.0
-	//     app.kubernetes.io/component: operator
-	//     app.kubernetes.io/managed-by: Helm
-	//     app.kubernetes.io/instance: release-name
-	//     app.kubernetes.io/part-of: keda-operator
-	//     app.kubernetes.io/version: 2.12.0
-	// spec:
-	//   revisionHistoryLimit: 10
-	//   replicas: 1
 }
-
-// An example of how to verify required values for a helm chart.
-// func TestHelmKedaExampleTemplateRequiredTemplateArgs(t *testing.T) {
-// 	t.Parallel()
-
-// 	// Path to the helm chart we will test
-// 	helmChartPath, err := filepath.Abs("../examples/helm-basic-example")
-// 	releaseName := "helm-basic"
-// 	require.NoError(t, err)
-
-// 	// Since we aren't deploying any resources, there is no need to setup kubectl authentication, helm home, or
-// 	// namespaces
-
-// 	// Here, we use a table driven test to iterate through all the required values as subtests. You can learn more about
-// 	// go subtests here: https://blog.golang.org/subtests
-// 	// The struct captures the inputs that we will pass to helm template and a human friendly name so we can identify it
-// 	// in the test output. In this case, each test case will be a complete values input except for one of the required
-// 	// values missing, to test that neglecting a required value will cause the template rendering to fail.
-// 	testCases := []struct {
-// 		name   string
-// 		values map[string]string
-// 	}{
-// 		{
-// 			"MissingContainerImageRepo",
-// 			map[string]string{"containerImageTag": "1.15.8"},
-// 		},
-// 		{
-// 			"MissingContainerImageTag",
-// 			map[string]string{"containerImageRepo": "nginx"},
-// 		},
-// 		// {
-// 		// 	"NotMissing",
-// 		// 	map[string]string{"containerImageRepo": "nginx", "containerImageTag": "1.15.8"},
-// 		// },
-// 	}
-
-// 	// Now we iterate over each test case and spawn a sub test
-// 	for _, testCase := range testCases {
-// 		// Here, we capture the range variable and force it into the scope of this block. If we don't do this, when the
-// 		// subtest switches contexts (because of t.Parallel), the testCase value will have been updated by the for loop
-// 		// and will be the next testCase!
-// 		testCase := testCase
-
-// 		// The actual sub test spawning. We name the sub test using the human friendly name. Note that we name the sub
-// 		// test T struct to subT to make it clear which T struct corresponds to which test. However, in most cases you
-// 		// will not reference the main test T so you can name it the same.
-// 		t.Run(testCase.name, func(subT *testing.T) {
-// 			subT.Parallel()
-
-// 			// Now we try rendering the template, but verify we get an error
-// 			options := &helm.Options{SetValues: testCase.values}
-// 			_, err := helm.RenderTemplateE(t, options, helmChartPath, releaseName, []string{})
-// 			require.Error(t, err)
-// 		})
-// 	}
-// }
