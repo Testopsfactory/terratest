@@ -139,6 +139,21 @@ func TestErrorWithRetry(t *testing.T) {
 	}
 }
 
+func TestEmptyRequestBodyWithRetryWithOptions(t *testing.T) {
+	t.Parallel()
+	ts := getTestServerForFunction(bodyCopyHandler)
+	defer ts.Close()
+
+	options := HttpDoOptions{
+		Method: "GET",
+		Url:    ts.URL,
+		Body:   nil,
+	}
+
+	response := HTTPDoWithRetryWithOptions(t, options, 200, 0, time.Second)
+	require.Equal(t, "", response)
+}
+
 func bodyCopyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	body, _ := io.ReadAll(r.Body)
