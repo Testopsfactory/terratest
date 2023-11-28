@@ -11,6 +11,12 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/testing"
+
+	"fmt"
+	"os"
+
+	"github.com/gonvenience/ytbx"
+	"github.com/homeport/dyff/pkg/dyff"
 )
 
 // RenderTemplate runs `helm template` to render the template given the provided options and returns stdout/stderr from
@@ -133,4 +139,95 @@ func UnmarshalK8SYamlE(t testing.TestingT, yamlData string, destinationObj inter
 		return errors.WithStackTrace(err)
 	}
 	return nil
+}
+
+// Create/update the manifest snapshot of a chart (e.g bitnami/nginx)
+func UpdateSnapshot(yamlData string, releaseName string) {
+
+	snapshotDir := "__snapshot__"
+	// Create a directory if not exists
+	if !files.FileExists(snapshotDir) {
+		os.Mkdir(snapshotDir, 0755)
+	}
+
+	filename := snapshotDir + "/" + releaseName + ".yaml"
+	// Open a file in write mode
+	file, err := os.Create(filename)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Write the string representation of the "deployment" variable to the file
+	_, err = file.WriteString(yamlData)
+	if err != nil {
+		fmt.Println("Error writing to file: ", filename, err)
+		return
+	}
+
+	fmt.Println("Content written to file successfully.", filename)
+}
+
+// Create/update the manifest snapshot of a chart (e.g bitnami/nginx)
+func DiffAgainstSnapshot(yamlData string, releaseName string) int {
+
+	snapshotDir := "__snapshot__"
+
+	filename := snapshotDir + "/" + releaseName + ".yaml"
+	from, err := ytbx.LoadFile(filename)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return 1
+	}
+
+	filename2 := releaseName + ".yaml"
+	// Open a file in write mode
+	file, err := os.Create(filename2)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return 1
+	}
+
+	// Write the string representation of the "deployment" variable to the file
+	_, err = file.WriteString(yamlData)
+	if err != nil {
+		fmt.Println("Error writing to file: ", filename2, err)
+		return 1
+	}
+
+	defer file.Close()
+
+	to, err := ytbx.LoadFile(filename2)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return 1
+	}
+
+	compOpt := dyff.KubernetesEntityDetection(false)
+
+	Report, err := dyff.CompareInputFiles(from, to, compOpt)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return 1
+	}
+
+	reportWriter := &dyff.HumanReport{
+		Report:            Report,
+		DoNotInspectCerts: false,
+		NoTableStyle:      false,
+		OmitHeader:        false,
+		UseGoPatchPaths:   false,
+	}
+
+	number_of_diffs := len(reportWriter.Diffs)
+
+	writer := os.Stdout
+	reportWriter.WriteReport(writer)
+
+	// if different, print diff
+	// if same, print "no diff"
+
+	defer file.Close()
+	return number_of_diffs
 }

@@ -65,3 +65,89 @@ func TestRemoteChartRender(t *testing.T) {
 	require.Equal(t, len(deploymentContainers), 1)
 	require.Equal(t, deploymentContainers[0].Image, expectedContainerImage)
 }
+
+// Test that we can dump all the manifest locally a remote chart (e.g bitnami/nginx)
+// so that I can use them later to compare between two versions of the same chart for example
+func TestRemoteChartRenderDump(t *testing.T) {
+	const (
+		remoteChartSource  = "https://charts.bitnami.com/bitnami"
+		remoteChartName    = "nginx"
+		remoteChartVersion = "13.2.20"
+	)
+
+	t.Parallel()
+
+	namespaceName := "dump-ns"
+
+	releaseName := remoteChartName
+
+	options := &Options{
+		SetValues: map[string]string{
+			"image.repository": remoteChartName,
+			"image.registry":   "",
+			"image.tag":        remoteChartVersion,
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+	}
+
+	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	output := RenderRemoteTemplate(t, options, remoteChartSource, releaseName, []string{})
+
+	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
+	// ensure the Deployment resource is rendered correctly.
+	var deployment appsv1.Deployment
+	UnmarshalK8SYaml(t, output, &deployment)
+
+	// Verify the namespace matches the expected supplied namespace.
+	require.Equal(t, namespaceName, deployment.Namespace)
+
+	// write chart manifest to a local filesystem directory
+	UpdateSnapshot(output, releaseName)
+}
+
+// Test that we can diff all the manifest to a local snapshot using a remote chart (e.g bitnami/nginx)
+func TestRemoteChartRenderDiff(t *testing.T) {
+	const (
+		remoteChartSource  = "https://charts.bitnami.com/bitnami"
+		remoteChartName    = "nginx"
+		remoteChartVersion = "13.2.23"
+	)
+
+	t.Parallel()
+
+	// namespaceName := fmt.Sprintf(
+	// 	"%s-%s",
+	// 	strings.ToLower(t.Name()),
+	// 	strings.ToLower(random.UniqueId()),
+	// )
+	// need to set a fix name for the namespace so that we can compare the snapshot
+	namespaceName := "dump-ns"
+
+	releaseName := remoteChartName
+
+	options := &Options{
+		SetValues: map[string]string{
+			"image.repository": remoteChartName,
+			"image.registry":   "",
+			"image.tag":        remoteChartVersion,
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+	}
+
+	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	output := RenderRemoteTemplate(t, options, remoteChartSource, releaseName, []string{})
+
+	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
+	// ensure the Deployment resource is rendered correctly.
+	var deployment appsv1.Deployment
+	UnmarshalK8SYaml(t, output, &deployment)
+
+	// Verify the namespace matches the expected supplied namespace.
+	require.Equal(t, namespaceName, deployment.Namespace)
+
+	// run the diff and assert the number of diffs
+	number_of_diffs := DiffAgainstSnapshot(output, releaseName)
+	require.Equal(t, number_of_diffs, 0)
+}
