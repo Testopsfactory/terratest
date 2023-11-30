@@ -217,8 +217,6 @@ func runValidateOnAllTerraformModules(
 	for _, dir := range dirsToValidate {
 		dir := dir
 		t.Run(strings.TrimLeft(dir, "/"), func(t *go_test.T) {
-			t.Logf("Original root = %s, git root = %s, testFolder = %s, dir = %s", opts.RootDir, gitRoot, testFolder, dir)
-
 			// Run the validation function on the test folder that was copied to /tmp to avoid any potential conflicts
 			// with tests that may not use the same copy to /tmp behavior
 			tfOpts := &terraform.Options{TerraformDir: dir}
