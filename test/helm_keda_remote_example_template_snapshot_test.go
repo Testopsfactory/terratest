@@ -116,3 +116,64 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
 	number_of_diffs := helm.DiffAgainstSnapshot(output, releaseName)
 	require.Equal(t, number_of_diffs, 0)
 }
+
+// An example of how to store a snapshot of the current manaifest for future comparison
+func TestHelmKedaRemoteExampleTemplateRenderedPackageDump(t *testing.T) {
+	t.Parallel()
+
+	// chart name
+	releaseName := "keda"
+
+	// Set up the namespace; confirm that the template renders the expected value for the namespace.
+	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
+	logger.Logf(t, "Namespace: %s\n", namespaceName)
+
+	// Setup the args. For this test, we will set the following input values:
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"metricsServer.replicaCount":           "999",
+			"resources.metricServer.limits.memory": "1234Mi",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+	}
+
+	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	// Additionally, we path a the templateFile for which we are setting test values to
+	// demonstrate how to select individual templates to render.
+	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
+
+	// write chart manifest to a local filesystem directory
+	helm.UpdateSnapshot(output, releaseName)
+}
+
+// An example of how to verify the current helm k8s manifest against a previous snapshot
+func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
+	t.Parallel()
+
+	// chart name
+	releaseName := "keda"
+
+	// Set up the namespace; confirm that the template renders the expected value for the namespace.
+	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
+	logger.Logf(t, "Namespace: %s\n", namespaceName)
+
+	// Setup the args. For this test, we will set the following input values:
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"metricsServer.replicaCount":           "666",
+			"resources.metricServer.limits.memory": "4321Mi",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+	}
+
+	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	// Additionally, we path a the templateFile for which we are setting test values to
+	// demonstrate how to select individual templates to render.
+	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
+
+	// run the diff and assert the number of diffs
+	number_of_diffs := helm.DiffAgainstSnapshot(output, releaseName)
+	require.Equal(t, number_of_diffs, 0)
+}

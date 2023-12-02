@@ -141,7 +141,9 @@ func UnmarshalK8SYamlE(t testing.TestingT, yamlData string, destinationObj inter
 	return nil
 }
 
-// Create/update the manifest snapshot of a chart (e.g bitnami/nginx)
+// Add snapshot based testing for helm
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// This function create/update the manifest snapshot of a chart (e.g bitnami/nginx)
 func UpdateSnapshot(yamlData string, releaseName string) {
 
 	snapshotDir := "__snapshot__"
@@ -159,59 +161,63 @@ func UpdateSnapshot(yamlData string, releaseName string) {
 	}
 	defer file.Close()
 
-	// Write the string representation of the "deployment" variable to the file
+	// Write the k8s manifest into the file
 	_, err = file.WriteString(yamlData)
 	if err != nil {
 		fmt.Println("Error writing to file: ", filename, err)
 		return
 	}
 
-	fmt.Println("Content written to file successfully.", filename)
+	fmt.Println("k8s manifest written into file: ", filename)
 }
 
-// Create/update the manifest snapshot of a chart (e.g bitnami/nginx)
+// Add snapshot based testing for helm
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// This function compare the manifest snapshot of a chart (e.g bitnami/nginx) with the current manifest
 func DiffAgainstSnapshot(yamlData string, releaseName string) int {
 
 	snapshotDir := "__snapshot__"
 
-	filename := snapshotDir + "/" + releaseName + ".yaml"
-	from, err := ytbx.LoadFile(filename)
+	// load the yaml snapshot file
+	snapshot := snapshotDir + "/" + releaseName + ".yaml"
+	from, err := ytbx.LoadFile(snapshot)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return 1
 	}
 
-	filename2 := releaseName + ".yaml"
-	// Open a file in write mode
-	file, err := os.Create(filename2)
+	// write the current manifest into a file as `dyff` does not support string input
+	currentManifests := releaseName + ".yaml"
+	file, err := os.Create(currentManifests)
 	if err != nil {
 		fmt.Println("Error creating file:", err)
 		return 1
 	}
-
-	// Write the string representation of the "deployment" variable to the file
 	_, err = file.WriteString(yamlData)
 	if err != nil {
-		fmt.Println("Error writing to file: ", filename2, err)
+		fmt.Println("Error writing to file: ", currentManifests, err)
 		return 1
 	}
-
 	defer file.Close()
+	defer os.Remove(currentManifests)
 
-	to, err := ytbx.LoadFile(filename2)
+	to, err := ytbx.LoadFile(currentManifests)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return 1
 	}
 
+	// compare the two manifests using `dyff`
 	compOpt := dyff.KubernetesEntityDetection(false)
 
+	// create a report
 	Report, err := dyff.CompareInputFiles(from, to, compOpt)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return 1
 	}
 
+	// write any difference to stdout
 	reportWriter := &dyff.HumanReport{
 		Report:            Report,
 		DoNotInspectCerts: false,
@@ -220,14 +226,10 @@ func DiffAgainstSnapshot(yamlData string, releaseName string) int {
 		UseGoPatchPaths:   false,
 	}
 
-	number_of_diffs := len(reportWriter.Diffs)
-
 	writer := os.Stdout
 	reportWriter.WriteReport(writer)
 
-	// if different, print diff
-	// if same, print "no diff"
-
-	defer file.Close()
+	// return the number of diffs to use in in assertion while testing: 0 = no differences
+	number_of_diffs := len(reportWriter.Diffs)
 	return number_of_diffs
 }

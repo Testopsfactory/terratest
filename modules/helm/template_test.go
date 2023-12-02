@@ -73,11 +73,11 @@ func TestRemoteChartRenderDump(t *testing.T) {
 		remoteChartSource  = "https://charts.bitnami.com/bitnami"
 		remoteChartName    = "nginx"
 		remoteChartVersion = "13.2.20"
+		// need to set a fix name for the namespace so it is not flag as a difference
+		namespaceName = "dump-ns"
 	)
 
 	t.Parallel()
-
-	namespaceName := "dump-ns"
 
 	releaseName := remoteChartName
 
@@ -112,20 +112,13 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 		remoteChartSource  = "https://charts.bitnami.com/bitnami"
 		remoteChartName    = "nginx"
 		remoteChartVersion = "13.2.23"
+		// need to set a fix name for the namespace so it is not flag as a difference
+		namespaceName = "dump-ns"
 	)
 
 	t.Parallel()
 
-	// namespaceName := fmt.Sprintf(
-	// 	"%s-%s",
-	// 	strings.ToLower(t.Name()),
-	// 	strings.ToLower(random.UniqueId()),
-	// )
-	// need to set a fix name for the namespace so that we can compare the snapshot
-	namespaceName := "dump-ns"
-
 	releaseName := remoteChartName
-
 	options := &Options{
 		SetValues: map[string]string{
 			"image.repository": remoteChartName,
@@ -144,10 +137,7 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 	var deployment appsv1.Deployment
 	UnmarshalK8SYaml(t, output, &deployment)
 
-	// Verify the namespace matches the expected supplied namespace.
-	require.Equal(t, namespaceName, deployment.Namespace)
-
-	// run the diff and assert the number of diffs
+	// run the diff and assert there are no differences
 	number_of_diffs := DiffAgainstSnapshot(output, releaseName)
 	require.Equal(t, number_of_diffs, 0)
 }

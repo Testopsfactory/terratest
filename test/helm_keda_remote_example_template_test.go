@@ -67,4 +67,50 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 	expectedMetricsServerReplica = 999
 	deploymentMetricsServerReplica := *deployment.Spec.Replicas
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
+	expectedContainerRLM := "1234Mi"
+	deploymentContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(deploymentContainers), 1)
+	currentContainerRLM := deploymentContainers[0].Resources.Limits.Memory().String()
+	require.Equal(t, currentContainerRLM, expectedContainerRLM)
+}
+
+// An example of how to verify the rendered template object of a Helm Chart given input from a `values.yaml` file.
+func TestHelmKedaRemoteExampleTemplateRenderedValuesFileFixtureDeployment(t *testing.T) {
+	t.Parallel()
+
+	// chart name
+	releaseName := "keda"
+
+	// Set up the namespace; confirm that the template renders the expected value for the namespace.
+	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
+	logger.Logf(t, "Namespace: %s\n", namespaceName)
+	options := &helm.Options{
+		ValuesFiles:    []string{"./fixtures/helm/keda-values.yaml"},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+	}
+
+	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	// Additionally, we path a the templateFile for which we are setting test values to
+	// demonstrate how to select individual templates to render.
+	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{"templates/metrics-server/deployment.yaml"})
+
+	// Now we use kubernetes/client-go library to render the template output into the Deployment struct. This will
+	// ensure the Deployment resource is rendered correctly.
+	var deployment appsv1.Deployment
+	helm.UnmarshalK8SYaml(t, output, &deployment)
+
+	// Verify the namespace matches the expected supplied namespace.
+	require.Equal(t, namespaceName, deployment.Namespace)
+
+	// Finally, we verify the deployment pod template spec is set to the expected value
+	var expectedMetricsServerReplica int32
+	expectedMetricsServerReplica = 3
+	deploymentMetricsServerReplica := *deployment.Spec.Replicas
+	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
+	expectedContainerRLM := "1234Mi"
+	deploymentContainers := deployment.Spec.Template.Spec.Containers
+	require.Equal(t, len(deploymentContainers), 1)
+	currentContainerRLM := deploymentContainers[0].Resources.Limits.Memory().String()
+	require.Equal(t, currentContainerRLM, expectedContainerRLM)
 }
