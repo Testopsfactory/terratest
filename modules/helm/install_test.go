@@ -54,6 +54,7 @@ func TestRemoteChartInstall(t *testing.T) {
 		SetValues: map[string]string{
 			"service.type": "NodePort",
 		},
+		Version: remoteChartVersion,
 	}
 
 	// Add the stable repo under a random name so as not to touch existing repo configs

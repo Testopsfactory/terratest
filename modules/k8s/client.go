@@ -34,6 +34,9 @@ func GetKubernetesClientFromOptionsE(t testing.TestingT, options *KubectlOptions
 			return nil, err
 		}
 		logger.Log(t, "Configuring Kubernetes client to use the in-cluster serviceaccount token")
+	} else if options.RestConfig != nil {
+		config = options.RestConfig
+		logger.Log(t, "Configuring Kubernetes client to use provided rest config object set with API server address: %s", config.Host)
 	} else {
 		kubeConfigPath, err := options.GetConfigPath(t)
 		if err != nil {
