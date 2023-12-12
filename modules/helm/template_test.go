@@ -137,7 +137,7 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 	var deployment appsv1.Deployment
 	UnmarshalK8SYaml(t, output, &deployment)
 
-	// run the diff and assert there is one difference: the image name
+	// run the diff and assert there is only one difference: the image name
 	number_of_diffs := DiffAgainstSnapshot(output, releaseName)
 	require.Equal(t, 1, number_of_diffs)
 }
