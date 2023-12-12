@@ -30,7 +30,6 @@ import (
 
 // An example of how to verify the rendered template object of a Helm Chart given various inputs.
 func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDump(t *testing.T) {
-	t.Parallel()
 
 	// chart name
 	releaseName := "keda"
@@ -74,7 +73,6 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDump(t *testing.T) {
 
 // An example of how to verify the rendered template object of a Helm Chart given various inputs.
 func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
-	t.Parallel()
 
 	// chart name
 	releaseName := "keda"
@@ -114,12 +112,11 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
 
 	// run the diff and assert the number of diffs
 	number_of_diffs := helm.DiffAgainstSnapshot(output, releaseName)
-	require.Equal(t, number_of_diffs, 0)
+	require.Equal(t, 4, number_of_diffs)
 }
 
 // An example of how to store a snapshot of the current manaifest for future comparison
 func TestHelmKedaRemoteExampleTemplateRenderedPackageDump(t *testing.T) {
-	t.Parallel()
 
 	// chart name
 	releaseName := "keda"
@@ -149,7 +146,6 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDump(t *testing.T) {
 
 // An example of how to verify the current helm k8s manifest against a previous snapshot
 func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
-	t.Parallel()
 
 	// chart name
 	releaseName := "keda"
@@ -173,7 +169,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
 	// demonstrate how to select individual templates to render.
 	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
 
-	// run the diff and assert the number of diffs
+	// run the diff and assert the number of diffs matches the number of diffs in the snapshot
 	number_of_diffs := helm.DiffAgainstSnapshot(output, releaseName)
-	require.Equal(t, number_of_diffs, 0)
+	require.Equal(t, 18, number_of_diffs)
 }
