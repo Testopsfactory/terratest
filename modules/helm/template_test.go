@@ -77,8 +77,6 @@ func TestRemoteChartRenderDump(t *testing.T) {
 		namespaceName = "dump-ns"
 	)
 
-	t.Parallel()
-
 	releaseName := remoteChartName
 
 	options := &Options{
@@ -116,8 +114,6 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 		namespaceName = "dump-ns"
 	)
 
-	t.Parallel()
-
 	releaseName := remoteChartName
 	options := &Options{
 		SetValues: map[string]string{
@@ -138,6 +134,5 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 	UnmarshalK8SYaml(t, output, &deployment)
 
 	// run the diff and assert there is only one difference: the image name
-	number_of_diffs := DiffAgainstSnapshot(output, releaseName)
-	require.Equal(t, 1, number_of_diffs)
+	require.Equal(t, 1, DiffAgainstSnapshot(output, releaseName))
 }

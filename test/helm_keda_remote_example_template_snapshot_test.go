@@ -111,8 +111,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
 
 	// run the diff and assert the number of diffs
-	number_of_diffs := helm.DiffAgainstSnapshot(output, releaseName)
-	require.Equal(t, 4, number_of_diffs)
+	require.Equal(t, 4, helm.DiffAgainstSnapshot(output, releaseName))
 }
 
 // An example of how to store a snapshot of the current manaifest for future comparison
@@ -170,6 +169,5 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
 	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
 
 	// run the diff and assert the number of diffs matches the number of diffs in the snapshot
-	number_of_diffs := helm.DiffAgainstSnapshot(output, releaseName)
-	require.Equal(t, 18, number_of_diffs)
+	require.Equal(t, 18, helm.DiffAgainstSnapshot(output, releaseName))
 }
