@@ -46,6 +46,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 			"resources.metricServer.limits.memory": "1234Mi",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
@@ -87,6 +88,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedValuesFileFixtureDeployment(t *tes
 	options := &helm.Options{
 		ValuesFiles:    []string{"./fixtures/helm/keda-values.yaml"},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since

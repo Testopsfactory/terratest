@@ -17,6 +17,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 
 	"github.com/gruntwork-io/terratest/modules/k8s"
+	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
 )
 
@@ -25,7 +26,7 @@ func TestRemoteChartRender(t *testing.T) {
 	const (
 		remoteChartSource  = "https://charts.bitnami.com/bitnami"
 		remoteChartName    = "nginx"
-		remoteChartVersion = "13.2.23"
+		remoteChartVersion = "13.2.24"
 	)
 
 	t.Parallel()
@@ -45,6 +46,7 @@ func TestRemoteChartRender(t *testing.T) {
 			"image.tag":        remoteChartVersion,
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
@@ -86,6 +88,7 @@ func TestRemoteChartRenderDump(t *testing.T) {
 			"image.tag":        remoteChartVersion,
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
@@ -101,7 +104,11 @@ func TestRemoteChartRenderDump(t *testing.T) {
 	require.Equal(t, namespaceName, deployment.Namespace)
 
 	// write chart manifest to a local filesystem directory
-	UpdateSnapshot(output, releaseName)
+	options = &Options{
+		Logger:       logger.Default,
+		SnapshotPath: "__chart_manifests_snapshot__",
+	}
+	UpdateSnapshot(t, options, output, releaseName)
 }
 
 // Test that we can diff all the manifest to a local snapshot using a remote chart (e.g bitnami/nginx)
@@ -109,7 +116,7 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 	const (
 		remoteChartSource  = "https://charts.bitnami.com/bitnami"
 		remoteChartName    = "nginx"
-		remoteChartVersion = "13.2.23"
+		remoteChartVersion = "13.2.24"
 		// need to set a fix name for the namespace so it is not flag as a difference
 		namespaceName = "dump-ns"
 	)
@@ -122,6 +129,8 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 			"image.tag":        remoteChartVersion,
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
+		SnapshotPath:   "__chart_manifests_snapshot__",
 	}
 
 	// Run RenderTemplate to render the template and capture the output. Note that we use the version without `E`, since
@@ -134,5 +143,5 @@ func TestRemoteChartRenderDiff(t *testing.T) {
 	UnmarshalK8SYaml(t, output, &deployment)
 
 	// run the diff and assert there is only one difference: the image name
-	require.Equal(t, 1, DiffAgainstSnapshot(output, releaseName))
+	require.Equal(t, 1, DiffAgainstSnapshot(t, options, output, releaseName))
 }

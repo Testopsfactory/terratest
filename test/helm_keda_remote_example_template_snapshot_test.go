@@ -45,6 +45,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDump(t *testing.T) {
 			"resources.metricServer.limits.memory": "1234Mi",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
@@ -68,7 +69,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDump(t *testing.T) {
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
 
 	// write chart manifest to a local filesystem directory
-	helm.UpdateSnapshot(output, releaseName)
+	helm.UpdateSnapshot(t, options, output, releaseName)
 }
 
 // An example of how to verify the rendered template object of a Helm Chart given various inputs.
@@ -88,6 +89,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
 			"resources.metricServer.limits.memory": "4321Mi",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
@@ -111,7 +113,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
 
 	// run the diff and assert the number of diffs
-	require.Equal(t, 4, helm.DiffAgainstSnapshot(output, releaseName))
+	require.Equal(t, 4, helm.DiffAgainstSnapshot(t, options, output, releaseName))
 }
 
 // An example of how to store a snapshot of the current manaifest for future comparison
@@ -131,6 +133,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDump(t *testing.T) {
 			"resources.metricServer.limits.memory": "1234Mi",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
@@ -140,7 +143,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDump(t *testing.T) {
 	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
 
 	// write chart manifest to a local filesystem directory
-	helm.UpdateSnapshot(output, releaseName)
+	helm.UpdateSnapshot(t, options, output, releaseName)
 }
 
 // An example of how to verify the current helm k8s manifest against a previous snapshot
@@ -160,6 +163,7 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
 			"resources.metricServer.limits.memory": "4321Mi",
 		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
 	}
 
 	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
@@ -169,5 +173,5 @@ func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
 	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
 
 	// run the diff and assert the number of diffs matches the number of diffs in the snapshot
-	require.Equal(t, 18, helm.DiffAgainstSnapshot(output, releaseName))
+	require.Equal(t, 18, helm.DiffAgainstSnapshot(t, options, output, releaseName))
 }

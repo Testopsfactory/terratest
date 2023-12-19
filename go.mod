@@ -47,9 +47,9 @@ require (
 )
 
 require (
+	cloud.google.com/go/cloudbuild v1.9.0
 	github.com/gonvenience/ytbx v1.4.4
 	github.com/homeport/dyff v1.6.0
-	cloud.google.com/go/cloudbuild v1.9.0
 	github.com/slack-go/slack v0.10.3
 	gotest.tools/v3 v3.0.3
 )
@@ -91,7 +91,6 @@ require (
 	github.com/gonvenience/term v1.0.2 // indirect
 	github.com/gonvenience/text v1.0.7 // indirect
 	github.com/gonvenience/wrap v1.1.2 // indirect
-	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect

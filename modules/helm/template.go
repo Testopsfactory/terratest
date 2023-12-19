@@ -12,7 +12,6 @@ import (
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/testing"
 
-	"fmt"
 	"os"
 
 	"github.com/gonvenience/ytbx"
@@ -145,71 +144,94 @@ func UnmarshalK8SYamlE(t testing.TestingT, yamlData string, destinationObj inter
 // It is one of the two functions needed to implement snapshot based testing for helm.
 // see https://github.com/gruntwork-io/terratest/issues/1377
 // A snapshot is used to compare the current manifests of a chart with the previous manifests.
-// A global diff is run against the two snapshost and the number of differences is returned.
-func UpdateSnapshot(yamlData string, releaseName string) {
+// A global diff is run against the two snapshosts and the number of differences is returned.
+func UpdateSnapshot(t testing.TestingT, options *Options, yamlData string, releaseName string) {
+	require.NoError(t, UpdateSnapshotE(t, options, yamlData, releaseName))
+}
 
-	snapshotDir := "__snapshot__"
+// UpdateSnapshot creates or updates the k8s manifest snapshot of a chart (e.g bitnami/nginx).
+// It is one of the two functions needed to implement snapshot based testing for helm.
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// A snapshot is used to compare the current manifests of a chart with the previous manifests.
+// A global diff is run against the two snapshosts and the number of differences is returned.
+// It will failed the test if there is an error while writing the manifests' snapshot in the file system
+func UpdateSnapshotE(t testing.TestingT, options *Options, yamlData string, releaseName string) error {
+
+	var snapshotDir = "__snapshot__"
+	if options.SnapshotPath != "" {
+		snapshotDir = options.SnapshotPath
+	}
 	// Create a directory if not exists
 	if !files.FileExists(snapshotDir) {
 		if err := os.Mkdir(snapshotDir, 0755); err != nil {
-			fmt.Println("Error creating directory:", err)
-			return
+			return errors.WithStackTrace(err)
 		}
 	}
 
-	filename := snapshotDir + "/" + releaseName + ".yaml"
+	filename := filepath.Join(snapshotDir, releaseName+".yaml")
 	// Open a file in write mode
 	file, err := os.Create(filename)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
+		return errors.WithStackTrace(err)
 	}
 	defer file.Close()
 
 	// Write the k8s manifest into the file
 	if _, err = file.WriteString(yamlData); err != nil {
-		fmt.Println("Error writing to file: ", filename, err)
-		return
+		return errors.WithStackTrace(err)
 	}
 
-	fmt.Println("k8s manifest written into file: ", filename)
+	if options.Logger != nil {
+		options.Logger.Logf(t, "helm chart manifest written into file: %s", filename)
+	}
+	return nil
 }
 
 // DiffAgainstSnapshot compare the current manifests of a chart (e.g bitnami/nginx)
 // with the previous manifests stored in the snapshot.
 // see https://github.com/gruntwork-io/terratest/issues/1377
 // It returns the number of difference between the two manifest snaphost or -1 in case of error
-func DiffAgainstSnapshot(yamlData string, releaseName string) int {
+// It will failed the test if there is an error while reading or writing the two manifests in the file system
+func DiffAgainstSnapshot(t testing.TestingT, options *Options, yamlData string, releaseName string) int {
+	numberOfDiffs, err := DiffAgainstSnapshotE(t, options, yamlData, releaseName)
+	require.NoError(t, err)
+	return numberOfDiffs
+}
 
-	snapshotDir := "__snapshot__"
+// DiffAgainstSnapshotE compare the current manifests of a chart (e.g bitnami/nginx)
+// with the previous manifests stored in the snapshot.
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// It returns the number of difference between the two manifest snaphost or -1 in case of error
+func DiffAgainstSnapshotE(t testing.TestingT, options *Options, yamlData string, releaseName string) (int, error) {
+
+	var snapshotDir = "__snapshot__"
+	if options.SnapshotPath != "" {
+		snapshotDir = options.SnapshotPath
+	}
 
 	// load the yaml snapshot file
-	snapshot := snapshotDir + "/" + releaseName + ".yaml"
+	snapshot := filepath.Join(snapshotDir, releaseName+".yaml")
 	from, err := ytbx.LoadFile(snapshot)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return -1
+		return -1, errors.WithStackTrace(err)
 	}
 
 	// write the current manifest into a file as `dyff` does not support string input
 	currentManifests := releaseName + ".yaml"
 	file, err := os.Create(currentManifests)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return -1
+		return -1, errors.WithStackTrace(err)
 	}
 
 	if _, err = file.WriteString(yamlData); err != nil {
-		fmt.Println("Error writing to file: ", currentManifests, err)
-		return -1
+		return -1, errors.WithStackTrace(err)
 	}
 	defer file.Close()
 	defer os.Remove(currentManifests)
 
 	to, err := ytbx.LoadFile(currentManifests)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return -1
+		return -1, errors.WithStackTrace(err)
 	}
 
 	// compare the two manifests using `dyff`
@@ -218,8 +240,7 @@ func DiffAgainstSnapshot(yamlData string, releaseName string) int {
 	// create a report
 	report, err := dyff.CompareInputFiles(from, to, compOpt)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return -1
+		return -1, errors.WithStackTrace(err)
 	}
 
 	// write any difference to stdout
@@ -231,8 +252,10 @@ func DiffAgainstSnapshot(yamlData string, releaseName string) int {
 		UseGoPatchPaths:   false,
 	}
 
-	reportWriter.WriteReport(os.Stdout)
-
-	// return the number of diffs to use in in assertion while testing: 0 = no differences
-	return len(reportWriter.Diffs)
+	err = reportWriter.WriteReport(os.Stdout)
+	if err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+	// return the number of diffs to use in assertion while testing: 0 = no differences
+	return len(reportWriter.Diffs), nil
 }
