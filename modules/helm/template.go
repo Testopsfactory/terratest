@@ -149,7 +149,7 @@ func UpdateSnapshot(t testing.TestingT, options *Options, yamlData string, relea
 	require.NoError(t, UpdateSnapshotE(t, options, yamlData, releaseName))
 }
 
-// UpdateSnapshot creates or updates the k8s manifest snapshot of a chart (e.g bitnami/nginx).
+// UpdateSnapshotE creates or updates the k8s manifest snapshot of a chart (e.g bitnami/nginx).
 // It is one of the two functions needed to implement snapshot based testing for helm.
 // see https://github.com/gruntwork-io/terratest/issues/1377
 // A snapshot is used to compare the current manifests of a chart with the previous manifests.
@@ -190,8 +190,8 @@ func UpdateSnapshotE(t testing.TestingT, options *Options, yamlData string, rele
 // DiffAgainstSnapshot compare the current manifests of a chart (e.g bitnami/nginx)
 // with the previous manifests stored in the snapshot.
 // see https://github.com/gruntwork-io/terratest/issues/1377
-// It returns the number of difference between the two manifest snaphost or -1 in case of error
-// It will failed the test if there is an error while reading or writing the two manifests in the file system
+// It returns the number of difference between the two manifests or -1 in case of error
+// It will fail the test if there is an error while reading or writing the two manifests in the file system
 func DiffAgainstSnapshot(t testing.TestingT, options *Options, yamlData string, releaseName string) int {
 	numberOfDiffs, err := DiffAgainstSnapshotE(t, options, yamlData, releaseName)
 	require.NoError(t, err)
@@ -201,7 +201,7 @@ func DiffAgainstSnapshot(t testing.TestingT, options *Options, yamlData string, 
 // DiffAgainstSnapshotE compare the current manifests of a chart (e.g bitnami/nginx)
 // with the previous manifests stored in the snapshot.
 // see https://github.com/gruntwork-io/terratest/issues/1377
-// It returns the number of difference between the two manifest snaphost or -1 in case of error
+// It returns the number of difference between the manifests or -1 in case of error
 func DiffAgainstSnapshotE(t testing.TestingT, options *Options, yamlData string, releaseName string) (int, error) {
 
 	var snapshotDir = "__snapshot__"
