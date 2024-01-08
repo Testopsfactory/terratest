@@ -29,8 +29,7 @@ import (
 //   computed values.
 
 // An example of how to verify the rendered template object of a Helm Chart given various inputs.
-func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
-	t.Parallel()
+func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDump(t *testing.T) {
 
 	// chart name
 	releaseName := "keda"
@@ -68,16 +67,13 @@ func TestHelmKedaRemoteExampleTemplateRenderedDeployment(t *testing.T) {
 	expectedMetricsServerReplica = 999
 	deploymentMetricsServerReplica := *deployment.Spec.Replicas
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
-	expectedContainerRLM := "1234Mi"
-	deploymentContainers := deployment.Spec.Template.Spec.Containers
-	require.Equal(t, len(deploymentContainers), 1)
-	currentContainerRLM := deploymentContainers[0].Resources.Limits.Memory().String()
-	require.Equal(t, currentContainerRLM, expectedContainerRLM)
+
+	// write chart manifest to a local filesystem directory
+	helm.UpdateSnapshot(t, options, output, releaseName)
 }
 
-// An example of how to verify the rendered template object of a Helm Chart given input from a `values.yaml` file.
-func TestHelmKedaRemoteExampleTemplateRenderedValuesFileFixtureDeployment(t *testing.T) {
-	t.Parallel()
+// An example of how to verify the rendered template object of a Helm Chart given various inputs.
+func TestHelmKedaRemoteExampleTemplateRenderedDeploymentDiff(t *testing.T) {
 
 	// chart name
 	releaseName := "keda"
@@ -85,8 +81,13 @@ func TestHelmKedaRemoteExampleTemplateRenderedValuesFileFixtureDeployment(t *tes
 	// Set up the namespace; confirm that the template renders the expected value for the namespace.
 	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
 	logger.Logf(t, "Namespace: %s\n", namespaceName)
+
+	// Setup the args. For this test, we will set the following input values:
 	options := &helm.Options{
-		ValuesFiles:    []string{"./fixtures/helm/keda-values.yaml"},
+		SetValues: map[string]string{
+			"metricsServer.replicaCount":           "666",
+			"resources.metricServer.limits.memory": "4321Mi",
+		},
 		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
 		Logger:         logger.Discard,
 	}
@@ -105,14 +106,72 @@ func TestHelmKedaRemoteExampleTemplateRenderedValuesFileFixtureDeployment(t *tes
 	// Verify the namespace matches the expected supplied namespace.
 	require.Equal(t, namespaceName, deployment.Namespace)
 
-	// Finally, we verify the deployment pod template spec is set to the expected value
+	// Finally, we verify the deployment pod template spec is set to the expected container image value
 	var expectedMetricsServerReplica int32
-	expectedMetricsServerReplica = 3
+	expectedMetricsServerReplica = 666
 	deploymentMetricsServerReplica := *deployment.Spec.Replicas
 	require.Equal(t, expectedMetricsServerReplica, deploymentMetricsServerReplica)
-	expectedContainerRLM := "1234Mi"
-	deploymentContainers := deployment.Spec.Template.Spec.Containers
-	require.Equal(t, len(deploymentContainers), 1)
-	currentContainerRLM := deploymentContainers[0].Resources.Limits.Memory().String()
-	require.Equal(t, currentContainerRLM, expectedContainerRLM)
+
+	// run the diff and assert the number of diffs
+	require.Equal(t, 4, helm.DiffAgainstSnapshot(t, options, output, releaseName))
+}
+
+// An example of how to store a snapshot of the current manaifest for future comparison
+func TestHelmKedaRemoteExampleTemplateRenderedPackageDump(t *testing.T) {
+
+	// chart name
+	releaseName := "keda"
+
+	// Set up the namespace; confirm that the template renders the expected value for the namespace.
+	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
+	logger.Logf(t, "Namespace: %s\n", namespaceName)
+
+	// Setup the args. For this test, we will set the following input values:
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"metricsServer.replicaCount":           "999",
+			"resources.metricServer.limits.memory": "1234Mi",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
+	}
+
+	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	// Additionally, we path a the templateFile for which we are setting test values to
+	// demonstrate how to select individual templates to render.
+	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
+
+	// write chart manifest to a local filesystem directory
+	helm.UpdateSnapshot(t, options, output, releaseName)
+}
+
+// An example of how to verify the current helm k8s manifest against a previous snapshot
+func TestHelmKedaRemoteExampleTemplateRenderedPackageDiff(t *testing.T) {
+
+	// chart name
+	releaseName := "keda"
+
+	// Set up the namespace; confirm that the template renders the expected value for the namespace.
+	namespaceName := "medieval-" + strings.ToLower(random.UniqueId())
+	logger.Logf(t, "Namespace: %s\n", namespaceName)
+
+	// Setup the args. For this test, we will set the following input values:
+	options := &helm.Options{
+		SetValues: map[string]string{
+			"metricsServer.replicaCount":           "666",
+			"resources.metricServer.limits.memory": "4321Mi",
+		},
+		KubectlOptions: k8s.NewKubectlOptions("", "", namespaceName),
+		Logger:         logger.Discard,
+	}
+
+	// Run RenderTemplate to render the *remote* template and capture the output. Note that we use the version without `E`, since
+	// we want to assert that the template renders without any errors.
+	// Additionally, we path a the templateFile for which we are setting test values to
+	// demonstrate how to select individual templates to render.
+	output := helm.RenderRemoteTemplate(t, options, "https://kedacore.github.io/charts", releaseName, []string{})
+
+	// run the diff and assert the number of diffs matches the number of diffs in the snapshot
+	require.Equal(t, 18, helm.DiffAgainstSnapshot(t, options, output, releaseName))
 }

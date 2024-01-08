@@ -11,6 +11,11 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/testing"
+
+	"os"
+
+	"github.com/gonvenience/ytbx"
+	"github.com/homeport/dyff/pkg/dyff"
 )
 
 // RenderTemplate runs `helm template` to render the template given the provided options and returns stdout/stderr from
@@ -133,4 +138,124 @@ func UnmarshalK8SYamlE(t testing.TestingT, yamlData string, destinationObj inter
 		return errors.WithStackTrace(err)
 	}
 	return nil
+}
+
+// UpdateSnapshot creates or updates the k8s manifest snapshot of a chart (e.g bitnami/nginx).
+// It is one of the two functions needed to implement snapshot based testing for helm.
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// A snapshot is used to compare the current manifests of a chart with the previous manifests.
+// A global diff is run against the two snapshosts and the number of differences is returned.
+func UpdateSnapshot(t testing.TestingT, options *Options, yamlData string, releaseName string) {
+	require.NoError(t, UpdateSnapshotE(t, options, yamlData, releaseName))
+}
+
+// UpdateSnapshotE creates or updates the k8s manifest snapshot of a chart (e.g bitnami/nginx).
+// It is one of the two functions needed to implement snapshot based testing for helm.
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// A snapshot is used to compare the current manifests of a chart with the previous manifests.
+// A global diff is run against the two snapshosts and the number of differences is returned.
+// It will failed the test if there is an error while writing the manifests' snapshot in the file system
+func UpdateSnapshotE(t testing.TestingT, options *Options, yamlData string, releaseName string) error {
+
+	var snapshotDir = "__snapshot__"
+	if options.SnapshotPath != "" {
+		snapshotDir = options.SnapshotPath
+	}
+	// Create a directory if not exists
+	if !files.FileExists(snapshotDir) {
+		if err := os.Mkdir(snapshotDir, 0755); err != nil {
+			return errors.WithStackTrace(err)
+		}
+	}
+
+	filename := filepath.Join(snapshotDir, releaseName+".yaml")
+	// Open a file in write mode
+	file, err := os.Create(filename)
+	if err != nil {
+		return errors.WithStackTrace(err)
+	}
+	defer file.Close()
+
+	// Write the k8s manifest into the file
+	if _, err = file.WriteString(yamlData); err != nil {
+		return errors.WithStackTrace(err)
+	}
+
+	if options.Logger != nil {
+		options.Logger.Logf(t, "helm chart manifest written into file: %s", filename)
+	}
+	return nil
+}
+
+// DiffAgainstSnapshot compare the current manifests of a chart (e.g bitnami/nginx)
+// with the previous manifests stored in the snapshot.
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// It returns the number of difference between the two manifests or -1 in case of error
+// It will fail the test if there is an error while reading or writing the two manifests in the file system
+func DiffAgainstSnapshot(t testing.TestingT, options *Options, yamlData string, releaseName string) int {
+	numberOfDiffs, err := DiffAgainstSnapshotE(t, options, yamlData, releaseName)
+	require.NoError(t, err)
+	return numberOfDiffs
+}
+
+// DiffAgainstSnapshotE compare the current manifests of a chart (e.g bitnami/nginx)
+// with the previous manifests stored in the snapshot.
+// see https://github.com/gruntwork-io/terratest/issues/1377
+// It returns the number of difference between the manifests or -1 in case of error
+func DiffAgainstSnapshotE(t testing.TestingT, options *Options, yamlData string, releaseName string) (int, error) {
+
+	var snapshotDir = "__snapshot__"
+	if options.SnapshotPath != "" {
+		snapshotDir = options.SnapshotPath
+	}
+
+	// load the yaml snapshot file
+	snapshot := filepath.Join(snapshotDir, releaseName+".yaml")
+	from, err := ytbx.LoadFile(snapshot)
+	if err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+
+	// write the current manifest into a file as `dyff` does not support string input
+	currentManifests := releaseName + ".yaml"
+	file, err := os.Create(currentManifests)
+	if err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+
+	if _, err = file.WriteString(yamlData); err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+	defer file.Close()
+	defer os.Remove(currentManifests)
+
+	to, err := ytbx.LoadFile(currentManifests)
+	if err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+
+	// compare the two manifests using `dyff`
+	compOpt := dyff.KubernetesEntityDetection(false)
+
+	// create a report
+	report, err := dyff.CompareInputFiles(from, to, compOpt)
+	if err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+
+	// write any difference to stdout
+	reportWriter := &dyff.HumanReport{
+		Report:            report,
+		DoNotInspectCerts: false,
+		NoTableStyle:      false,
+		OmitHeader:        false,
+		UseGoPatchPaths:   false,
+	}
+
+	err = reportWriter.WriteReport(os.Stdout)
+	if err != nil {
+		return -1, errors.WithStackTrace(err)
+	}
+	// return the number of diffs to use in assertion while testing: 0 = no differences
+	return len(reportWriter.Diffs), nil
 }
