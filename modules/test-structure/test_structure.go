@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gruntwork-io/terratest/modules/git"
+
 	go_test "testing"
 
 	"github.com/gruntwork-io/terratest/modules/files"
@@ -192,29 +194,33 @@ func runValidateOnAllTerraformModules(
 	opts *ValidationOptions,
 	validationFunc func(t *go_test.T, fileType ValidateFileType, tfOps *terraform.Options),
 ) {
-	dirsToValidate, readErr := FindTerraformModulePathsInRootE(opts)
+	// Find the Git root
+	gitRoot, err := git.GetRepoRootForDirE(t, opts.RootDir)
+	require.NoError(t, err)
+
+	// Find the relative path between the root dir and the git root
+	relPath, err := filepath.Rel(gitRoot, opts.RootDir)
+	require.NoError(t, err)
+
+	// Copy git root to tmp
+	testFolder := CopyTerraformFolderToTemp(t, gitRoot, relPath)
+	require.NotNil(t, testFolder)
+
+	// Clone opts and override the root dir to the temp folder
+	clonedOpts, err := CloneWithNewRootDir(opts, testFolder)
+	require.NoError(t, err)
+
+	// Find TF modules
+	dirsToValidate, readErr := FindTerraformModulePathsInRootE(clonedOpts)
 	require.NoError(t, readErr)
 
 	for _, dir := range dirsToValidate {
 		dir := dir
 		t.Run(strings.TrimLeft(dir, "/"), func(t *go_test.T) {
-			// Determine the absolute path to the git repository root
-			cwd, cwdErr := os.Getwd()
-			require.NoError(t, cwdErr)
-			gitRoot, gitRootErr := filepath.Abs(filepath.Join(cwd, "../../"))
-			require.NoError(t, gitRootErr)
-
-			// Determine the relative path to the example, module, etc that is currently being considered
-			relativePath, pathErr := filepath.Rel(gitRoot, dir)
-			require.NoError(t, pathErr)
-			// Copy git root to tmp and supply the path to the current module to run init and validate on
-			testFolder := CopyTerraformFolderToTemp(t, gitRoot, relativePath)
-			require.NotNil(t, testFolder)
-
-			// Run Terraform init and terraform validate on the test folder that was copied to /tmp
-			// to avoid any potential conflicts with tests that may not use the same copy to /tmp behavior
-			tfOpts := &terraform.Options{TerraformDir: testFolder}
-			validationFunc(t, opts.FileType, tfOpts)
+			// Run the validation function on the test folder that was copied to /tmp to avoid any potential conflicts
+			// with tests that may not use the same copy to /tmp behavior
+			tfOpts := &terraform.Options{TerraformDir: dir}
+			validationFunc(t, clonedOpts.FileType, tfOpts)
 		})
 	}
 }
