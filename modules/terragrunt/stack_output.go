@@ -2,6 +2,9 @@ package terragrunt
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/gruntwork-io/terratest/modules/retry"
+	"github.com/gruntwork-io/terratest/modules/shell"
 	"regexp"
 	"strings"
 
@@ -19,10 +22,25 @@ func TgOutput(t testing.TestingT, options *Options, key string) string {
 
 // TgOutputE calls terragrunt stack output for the given variable and returns its value as a string
 func TgOutputE(t testing.TestingT, options *Options, key string) (string, error) {
-	rawOutput, err := runTerragruntStackCommandE(t, options, "output", outputArgs(options, key)...)
+	// For stack output, we need special handling because the output subcommand
+	// doesn't use the -- separator like other stack subcommands (e.g., run)
+	// Instead of: terragrunt stack output -- -no-color key
+	// We need: terragrunt stack output -no-color key
+
+	// Build the args that need to go directly after "output" without separator
+	outputArgs := []string{"-no-color"}
+	outputArgs = append(outputArgs, options.ExtraArgs...)
+	if key != "" {
+		outputArgs = append(outputArgs, key)
+	}
+
+	// Use a wrapper function that handles output-specific command construction
+	rawOutput, err := runTerragruntStackOutputCommand(t, options, outputArgs...)
 	if err != nil {
 		return "", err
 	}
+
+	// Clean the output to extract the actual value
 	cleaned, err := cleanTerragruntOutput(rawOutput)
 	if err != nil {
 		return "", err
@@ -45,33 +63,27 @@ func TgOutputJson(t testing.TestingT, options *Options, key string) string {
 // result as the json string.
 // If key is an empty string, it will return all the output variables.
 func TgOutputJsonE(t testing.TestingT, options *Options, key string) (string, error) {
-	args := outputArgs(options, key)
-	// Add -json flag for JSON output
-	jsonArgs := append([]string{"-json"}, args...)
-
-	rawOutput, err := runTerragruntStackCommandE(t, options, "output", jsonArgs...)
+	// For stack output with JSON, we need special handling because the output subcommand
+	// doesn't use the -- separator like other stack subcommands
+	// Instead of: terragrunt stack output -- -no-color -json key
+	// We need: terragrunt stack output -no-color -json key
+	
+	// Build the args that need to go directly after "output" without separator
+	outputArgs := []string{"-no-color", "-json"}
+	outputArgs = append(outputArgs, options.ExtraArgs...)
+	if key != "" {
+		outputArgs = append(outputArgs, key)
+	}
+	
+	// Use the wrapper function that handles output-specific command construction
+	rawOutput, err := runTerragruntStackOutputCommand(t, options, outputArgs...)
 	if err != nil {
 		return "", err
 	}
+
+	// Clean and format the JSON output
 	return cleanTerragruntJson(rawOutput)
 }
-
-// outputArgs builds the argument list for terragrunt stack output command
-func outputArgs(options *Options, key string) []string {
-	args := []string{"-no-color"}
-
-	// Add all user-specified terragrunt command-line arguments first
-	args = append(args, options.ExtraArgs...)
-
-	// Add the key last, if provided
-	if key != "" {
-		args = append(args, key)
-	}
-
-	return args
-}
-
-const skipJsonLogLine = " msg="
 
 var (
 	// tgLogLevel matches log lines containing fields for time, level, prefix, binary, and message
@@ -107,7 +119,8 @@ func cleanTerragruntOutput(rawOutput string) (string, error) {
 	var result []string
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if trimmed != "" && !strings.Contains(trimmed, skipJsonLogLine) {
+		// Skip empty lines and lines that are clearly log lines (containing msg= with log context)
+		if trimmed != "" && !strings.Contains(line, " msg=") {
 			result = append(result, trimmed)
 		}
 	}
@@ -164,7 +177,8 @@ func cleanTerragruntJson(input string) (string, error) {
 	var result []string
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if trimmed != "" && !strings.Contains(trimmed, skipJsonLogLine) {
+		// Skip empty lines and lines that are clearly log lines (containing msg= with log context)
+		if trimmed != "" && !strings.Contains(line, " msg=") {
 			result = append(result, trimmed)
 		}
 	}
@@ -182,4 +196,46 @@ func cleanTerragruntJson(input string) (string, error) {
 	}
 
 	return string(normalized), nil
+}
+
+// runTerragruntStackOutputCommand is a wrapper that handles the special case of stack output commands
+// The output subcommand doesn't use the -- separator, so we need to construct the command differently
+func runTerragruntStackOutputCommand(t testing.TestingT, options *Options, outputArgs ...string) (string, error) {
+	// Validate required options
+	if err := validateOptions(options); err != nil {
+		return "", err
+	}
+
+	// Build the command arguments for "stack output" with all args inline
+	commandArgs := []string{"stack", "output"}
+	commandArgs = append(commandArgs, outputArgs...)
+
+	// Apply common terragrunt options
+	terragruntOptions, finalArgs := GetCommonOptions(options, commandArgs...)
+
+	// Generate the final shell command
+	execCommand := generateCommand(terragruntOptions, finalArgs...)
+	commandDescription := fmt.Sprintf("%s %v", terragruntOptions.TerragruntBinary, finalArgs)
+
+	// Execute the command with retry logic (same as runTerragruntStackCommandE)
+	return retry.DoWithRetryableErrorsE(
+		t,
+		commandDescription,
+		terragruntOptions.RetryableTerraformErrors,
+		terragruntOptions.MaxRetries,
+		terragruntOptions.TimeBetweenRetries,
+		func() (string, error) {
+			output, err := shell.RunCommandAndGetOutputE(t, execCommand)
+			if err != nil {
+				return output, err
+			}
+
+			// Check for warnings that should be treated as errors
+			if warningErr := hasWarning(options, output); warningErr != nil {
+				return output, warningErr
+			}
+
+			return output, nil
+		},
+	)
 }
